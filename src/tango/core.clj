@@ -11,7 +11,9 @@
   (swap! memory-log conj s))
 
 (defn event-msg-handler* [{:as ev-msg :keys [id ?data event]}]
-  (logf "Event: %s" event))
+  (do
+    (logf (str "Event: " event))
+    (println event)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Sente socket setup
@@ -36,10 +38,12 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Http routing
+(defn render [t]
+  (apply str t))
 
 (defroutes application-routes
   (GET "/" [] "<h1>Tango on!</h1>")
-    ;; Sente channel routes
+  ;; Sente channel routes
   (GET  "/chsk" req (ring-ajax-get-or-ws-handshake req))
   (POST "/chsk" req (ring-ajax-post                req))
   (route/resources "/") ; Static files
