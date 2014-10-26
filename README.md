@@ -9,7 +9,10 @@ Download from http://example.com/FIXME.
 ## Usage
 
 1. build clojurescript src
+   
+   ```
    $ lein cljsbuild once
+   ```
 
 2. fire up a REPL and load the src
 
