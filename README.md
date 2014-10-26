@@ -8,9 +8,16 @@ Download from http://example.com/FIXME.
 
 ## Usage
 
-FIXME: explanation
+1. build clojurescript src
+   $ lein cljsbuild once
 
-    $ java -jar tango-0.1.0-standalone.jar [args]
+2. fire up a REPL and load the src
+
+3. start the server in the REPL with (start!)
+
+4. browse to "localhost:1337/main.html" to load the client script
+
+5. write stuff in "Sending data" text box, the server REPL should show all messages beeing sent.
 
 ## Options
 
