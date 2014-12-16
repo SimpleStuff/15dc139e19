@@ -8,5 +8,5 @@ pom.xml.asc
 /.lein-*
 /.nrepl-port
 *~
-/resources/public/out
-/resources/public/tango_client.js
+/resources/public/js
+

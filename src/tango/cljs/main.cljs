@@ -1,10 +1,9 @@
-(ns tango-client.core
+(ns tango-client
   (:require-macros
    [cljs.core.async.macros :as asyncm :refer (go go-loop)]
    ;;[cljs.core.match.macros :refer (match)]
    )
-  (:require [om.core :as om :include-macros true]
-            [om.dom :as dom :include-macros true]
+  (:require [reagent.core :as reagent :refer [atom]]
             [cljs.core.async :as async :refer (<! >! put! chan)]
             ;[cljs.core.match]
             [taoensso.sente :as sente :refer (cb-success?)]
@@ -32,39 +31,40 @@
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defn on-click [e owner]
+;; (defn on-click [e owner]
+;;   (log "Clicked w/o callback")
+;;   (chsk-send! [:test.event/clicked {:data "no callback"}]))
+
+;; (defn on-edit [e owner]
+;;   (log "Edit w/o callback")
+;;   (chsk-send! [:test.event/clicked {:data (.. e -target -value)}]))
+
+;; (defn on-click-cb [e owner]
+;;   (log "Click w callback")
+;;   (chsk-send! [:test.event/clicked {:data "Callback"}] 5000
+;;               (fn [cb-reply] (log (str "Callback reply: " cb-reply)))))
+
+(defn on-click-get-dancers []
   (log "Clicked w/o callback")
-  (chsk-send! [:test.event/clicked {:data "no callback"}]))
+  (chsk-send! [:dancers/get {:all-of-them-now-damit! :please}]))
 
-(defn on-edit [e owner]
-  (log "Edit w/o callback")
-  (chsk-send! [:test.event/clicked {:data (.. e -target -value)}]))
+(def app-state 
+  (atom 
+   {:dancers [{:dancer/name "Bobo"} {:dancer/name "Rolf"}]}))
 
-(defn on-click-cb [e owner]
-  (log "Click w callback")
-  (chsk-send! [:test.event/clicked {:data "Callback"}] 5000
-              (fn [cb-reply] (log (str "Callback reply: " cb-reply)))))
+(defn dancers-component []
+  [:div
+   [:h2 "Dancers :"]
+   [:ul
+    (for [template (:dancers @app-state)]
+      ^{:key template} [:li "" (:dancer/name template)])]
+   [:input.btn.btn-default {:type "button" :value "Get Dancers"
+                            :on-click on-click-get-dancers}]])
 
-(defn widget [data owner]
-  (reify
-    om/IRender
-    (render [this]
-      (dom/p
-       nil
-       (dom/div
-        nil
-        (dom/h2 nil (:text data))
-        (dom/button #js {:onClick #(on-click % owner)} "w/o callback"))
-       (dom/div
-        nil
-        (dom/label nil "Sending data :")
-        (dom/input #js {:type "text" :onChange #(on-edit % owner)}))
-       (dom/div
-        nil
-        (dom/button #js {:onClick #(on-click-cb % owner)} "callback"))))))
+(defn ^:export run []
+  (reagent/render-component [dancers-component] (.-body js/document)))
 
-(om/root widget {:text "Example om/sente page"}
-  {:target (. js/document (getElementById "main"))})
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Socket handling

@@ -1,5 +1,5 @@
 (defproject tango "0.1.0-SNAPSHOT"
-  :description "FIXME: write description"
+  :description "Tango"
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
@@ -9,16 +9,18 @@
                  [http-kit "2.1.18"]
                  [org.clojure/clojurescript "0.0-2371"]
                  [org.clojure/core.async "0.1.346.0-17112a-alpha"]
-                 [om "0.8.0-alpha1"]]
+                 [reagent "0.4.3"]]
   
   :plugins [[lein-cljsbuild "1.0.3"]]
 
   :cljsbuild {:builds [{:id "dev"
                         :source-paths ["src/tango/cljs"]
-                        :compiler {:output-to "./resources/public/tango_client.js"
-                                   :output-dir "./resources/public/out"
+                        :compiler {:output-to     "resources/public/js/app.js"
+                                   :output-dir    "resources/public/js/out"
+                                   :source-map    "resources/public/js/out.js.map"
+                                   :externs       ["react/externs/react.js"]
                                    :optimizations :none
-                                   :source-map true}}]}
+                                   :pretty-print  true}}]}
   
   :main ^:skip-aot tango.core
   :target-path "target/%s"

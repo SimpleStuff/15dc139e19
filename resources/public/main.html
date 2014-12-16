@@ -3,14 +3,19 @@
     <link href="css/bootstrap.min.css" rel="stylesheet">
   </head>
   <body>
-    <h2>Main</h2>
-    <div id="main"></div>
+    <h2>Main Reagent</h2>
+    <div id="app"></div>
     <script src="http://fb.me/react-0.9.0.js"></script>
-    <script src="out/goog/base.js" type="text/javascript"></script>
-    <script src="tango_client.js" type="text/javascript"></script>
+    <script src="js/out/goog/base.js" type="text/javascript"></script>
+
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
     <script src="js/bootstrap.min.js"></script>
-    <script type="text/javascript">goog.require("tango_client.core");</script>
+
+    <script type="text/javascript" src="js/app.js"></script>
+    <script type="text/javascript">goog.require('tango_client');</script>
+    <script type="text/javascript">
+      tango_client.run();
+    </script>
   </body>
 </html>
