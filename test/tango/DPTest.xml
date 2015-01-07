@@ -1,0 +1,742 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DancePerfect Version="4.1">
+  <CompData Name="Elittävling" Date="2014-11-22" Place="VÄSTERÅS"/>
+  <AdjPanelList>
+    <AdjList/>
+  </AdjPanelList>
+  <ClassList>
+    <Class Name="Hiphop Singel Star B" Seq="0">
+      <StartList Qty="11">
+        <Couple Name="Saga Boström-Fors" Seq="0" License="" Club="M&amp;M" Number="10"/>
+        <Couple Name="Tyra Hedin" Seq="1" License="" Club="Uddans" Number="11"/>
+        <Couple Name="Elina Ahlberg" Seq="2" License="" Club="SDC" Number="12"/>
+        <Couple Name="Thyra Söderström" Seq="3" License="" Club="Uddans" Number="13"/>
+        <Couple Name="Wilma Lindström Åslund" Seq="4" License="" Club="MD" Number="14"/>
+        <Couple Name="Elliot Kungsman" Seq="5" License="" Club="DTLH/DV" Number="15"/>
+        <Couple Name="Alma Södergren" Seq="6" License="" Club="BF" Number="16"/>
+        <Couple Name="Martin Burvall" Seq="7" License="" Club="DWSUN" Number="17"/>
+        <Couple Name="Märta Nordell" Seq="8" License="" Club="Uddans" Number="18"/>
+        <Couple Name="Filippa Sjöberg" Seq="9" License="" Club="Uddans" Number="19"/>
+        <Couple Name="Kajsa Uhlin" Seq="10" License="" Club="Let's Move" Number="20"/>
+      </StartList>
+    </Class>
+    <Class Name="Hiphop Singel Star J Fl" Seq="1">
+      <StartList Qty="25">
+        <Couple Name="Tilda Strandberg" Seq="0" License="" Club="Uddans" Number="30"/>
+        <Couple Name="Tove Gärdin" Seq="1" License="" Club="BF" Number="31"/>
+        <Couple Name="Esther Wallmo" Seq="2" License="" Club="Uddans" Number="32"/>
+        <Couple Name="Felicia Dackell" Seq="3" License="" Club="Uddans" Number="33"/>
+        <Couple Name="Emma Fredriksson" Seq="4" License="" Club="DVT" Number="34"/>
+        <Couple Name="Nicki Ahmadi" Seq="5" License="" Club="Uddans" Number="35"/>
+        <Couple Name="Hera Norin" Seq="6" License="" Club="HDL" Number="36"/>
+        <Couple Name="Wilma Roswall" Seq="7" License="" Club="VD" Number="37"/>
+        <Couple Name="Alva Gustavsson" Seq="8" License="" Club="Uddans" Number="38"/>
+        <Couple Name="Linnea Edvardsson" Seq="9" License="" Club="Uddans" Number="39"/>
+        <Couple Name="Thilda Isaksson" Seq="10" License="" Club="SDC" Number="40"/>
+        <Couple Name="Emma Ottosson" Seq="11" License="" Club="DWSUN" Number="41"/>
+        <Couple Name="Emilia Jansson" Seq="12" License="" Club="Uddans" Number="42"/>
+        <Couple Name="Denise Lemoine" Seq="13" License="" Club="Uddans" Number="43"/>
+        <Couple Name="Wilma Eriksson" Seq="14" License="" Club="Team DANSA!" Number="44"/>
+        <Couple Name="Elin Haglund" Seq="15" License="" Club="DWSUN" Number="45"/>
+        <Couple Name="Alida Nore" Seq="16" License="" Club="DTLH/DV" Number="46"/>
+        <Couple Name="Elvira Larsson" Seq="17" License="" Club="DSH" Number="47"/>
+        <Couple Name="Johanna Kungs" Seq="18" License="" Club="M&amp;M" Number="48"/>
+        <Couple Name="Moa Abrahamsson" Seq="19" License="" Club="BF" Number="49"/>
+        <Couple Name="Alva Danielsson" Seq="20" License="" Club="Uddans" Number="50"/>
+        <Couple Name="Marie Burvall" Seq="21" License="" Club="DWSUN" Number="51"/>
+        <Couple Name="Nellie Kälvehed" Seq="22" License="" Club="NDC" Number="52"/>
+        <Couple Name="Amelia Andersson" Seq="23" License="" Club="DCSW" Number="53"/>
+        <Couple Name="Linnéa Kaarre" Seq="24" License="" Club="SDC" Number="54"/>
+      </StartList>
+    </Class>
+    <Class Name="Hiphop Singel Star J Po" Seq="2">
+      <StartList Qty="14">
+        <Couple Name="Axel Carlsson" Seq="0" License="" Club="DTLH/DV" Number="60"/>
+        <Couple Name="Tom Matei" Seq="1" License="" Club="SDC" Number="61"/>
+        <Couple Name="Jacob Olsson" Seq="2" License="" Club="DTLH/DV" Number="62"/>
+        <Couple Name="William Brunnsberg" Seq="3" License="" Club="DTLH/DV" Number="63"/>
+        <Couple Name="Noak Eriksson Stjärnquist" Seq="4" License="" Club="SDC" Number="64"/>
+        <Couple Name="Rasmus Svärdström" Seq="5" License="" Club="BF" Number="65"/>
+        <Couple Name="Rasmus Strandlund" Seq="6" License="" Club="DWSUN" Number="66"/>
+        <Couple Name="Joel Helander" Seq="7" License="" Club="M&amp;M" Number="67"/>
+        <Couple Name="Alex Lundgren" Seq="8" License="" Club="SDC" Number="68"/>
+        <Couple Name="Emil Melin" Seq="9" License="" Club="M&amp;M" Number="69"/>
+        <Couple Name="Loke Lanneskog" Seq="10" License="" Club="SDC" Number="70"/>
+        <Couple Name="Harry Håkansson" Seq="11" License="" Club="SDC" Number="71"/>
+        <Couple Name="William Simonsson Köster" Seq="12" License="" Club="Let's Move Nkpg" Number="73"/>
+        <Couple Name="David Olsson" Seq="13" License="" Club="Ackes" Number="74"/>
+      </StartList>
+    </Class>
+    <Class Name="Hiphop Singel Star V Fl" Seq="3">
+      <StartList Qty="18">
+        <Couple Name="Astrid Lidar" Seq="0" License="" Club="Let's Move" Number="80"/>
+        <Couple Name="Alice Lundgren" Seq="1" License="" Club="Let's Move" Number="81"/>
+        <Couple Name="Sara Larsson" Seq="2" License="" Club="Uddans" Number="82"/>
+        <Couple Name="Sara Lässman" Seq="3" License="" Club="WAD/VDC" Number="83"/>
+        <Couple Name="Frida Lekander" Seq="4" License="" Club="M&amp;M" Number="84"/>
+        <Couple Name="Elsa Lönn" Seq="5" License="" Club="Let's Move Nkpg" Number="85"/>
+        <Couple Name="Emma Lira" Seq="6" License="" Club="Edge Uppsala" Number="86"/>
+        <Couple Name="Mikaela Elf Söderqvist" Seq="7" License="" Club="Let's Move" Number="87"/>
+        <Couple Name="Lisa Sandberg Sandström" Seq="8" License="" Club="Uddans" Number="88"/>
+        <Couple Name="Linnea Holmkvist" Seq="9" License="" Club="Uddans" Number="89"/>
+        <Couple Name="Emma Möller" Seq="10" License="" Club="Let's Move" Number="90"/>
+        <Couple Name="Sara Behi" Seq="11" License="" Club="Let's Move" Number="91"/>
+        <Couple Name="Malin Erson" Seq="12" License="" Club="Uddans" Number="92"/>
+        <Couple Name="Sandra Carlqvist" Seq="13" License="" Club="SDC" Number="93"/>
+        <Couple Name="Wilma Björklund" Seq="14" License="" Club="DSH" Number="94"/>
+        <Couple Name="Lovisa Nittler" Seq="15" License="" Club="DTLH/DV" Number="95"/>
+        <Couple Name="Amanda Kareliusson" Seq="16" License="" Club="Let's Move" Number="96"/>
+        <Couple Name="Jonna Svenson" Seq="17" License="" Club="NDC" Number="97"/>
+      </StartList>
+    </Class>
+    <Class Name="Hiphop Singel Star V Po" Seq="4">
+      <StartList Qty="9">
+        <Couple Name="Olle Lindberg" Seq="0" License="" Club="Let's Move Nkpg" Number="101"/>
+        <Couple Name="David Forsberg" Seq="1" License="" Club="Team DANSA!" Number="102"/>
+        <Couple Name="Johan Mix" Seq="2" License="" Club="M&amp;M" Number="103"/>
+        <Couple Name="Alvin Zedendahl" Seq="3" License="" Club="Team DANSA!" Number="104"/>
+        <Couple Name="Christoffer Eriksson" Seq="4" License="" Club="SDC" Number="105"/>
+        <Couple Name="Kim Åkerström" Seq="5" License="" Club="DWSUN" Number="106"/>
+        <Couple Name="Fabian Eliaeson" Seq="6" License="" Club="SDC" Number="107"/>
+        <Couple Name="Hugo Zedendahl" Seq="7" License="" Club="Team DANSA!" Number="108"/>
+        <Couple Name="Leonard Lundback" Seq="8" License="" Club="RGDT" Number="72"/>
+      </StartList>
+    </Class>
+    <Class Name="Hiphop Singel SuperStar B / J Fl" Seq="5">
+      <StartList Qty="11">
+        <Couple Name="Disa Eriksson" Seq="0" License="" Club="BF" Number="120"/>
+        <Couple Name="Frida Söderman" Seq="1" License="" Club="Uddans" Number="121"/>
+        <Couple Name="Tilde Södergren" Seq="2" License="" Club="BF" Number="122"/>
+        <Couple Name="Tyra Bergström" Seq="3" License="" Club="BF" Number="123"/>
+        <Couple Name="Elvira Johansson" Seq="4" License="" Club="DTLH/DV" Number="124"/>
+        <Couple Name="Nelly Norbäck" Seq="5" License="" Club="Let's Move" Number="125"/>
+        <Couple Name="Thelma Söderlund" Seq="6" License="" Club="BF" Number="126"/>
+        <Couple Name="Moa Andersson" Seq="7" License="" Club="BF" Number="127"/>
+        <Couple Name="Emma Lopez-Brolin" Seq="8" License="" Club="HDL" Number="128"/>
+        <Couple Name="Thea Svensson" Seq="9" License="" Club="HDL" Number="129"/>
+        <Couple Name="Nellie Oxelmark" Seq="10" License="" Club="MD" Number="130"/>
+      </StartList>
+    </Class>
+    <Class Name="Hiphop Singel SuperStar V Fl" Seq="6">
+      <StartList Qty="16">
+        <Couple Name="Alexandra Särnström" Seq="0" License="" Club="Sinclairs" Number="100"/>
+        <Couple Name="Isabell Dväring" Seq="1" License="" Club="M&amp;M" Number="140"/>
+        <Couple Name="Stina Therén" Seq="2" License="" Club="M&amp;M" Number="141"/>
+        <Couple Name="Ebba Larsson" Seq="3" License="" Club="Uddans" Number="142"/>
+        <Couple Name="Emma Berg" Seq="4" License="" Club="WAD/VDC" Number="143"/>
+        <Couple Name="Tilda Hedberger" Seq="5" License="" Club="Edge Uppsala" Number="145"/>
+        <Couple Name="Olivia Sjölander" Seq="6" License="" Club="Uddans" Number="146"/>
+        <Couple Name="Sofia Bergsten" Seq="7" License="" Club="M&amp;M" Number="147"/>
+        <Couple Name="Lisa Markus" Seq="8" License="" Club="M&amp;M" Number="148"/>
+        <Couple Name="Clara Leonardsson" Seq="9" License="" Club="DTLH/DV" Number="149"/>
+        <Couple Name="Elin Hindersbo" Seq="10" License="" Club="Let's Move" Number="150"/>
+        <Couple Name="Amanda Stööp" Seq="11" License="" Club="Uddans" Number="152"/>
+        <Couple Name="Alicia Carlsson" Seq="12" License="" Club="MD" Number="153"/>
+        <Couple Name="Josefine Persson" Seq="13" License="" Club="Wilson" Number="154"/>
+        <Couple Name="Thea Plane" Seq="14" License="" Club="SDC" Number="155"/>
+        <Couple Name="Emma Svensson" Seq="15" License="" Club="DWSUN" Number="156"/>
+      </StartList>
+    </Class>
+    <Class Name="Hiphop Grupp A-klass B" Seq="7">
+      <StartList Qty="1">
+        <Couple Name="HYPE" Seq="0" License="" Club="BF" Number="160"/>
+      </StartList>
+    </Class>
+    <Class Name="Hiphop Grupp A-klass J / V" Seq="8">
+      <StartList Qty="4">
+        <Couple Name="Swedish dance mafia" Seq="0" License="" Club="Uddans" Number="170"/>
+        <Couple Name="Freeze" Seq="1" License="" Club="BF" Number="171"/>
+        <Couple Name="Attitude" Seq="2" License="" Club="DWSUN" Number="172"/>
+        <Couple Name="Boombastic" Seq="3" License="" Club="NDC" Number="173"/>
+      </StartList>
+    </Class>
+    <Class Name="Hiphop Par Star B / J" Seq="9">
+      <StartList Qty="11">
+        <Couple Name="Denise Lemoine - Linnea Edvardsson" Seq="0" License="" Club="Uddans" Number="180"/>
+        <Couple Name="Emma Ottosson - Lovisa Lenz" Seq="1" License="" Club="DWSUN" Number="181"/>
+        <Couple Name="Harry Håkansson - Loke Lanneskog" Seq="2" License="" Club="SDC" Number="182"/>
+        <Couple Name="Rasmus Svärdström - Tyra Bergström" Seq="3" License="" Club="BF" Number="183"/>
+        <Couple Name="Moa Andersson - Thelma Söderlund" Seq="4" License="" Club="BF" Number="184"/>
+        <Couple Name="Moa Abrahamsson - Tilde Södergren" Seq="5" License="" Club="BF" Number="185"/>
+        <Couple Name="Linnéa Kaarre - Thilda Isaksson" Seq="6" License="" Club="SDC" Number="186"/>
+        <Couple Name="Kim Åkerström - Elin Haglund" Seq="7" License="" Club="DWSUN" Number="187"/>
+        <Couple Name="Alva Danielsson - Tilda Strandberg" Seq="8" License="" Club="Uddans" Number="188"/>
+        <Couple Name="Felicia Dackell - Frida Söderman" Seq="9" License="" Club="Uddans" Number="189"/>
+        <Couple Name="Filippa Sjöberg - Tyra Hedin" Seq="10" License="" Club="Uddans" Number="190"/>
+      </StartList>
+    </Class>
+    <Class Name="Hiphop Par Star V" Seq="10">
+      <StartList Qty="10">
+        <Couple Name="Lisa Sandberg Sandström - Olivia Sjölander" Seq="0" License="" Club="Uddans" Number="200"/>
+        <Couple Name="Amanda Stööp - Sara Larsson" Seq="1" License="" Club="Uddans" Number="201"/>
+        <Couple Name="Emma Berg - Lovisa Odén" Seq="2" License="" Club="WAD/VDC" Number="202"/>
+        <Couple Name="Agnes Fredriksson - Ellen Feldt" Seq="3" License="" Club="Laising" Number="203"/>
+        <Couple Name="Ebba Larsson - Emilia Jansson" Seq="4" License="" Club="Uddans" Number="204"/>
+        <Couple Name="Alicia Carlsson - Michelle Holmström" Seq="5" License="" Club="MD" Number="205"/>
+        <Couple Name="Fabian Eliaeson - Thea Plane" Seq="6" License="" Club="SDC" Number="206"/>
+        <Couple Name="Aina Björk - Malin Erson" Seq="7" License="" Club="Uddans" Number="207"/>
+        <Couple Name="Sandra Svensson - Wilma Roswall" Seq="8" License="" Club="VD" Number="208"/>
+        <Couple Name="Alice Lundgren - Mikaela Elf Söderqvist" Seq="9" License="" Club="Let's Move" Number="209"/>
+      </StartList>
+    </Class>
+    <Class Name="Disco Singel Star B1 / B2" Seq="11">
+      <StartList Qty="19">
+        <Couple Name="Matilda Cegrell" Seq="0" License="" Club="WAD/VDC" Number="220"/>
+        <Couple Name="Ophelia Wenngren" Seq="1" License="" Club="FLEX" Number="221"/>
+        <Couple Name="Tilde Södergren" Seq="2" License="" Club="BF" Number="222"/>
+        <Couple Name="Alva Linderholm" Seq="3" License="" Club="RGDT" Number="223"/>
+        <Couple Name="Jonatan Ivarsson" Seq="4" License="" Club="DSH" Number="224"/>
+        <Couple Name="Moa Andersson" Seq="5" License="" Club="BF" Number="225"/>
+        <Couple Name="Jennifer Sundin" Seq="6" License="" Club="WAD/VDC" Number="226"/>
+        <Couple Name="Nea Jared" Seq="7" License="" Club="Kindahls" Number="227"/>
+        <Couple Name="Tuva Johansson" Seq="8" License="" Club="WAD/VDC" Number="228"/>
+        <Couple Name="Isabella Jacobson" Seq="9" License="" Club="DIK" Number="229"/>
+        <Couple Name="Lukas Medailleu" Seq="10" License="" Club="Sinclairs" Number="230"/>
+        <Couple Name="Nellie Hölscher" Seq="11" License="" Club="HDL" Number="231"/>
+        <Couple Name="Ronja Carlestav" Seq="12" License="" Club="DSH" Number="232"/>
+        <Couple Name="Anna Graf" Seq="13" License="" Club="RGDT" Number="233"/>
+        <Couple Name="Elina Ahlberg" Seq="14" License="" Club="SDC" Number="234"/>
+        <Couple Name="Eleonora Robson" Seq="15" License="" Club="WAD/VDC" Number="235"/>
+        <Couple Name="Norma Wikström" Seq="16" License="" Club="RGDT" Number="236"/>
+        <Couple Name="Alva Knudsen" Seq="17" License="" Club="WAD/VDC" Number="237"/>
+        <Couple Name="Rebecca Karlsson" Seq="18" License="" Club="FLEX" Number="238"/>
+      </StartList>
+    </Class>
+    <Class Name="Disco Singel Star J1" Seq="12">
+      <StartList Qty="46">
+        <Couple Name="Rasmus Strandlund" Seq="0" License="" Club="DWSUN" Number="250"/>
+        <Couple Name="Fanny Lindgren" Seq="1" License="" Club="Team DANSA!" Number="251"/>
+        <Couple Name="Moa Nehrman" Seq="2" License="" Club="WAD/VDC" Number="252"/>
+        <Couple Name="Emma Lagerqvist" Seq="3" License="" Club="DH" Number="253"/>
+        <Couple Name="Tuva Hellgren" Seq="4" License="" Club="NDC" Number="254"/>
+        <Couple Name="Bianca Donohue" Seq="5" License="" Club="Uddans" Number="255"/>
+        <Couple Name="William Simonsson Köster" Seq="6" License="" Club="Let's Move Nkpg" Number="256"/>
+        <Couple Name="Tilda Strandberg" Seq="7" License="" Club="Uddans" Number="257"/>
+        <Couple Name="Alida Nore" Seq="8" License="" Club="DTLH/DV" Number="258"/>
+        <Couple Name="Moa Englund" Seq="9" License="" Club="DCSW" Number="259"/>
+        <Couple Name="Matilda Thorell" Seq="10" License="" Club="RGDT" Number="260"/>
+        <Couple Name="Nellie Oxelmark" Seq="11" License="" Club="MD" Number="261"/>
+        <Couple Name="Cornelia Andersson" Seq="12" License="" Club="KSD" Number="262"/>
+        <Couple Name="Ina Jared" Seq="13" License="" Club="Kindahls" Number="263"/>
+        <Couple Name="Alva Danielsson" Seq="14" License="" Club="Uddans" Number="264"/>
+        <Couple Name="Ida Welander" Seq="15" License="" Club="Kindahls" Number="265"/>
+        <Couple Name="Josefine Östberg" Seq="16" License="" Club="FLEX" Number="266"/>
+        <Couple Name="My Sundén" Seq="17" License="" Club="FLEX" Number="267"/>
+        <Couple Name="Ida Modin" Seq="18" License="" Club="DSH" Number="268"/>
+        <Couple Name="Julia Edkvist" Seq="19" License="" Club="FLEX" Number="269"/>
+        <Couple Name="Tilda Borelius" Seq="20" License="" Club="Kindahls" Number="270"/>
+        <Couple Name="Clara Källgren" Seq="21" License="" Club="HDL" Number="271"/>
+        <Couple Name="Nellie Kälvehed" Seq="22" License="" Club="NDC" Number="272"/>
+        <Couple Name="Indra Friskytt" Seq="23" License="" Club="DCSW" Number="273"/>
+        <Couple Name="Josefin Albinsson" Seq="24" License="" Club="Kindahls" Number="274"/>
+        <Couple Name="Elin Busk" Seq="25" License="" Club="Team DANSA!" Number="275"/>
+        <Couple Name="Zassa Gratschew" Seq="26" License="" Club="Sinclairs" Number="276"/>
+        <Couple Name="Stella Sjödin" Seq="27" License="" Club="Wilson" Number="277"/>
+        <Couple Name="Erika Eklund" Seq="28" License="" Club="DTLH/DV" Number="278"/>
+        <Couple Name="Maja Hedebrant" Seq="29" License="" Club="Uddans" Number="279"/>
+        <Couple Name="Elma Nyström" Seq="30" License="" Club="WAD/VDC" Number="280"/>
+        <Couple Name="Emilia Lind" Seq="31" License="" Club="Team DANSA!" Number="281"/>
+        <Couple Name="Jade Kärling" Seq="32" License="" Club="KSD" Number="282"/>
+        <Couple Name="Esther Wallmo" Seq="33" License="" Club="Uddans" Number="283"/>
+        <Couple Name="Sofija Laurencikaite" Seq="34" License="" Club="Kindahls" Number="284"/>
+        <Couple Name="Amanda Karolak" Seq="35" License="" Club="Kindahls" Number="285"/>
+        <Couple Name="Johanna Ellenius" Seq="36" License="" Club="DCSW" Number="286"/>
+        <Couple Name="Josefine Johnsson" Seq="37" License="" Club="Let's Move" Number="287"/>
+        <Couple Name="Filippa Ahlberg" Seq="38" License="" Club="Kindahls" Number="288"/>
+        <Couple Name="Ella Eriksson" Seq="39" License="" Club="DH" Number="289"/>
+        <Couple Name="Tina Karlsson" Seq="40" License="" Club="Kindahls" Number="290"/>
+        <Couple Name="Emmy Olander" Seq="41" License="" Club="NDC" Number="291"/>
+        <Couple Name="Hanna Wesström" Seq="42" License="" Club="RGDT" Number="292"/>
+        <Couple Name="Frida Söderman" Seq="43" License="" Club="Uddans" Number="293"/>
+        <Couple Name="Ida Cederqvist" Seq="44" License="" Club="HDL" Number=""/>
+        <Couple Name="Kimberly Fält" Seq="45" License="" Club="KSD" Number=""/>
+      </StartList>
+    </Class>
+    <Class Name="Disco Singel Star J2" Seq="13">
+      <StartList Qty="49">
+        <Couple Name="Emelie Storgärd" Seq="0" License="" Club="Sinclairs" Number="300"/>
+        <Couple Name="Linnéa Kaarre" Seq="1" License="" Club="SDC" Number="301"/>
+        <Couple Name="Rebecka Danielson" Seq="2" License="" Club="ND/ÖDT" Number="302"/>
+        <Couple Name="Clara Henning" Seq="3" License="" Club="Sinclairs" Number="303"/>
+        <Couple Name="Ebba Hellsten" Seq="4" License="" Club="ND/ÖDT" Number="304"/>
+        <Couple Name="Tilda Svensson" Seq="5" License="" Club="Wilson" Number="305"/>
+        <Couple Name="Izabell Wikström" Seq="6" License="" Club="RGDT" Number="306"/>
+        <Couple Name="Emma Carling" Seq="7" License="" Club="Kindahls" Number="307"/>
+        <Couple Name="Emma Ottosson" Seq="8" License="" Club="DWSUN" Number="308"/>
+        <Couple Name="Johanna Hartman" Seq="9" License="" Club="Kindahls" Number="309"/>
+        <Couple Name="Emma Sparrdal" Seq="10" License="" Club="Kindahls" Number="310"/>
+        <Couple Name="Maja Isaksson Otterstedt" Seq="11" License="" Club="LDC" Number="311"/>
+        <Couple Name="Felicia Kastner" Seq="12" License="" Club="RGDT" Number="312"/>
+        <Couple Name="Hanna Stellin" Seq="13" License="" Club="KSD" Number="314"/>
+        <Couple Name="Tilda Håkansson" Seq="14" License="" Club="DSH" Number="315"/>
+        <Couple Name="Maja Björnemalm" Seq="15" License="" Club="Laising" Number="316"/>
+        <Couple Name="Alice Sigvant" Seq="16" License="" Club="Sinclairs" Number="317"/>
+        <Couple Name="Ida Telldén" Seq="17" License="" Club="WAD/VDC" Number="318"/>
+        <Couple Name="Emmy Kujanpää" Seq="18" License="" Club="RGDT" Number="320"/>
+        <Couple Name="Mimmi Kedjeås" Seq="19" License="" Club="WAD/VDC" Number="321"/>
+        <Couple Name="Alicia Boudville" Seq="20" License="" Club="ND/ÖDT" Number="322"/>
+        <Couple Name="Ebba Johansson Qvick" Seq="21" License="" Club="DVT" Number="323"/>
+        <Couple Name="Jenny Thorell Paulsson" Seq="22" License="" Club="DIK" Number="324"/>
+        <Couple Name="Julia Christensson" Seq="23" License="" Club="Sinclairs" Number="325"/>
+        <Couple Name="Moa Almér" Seq="24" License="" Club="WAD/VDC" Number="326"/>
+        <Couple Name="Thea Svensson" Seq="25" License="" Club="HDL" Number="327"/>
+        <Couple Name="Ellie Prytz" Seq="26" License="" Club="HDL" Number="328"/>
+        <Couple Name="Hanna Söderström" Seq="27" License="" Club="WAD/VDC" Number="329"/>
+        <Couple Name="Pauline Strandberg" Seq="28" License="" Club="DCSW" Number="330"/>
+        <Couple Name="Nyukou Njie" Seq="29" License="" Club="RGDT" Number="331"/>
+        <Couple Name="Emma Fredriksson" Seq="30" License="" Club="DVT" Number="332"/>
+        <Couple Name="Moa Johansson" Seq="31" License="" Club="RGDT" Number="333"/>
+        <Couple Name="Melissa Huzejrovic Ryttar" Seq="32" License="" Club="Team DANSA!" Number="334"/>
+        <Couple Name="Anna Allenmark" Seq="33" License="" Club="Kindahls" Number="335"/>
+        <Couple Name="Linnea Sandberg" Seq="34" License="" Club="Let's Move" Number="336"/>
+        <Couple Name="Emmy Rapp" Seq="35" License="" Club="ND/ÖDT" Number="337"/>
+        <Couple Name="Tora Lindbak Gissberg" Seq="36" License="" Club="Kindahls" Number="338"/>
+        <Couple Name="Louise Hammarstedt" Seq="37" License="" Club="Laising" Number="339"/>
+        <Couple Name="Filippa Köhler" Seq="38" License="" Club="Sinclairs" Number="340"/>
+        <Couple Name="Ebba Holt" Seq="39" License="" Club="FLEX" Number="341"/>
+        <Couple Name="Ronja Baranyi" Seq="40" License="" Club="DSH" Number="342"/>
+        <Couple Name="Madeleine Alberts" Seq="41" License="" Club="SDC" Number="343"/>
+        <Couple Name="Victoria Hjertberg" Seq="42" License="" Club="Laising" Number="344"/>
+        <Couple Name="Ida Stien Engvall" Seq="43" License="" Club="WAD/VDC" Number="345"/>
+        <Couple Name="Karolina Wildsjö" Seq="44" License="" Club="FLEX" Number="346"/>
+        <Couple Name="Elise Georgii" Seq="45" License="" Club="Kindahls" Number="347"/>
+        <Couple Name="Isabelle Pimenta" Seq="46" License="" Club="Kindahls" Number="348"/>
+        <Couple Name="Madeleine Eriksson" Seq="47" License="" Club="KSD" Number="349"/>
+        <Couple Name="Stina Johnsson" Seq="48" License="" Club="Let's Move" Number="350"/>
+      </StartList>
+    </Class>
+    <Class Name="Disco Singel Star U" Seq="14">
+      <StartList Qty="37">
+        <Couple Name="Hanna Östberg" Seq="0" License="" Club="Uddans" Number="360"/>
+        <Couple Name="Clara Anzalone" Seq="1" License="" Club="Laising" Number="361"/>
+        <Couple Name="Ellen Ivarsson" Seq="2" License="" Club="DSH" Number="362"/>
+        <Couple Name="Emelie Dellby Svensk" Seq="3" License="" Club="SDC" Number="363"/>
+        <Couple Name="Victoria Cramnert" Seq="4" License="" Club="SDC" Number="364"/>
+        <Couple Name="Amanda Wall" Seq="5" License="" Club="Uddans" Number="365"/>
+        <Couple Name="Mathilda Håkansson" Seq="6" License="" Club="DH" Number="366"/>
+        <Couple Name="Wilma Junger" Seq="7" License="" Club="RGDT" Number="367"/>
+        <Couple Name="Sofia Dahl" Seq="8" License="" Club="RGDT" Number="368"/>
+        <Couple Name="Linnéa Eneberg" Seq="9" License="" Club="Sinclairs" Number="369"/>
+        <Couple Name="Wilma Björklund" Seq="10" License="" Club="DSH" Number="370"/>
+        <Couple Name="Oline Lingvall" Seq="11" License="" Club="BF" Number="371"/>
+        <Couple Name="Nathalie Alfljung" Seq="12" License="" Club="Sinclairs" Number="372"/>
+        <Couple Name="Elsa Lönn" Seq="13" License="" Club="Let's Move Nkpg" Number="373"/>
+        <Couple Name="Mariam Gewriye" Seq="14" License="" Club="Let's Move Nkpg" Number="374"/>
+        <Couple Name="Saga Ahlberg" Seq="15" License="" Club="SDC" Number="375"/>
+        <Couple Name="Emma Hultmark" Seq="16" License="" Club="RGDT" Number="376"/>
+        <Couple Name="Mikaela Elf Söderqvist" Seq="17" License="" Club="Let's Move" Number="377"/>
+        <Couple Name="Sara Jonsson" Seq="18" License="" Club="RGDT" Number="378"/>
+        <Couple Name="Rebecka Rasmussen" Seq="19" License="" Club="WAD/VDC" Number="379"/>
+        <Couple Name="Felizia Olsson" Seq="20" License="" Club="Wilson" Number="380"/>
+        <Couple Name="Isabelle Persson" Seq="21" License="" Club="SDC" Number="381"/>
+        <Couple Name="Sanna Bergqvist" Seq="22" License="" Club="Ackes" Number="382"/>
+        <Couple Name="Viktoria Pettersson" Seq="23" License="" Club="WAD/VDC" Number="383"/>
+        <Couple Name="Amanda Fällman" Seq="24" License="" Club="Laising" Number="384"/>
+        <Couple Name="Jenny Eliasson" Seq="25" License="" Club="DH" Number="385"/>
+        <Couple Name="Alexandra Partelow" Seq="26" License="" Club="Team DANSA!" Number="386"/>
+        <Couple Name="Elahe Ghasemi" Seq="27" License="" Club="KSD" Number="387"/>
+        <Couple Name="Alicia Carlsson" Seq="28" License="" Club="MD" Number="388"/>
+        <Couple Name="Lovisa Andersson" Seq="29" License="" Club="Let's Move" Number="390"/>
+        <Couple Name="Frida Andersson" Seq="30" License="" Club="KSD" Number="391"/>
+        <Couple Name="Mathilda Edman" Seq="31" License="" Club="Kindahls" Number="392"/>
+        <Couple Name="Robyn Johansson" Seq="32" License="" Club="DCL" Number="393"/>
+        <Couple Name="Olivia Bergman" Seq="33" License="" Club="LDC" Number="394"/>
+        <Couple Name="Linn Ihrefjord" Seq="34" License="" Club="FLEX" Number="395"/>
+        <Couple Name="Sofia Gunnarsson" Seq="35" License="" Club="DTLH/DV" Number="396"/>
+        <Couple Name="Olivia Sjödin" Seq="36" License="" Club="Wilson" Number="397"/>
+      </StartList>
+    </Class>
+    <Class Name="Disco Singel Star V" Seq="15">
+      <StartList Qty="11">
+        <Couple Name="Ellika Gustafsson" Seq="0" License="" Club="LDC" Number="400"/>
+        <Couple Name="Jennipher Olsson" Seq="1" License="" Club="LDC" Number="401"/>
+        <Couple Name="Christoffer Eriksson" Seq="2" License="" Club="SDC" Number="402"/>
+        <Couple Name="Elin Spångberg" Seq="3" License="" Club="Kindahls" Number="403"/>
+        <Couple Name="Victoria Lindell" Seq="4" License="" Club="Wilson" Number="404"/>
+        <Couple Name="Vendela Frejd Östman" Seq="5" License="" Club="Kindahls" Number="406"/>
+        <Couple Name="Anna Fredriksson" Seq="6" License="" Club="NDC" Number="407"/>
+        <Couple Name="Sandra Carlqvist" Seq="7" License="" Club="SDC" Number="408"/>
+        <Couple Name="Emma Skoog" Seq="8" License="" Club="Let's Move" Number="409"/>
+        <Couple Name="Emily Rindberg" Seq="9" License="" Club="RGDT" Number="410"/>
+        <Couple Name="Clara Pethö" Seq="10" License="" Club="WAD/VDC" Number=""/>
+      </StartList>
+    </Class>
+    <Class Name="Disco Singel SuperStar B" Seq="16">
+      <StartList Qty="4">
+        <Couple Name="Lova Francisco" Seq="0" License="" Club="DCSW" Number="420"/>
+        <Couple Name="Amie Vestholm" Seq="1" License="" Club="WAD/VDC" Number="421"/>
+        <Couple Name="Fanny Sjögren" Seq="2" License="" Club="NDC" Number="422"/>
+        <Couple Name="Nora Andersson" Seq="3" License="" Club="WAD/VDC" Number="423"/>
+      </StartList>
+    </Class>
+    <Class Name="Disco Singel SuperStar J" Seq="17">
+      <StartList Qty="56">
+        <Couple Name="Mikaela Henning" Seq="0" License="" Club="Sinclairs" Number="430"/>
+        <Couple Name="Beatrice Olsson" Seq="1" License="" Club="RGDT" Number="431"/>
+        <Couple Name="Carolina Andersson" Seq="2" License="" Club="KSD" Number="432"/>
+        <Couple Name="Nelly Norbäck" Seq="3" License="" Club="Let's Move" Number="433"/>
+        <Couple Name="Lisa Häger" Seq="4" License="" Club="KSD" Number="434"/>
+        <Couple Name="Liv Freij" Seq="5" License="" Club="DVT" Number="435"/>
+        <Couple Name="Sofie Sandberg" Seq="6" License="" Club="Kindahls" Number="436"/>
+        <Couple Name="Wilma Granander-Schwartz" Seq="7" License="" Club="DCSW" Number="437"/>
+        <Couple Name="Sara Johansson" Seq="8" License="" Club="WAD/VDC" Number="438"/>
+        <Couple Name="Alicia Sjöö Ekelöf" Seq="9" License="" Club="Kindahls" Number="439"/>
+        <Couple Name="Emma Nykvist" Seq="10" License="" Club="DCSW" Number="440"/>
+        <Couple Name="Julia Wikgren" Seq="11" License="" Club="WAD/VDC" Number="441"/>
+        <Couple Name="Mikaela Brännman" Seq="12" License="" Club="Kindahls" Number="442"/>
+        <Couple Name="Nathalie Andersson" Seq="13" License="" Club="KSD" Number="313"/>
+        <Couple Name="Emelie Medailleu" Seq="14" License="" Club="Sinclairs" Number="443"/>
+        <Couple Name="Maja Lundström" Seq="15" License="" Club="DTLH/DV" Number="444"/>
+        <Couple Name="Anna Lundgren" Seq="16" License="" Club="DIK" Number="445"/>
+        <Couple Name="Cajsa Carlsson" Seq="17" License="" Club="NDC" Number="446"/>
+        <Couple Name="Emilia Stolt" Seq="18" License="" Club="DH" Number="447"/>
+        <Couple Name="Elvira Larsson" Seq="19" License="" Club="DSH" Number="448"/>
+        <Couple Name="Kerstin Victorin" Seq="20" License="" Club="Laising" Number="449"/>
+        <Couple Name="Samuel Lejon" Seq="21" License="" Club="WAD/VDC" Number="451"/>
+        <Couple Name="Agnes Thornberg" Seq="22" License="" Club="Wilson" Number="452"/>
+        <Couple Name="Denise Lemoine" Seq="23" License="" Club="Uddans" Number="453"/>
+        <Couple Name="Paulina Rosenkvist" Seq="24" License="" Club="Sinclairs" Number="454"/>
+        <Couple Name="Kornelia Bryngelsson" Seq="25" License="" Club="FLEX" Number="455"/>
+        <Couple Name="Filippa Haglund" Seq="26" License="" Club="Kindahls" Number="456"/>
+        <Couple Name="Felicia Jangholm" Seq="27" License="" Club="Kindahls" Number="457"/>
+        <Couple Name="Amelia Andersson" Seq="28" License="" Club="DCSW" Number="458"/>
+        <Couple Name="Emma Berg" Seq="29" License="" Club="WAD/VDC" Number="459"/>
+        <Couple Name="Minna Sundén" Seq="30" License="" Club="FLEX" Number="460"/>
+        <Couple Name="Julia Ivarsson" Seq="31" License="" Club="DSH" Number="461"/>
+        <Couple Name="Ella Thörn Larsson" Seq="32" License="" Club="HDL" Number="462"/>
+        <Couple Name="Olivia Kungsman" Seq="33" License="" Club="DTLH/DV" Number="463"/>
+        <Couple Name="Emilia Jansson" Seq="34" License="" Club="Uddans" Number="464"/>
+        <Couple Name="Kajsa Hjertberg" Seq="35" License="" Club="Kindahls" Number="465"/>
+        <Couple Name="Minna Karlsson" Seq="36" License="" Club="DIK" Number="466"/>
+        <Couple Name="Kajsa Karlsson" Seq="37" License="" Club="ND/ÖDT" Number="467"/>
+        <Couple Name="Bianca Rasic" Seq="38" License="" Club="HDL" Number="468"/>
+        <Couple Name="Emma Fischerström" Seq="39" License="" Club="Laising" Number="469"/>
+        <Couple Name="Stefani Lindqvist" Seq="40" License="" Club="WAD/VDC" Number="470"/>
+        <Couple Name="Emmy Florinus" Seq="41" License="" Club="WAD/VDC" Number="471"/>
+        <Couple Name="Alva Andersson" Seq="42" License="" Club="DCSW" Number="472"/>
+        <Couple Name="Felicia Dackell" Seq="43" License="" Club="Uddans" Number="473"/>
+        <Couple Name="Towa Adolfsson" Seq="44" License="" Club="HDL" Number="474"/>
+        <Couple Name="Tilde von Troil" Seq="45" License="" Club="FLEX" Number="475"/>
+        <Couple Name="Simon Gustafsson Svensson" Seq="46" License="" Club="DH" Number="476"/>
+        <Couple Name="Lovisa Persson" Seq="47" License="" Club="WAD/VDC" Number="477"/>
+        <Couple Name="Emmy Norström" Seq="48" License="" Club="Laising" Number="478"/>
+        <Couple Name="Tilda Brodin" Seq="49" License="" Club="WAD/VDC" Number="479"/>
+        <Couple Name="Emma Forsström Salminen" Seq="50" License="" Club="DTLH/DV" Number="480"/>
+        <Couple Name="Tilda Kraaij" Seq="51" License="" Club="DCSW" Number="481"/>
+        <Couple Name="Alva Gustafsson" Seq="52" License="" Club="KSD" Number="482"/>
+        <Couple Name="Leonard Lundback" Seq="53" License="" Club="RGDT" Number="483"/>
+        <Couple Name="Moa Seim-Andersson" Seq="54" License="" Club="HDL" Number="484"/>
+        <Couple Name="Celine Sagmeister" Seq="55" License="" Club="FLEX" Number="485"/>
+      </StartList>
+    </Class>
+    <Class Name="Disco Singel SuperStar V" Seq="18">
+      <StartList Qty="76">
+        <Couple Name="Erika Östlund" Seq="0" License="" Club="KSD" Number="490"/>
+        <Couple Name="Frida Eriksson" Seq="1" License="" Club="FLEX" Number="491"/>
+        <Couple Name="Ida Johansson" Seq="2" License="" Club="DCSW" Number="492"/>
+        <Couple Name="Jonas Holmqvist" Seq="3" License="" Club="Edge Uppsala" Number="493"/>
+        <Couple Name="Elin Antonsson" Seq="4" License="" Club="DCL" Number="494"/>
+        <Couple Name="Moa Ikonen" Seq="5" License="" Club="DH" Number="405"/>
+        <Couple Name="Linnea Ivarsson" Seq="6" License="" Club="DSH" Number="495"/>
+        <Couple Name="Emma Tönnberg" Seq="7" License="" Club="DVT" Number="496"/>
+        <Couple Name="Vendela Bergkvist" Seq="8" License="" Club="RGDT" Number="497"/>
+        <Couple Name="Michaela Mittag Rytkönen" Seq="9" License="" Club="FLEX" Number="498"/>
+        <Couple Name="Julia Lindvall" Seq="10" License="" Club="Dawes" Number="499"/>
+        <Couple Name="Fanny Almén" Seq="11" License="" Club="ND/ÖDT" Number="500"/>
+        <Couple Name="Clara Leonardsson" Seq="12" License="" Club="DTLH/DV" Number="501"/>
+        <Couple Name="Erika Holm" Seq="13" License="" Club="SDC" Number="502"/>
+        <Couple Name="Rebecka Rundkvist" Seq="14" License="" Club="HDL" Number="503"/>
+        <Couple Name="Amanda Meyer" Seq="15" License="" Club="Edge Uppsala" Number="504"/>
+        <Couple Name="Jennifer Baranyi" Seq="16" License="" Club="DSH" Number="505"/>
+        <Couple Name="Veronica Mårtensson" Seq="17" License="" Club="Dancehall" Number="506"/>
+        <Couple Name="Emil Ivarsson" Seq="18" License="" Club="DSH" Number="507"/>
+        <Couple Name="Olivia Holm" Seq="19" License="" Club="FLEX" Number="508"/>
+        <Couple Name="Alice Andersson" Seq="20" License="" Club="DH" Number="509"/>
+        <Couple Name="Lisa Norrby" Seq="21" License="" Club="SDC" Number="510"/>
+        <Couple Name="Sofia Wadell" Seq="22" License="" Club="RGDT" Number="511"/>
+        <Couple Name="Vilma Simonsson Köster" Seq="23" License="" Club="Let's Move" Number="512"/>
+        <Couple Name="Emma Algbo" Seq="24" License="" Club="SDC" Number="513"/>
+        <Couple Name="Linnea Sundling" Seq="25" License="" Club="Uddans" Number="514"/>
+        <Couple Name="Moa Alm" Seq="26" License="" Club="RGDT" Number="515"/>
+        <Couple Name="Ida Johnsson" Seq="27" License="" Club="Let's Move" Number="516"/>
+        <Couple Name="Emma Sandström" Seq="28" License="" Club="Sinclairs" Number="517"/>
+        <Couple Name="Lovina Dolk" Seq="29" License="" Club="LDC" Number="518"/>
+        <Couple Name="Sofie Aktner" Seq="30" License="" Club="ND/ÖDT" Number="519"/>
+        <Couple Name="Ebba Rådmark" Seq="31" License="" Club="HDL" Number="520"/>
+        <Couple Name="Josefine Johansson" Seq="32" License="" Club="Laising" Number="521"/>
+        <Couple Name="Ebba Carolusson Ahlin" Seq="33" License="" Club="FLEX" Number="522"/>
+        <Couple Name="Hanna Brandén" Seq="34" License="" Club="Dawes" Number="523"/>
+        <Couple Name="Felicia Lejdin" Seq="35" License="" Club="DTLH/DV" Number="524"/>
+        <Couple Name="Ellinor Berglund Lindholm" Seq="36" License="" Club="Kindahls" Number="525"/>
+        <Couple Name="Fannie Waern" Seq="37" License="" Club="SDC" Number="526"/>
+        <Couple Name="Michelle Roswall" Seq="38" License="" Club="Wilson" Number="527"/>
+        <Couple Name="Lovisa Eriksson" Seq="39" License="" Club="WAD/VDC" Number="528"/>
+        <Couple Name="Hannah Björkman" Seq="40" License="" Club="Laising" Number="529"/>
+        <Couple Name="Karin Victorin" Seq="41" License="" Club="SDC" Number="530"/>
+        <Couple Name="Sarah Maiorana" Seq="42" License="" Club="FLEX" Number="531"/>
+        <Couple Name="Jennifer Nilsson" Seq="43" License="" Club="DIK" Number="532"/>
+        <Couple Name="Amanda Jensen" Seq="44" License="" Club="Let's Move" Number="533"/>
+        <Couple Name="Mennie Eriksson" Seq="45" License="" Club="DH" Number="534"/>
+        <Couple Name="Astrid Lidar" Seq="46" License="" Club="Let's Move" Number="535"/>
+        <Couple Name="Hilda Mikaelsson" Seq="47" License="" Club="Kindahls" Number="536"/>
+        <Couple Name="Matilda Södergren" Seq="48" License="" Club="RGDT" Number="537"/>
+        <Couple Name="Sophia Maiorana" Seq="49" License="" Club="FLEX" Number="538"/>
+        <Couple Name="Helena Norman" Seq="50" License="" Club="Ackes" Number="539"/>
+        <Couple Name="Linnéa Sjöström" Seq="51" License="" Club="DIK" Number="540"/>
+        <Couple Name="Angelina Engström Silva" Seq="52" License="" Club="Edge Uppsala" Number="542"/>
+        <Couple Name="Lovisa Odén" Seq="53" License="" Club="WAD/VDC" Number="543"/>
+        <Couple Name="Miranda Helgesson" Seq="54" License="" Club="Wilson" Number="544"/>
+        <Couple Name="Elina Fitinghoff Nordin" Seq="55" License="" Club="DCL" Number="545"/>
+        <Couple Name="Victoria Karlsson" Seq="56" License="" Club="WAD/VDC" Number="546"/>
+        <Couple Name="Wilma Roos" Seq="57" License="" Club="Let's Move" Number="547"/>
+        <Couple Name="Evelina Lönngren" Seq="58" License="" Club="DIK" Number="548"/>
+        <Couple Name="Amanda Stööp" Seq="59" License="" Club="Uddans" Number="550"/>
+        <Couple Name="Josefine Skarpnes" Seq="60" License="" Club="Sinclairs" Number="551"/>
+        <Couple Name="Linnéa Söderkvist" Seq="61" License="" Club="BF" Number="552"/>
+        <Couple Name="Jennifer Nilsson" Seq="62" License="" Club="Wilson" Number="553"/>
+        <Couple Name="Hanna Markgren" Seq="63" License="" Club="KSD" Number="554"/>
+        <Couple Name="Emma Olsson" Seq="64" License="" Club="ND/ÖDT" Number="555"/>
+        <Couple Name="Frida Töndel" Seq="65" License="" Club="KSD" Number="556"/>
+        <Couple Name="Maria Elmerfeldt" Seq="66" License="" Club="WAD/VDC" Number="557"/>
+        <Couple Name="Jazmine Olsson" Seq="67" License="" Club="Wilson" Number="558"/>
+        <Couple Name="Fanny Kivistö" Seq="68" License="" Club="Let's Move" Number="559"/>
+        <Couple Name="Daniella Westerdahl" Seq="69" License="" Club="DCL" Number="560"/>
+        <Couple Name="Malin Sigling" Seq="70" License="" Club="FLEX" Number="561"/>
+        <Couple Name="Felicia Jansson" Seq="71" License="" Club="WAD/VDC" Number="562"/>
+        <Couple Name="Emelie Farkhooi" Seq="72" License="" Club="WAD/VDC" Number="563"/>
+        <Couple Name="Emma Johansson" Seq="73" License="" Club="Uddans" Number="564"/>
+        <Couple Name="Alice Berggren" Seq="74" License="" Club="Sinclairs" Number="565"/>
+        <Couple Name="Mathilda Jensen" Seq="75" License="" Club="Let's Move" Number="566"/>
+      </StartList>
+    </Class>
+    <Class Name="Disco Singel Champion J Fl" Seq="19">
+      <StartList Qty="12">
+        <Couple Name="Olivia Kartal" Seq="0" License="" Club="WAD/VDC" Number="570"/>
+        <Couple Name="Moa Andersson" Seq="1" License="" Club="DCSW" Number="571"/>
+        <Couple Name="Jennifer Wallén" Seq="2" License="" Club="FLEX" Number="572"/>
+        <Couple Name="Thilda Holm" Seq="3" License="" Club="FLEX" Number="573"/>
+        <Couple Name="Stina Hölscher" Seq="4" License="" Club="HDL" Number="574"/>
+        <Couple Name="Maja Tegesjö" Seq="5" License="" Club="Kindahls" Number="575"/>
+        <Couple Name="Miranda Strandberg" Seq="6" License="" Club="WAD/VDC" Number="576"/>
+        <Couple Name="Josefine Karlsson" Seq="7" License="" Club="DCSW" Number="577"/>
+        <Couple Name="Ellen Anvemyr" Seq="8" License="" Club="WAD/VDC" Number="578"/>
+        <Couple Name="Linn Andersson" Seq="9" License="" Club="WAD/VDC" Number="579"/>
+        <Couple Name="Linn Skoglund" Seq="10" License="" Club="WAD/VDC" Number="580"/>
+        <Couple Name="Tilda Axelsson" Seq="11" License="" Club="KSD" Number="450"/>
+      </StartList>
+    </Class>
+    <Class Name="Disco Singel Champion V Fl" Seq="20">
+      <StartList Qty="31">
+        <Couple Name="Rebecca Hertin" Seq="0" License="" Club="KSD" Number="590"/>
+        <Couple Name="Johanna Kockgård" Seq="1" License="" Club="DCSW" Number="591"/>
+        <Couple Name="Lovisa Bolin" Seq="2" License="" Club="Wilson" Number="592"/>
+        <Couple Name="Jennie Hedman" Seq="3" License="" Club="KSD" Number="593"/>
+        <Couple Name="Amanda Wilson" Seq="4" License="" Club="Sinclairs" Number="594"/>
+        <Couple Name="Gabriella Fält" Seq="5" License="" Club="KSD" Number="595"/>
+        <Couple Name="Ellen Feldt" Seq="6" License="" Club="Laising" Number="596"/>
+        <Couple Name="Louise Holm" Seq="7" License="" Club="SDC" Number="597"/>
+        <Couple Name="My Skoog" Seq="8" License="" Club="DH" Number="598"/>
+        <Couple Name="Vilma Andersson" Seq="9" License="" Club="Let's Move" Number="599"/>
+        <Couple Name="Lova Calmius" Seq="10" License="" Club="DIK" Number="600"/>
+        <Couple Name="Elin Hjortsberg" Seq="11" License="" Club="DCSW" Number="601"/>
+        <Couple Name="Sara Larsson" Seq="12" License="" Club="Uddans" Number="602"/>
+        <Couple Name="Emmelie Nordmark Lungberg" Seq="13" License="" Club="Sinclairs" Number="603"/>
+        <Couple Name="Cathrine Gennert" Seq="14" License="" Club="Sinclairs" Number="604"/>
+        <Couple Name="Amanda Johansson" Seq="15" License="" Club="Uddans" Number="605"/>
+        <Couple Name="Erica Brismo Ploetz" Seq="16" License="" Club="FLEX" Number="606"/>
+        <Couple Name="Elin Urbancic" Seq="17" License="" Club="DIK" Number="607"/>
+        <Couple Name="Josefine Gennert Jakobsson" Seq="18" License="" Club="Sinclairs" Number="608"/>
+        <Couple Name="Cassandra Arnmark" Seq="19" License="" Club="WAD/VDC" Number="609"/>
+        <Couple Name="Elisabet Pasztor" Seq="20" License="" Club="WAD/VDC" Number="610"/>
+        <Couple Name="Elvira Säborg" Seq="21" License="" Club="KSD" Number="611"/>
+        <Couple Name="Elin Elgh" Seq="22" License="" Club="DCSW" Number="612"/>
+        <Couple Name="Clara Lindblom" Seq="23" License="" Club="DCSW" Number="613"/>
+        <Couple Name="Amanda Holgersson" Seq="24" License="" Club="HDL" Number="614"/>
+        <Couple Name="Antonia Wannerström" Seq="25" License="" Club="SDC" Number="615"/>
+        <Couple Name="Joanna Teiffel" Seq="26" License="" Club="Sinclairs" Number="616"/>
+        <Couple Name="Desiré Haettman" Seq="27" License="" Club="DTLH/DV" Number="617"/>
+        <Couple Name="Elvira Martinsson Björk" Seq="28" License="" Club="DCSW" Number="618"/>
+        <Couple Name="Amanda Nilsson" Seq="29" License="" Club="DIK" Number="619"/>
+        <Couple Name="Amanda Karlsson" Seq="30" License="" Club="DCSW" Number="620"/>
+      </StartList>
+    </Class>
+    <Class Name="Disco Singel Champion V Po" Seq="21">
+      <StartList Qty="3">
+        <Couple Name="Simon Säborg" Seq="0" License="" Club="KSD" Number="630"/>
+        <Couple Name="Mattias Disman" Seq="1" License="" Club="Let's Move" Number="631"/>
+        <Couple Name="Jens Peter Kjärsgård" Seq="2" License="" Club="DH" Number="632"/>
+      </StartList>
+    </Class>
+    <Class Name="Disco Grupp A-klass B" Seq="22">
+      <StartList Qty="2">
+        <Couple Name="SUPERKiDZ" Seq="0" License="" Club="WAD/VDC" Number="640"/>
+        <Couple Name="CONFiDENCE" Seq="1" License="" Club="WAD/VDC" Number="641"/>
+      </StartList>
+    </Class>
+    <Class Name="Disco Grupp A-klass J" Seq="23">
+      <StartList Qty="17">
+        <Couple Name="ANTiDOTE" Seq="0" License="" Club="WAD/VDC" Number="650"/>
+        <Couple Name="MIX" Seq="1" License="" Club="Kindahls" Number="651"/>
+        <Couple Name="viva la disco" Seq="2" License="" Club="Sinclairs" Number="652"/>
+        <Couple Name="In10sity" Seq="3" License="" Club="Laising" Number="653"/>
+        <Couple Name="JUST DO IT" Seq="4" License="" Club="DSH" Number="654"/>
+        <Couple Name="Zenzation" Seq="5" License="" Club="DCSW" Number="655"/>
+        <Couple Name="Flexifuel" Seq="6" License="" Club="FLEX" Number="656"/>
+        <Couple Name="Fun" Seq="7" License="" Club="Kindahls" Number="657"/>
+        <Couple Name="Delight" Seq="8" License="" Club="FLEX" Number="658"/>
+        <Couple Name="SmallRockets" Seq="9" License="" Club="FLEX" Number="659"/>
+        <Couple Name="HURRICANE" Seq="10" License="" Club="ND/ÖDT" Number="660"/>
+        <Couple Name="Starlight" Seq="11" License="" Club="DIK" Number="661"/>
+        <Couple Name="GRENADE" Seq="12" License="" Club="ND/ÖDT" Number="662"/>
+        <Couple Name="Freeze D" Seq="13" License="" Club="BF" Number="663"/>
+        <Couple Name="ViCTORY" Seq="14" License="" Club="WAD/VDC" Number="664"/>
+        <Couple Name="Highlight" Seq="15" License="" Club="KSD" Number="665"/>
+        <Couple Name="reflection" Seq="16" License="" Club="KSD" Number="666"/>
+      </StartList>
+    </Class>
+    <Class Name="Disco Grupp A-klass V" Seq="24">
+      <StartList Qty="13">
+        <Couple Name="ViPEROUS" Seq="0" License="" Club="WAD/VDC" Number="670"/>
+        <Couple Name="EBF Dance crew" Seq="1" License="" Club="RGDT" Number="671"/>
+        <Couple Name="High Score" Seq="2" License="" Club="DTLH/DV" Number="672"/>
+        <Couple Name="Let´s Move Snap!´rz" Seq="3" License="" Club="Let's Move" Number="673"/>
+        <Couple Name="Maniqure" Seq="4" License="" Club="KSD" Number="674"/>
+        <Couple Name="JetJam" Seq="5" License="" Club="DCSW" Number="675"/>
+        <Couple Name="Celebration" Seq="6" License="" Club="DIK" Number="676"/>
+        <Couple Name="FiERCE" Seq="7" License="" Club="WAD/VDC" Number="677"/>
+        <Couple Name="FUSiON" Seq="8" License="" Club="WAD/VDC" Number="678"/>
+        <Couple Name="Discolicious" Seq="9" License="" Club="DCSW" Number="681"/>
+        <Couple Name="JOY" Seq="10" License="" Club="FLEX" Number="682"/>
+        <Couple Name="Move It" Seq="11" License="" Club="RGDT" Number="683"/>
+        <Couple Name="Undeniable" Seq="12" License="" Club="Sinclairs" Number="684"/>
+      </StartList>
+    </Class>
+    <Class Name="Disco Par Star B1 / B2 / J1" Seq="25">
+      <StartList Qty="13">
+        <Couple Name="Alva Andersson - Amelia Andersson" Seq="0" License="" Club="DCSW" Number="690"/>
+        <Couple Name="Filippa Haglund - Ina Jared" Seq="1" License="" Club="Kindahls" Number="691"/>
+        <Couple Name="Alva Danielsson - Tilda Strandberg" Seq="2" License="" Club="Uddans" Number="692"/>
+        <Couple Name="Alice Sjöström - Eleonora Robson" Seq="3" License="" Club="WAD/VDC" Number="693"/>
+        <Couple Name="Fanny Sjögren - Ida Friberg" Seq="4" License="" Club="NDC" Number="694"/>
+        <Couple Name="Moa Nehrman - Tilda Brodin" Seq="5" License="" Club="WAD/VDC" Number="695"/>
+        <Couple Name="Moa Abrahamsson - Tilde Södergren" Seq="6" License="" Club="BF" Number="696"/>
+        <Couple Name="Emmy Florinus - Julia Wikgren" Seq="7" License="" Club="WAD/VDC" Number="697"/>
+        <Couple Name="Lisa Häger - Tilda Axelsson" Seq="8" License="" Club="KSD" Number="698"/>
+        <Couple Name="Alva Gustafsson - Jade Kärling" Seq="9" License="" Club="KSD" Number="699"/>
+        <Couple Name="Amanda Karolak - Tilda Borelius" Seq="10" License="" Club="Kindahls" Number="700"/>
+        <Couple Name="Samuel Lejon - Elma Nyström" Seq="11" License="" Club="WAD/VDC" Number="701"/>
+        <Couple Name="Anna Graf - Norma Wikström" Seq="12" License="" Club="RGDT" Number="702"/>
+      </StartList>
+    </Class>
+    <Class Name="Disco Par Star J2" Seq="26">
+      <StartList Qty="23">
+        <Couple Name="Ebba Hellsten - Emmy Rapp" Seq="0" License="" Club="ND/ÖDT" Number="710"/>
+        <Couple Name="Minna Sundén - My Sundén" Seq="1" License="" Club="FLEX" Number="711"/>
+        <Couple Name="Emma Fischerström - Victoria Hjertberg" Seq="2" License="" Club="Laising" Number="712"/>
+        <Couple Name="Linn Andersson - Sara Johansson" Seq="3" License="" Club="WAD/VDC" Number="713"/>
+        <Couple Name="Felicia Jangholm - Kajsa Hjertberg" Seq="4" License="" Club="Kindahls" Number="714"/>
+        <Couple Name="Maja Lundström - Nathalie Landré" Seq="5" License="" Club="DTLH/DV" Number="715"/>
+        <Couple Name="Emelie Storgärd - Filippa Köhler" Seq="6" License="" Club="Sinclairs" Number="716"/>
+        <Couple Name="Johanna Kockgård - Pauline Strandberg" Seq="7" License="" Club="DCSW" Number="718"/>
+        <Couple Name="Ella Ström - Lina Östlund" Seq="8" License="" Club="RGDT" Number="719"/>
+        <Couple Name="Ellen Jonsson - Rebecka Danielson" Seq="9" License="" Club="ND/ÖDT" Number="720"/>
+        <Couple Name="Cajsa Johansson - Emmy Kujanpää" Seq="10" License="" Club="RGDT" Number="721"/>
+        <Couple Name="Denise Lemoine - Linnea Edvardsson" Seq="11" License="" Club="Uddans" Number="722"/>
+        <Couple Name="Josefine Karlsson - Tilda Kraaij" Seq="12" License="" Club="DCSW" Number="723"/>
+        <Couple Name="Ida Cederqvist - Towa Adolfsson" Seq="13" License="" Club="HDL" Number="724"/>
+        <Couple Name="Alicia Boudville - Kajsa Karlsson" Seq="14" License="" Club="ND/ÖDT" Number="725"/>
+        <Couple Name="Anna Allenmark - Tora Lindbak Gissberg" Seq="15" License="" Club="Kindahls" Number="726"/>
+        <Couple Name="Emelie Medailleu - Julia Christensson" Seq="16" License="" Club="Sinclairs" Number="727"/>
+        <Couple Name="Simon Gustafsson Svensson - Emma Lagerqvist" Seq="17" License="" Club="DH" Number="728"/>
+        <Couple Name="Nelly Norbäck - Stina Johnsson" Seq="18" License="" Club="Let's Move" Number="729"/>
+        <Couple Name="Alma Fredriksson - Isabelle Insulander" Seq="19" License="" Club="Laising" Number="730"/>
+        <Couple Name="Johanna Hartman - Moa Kulldin" Seq="20" License="" Club="Kindahls" Number="731"/>
+        <Couple Name="Clara Källgren - Ellie Prytz" Seq="21" License="" Club="HDL" Number="732"/>
+        <Couple Name="Ida Telldén - Irma Lindgren" Seq="22" License="" Club="WAD/VDC" Number="733"/>
+      </StartList>
+    </Class>
+    <Class Name="Disco Par Star U" Seq="27">
+      <StartList Qty="12">
+        <Couple Name="Agnes Källgren - Robyn Johansson" Seq="0" License="" Club="DCL" Number="740"/>
+        <Couple Name="Aleksandra Wojcik - Emma Karlsson" Seq="1" License="" Club="DIK" Number="742"/>
+        <Couple Name="Emma Sandström - Joanna Teiffel" Seq="2" License="" Club="Sinclairs" Number="743"/>
+        <Couple Name="Ellen Feldt - Josefine Johansson" Seq="3" License="" Club="Laising" Number="744"/>
+        <Couple Name="Agnes Thornberg - Jennifer Nilsson" Seq="4" License="" Club="Wilson" Number="745"/>
+        <Couple Name="Linda Söderberg - Linn Ihrefjord" Seq="5" License="" Club="FLEX" Number="746"/>
+        <Couple Name="Sofia Gunnarsson - Vilma Olsson" Seq="6" License="" Club="DTLH/DV" Number="747"/>
+        <Couple Name="Emelie Dellby Svensk - Fannie Waern" Seq="7" License="" Club="SDC" Number="748"/>
+        <Couple Name="Beatrice Olsson - Sara Jonsson" Seq="8" License="" Club="RGDT" Number="749"/>
+        <Couple Name="Ebba Rådmark - Moa Seim-Andersson" Seq="9" License="" Club="HDL" Number="750"/>
+        <Couple Name="Jenny Eliasson - Mathilda Håkansson" Seq="10" License="" Club="DH" Number="751"/>
+        <Couple Name="Emma Hultmark - Louise Svensson" Seq="11" License="" Club="RGDT" Number="752"/>
+      </StartList>
+    </Class>
+    <Class Name="Disco Par Star V" Seq="28">
+      <StartList Qty="7">
+        <Couple Name="Matilda Södergren - Sofia Wadell" Seq="0" License="" Club="RGDT" Number="760"/>
+        <Couple Name="Amanda Marcher - Elisabet Pasztor" Seq="1" License="" Club="WAD/VDC" Number="761"/>
+        <Couple Name="Jennipher Olsson - Lovina Dolk" Seq="2" License="" Club="LDC" Number="762"/>
+        <Couple Name="Daniella Westerdahl - Elin Antonsson" Seq="3" License="" Club="DCL" Number="764"/>
+        <Couple Name="Jonas Holmqvist - Julia Åstrand" Seq="4" License="" Club="Edge Uppsala" Number="765"/>
+        <Couple Name="Fredrika Arnér Mattsson - Vendela Frejd Östman" Seq="5" License="" Club="Kindahls" Number="766"/>
+        <Couple Name="Frida Andersson - Frida Töndel" Seq="6" License="" Club="KSD" Number="767"/>
+      </StartList>
+    </Class>
+    <Class Name="Disco Par SuperStar J" Seq="29">
+      <StartList Qty="10">
+        <Couple Name="Ellen Anvemyr - Linn Skoglund" Seq="0" License="" Club="WAD/VDC" Number="770"/>
+        <Couple Name="Alicia Sjöö Ekelöf - Emma Carling" Seq="1" License="" Club="Kindahls" Number="771"/>
+        <Couple Name="Bianca Rasic - Ella Thörn Larsson" Seq="2" License="" Club="HDL" Number="772"/>
+        <Couple Name="Emma Nykvist - Wilma Granander-Schwartz" Seq="3" License="" Club="DCSW" Number="773"/>
+        <Couple Name="Carolina Andersson - Nathalie Andersson" Seq="4" License="" Club="KSD" Number="774"/>
+        <Couple Name="Mikaela Henning - Paulina Rosenkvist" Seq="5" License="" Club="Sinclairs" Number="775"/>
+        <Couple Name="Maja Tegesjö - Sofie Sandberg" Seq="6" License="" Club="Kindahls" Number="776"/>
+        <Couple Name="Julia Ivarsson - Maja Björklund" Seq="7" License="" Club="DSH" Number="777"/>
+        <Couple Name="Christoffer Ljungdahl - Yun Bergsten" Seq="8" License="" Club="DSH" Number="778"/>
+        <Couple Name="Jennifer Wallén - Stephanie Wallén" Seq="9" License="" Club="FLEX" Number="779"/>
+      </StartList>
+    </Class>
+    <Class Name="Disco Par SuperStar V Fl-Fl" Seq="30">
+      <StartList Qty="19">
+        <Couple Name="Josefin Nilsson - Nicolina Lööf" Seq="0" License="" Club="WAD/VDC" Number="790"/>
+        <Couple Name="Evelina Kristiansson - Therése Häll" Seq="1" License="" Club="DCSW" Number="791"/>
+        <Couple Name="Hanna Brandén - Julia Lindvall" Seq="2" License="" Club="Dawes" Number="792"/>
+        <Couple Name="Elin Urbancic - Linnéa Sjöström" Seq="3" License="" Club="DIK" Number="793"/>
+        <Couple Name="Frida Eriksson - Malin Sigling" Seq="4" License="" Club="FLEX" Number="794"/>
+        <Couple Name="Erika Holm - Louise Holm" Seq="5" License="" Club="SDC" Number="795"/>
+        <Couple Name="Ida Gustavsson - Mikaela Linnerstam" Seq="6" License="" Club="DCL" Number="796"/>
+        <Couple Name="Anna Lundgren - Moa Öhman" Seq="7" License="" Club="DIK" Number="717"/>
+        <Couple Name="Lovisa Eriksson - Victoria Karlsson" Seq="8" License="" Club="WAD/VDC" Number="797"/>
+        <Couple Name="Jennifer Nilsson - Lova Calmius" Seq="9" License="" Club="DIK" Number="798"/>
+        <Couple Name="Amanda Jensen - Vilma Simonsson Köster" Seq="10" License="" Club="Let's Move" Number="799"/>
+        <Couple Name="Johanna Schiller - Madeleine Walther" Seq="11" License="" Club="WAD/VDC" Number="800"/>
+        <Couple Name="Ellen Ivarsson - Linnea Ivarsson" Seq="12" License="" Club="DSH" Number="801"/>
+        <Couple Name="Antonia Wannerström - Lisa Norrby" Seq="13" License="" Club="SDC" Number="802"/>
+        <Couple Name="Alice Andersson - My Skoog" Seq="14" License="" Club="DH" Number="803"/>
+        <Couple Name="Elvira Säborg - Gabriella Fält" Seq="15" License="" Club="KSD" Number="804"/>
+        <Couple Name="Josefine Snabb - Mikaela Brännman" Seq="16" License="" Club="Kindahls" Number="805"/>
+        <Couple Name="Evelina Lönngren - Sofia Jacobson" Seq="17" License="" Club="DIK" Number="806"/>
+        <Couple Name="Emelie Farkhooi - Lovisa Odén" Seq="18" License="" Club="WAD/VDC" Number="808"/>
+      </StartList>
+    </Class>
+    <Class Name="Disco Par SuperStar V Fl-Po" Seq="31">
+      <StartList Qty="2">
+        <Couple Name="Simon Säborg - Jennie Hedman" Seq="0" License="" Club="KSD" Number="820"/>
+        <Couple Name="Emil Ivarsson - Jennifer Baranyi" Seq="1" License="" Club="DSH" Number="821"/>
+      </StartList>
+    </Class>
+    <Class Name="Disco Par Champion V Fl-Fl" Seq="32">
+      <StartList Qty="9">
+        <Couple Name="Amanda Holgersson - Rebecka Rundkvist" Seq="0" License="" Club="HDL" Number="830"/>
+        <Couple Name="Clara Lindblom - Elin Elgh" Seq="1" License="" Club="DCSW" Number="831"/>
+        <Couple Name="Amanda Wilson - Emmelie Nordmark Lungberg" Seq="2" License="" Club="Sinclairs" Number="832"/>
+        <Couple Name="Cathrine Gennert - Josefine Gennert Jakobsson" Seq="3" License="" Club="Sinclairs" Number="833"/>
+        <Couple Name="Cassandra Arnmark - Celine Östevik" Seq="4" License="" Club="WAD/VDC" Number="834"/>
+        <Couple Name="Amanda Johansson - Emma Johansson" Seq="5" License="" Club="Uddans" Number="835"/>
+        <Couple Name="Elvira Martinsson Björk - Moa Andersson" Seq="6" License="" Club="DCSW" Number="836"/>
+        <Couple Name="Erica Brismo Ploetz - Josefin Due-Boje" Seq="7" License="" Club="FLEX" Number="837"/>
+        <Couple Name="Sarah Maiorana - Sophia Maiorana" Seq="8" License="" Club="FLEX" Number="838"/>
+      </StartList>
+    </Class>
+  </ClassList>
+</DancePerfect>
