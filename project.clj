@@ -9,7 +9,8 @@
                  [http-kit "2.1.18"]
                  [org.clojure/clojurescript "0.0-2371"]
                  [org.clojure/core.async "0.1.346.0-17112a-alpha"]
-                 [reagent "0.4.3"]]
+                 [reagent "0.4.3"]
+                 [clj-time "0.8.0"]]
   
   :plugins [[lein-cljsbuild "1.0.3"]]
 
