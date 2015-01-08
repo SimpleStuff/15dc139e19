@@ -3,8 +3,8 @@
             [clj-time.coerce :as tcr]
             [clj-time.format :as tf]))
 
-(defn- read-xml [path]
-  (xml/parse (clojure.java.io/file path)))
+(defn- read-xml [file]
+  (xml/parse file))
 
 (defn- dance-perfect-xml-competitors->competitors [dp-competitors-xml]
   (mapv #(hash-map :competitor/name (get-in % [:attrs :Name])
@@ -29,6 +29,12 @@
              :CompData {:competition-data-xml node}
              nil))))
 
+(defn- create-import-info [version content status errors]
+  {:file/version version
+   :file/content content
+   :file/import-status status
+   :file/import-errors errors})
+
 (defn dance-perfect-xml->data [dp-xml]
   (let [xml-parts (build-dance-perfect-xml-parts dp-xml)
         competition-data (:competition-data-xml xml-parts)
@@ -44,11 +50,15 @@
 
 (defn import-file [path]
   {:pre [(string? path)]}
-  (let [xml-src (read-xml path)
-        dance-perfect-data (dance-perfect-xml->data xml-src)]
-    {:file/version (:dance-perfect/version dance-perfect-data)
-     :file/content (dissoc dance-perfect-data :dance-perfect/version)
-     :file/import-status :success
-     :file/import-errors []}))
+  (let [file (clojure.java.io/file path)]
+    (if (.exists file)
+      (let [xml-src (read-xml file)
+            dance-perfect-data (dance-perfect-xml->data xml-src)]
+        (create-import-info
+         (:dance-perfect/version dance-perfect-data)
+         (dissoc dance-perfect-data :dance-perfect/version)
+         :success
+         []))
+      (create-import-info "" [] :failed [:file-not-found]))))
 
 ;http://blog.fogus.me/2011/09/08/10-technical-papers-every-programmer-should-read-at-least-twice/
