@@ -48,6 +48,19 @@
       (is (= (:file/content imported-file)
              small-file-expected-content)))))
 
+(deftest import-of-path-that-do-not-exist
+  (testing "Import of an invalid file path"
+    (let [imported-file (imp/import-file "bad-path"
+                                         )]
+      (is (= (:file/version imported-file)
+             ""))
+      (is (= (:file/import-status imported-file)
+             :failed))
+      (is (= (:file/import-errors imported-file)
+             [:file-not-found]))
+      (is (= (:file/content imported-file)
+             [])))))
+
 (deftest read-dance-perfect-competition-name
   (testing "Import competition name of Dance Perfect file"
     (is (= (:competition/name (imp/dance-perfect-xml->data small-exampel-xml))
