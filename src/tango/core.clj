@@ -3,17 +3,34 @@
   (:require [compojure.core :refer :all]
             [compojure.route :as route]
             [taoensso.sente :as sente]
-            [org.httpkit.server :as http-kit-server]))
+            [org.httpkit.server :as http-kit-server]
+            [clojure.core.match :refer [match]]
+            [tango.import :as imp]
+            [ring.middleware.defaults :as defaults]))
 
 (def memory-log (atom []))
 
 (defn logf [s]
   (swap! memory-log conj s))
 
-(defn event-msg-handler* [{:as ev-msg :keys [id ?data event]}]
+(defn import-file [{:keys [content]}]
+  ;; (println "-----------------")
+  ;(println (str "import " content))
+  ;(println (str (imp/dance-perfect-xml->data (imp/read-xml-string content)))
+  ;(println "-----------------")
+  (imp/dance-perfect-xml->data (imp/read-xml-string content))
+  )
+
+(defn event-msg-handler* [{:as ev-msg :keys [id ?data event ring-req]}]
   (do
-    (logf (str "Event: " event))
-    (println event)))
+    ;(logf (str "Event: " event))
+    (println (str "Id: " (:uid (:session ring-req))))
+    ;(println (str "Request : " ring-req))
+    (match [id ?data]
+           [:file/import xml]
+           (chsk-send! (:uid (:session ring-req)) [:file/imported {:content (import-file xml)}])
+           [:client/ping p] (chsk-send! 1 [:server/pong {:content 1}])
+           :else (println (str "Event : " event)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Sente socket setup
@@ -42,17 +59,23 @@
   (apply str t))
 
 (defroutes application-routes
-  (GET "/" [] "<h1>Tango on!</h1>")
+  (GET "/" req "<h1>Tango on!</h1>")
+  (GET "/admin" req {:body (slurp (clojure.java.io/resource "public/main.html"))
+                     :session {:uid 1}
+                     :headers {"Content-Type" "text/html"}})
   ;; Sente channel routes
   (GET  "/chsk" req (ring-ajax-get-or-ws-handshake req))
   (POST "/chsk" req (ring-ajax-post                req))
   (route/resources "/") ; Static files
   (route/not-found "<h1>Page not found</h1>"))
 
+(def ring-handler
+  (defaults/wrap-defaults application-routes defaults/site-defaults))
+
 (defonce http-server (atom nil))
 
 (defn start-http-server! []
-  (reset! http-server (http-kit-server/run-server (var application-routes) {:port 1337})))
+  (reset! http-server (http-kit-server/run-server (var ring-handler) {:port 1337})))
 
 (defn stop-http-server! []
   (when-let [stop-f @http-server]

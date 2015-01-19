@@ -3,8 +3,11 @@
             [clj-time.coerce :as tcr]
             [clj-time.format :as tf]))
 
-(defn- read-xml [file]
+(defn read-xml [file]
   (xml/parse file))
+
+(defn read-xml-string [s]
+  (xml/parse (java.io.ByteArrayInputStream. (.getBytes s))))
 
 (defn- dance-perfect-xml-competitors->competitors [dp-competitors-xml]
   (mapv #(hash-map :competitor/name (get-in % [:attrs :Name])
