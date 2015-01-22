@@ -10,8 +10,15 @@
             [clojure.core.async
              :as a
              :refer [>! <! >!! <!! go chan buffer close! thread
-                     alts! alts!! timeout]]
-            ))
+                     alts! alts!! timeout go-loop]]))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Resources
+;http://www.core-async.info/tutorial/a-minimal-client
+;https://github.com/enterlab/rente
+
+; http://localhost:1337/admin
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def memory-log (atom []))
 
@@ -21,25 +28,8 @@
 (defn import-file [{:keys [content]}]
   (imp/dance-perfect-xml->data (imp/read-xml-string content)))
 
-(def message-chan (chan))
-(def message-send-chan (chan))
-
-;; (go (println (<! test-chan)))
-;; (>!! test-chan "Duudde")
-
 (def message-log (atom []))
 (def message-send-log (atom []))
-
-(go (while true
-      (let [msg (<! message-chan)]
-        (swap! message-log conj msg)
-        (message-dispatch msg message-send-chan))))
-
-(go (while true
-      (let [msg (<! message-send-chan)]
-        (swap! message-send-log conj msg)
-        (chsk-send! (:id msg) (:message msg)))))
-
 
 (defn message-dispatch [{:keys [topic payload sender]} out-chan]
   (match [topic payload]
@@ -61,22 +51,17 @@
   (def connected-uids                connected-uids) ; Watchable, read-only atom
   )
 
-(defn event-msg-handler* [{:as ev-msg :keys [id ?data event ring-req]}]
-  (do
-    ;(logf (str "Event: " event))
-    (println (str "Id: " (:uid (:session ring-req))))
-    ;(println (str "Request : " ring-req))
-    ;(message-dispatch id ?data (:uid (:session ring-req)))
-    (>!! message-chan {:topic id :payload ?data :sender (:uid (:session ring-req))})))
+(defn event-msg-handler* [messages-receive-chan {:as ev-msg :keys [id ?data event ring-req]}]
+  (>!! messages-receive-chan {:topic id :payload ?data :sender (:uid (:session ring-req))}))
 
 (defonce router_ (atom nil))
 
 (defn stop-router! []
   (when-let [stop-f @router_] (stop-f)))
 
-(defn start-router! []
+(defn start-router! [messages-receive-chan]
   (stop-router!)
-  (reset! router_ (sente/start-chsk-router! ch-chsk event-msg-handler*)))
+  (reset! router_ (sente/start-chsk-router! ch-chsk (partial event-msg-handler* messages-receive-chan))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Http routing
@@ -107,16 +92,34 @@
     (stop-f :timeout 100)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Application
+(defonce messages-receive-chan (atom nil))
+(defonce messages-send-chan (atom (chan)))
+
+(defn start-message-loop [messages-receive-chan]
+  (go-loop []
+    (when-let [msg (<! messages-receive-chan)]
+      (println (str "message " msg))
+      (swap! message-log conj msg)
+      (message-dispatch msg @messages-send-chan)
+      (recur))))
+
+(go (while true
+      (let [msg (<! @messages-send-chan)]
+        (swap! message-send-log conj msg)
+        (chsk-send! (:id msg) (:message msg)))))
 
 (defn stop! []
   (do
+    (close! @messages-receive-chan)
     (stop-http-server!)
     (stop-router!)))
 
 (defn start! []
   (do
+    (reset! messages-receive-chan (chan))
+    (start-message-loop @messages-receive-chan)
     (start-http-server!)
-    (start-router!)))
+    (start-router! @messages-receive-chan)))
 
 (defn -main
   [& args]
