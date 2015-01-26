@@ -21,16 +21,20 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (def memory-log (atom []))
+(def message-log (atom []))
+(def message-send-log (atom []))
 
 (defn logf [s]
   (swap! memory-log conj s))
 
+;; TODO - move calls to imp.
 (defn import-file [{:keys [content]}]
   (imp/dance-perfect-xml->data (imp/read-xml-string content)))
 
-(def message-log (atom []))
-(def message-send-log (atom []))
 
+;; TODO
+;;  - test
+;;  - take a map of functions to call
 (defn message-dispatch [{:keys [topic payload sender]} out-chan]
   (match [topic payload]
          [:file/import xml]
@@ -93,7 +97,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Application
 (defonce messages-receive-chan (atom nil))
-(defonce messages-send-chan (atom (chan)))
+(defonce messages-send-chan (atom nil))
 
 (defn start-message-loop [messages-receive-chan]
   (go-loop []
@@ -103,14 +107,21 @@
       (message-dispatch msg @messages-send-chan)
       (recur))))
 
-(go (while true
-      (let [msg (<! @messages-send-chan)]
-        (swap! message-send-log conj msg)
-        (chsk-send! (:id msg) (:message msg)))))
+(defn start-message-send-loop [messages-send-chan]
+  (go-loop []
+    (when-let [msg (<! messages-send-chan)]
+      (println (str "send message " msg))
+      (swap! message-send-log conj msg)
+      (chsk-send! (:id msg) (:message msg))
+      (recur))))
 
+;; TODO
+;; - component?
+;; - tests
 (defn stop! []
   (do
     (close! @messages-receive-chan)
+    (close! @messages-send-chan)
     (stop-http-server!)
     (stop-router!)))
 
@@ -118,8 +129,14 @@
   (do
     (reset! messages-receive-chan (chan))
     (start-message-loop @messages-receive-chan)
+    (reset! messages-send-chan (chan))
+    (start-message-send-loop @messages-send-chan)
     (start-http-server!)
     (start-router! @messages-receive-chan)))
+
+(defn restart! []
+  (stop!)
+  (start!))
 
 (defn -main
   [& args]
