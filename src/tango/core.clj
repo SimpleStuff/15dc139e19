@@ -28,20 +28,20 @@
   (swap! memory-log conj s))
 
 ;; TODO - move calls to imp.
-(defn import-file [{:keys [content]}]
+(defn import-file-stream [{:keys [content]}]
   (imp/dance-perfect-xml->data (imp/read-xml-string content)))
 
 
-;; TODO
-;;  - test
-;;  - take a map of functions to call
-(defn message-dispatch [{:keys [topic payload sender]} out-chan]
+(defn message-dispatch [handler-map {:keys [topic payload sender]} ]
   (match [topic payload]
          [:file/import xml]
-         (>!! out-chan {:id sender :message [:file/imported {:content (import-file xml)}]}) 
+         {:id sender :message [:file/imported {:content ((:file-import handler-map) xml)}]}
          [:client/ping p]
-         (>!! out-chan {:id sender :message [:server/pong {:content 1}]})
-         :else (println (str "Unmatched message topicz: " topic))))
+         {:id sender :message [:server/pong []]}
+         :else {:id sender :message [:client/unkown-topic {:topic topic}]}))
+
+(defn create-message-dispatch [handler-map]
+  (partial message-dispatch handler-map))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Sente socket setup
@@ -73,8 +73,7 @@
   (apply str t))
 
 (defroutes application-routes
-  (GET "/" req "<h1>Tango on!</h1>")
-  (GET "/admin" req {:body (slurp (clojure.java.io/resource "public/main.html"))
+  (GET "/" req {:body (slurp (clojure.java.io/resource "public/main.html"))
                      :session {:uid (rand-int 100)}
                      :headers {"Content-Type" "text/html"}})
   ;; Sente channel routes
@@ -99,14 +98,17 @@
 (defonce messages-receive-chan (atom nil))
 (defonce messages-send-chan (atom nil))
 
+;; test
+;; fix message dispatch call
 (defn start-message-loop [messages-receive-chan]
   (go-loop []
     (when-let [msg (<! messages-receive-chan)]
       (println (str "message " msg))
       (swap! message-log conj msg)
-      (message-dispatch msg @messages-send-chan)
+      (>! @messages-send-chan (message-dispatch msg))
       (recur))))
 
+;; test
 (defn start-message-send-loop [messages-send-chan]
   (go-loop []
     (when-let [msg (<! messages-send-chan)]
@@ -117,7 +119,6 @@
 
 ;; TODO
 ;; - component?
-;; - tests
 (defn stop! []
   (do
     (close! @messages-receive-chan)
