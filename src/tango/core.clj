@@ -16,6 +16,7 @@
 ;; Resources
 ;http://www.core-async.info/tutorial/a-minimal-client
 ;https://github.com/enterlab/rente
+;http://stuartsierra.com/2013/12/08/parallel-processing-with-core-async
 
 ; http://localhost:1337/admin
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -97,24 +98,24 @@
 ;; Application
 (defonce messages-receive-chan (atom nil))
 (defonce messages-send-chan (atom nil))
+(defonce system-ch (atom nil))
 
-;; test
-;; fix message dispatch call
-(defn start-message-loop [messages-receive-chan]
+(defn start-message-loop [dispatch-fn messages-receive-ch messages-send-ch system-ch]
   (go-loop []
-    (when-let [msg (<! messages-receive-chan)]
-      (println (str "message " msg))
-      (swap! message-log conj msg)
-      (>! @messages-send-chan (message-dispatch msg))
+    (when-let [msg (<! messages-receive-ch)]
+      (try
+        (>! messages-send-ch (dispatch-fn msg))
+        (catch Exception e
+          (>! system-ch (str "Exception message: " (.getMessage e)))))
       (recur))))
 
-;; test
-(defn start-message-send-loop [messages-send-chan]
+(defn start-message-send-loop [send-fn messages-send-chan system-ch]
   (go-loop []
     (when-let [msg (<! messages-send-chan)]
-      (println (str "send message " msg))
-      (swap! message-send-log conj msg)
-      (chsk-send! (:id msg) (:message msg))
+      (try
+        (send-fn msg)
+        (catch Exception e
+          (>! system-ch (str "Exception message: " (.getMessage e)))))
       (recur))))
 
 ;; TODO
@@ -123,17 +124,22 @@
   (do
     (close! @messages-receive-chan)
     (close! @messages-send-chan)
+    (close! @system-ch)
     (stop-http-server!)
     (stop-router!)))
 
 (defn start! []
   (do
     (reset! messages-receive-chan (chan))
-    (start-message-loop @messages-receive-chan)
     (reset! messages-send-chan (chan))
-    (start-message-send-loop @messages-send-chan)
+    (reset! system-ch (chan))
+    
     (start-http-server!)
-    (start-router! @messages-receive-chan)))
+    (start-router! @messages-receive-chan)
+    
+    (start-message-send-loop (fn [msg] (chsk-send! (:id msg) (:message msg))) @messages-send-chan @system-ch)
+    (start-message-loop (partial message-dispatch {:file-import #(import-file-stream %)})
+                        @messages-receive-chan @messages-send-chan @system-ch)))
 
 (defn restart! []
   (stop!)
