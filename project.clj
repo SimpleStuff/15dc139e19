@@ -12,7 +12,9 @@
                  [reagent "0.4.3"]
                  [clj-time "0.8.0"]
                  [org.clojure/core.match "0.3.0-alpha4"]
-                 [ring/ring-defaults "0.1.3"]]
+                 [ring/ring-defaults "0.1.3"]
+                 [com.stuartsierra/component "0.2.2"]
+                 [org.clojure/tools.namespace "0.2.9"]]
   
   :plugins [[lein-cljsbuild "1.0.3"]]
 

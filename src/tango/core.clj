@@ -7,6 +7,8 @@
             [clojure.core.match :refer [match]]
             [tango.import :as imp]
             [ring.middleware.defaults :as defaults]
+            [com.stuartsierra.component :as component]
+            [clojure.tools.namespace.repl :refer [refresh]]
             [clojure.core.async
              :as a
              :refer [>! <! >!! <!! go chan buffer close! thread
@@ -17,7 +19,7 @@
 ;http://www.core-async.info/tutorial/a-minimal-client
 ;https://github.com/enterlab/rente
 ;http://stuartsierra.com/2013/12/08/parallel-processing-with-core-async
-
+;https://github.com/danielsz/system
 ; http://localhost:1337/admin
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -46,65 +48,94 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Sente socket setup
-(let [{:keys [ch-recv send-fn ajax-post-fn ajax-get-or-ws-handshake-fn
-              connected-uids]}
-      (sente/make-channel-socket! {})]
-  (def ring-ajax-post                ajax-post-fn)
-  (def ring-ajax-get-or-ws-handshake ajax-get-or-ws-handshake-fn)
-  (def ch-chsk                       ch-recv) ; ChannelSocket's receive channel
-  (def chsk-send!                    send-fn) ; ChannelSocket's send API fn
-  (def connected-uids                connected-uids) ; Watchable, read-only atom
-  )
+
 
 (defn event-msg-handler* [messages-receive-chan {:as ev-msg :keys [id ?data event ring-req]}]
   (>!! messages-receive-chan {:topic id :payload ?data :sender (:uid (:session ring-req))}))
 
-(defonce router_ (atom nil))
+(defrecord WSRingHandlers [ajax-post-fn ajax-get-or-ws-handshake-fn])
 
-(defn stop-router! []
-  (when-let [stop-f @router_] (stop-f)))
+(defrecord WSConnection [ch-recv connected-uids send-fn ring-handlers channels]
+  component/Lifecycle
+  (start [component]
+    (if (and ch-recv connected-uids send-fn ring-handlers)
+      component
+      (let [;component (component/stop component)
+            
+            {:keys [ch-recv send-fn connected-uids
+                    ajax-post-fn ajax-get-or-ws-handshake-fn]}
+            (sente/make-channel-socket!)]
+        (println "Start WS")
+        (assoc component
+          :ch-recv ch-recv
+          :connected-uids connected-uids
+          :send-fn send-fn
+          :stop-the-thing 
+          (sente/start-chsk-router! ch-recv (partial event-msg-handler* (:messages-receive-chan channels)))
+          :ring-handlers (->WSRingHandlers ajax-post-fn ajax-get-or-ws-handshake-fn)))))
+  (stop [component]
+    (println "Stop WS")
+    ;(when ch-recv (close! ch-recv))
+    (:stop-the-thing component)
+    (assoc component
+      :ch-recv nil :connected-uids nil :send-fn nil :ring-handlers nil)))
 
-(defn start-router! [messages-receive-chan]
-  (stop-router!)
-  (reset! router_ (sente/start-chsk-router! ch-chsk (partial event-msg-handler* messages-receive-chan))))
+(defn create-ws-connection []
+  (map->WSConnection {}))
 
+(defn send-socket! [ws-connection user-id event]
+  ((:send-fn ws-connection) user-id event))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Http routing
 (defn render [t]
   (apply str t))
 
-(defroutes application-routes
-  (GET "/" req {:body (slurp (clojure.java.io/resource "public/main.html"))
+(defn handler [ajax-post-fn ajax-get-or-ws-handshake-fn]
+  (routes
+   (GET "/" req {:body (slurp (clojure.java.io/resource "public/main.html"))
                      :session {:uid (rand-int 100)}
                      :headers {"Content-Type" "text/html"}})
-  ;; Sente channel routes
-  (GET  "/chsk" req (ring-ajax-get-or-ws-handshake req))
-  (POST "/chsk" req (ring-ajax-post                req))
-  (route/resources "/") ; Static files
-  (route/not-found "<h1>Page not found</h1>"))
+   ;; Sente channel routes
+   (GET  "/chsk" req (ajax-get-or-ws-handshake-fn req))
+   (POST "/chsk" req (ajax-post-fn req))
+   (route/resources "/") ; Static files
+   (route/not-found "<h1>Page not found</h1>")))
 
-(def ring-handler
-  (defaults/wrap-defaults application-routes defaults/site-defaults))
+(defn ring-handlers [ws-connection]
+  (:ring-handlers ws-connection))
 
-(defonce http-server (atom nil))
+(defrecord HttpServer [port ws-connection server-stop]
+  component/Lifecycle
+  (start [component]
+    (if server-stop
+      (do (println "Server already started")
+          component)
+      (let [{:keys [ajax-post-fn ajax-get-or-ws-handshake-fn]}
+            (ring-handlers ws-connection)
 
-(defn start-http-server! []
-  (reset! http-server (http-kit-server/run-server (var ring-handler) {:port 1337})))
+            handler (handler ajax-post-fn ajax-get-or-ws-handshake-fn)
 
-(defn stop-http-server! []
-  (when-let [stop-f @http-server]
-    (stop-f :timeout 100)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Application
-(defonce messages-receive-chan (atom nil))
-(defonce messages-send-chan (atom nil))
-(defonce system-ch (atom nil))
+            server-stop (http-kit-server/run-server
+                         (defaults/wrap-defaults handler defaults/site-defaults) {:port port})]
+        (println "HTTP server started")
+        (assoc component :server-stop server-stop))))
+  (stop [component]
+    (when server-stop
+      (do (server-stop)
+          (println "HTTP server stopped")))
+    (assoc component :server-stop nil)))
+
+(defn create-http-server [port]
+  (map->HttpServer {:port port}))
 
 (defn start-message-loop [dispatch-fn messages-receive-ch messages-send-ch system-ch]
   (go-loop []
     (when-let [msg (<! messages-receive-ch)]
       (try
-        (>! messages-send-ch (dispatch-fn msg))
+        (if msg
+          (do
+            (println (str "Message " msg))
+            (>! messages-send-ch (dispatch-fn msg))))
         (catch Exception e
           (>! system-ch (str "Exception message: " (.getMessage e)))))
       (recur))))
@@ -113,40 +144,95 @@
   (go-loop []
     (when-let [msg (<! messages-send-chan)]
       (try
-        (send-fn msg)
+        (if msg
+          (do
+            (println (str "Sending " msg))
+            (send-fn msg)))
         (catch Exception e
           (>! system-ch (str "Exception message: " (.getMessage e)))))
       (recur))))
 
-;; TODO
-;; - component?
-(defn stop! []
-  (do
-    (close! @messages-receive-chan)
-    (close! @messages-send-chan)
-    (close! @system-ch)
-    (stop-http-server!)
-    (stop-router!)))
+(defrecord MessageHandler [dispatch-fn ws-connection channels database]
+  component/Lifecycle
+  (start [component]
+    (println "Starting Message Handler")
+    (let [msg-send (start-message-send-loop (fn [msg] (send-socket! ws-connection (:id msg) (:message msg)))
+                                            (:messages-send-chan channels) (:system-chan channels))
+          msg-rec (start-message-loop
+                   (partial message-dispatch {:file-import #(import-file-stream %)})
+                   (:messages-receive-chan channels) (:messages-send-chan channels) (:system-chan channels))]
+      (assoc component :message-sender msg-send :message-receiver msg-rec)))
 
-(defn start! []
-  (do
-    (reset! messages-receive-chan (chan))
-    (reset! messages-send-chan (chan))
-    (reset! system-ch (chan))
-    
-    (start-http-server!)
-    (start-router! @messages-receive-chan)
-    
-    (start-message-send-loop (fn [msg] (chsk-send! (:id msg) (:message msg))) @messages-send-chan @system-ch)
-    (start-message-loop (partial message-dispatch {:file-import #(import-file-stream %)})
-                        @messages-receive-chan @messages-send-chan @system-ch)))
+  (stop [component]
+    (println "Stopping Message Handling")
+    (assoc component :message-sender nil :message-receiver nil)))
 
-(defn restart! []
-  (stop!)
-  (start!))
+(defn create-message-handler []
+  (map->MessageHandler {}))
+
+(defrecord Channels [messages-receive-chan messages-send-chan system-chan]
+  component/Lifecycle
+  (start [component]
+    (if (and messages-receive-chan messages-send-chan system-chan)
+      component
+      (let [;component (component/stop component)
+            ]
+        (println "Open Channels")
+        (assoc component
+          :messages-receive-chan (chan)
+          :messages-send-chan (chan)
+          :system-chan (chan)))))
+  (stop [component]
+    (println "Closing Channels")
+    (if-let [rec-ch (:messages-receive-chan component)]
+      (close! rec-ch))
+    (if-let [send-ch (:messages-send-chan component)]
+      (close! send-ch))
+    (if-let [sys-ch (:system-chan component)]
+      (close! sys-ch))
+    (assoc component
+        :messages-receive-chan nil
+        :messages-send-chan nil
+        :system-chan nil)))
+
+(defn create-channels []
+  (map->Channels {}))
+
+(defn production-system []
+  (component/system-map
+   :channels (create-channels)
+   :ws-connection
+   (component/using (create-ws-connection) [:channels])
+   :http-server
+   (component/using (create-http-server 1337) [:ws-connection])
+   :message-handler (component/using (create-message-handler) [:ws-connection :channels])))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Application
+
+(def system nil)
+
+(defn init []
+  (alter-var-root 
+   #'system (constantly (production-system))))
+
+(defn start []
+  (alter-var-root #'system component/start))
+
+(defn stop []
+  (alter-var-root #'system (fn [s] (when s (component/stop s)))))
+
+(defn go! []
+  (init)
+  (start))
+
+(defn reset []
+  (stop)
+  (refresh :after 'tango.core/go!))
 
 (defn -main
   [& args]
   (do
-    (start!)
+    (go!)
     (println "Server Started")))
