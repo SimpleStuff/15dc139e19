@@ -64,4 +64,7 @@
          []))
       (create-import-info "" [] :failed [:file-not-found]))))
 
+(defn import-file-stream [{:keys [content]}]
+  (dance-perfect-xml->data (read-xml-string content)))
+
 ;http://blog.fogus.me/2011/09/08/10-technical-papers-every-programmer-should-read-at-least-twice/
