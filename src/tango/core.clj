@@ -16,15 +16,16 @@
 ; http://localhost:1337/admin
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn production-system []
-  (component/system-map
-   :channels (channels/create-channels)
-   :ws-connection
-   (component/using (ws/create-ws-connection) [:channels])
-   :http-server
-   (component/using (http/create-http-server 1337) [:ws-connection])
-   :message-handler
-   (component/using (messaging/create-message-handler) [:ws-connection :channels])))
+(defn production-system [configuration]
+  (let [{:keys [port]} configuration]
+    (component/system-map
+     :channels (channels/create-channels)
+     :ws-connection
+     (component/using (ws/create-ws-connection) [:channels])
+     :http-server
+     (component/using (http/create-http-server port) [:ws-connection])
+     :message-handler
+     (component/using (messaging/create-message-handler) [:ws-connection :channels]))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -34,7 +35,7 @@
 
 (defn init []
   (alter-var-root 
-   #'system (constantly (production-system))))
+   #'system (constantly (production-system {:port 1337}))))
 
 (defn start []
   (alter-var-root #'system component/start))
@@ -50,8 +51,10 @@
   (stop)
   (refresh :after 'tango.core/go!))
 
-(defn -main
-  [& args]
-  (do
-    (go!)
-    (println "Server Started")))
+(defn -main [& args]
+  (let [[port] args]
+    (if-not port
+      (println "Port number missing")
+      (do
+        (component/start (production-system {:port (Integer/parseInt port)}))
+        (println (str "Server started on port " port))))))
