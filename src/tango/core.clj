@@ -1,128 +1,60 @@
 (ns tango.core
   (:gen-class)
-  (:require [compojure.core :refer :all]
-            [compojure.route :as route]
-            [taoensso.sente :as sente]
-            [org.httpkit.server :as http-kit-server]
-            [clojure.core.match :refer [match]]
-            [tango.import :as imp]
-            [ring.middleware.defaults :as defaults]
-            [clojure.core.async
-             :as a
-             :refer [>! <! >!! <!! go chan buffer close! thread
-                     alts! alts!! timeout go-loop]]))
+  (:require [com.stuartsierra.component :as component]
+            [clojure.tools.namespace.repl :refer [refresh]]
+            [tango.web-socket :as ws]
+            [tango.http-server :as http]
+            [tango.channels :as channels]
+            [tango.messaging :as messaging]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Resources
 ;http://www.core-async.info/tutorial/a-minimal-client
 ;https://github.com/enterlab/rente
-
+;http://stuartsierra.com/2013/12/08/parallel-processing-with-core-async
+;https://github.com/danielsz/system
 ; http://localhost:1337/admin
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def memory-log (atom []))
+(defn production-system [configuration]
+  (let [{:keys [port]} configuration]
+    (component/system-map
+     :channels (channels/create-channels)
+     :ws-connection
+     (component/using (ws/create-ws-connection) [:channels])
+     :http-server
+     (component/using (http/create-http-server port) [:ws-connection])
+     :message-handler
+     (component/using (messaging/create-message-handler) [:ws-connection :channels]))))
 
-(defn logf [s]
-  (swap! memory-log conj s))
 
-(defn import-file [{:keys [content]}]
-  (imp/dance-perfect-xml->data (imp/read-xml-string content)))
-
-(def message-log (atom []))
-(def message-send-log (atom []))
-
-(defn message-dispatch [{:keys [topic payload sender]} out-chan]
-  (match [topic payload]
-         [:file/import xml]
-         (>!! out-chan {:id sender :message [:file/imported {:content (import-file xml)}]}) 
-         [:client/ping p]
-         (>!! out-chan {:id sender :message [:server/pong {:content 1}]})
-         :else (println (str "Unmatched message topicz: " topic))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Sente socket setup
-(let [{:keys [ch-recv send-fn ajax-post-fn ajax-get-or-ws-handshake-fn
-              connected-uids]}
-      (sente/make-channel-socket! {})]
-  (def ring-ajax-post                ajax-post-fn)
-  (def ring-ajax-get-or-ws-handshake ajax-get-or-ws-handshake-fn)
-  (def ch-chsk                       ch-recv) ; ChannelSocket's receive channel
-  (def chsk-send!                    send-fn) ; ChannelSocket's send API fn
-  (def connected-uids                connected-uids) ; Watchable, read-only atom
-  )
-
-(defn event-msg-handler* [messages-receive-chan {:as ev-msg :keys [id ?data event ring-req]}]
-  (>!! messages-receive-chan {:topic id :payload ?data :sender (:uid (:session ring-req))}))
-
-(defonce router_ (atom nil))
-
-(defn stop-router! []
-  (when-let [stop-f @router_] (stop-f)))
-
-(defn start-router! [messages-receive-chan]
-  (stop-router!)
-  (reset! router_ (sente/start-chsk-router! ch-chsk (partial event-msg-handler* messages-receive-chan))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Http routing
-(defn render [t]
-  (apply str t))
-
-(defroutes application-routes
-  (GET "/" req "<h1>Tango on!</h1>")
-  (GET "/admin" req {:body (slurp (clojure.java.io/resource "public/main.html"))
-                     :session {:uid (rand-int 100)}
-                     :headers {"Content-Type" "text/html"}})
-  ;; Sente channel routes
-  (GET  "/chsk" req (ring-ajax-get-or-ws-handshake req))
-  (POST "/chsk" req (ring-ajax-post                req))
-  (route/resources "/") ; Static files
-  (route/not-found "<h1>Page not found</h1>"))
-
-(def ring-handler
-  (defaults/wrap-defaults application-routes defaults/site-defaults))
-
-(defonce http-server (atom nil))
-
-(defn start-http-server! []
-  (reset! http-server (http-kit-server/run-server (var ring-handler) {:port 1337})))
-
-(defn stop-http-server! []
-  (when-let [stop-f @http-server]
-    (stop-f :timeout 100)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Application
-(defonce messages-receive-chan (atom nil))
-(defonce messages-send-chan (atom (chan)))
 
-(defn start-message-loop [messages-receive-chan]
-  (go-loop []
-    (when-let [msg (<! messages-receive-chan)]
-      (println (str "message " msg))
-      (swap! message-log conj msg)
-      (message-dispatch msg @messages-send-chan)
-      (recur))))
+(def system nil)
 
-(go (while true
-      (let [msg (<! @messages-send-chan)]
-        (swap! message-send-log conj msg)
-        (chsk-send! (:id msg) (:message msg)))))
+(defn init []
+  (alter-var-root 
+   #'system (constantly (production-system {:port 1337}))))
 
-(defn stop! []
-  (do
-    (close! @messages-receive-chan)
-    (stop-http-server!)
-    (stop-router!)))
+(defn start []
+  (alter-var-root #'system component/start))
 
-(defn start! []
-  (do
-    (reset! messages-receive-chan (chan))
-    (start-message-loop @messages-receive-chan)
-    (start-http-server!)
-    (start-router! @messages-receive-chan)))
+(defn stop []
+  (alter-var-root #'system (fn [s] (when s (component/stop s)))))
 
-(defn -main
-  [& args]
-  (do
-    (start!)
-    (println "Server Started")))
+(defn go! []
+  (init)
+  (start))
+
+(defn reset []
+  (stop)
+  (refresh :after 'tango.core/go!))
+
+(defn -main [& args]
+  (let [[port] args]
+    (if-not port
+      (println "Port number missing")
+      (do
+        (component/start (production-system {:port (Integer/parseInt port)}))
+        (println (str "Server started on port " port))))))
