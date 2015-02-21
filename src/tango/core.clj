@@ -43,13 +43,13 @@
 (defn stop []
   (alter-var-root #'system (fn [s] (when s (component/stop s)))))
 
-(defn go! []
+(defn go []
   (init)
   (start))
 
 (defn reset []
   (stop)
-  (refresh :after 'tango.core/go!))
+  (refresh :after 'tango.core/go))
 
 (defn -main [& args]
   (let [[port] args]

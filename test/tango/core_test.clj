@@ -8,7 +8,7 @@
             [clojure.xml :as xml]
             [clojure.core.async
              :as a
-             :refer [>! <! >!! <!! go chan buffer close! thread
+             :refer [>! <! >!! <!! chan buffer close! thread
                      alts! alts!! timeout go-loop]]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
