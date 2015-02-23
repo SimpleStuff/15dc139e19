@@ -59,16 +59,48 @@
 
 (def app-state 
   (atom 
-   {:dancers [{:dancer/name "Bobo"} {:dancer/name "Rolf"}]}))
+   {:competition/date #inst "2014-11-22T00:00:00.000-00:00",
+    :competition/name "TurboMegatävling",
+    :dance-perfect/version "4.1",
+    :competition/location "THUNDERDOME",
+    :competition/classes
+    [{:class/name "Hiphop Singel Star B", :class/competitors
+      [{:competitor/name "Rulle Trulle", :competitor/number 1, :competitor/club "Rulles M&M"}
+       {:competitor/name "Katchyk Wrong", :competitor/number 2, :competitor/club "Sccchhh"}]}
+     {:class/name "Hiphop Singel Star J Fl", :class/competitors
+      [{:competitor/name "Ringo Stingo" :competitor/number 20, :competitor/club "Kapangg"}
+       {:competitor/name "Greve Turbo", :competitor/number 21, :competitor/club "OOoost"}]}]}))
 
-;; (defn dancers-component []
-;;   [:div
-;;    [:h2 "Dancers :"]
-;;    [:ul
-;;     (for [template (:dancers @app-state)]
-;;       ^{:key template} [:li "" (:dancer/name template)])]
-;;    [:input.btn.btn-default {:type "button" :value "Get Dancers"
-;;                             :on-click on-click-get-dancers}]])
+(defn competitor-component [competitors]
+  [:div ""
+   [:ul
+    (for [competitor competitors]
+      ^{:key competitor}
+      [:li
+       (str "Competitor number: "
+            (:competitor/number competitor)
+            " - "
+            (:competitor/name competitor)
+            " / "
+            (:competitor/club competitor))])]])
+
+(defn class-component [classes]
+  [:h3 "Classes"]
+  [:div
+   (for [cls classes]
+     ^{:key cls} [:div
+                  (:class/name cls)
+                  [competitor-component (:class/competitors cls)]
+                  ])])
+
+(defn competition-component []
+  [:div
+   [:h2 "Competition"]
+   [:h3 (str "Name :" (:competition/name @app-state)) ]
+   [:h3 (str "Date :" (:competition/date @app-state)) ]
+   [:h3 (str "Location :" (:competition/location @app-state))]
+   [:h3 (str "Classes :")] 
+   [class-component (:competition/classes @app-state)]])
 
 (defn import-component []
   [:div
@@ -76,15 +108,16 @@
                             :onChange #(on-click-import-file %)}]
    ;; [:input.btn.btn-default {:type "button" :value "Ping"
    ;;                          :on-click #(chsk-send! [:client/ping {:content 1}])}]
-   [:div
-    [:h2 "Competition"]
-    [:h3 (str "Name :" (:competition/name @app-state)) ]]
+   ;; [:div
+   ;;  [:h2 "Competition"]
+   ;;  [:h3 (str "Name :" (:competition/name @app-state)) ]]
+   [competition-component]
    ])
 
 (defn ^:export run []
   (reagent/render-component [import-component] (.-body js/document)))
 
-
+;; {:competition/date #inst "2014-11-22T00:00:00.000-00:00", :competition/name "TurboMegatävling", :dance-perfect/version "4.1", :competition/location "THUNDERDOME", :competition/classes [{:class/name "Hiphop Singel Star B", :class/competitors [{:competitor/name "Rulle Trulle", :competitor/number 1, :competitor/club "Rulles M&M"} {:competitor/name "Katchyk Wrong", :competitor/number 2, :competitor/club "Sccchhh"}]} {:class/name "Hiphop Singel Star J Fl", :class/competitors [{:competitor/name "Ringo Stingo", :competitor/number 20, :competitor/club "Kapangg"} {:competitor/name "Greve Turbo", :competitor/number 21, :competitor/club "OOoost"}]}]}}
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Socket handling
