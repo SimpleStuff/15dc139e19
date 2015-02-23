@@ -1,6 +1,10 @@
 (ns tango.channels
   (:require [com.stuartsierra.component :as component]
-            [clojure.core.async :as async]))
+            [clojure.core.async :as async]
+            [taoensso.timbre :as log]))
+
+;; Provides useful Timbre aliases in this ns
+(log/refer-timbre)
 
 (defrecord Channels [messages-receive-chan messages-send-chan system-chan]
   component/Lifecycle
@@ -8,13 +12,13 @@
     (if (and messages-receive-chan messages-send-chan system-chan)
       component
       (do
-        (println "Open Channels")
+        (log/info "Open Channels")
         (assoc component
           :messages-receive-chan (async/chan)
           :messages-send-chan (async/chan)
           :system-chan (async/chan)))))
   (stop [component]
-    (println "Closing Channels")
+    (log/info "Closing Channels")
     (if-let [rec-ch (:messages-receive-chan component)]
       (async/close! rec-ch))
     (if-let [send-ch (:messages-send-chan component)]

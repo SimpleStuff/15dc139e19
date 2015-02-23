@@ -5,7 +5,11 @@
             [tango.web-socket :as ws]
             [tango.http-server :as http]
             [tango.channels :as channels]
-            [tango.messaging :as messaging]))
+            [tango.messaging :as messaging]
+            [taoensso.timbre :as log]))
+
+;; Provides useful Timbre aliases in this ns
+(log/refer-timbre)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Resources
@@ -17,7 +21,14 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn production-system [configuration]
-  (let [{:keys [port]} configuration]
+  (let [{:keys [port log-file log-level]} configuration]
+    (if log-file
+      (do
+        (log/info "Enable file logging to " log-file)
+        (log/set-config! [:appenders :spit :enabled?] true)
+        (log/set-config! [:shared-appender-config :spit-filename] log-file)))
+    (if log-level
+      (log/set-level! log-level))
     (component/system-map
      :channels (channels/create-channels)
      :ws-connection
@@ -35,7 +46,7 @@
 
 (defn init []
   (alter-var-root 
-   #'system (constantly (production-system {:port 1337}))))
+   #'system (constantly (production-system {:port 1337 :log-file "loggs/test.log" :log-level :debug}))))
 
 (defn start []
   (alter-var-root #'system component/start))
@@ -57,4 +68,4 @@
       (println "Port number missing")
       (do
         (component/start (production-system {:port (Integer/parseInt port)}))
-        (println (str "Server started on port " port))))))
+        (log/info (str "Server started on port " port))))))

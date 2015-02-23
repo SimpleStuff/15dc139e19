@@ -3,7 +3,11 @@
             [tango.import :as import]
             [clojure.core.async :as async]
             [com.stuartsierra.component :as component]
-            [clojure.core.match :refer [match]]))
+            [clojure.core.match :refer [match]]
+            [taoensso.timbre :as log]))
+
+;; Provides useful Timbre aliases in this ns
+(log/refer-timbre)
 
 (defn message-dispatch [handler-map {:keys [topic payload sender]} ]
   (match [topic payload]
@@ -22,9 +26,11 @@
       (try
         (if msg
           (do
-            (println (str "Message " msg))
+            (log/info (str "Message: [" (:topic msg) "] from sender id: " (:sender msg)))
+            (log/trace (str "Payload: " (:payload msg)))
             (async/>! messages-send-ch (dispatch-fn msg))))
         (catch Exception e
+          (log/error e "Exception in message receive go loop")
           (async/>! system-ch (str "Exception message: " (.getMessage e)))))
       (recur))))
 
@@ -34,16 +40,18 @@
       (try
         (if msg
           (do
-            (println (str "Sending " msg))
+            (log/info (str "Sending: [" (first (:message msg)) "] to client id: " (:id msg)))
+            (log/trace (str "full message " (:message msg)))
             (send-fn msg)))
         (catch Exception e
+          (log/error e "Exception in message send go loop")
           (async/>! system-ch (str "Exception message: " (.getMessage e)))))
       (recur))))
 
 (defrecord MessageHandler [dispatch-fn ws-connection channels database]
   component/Lifecycle
   (start [component]
-    (println "Starting Message Handler")
+    (log/info "Starting Message Handler")
     (let [msg-send (start-message-send-loop (fn [msg] (ws/send-socket! ws-connection (:id msg) (:message msg)))
                                             (:messages-send-chan channels) (:system-chan channels))
           msg-rec (start-message-loop
@@ -52,7 +60,7 @@
       (assoc component :message-sender msg-send :message-receiver msg-rec)))
 
   (stop [component]
-    (println "Stopping Message Handling")
+    (log/info "Stopping Message Handling")
     (assoc component :message-sender nil :message-receiver nil)))
 
 (defn create-message-handler []

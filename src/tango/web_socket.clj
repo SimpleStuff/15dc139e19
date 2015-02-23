@@ -1,7 +1,11 @@
 (ns tango.web-socket
   (:require [taoensso.sente :as sente]
             [clojure.core.async :as async]
-            [com.stuartsierra.component :as component]))
+            [com.stuartsierra.component :as component]
+            [taoensso.timbre :as log]))
+
+;; Provides useful Timbre aliases in this ns
+(log/refer-timbre)
 
 (defn event-msg-handler* [messages-receive-chan {:as ev-msg :keys [id ?data event ring-req]}]
   (async/>!! messages-receive-chan {:topic id :payload ?data :sender (:uid (:session ring-req))}))
@@ -16,7 +20,7 @@
       (let [{:keys [ch-recv send-fn connected-uids
                     ajax-post-fn ajax-get-or-ws-handshake-fn]}
             (sente/make-channel-socket!)]
-        (println "Start WS")
+        (log/info "Start web socket")
         (assoc component
           :ch-recv ch-recv
           :connected-uids connected-uids
@@ -25,7 +29,7 @@
           (sente/start-chsk-router! ch-recv (partial event-msg-handler* (:messages-receive-chan channels)))
           :ring-handlers (->WSRingHandlers ajax-post-fn ajax-get-or-ws-handshake-fn)))))
   (stop [component]
-    (println "Stop WS")
+    (log/info "Stop web socket")
     (:stop-the-thing component)
     (assoc component
       :ch-recv nil :connected-uids nil :send-fn nil :ring-handlers nil)))
