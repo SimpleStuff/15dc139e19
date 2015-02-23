@@ -1,10 +1,6 @@
 # tango
 
-FIXME: description
-
 ## Installation
-
-Download from http://example.com/FIXME.
 
 ## Usage
 
@@ -14,33 +10,30 @@ Download from http://example.com/FIXME.
    $ lein cljsbuild once
    ```
 
-2. fire up a REPL and load the src
+2. fire up a REPL and load the src and tango.core namespace
 
-3. start the server in the REPL with (start!)
+3. start the server in the REPL with (go)
 
-4. browse to "localhost:1337/main.html" to load the client script
+4. browse to "localhost:1337" to load the client script
 
-5. write stuff in "Sending data" text box, the server REPL should show all messages beeing sent.
+5. import file /tango/test/small-example.xml
 
 ## Options
 
-FIXME: listing of options this app accepts.
+Running main give the option of specifing port number.
+   
+   ```
+   $ lein run 80
+   ```
 
 ## Examples
 
-...
-
 ### Bugs
 
-...
-
-### Any Other Sections
-### That You Think
-### Might be Useful
 
 ## License
 
-Copyright © 2014 FIXME
+Copyright © 2014 Mårten Larsson, Stefan Karlsson, Thomas Didriksson
 
 Distributed under the Eclipse Public License either version 1.0 or (at
 your option) any later version.
