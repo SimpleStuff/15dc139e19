@@ -8,7 +8,9 @@
 (log/refer-timbre)
 
 (defn event-msg-handler* [messages-receive-chan {:as ev-msg :keys [id ?data event ring-req]}]
-  (async/>!! messages-receive-chan {:topic id :payload ?data :sender (:uid (:session ring-req))}))
+  (do
+    (log/trace "Ring request: " ring-req)
+    (async/>!! messages-receive-chan {:topic id :payload ?data :sender (:uid (:session ring-req))})))
 
 (defrecord WSRingHandlers [ajax-post-fn ajax-get-or-ws-handshake-fn])
 
