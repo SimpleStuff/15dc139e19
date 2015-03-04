@@ -57,19 +57,21 @@
     (set! (.-onload r) #(on-file-read % r))
     (.readAsText r file)))
 
-(def app-state 
-  (atom 
-   {:competition/date #inst "2014-11-22T00:00:00.000-00:00",
-    :competition/name "TurboMegatävling",
-    :dance-perfect/version "4.1",
-    :competition/location "THUNDERDOME",
-    :competition/classes
-    [{:class/name "Hiphop Singel Star B", :class/competitors
-      [{:competitor/name "Rulle Trulle", :competitor/number 1, :competitor/club "Rulles M&M"}
-       {:competitor/name "Katchyk Wrong", :competitor/number 2, :competitor/club "Sccchhh"}]}
-     {:class/name "Hiphop Singel Star J Fl", :class/competitors
-      [{:competitor/name "Ringo Stingo" :competitor/number 20, :competitor/club "Kapangg"}
-       {:competitor/name "Greve Turbo", :competitor/number 21, :competitor/club "OOoost"}]}]}))
+;; (def app-state 
+;;   (atom 
+;;    {:competition/date #inst "2014-11-22T00:00:00.000-00:00",
+;;     :competition/name "TurboMegatävling",
+;;     :dance-perfect/version "4.1",
+;;     :competition/location "THUNDERDOME",
+;;     :competition/classes
+;;     [{:class/name "Hiphop Singel Star B", :class/competitors
+;;       [{:competitor/name "Rulle Trulle", :competitor/number 1, :competitor/club "Rulles M&M"}
+;;        {:competitor/name "Katchyk Wrong", :competitor/number 2, :competitor/club "Sccchhh"}]}
+;;      {:class/name "Hiphop Singel Star J Fl", :class/competitors
+;;       [{:competitor/name "Ringo Stingo" :competitor/number 20, :competitor/club "Kapangg"}
+;;        {:competitor/name "Greve Turbo", :competitor/number 21, :competitor/club "OOoost"}]}]}))
+
+(def app-state (atom []))
 
 (defn competitor-component [competitors]
   [:div ""
@@ -114,8 +116,12 @@
    [competition-component]
    ])
 
+(defn menu-component []
+  [:div
+   [:input.btn.btn-default {:value "Tävlingar"}]])
+
 (defn ^:export run []
-  (reagent/render-component [import-component] (.-body js/document)))
+  (reagent/render-component [menu-component] (.-body js/document)))
 
 ;; {:competition/date #inst "2014-11-22T00:00:00.000-00:00", :competition/name "TurboMegatävling", :dance-perfect/version "4.1", :competition/location "THUNDERDOME", :competition/classes [{:class/name "Hiphop Singel Star B", :class/competitors [{:competitor/name "Rulle Trulle", :competitor/number 1, :competitor/club "Rulles M&M"} {:competitor/name "Katchyk Wrong", :competitor/number 2, :competitor/club "Sccchhh"}]} {:class/name "Hiphop Singel Star J Fl", :class/competitors [{:competitor/name "Ringo Stingo", :competitor/number 20, :competitor/club "Kapangg"} {:competitor/name "Greve Turbo", :competitor/number 21, :competitor/club "OOoost"}]}]}}
 
