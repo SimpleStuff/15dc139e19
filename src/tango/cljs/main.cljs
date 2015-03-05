@@ -8,6 +8,8 @@
             [clojure.string]))
 
 ;; Sente: https://github.com/ptaoussanis/sente
+;http://markusslima.github.io/bootstrap-filestyle/
+;http://getbootstrap.com/components/
 ;;; Utils
 (enable-console-print!)
 
@@ -57,21 +59,27 @@
     (set! (.-onload r) #(on-file-read % r))
     (.readAsText r file)))
 
-;; (def app-state 
-;;   (atom 
-;;    {:competition/date #inst "2014-11-22T00:00:00.000-00:00",
-;;     :competition/name "TurboMegatävling",
-;;     :dance-perfect/version "4.1",
-;;     :competition/location "THUNDERDOME",
-;;     :competition/classes
-;;     [{:class/name "Hiphop Singel Star B", :class/competitors
-;;       [{:competitor/name "Rulle Trulle", :competitor/number 1, :competitor/club "Rulles M&M"}
-;;        {:competitor/name "Katchyk Wrong", :competitor/number 2, :competitor/club "Sccchhh"}]}
-;;      {:class/name "Hiphop Singel Star J Fl", :class/competitors
-;;       [{:competitor/name "Ringo Stingo" :competitor/number 20, :competitor/club "Kapangg"}
-;;        {:competitor/name "Greve Turbo", :competitor/number 21, :competitor/club "OOoost"}]}]}))
+;; (defonce app-state 
+;;   (atom {:competitions
+;;          [{:competition/date #inst "2014-11-22T00:00:00.000-00:00",
+;;            :competition/name "TurboMegatävling",
+;;            :dance-perfect/version "4.1",
+;;            :competition/location "THUNDERDOME",
+;;            :competition/classes
+;;            [{:class/name "Hiphop Singel Star B", :class/competitors
+;;              [{:competitor/name "Rulle Trulle", :competitor/number 1, :competitor/club "Rulles M&M"}
+;;               {:competitor/name "Katchyk Wrong", :competitor/number 2, :competitor/club "Sccchhh"}]}
+;;             {:class/name "Hiphop Singel Star J Fl", :class/competitors
+;;              [{:competitor/name "Ringo Stingo" :competitor/number 20, :competitor/club "Kapangg"}
+;;               {:competitor/name "Greve Turbo", :competitor/number 21, :competitor/club "OOoost"}]}]}]}))
 
-(def app-state (atom []))
+(defonce app-state
+  (atom {:competitions []}))
+
+(defonce component-state
+  (atom {:competitions-visible false}))
+
+;(def app-state (atom []))
 
 (defn competitor-component [competitors]
   [:div ""
@@ -95,30 +103,80 @@
                   [competitor-component (:class/competitors cls)]
                   ])])
 
-(defn competition-component []
-  [:div
-   [:h2 "Competition"]
-   [:h3 (str "Name :" (:competition/name @app-state)) ]
-   [:h3 (str "Date :" (:competition/date @app-state)) ]
-   [:h3 (str "Location :" (:competition/location @app-state))]
-   [:h3 (str "Classes :")] 
-   [class-component (:competition/classes @app-state)]])
+;; (defn competition-component []
+;;   [:div
+;;    [:h2 "Competition"]
+;;    [:h3 (str "Name :" (:competition/name @app-state)) ]
+;;    [:h3 (str "Date :" (:competition/date @app-state)) ]
+;;    [:h3 (str "Location :" (:competition/location @app-state))]
+;;    [:h3 (str "Classes :")] 
+;;    [class-component (:competition/classes @app-state)]])
+
+;(defn competition-component [])
+
+(defn competition-item []
+  (let [open (atom false)]
+    (fn [competition]
+      [:li 
+       [:div.view
+        [:label  (str (:competition/name competition) " i "
+                      (:competition/location competition) " den "
+                      (:competition/date competition))]
+        [:input.btn.btn-default {:type "button"
+                                 :value (if @open "Stäng" "Öppna")
+                                 :on-click #(swap! open not)}]]
+       (if @open
+         [:div
+          [:h4 "Klasser :"]
+          [class-component (:competition/classes competition)]])])))
 
 (defn import-component []
   [:div
+   
+   [:h2 "Tillgängliga tävlingar"]
+   [:ul
+    (for [competition (:competitions @app-state)]
+      ^{:key competition} [competition-item competition])]
+   [:h2 "Importera en ny tävling : "]
    [:input.btn.btn-default {:type "file" :value "Import file"
                             :onChange #(on-click-import-file %)}]
-   ;; [:input.btn.btn-default {:type "button" :value "Ping"
-   ;;                          :on-click #(chsk-send! [:client/ping {:content 1}])}]
-   ;; [:div
-   ;;  [:h2 "Competition"]
-   ;;  [:h3 (str "Name :" (:competition/name @app-state)) ]]
-   [competition-component]
    ])
 
 (defn menu-component []
-  [:div
-   [:input.btn.btn-default {:value "Tävlingar"}]])
+  (let [visible-component (atom :competitions;:none
+                   )]
+    (fn []
+      [:div.container
+       [:div.header
+        [:h2 "Välkommen till Tango!"]
+        [:input.btn.btn-primary.btn-lg.navbar-btn
+         {:type "button" :value "Tävlingar" :on-click #(reset! visible-component :competitions)}]
+        [:input.btn.btn-primary.btn-lg
+         {:type "button" :value "Dansare" :on-click #(reset! visible-component :competitors)}]
+        [:input.btn.btn-primary.btn-lg
+         {:type "button" :value "Domare" :on-click #(reset! visible-component :adjudicators)}]
+        ;[:h2 (str "visible-component " @visible-component)]
+        ]
+       (if (= @visible-component :competitions)
+         [import-component])
+       ])))
+
+(def click-count (atom 0))
+
+;; (defn counting-component []
+;;   (let [click-count2 (atom 0)]
+;;     [:div
+;;      "The atom " [:code "click-count"] " has value: "
+;;      @click-count " And " @click-count2
+;;      [:input {:type "button" :value "Click me!"
+;;               :on-click #(do (swap! click-count inc) (swap! click-count2 inc))}]]))
+
+;; (defn timer-component []
+;;   (let [seconds-elapsed (atom 0)]
+;;     (fn []
+;;       (js/setTimeout #(swap! seconds-elapsed inc) 1000)
+;;       [:div
+;;        "Seconds Elapsed: " @seconds-elapsed])))
 
 (defn ^:export run []
   (reagent/render-component [menu-component] (.-body js/document)))
@@ -132,7 +190,10 @@
   (match [id data]
     ;; TODO Match your events here <...>
          [:chsk/recv [:file/imported content]]
-         (do (swap! app-state #(:content content)) (log (:content content)))
+         (do
+           (swap! app-state #(hash-map :competitions (conj (:competitions %) (:content content))))
+           (log (str @app-state))
+           )
     [:chsk/state [:first-open _]] (log "Channel socket successfully established!")
     ;[:chsk/state new-state] (log (str "Chsk state change: " new-state))
     ;[:chsk/recv payload] (log (str "Push event from server: " payload))
