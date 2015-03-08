@@ -1,22 +1,24 @@
 # tango
 
-## Installation
-
 ## Usage
 
-1. build clojurescript src
+1. Build clojurescript src
    
    ```
    $ lein cljsbuild once
    ```
 
-2. fire up a REPL and load the src and tango.core namespace
+2. Start a REPL with lein (or with your development environment)
+   
+   ```
+   $ lein repl
+   ```	
 
-3. start the server in the REPL with (go)
+3. Start the server in the REPL with (go)
 
-4. browse to "localhost:1337" to load the client script
+4. Browse to "localhost:1337" to load the client script
 
-5. import file /tango/test/small-example.xml
+5. Import file /tango/test/small-example.xml
 
 ## Options
 
