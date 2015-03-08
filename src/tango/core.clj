@@ -25,7 +25,7 @@
     (if log-file
       (do
         (log/info "Enable file logging to " log-file)
-        (log/set-config! [:appenders :spit :enabled?] true)
+        (log/set-config! [:Appenders :spit :enabled?] true)
         (log/set-config! [:shared-appender-config :spit-filename] log-file)))
     (if log-level
       (log/set-level! log-level))
