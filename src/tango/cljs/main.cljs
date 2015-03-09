@@ -59,6 +59,9 @@
     (set! (.-onload r) #(on-file-read % r))
     (.readAsText r file)))
 
+(defonce app-state
+  (atom {:competitions []}))
+
 ;; (defonce app-state 
 ;;   (atom {:competitions
 ;;          [{:competition/date #inst "2014-11-22T00:00:00.000-00:00",
@@ -73,46 +76,38 @@
 ;;              [{:competitor/name "Ringo Stingo" :competitor/number 20, :competitor/club "Kapangg"}
 ;;               {:competitor/name "Greve Turbo", :competitor/number 21, :competitor/club "OOoost"}]}]}]}))
 
-(defonce app-state
-  (atom {:competitions []}))
+;; TODO - Let the server return dancers in a UI-normalized way
+(defn get-dancers [competitions]
+  (into #{}
+        (map #(dissoc % :competitor/number) 
+             (for [competition competitions
+                   classes (:competition/classes competition)
+                   competitors (:class/competitors classes)]
+               competitors))))
 
 (defonce component-state
   (atom {:competitions-visible false}))
 
-;(def app-state (atom []))
-
-(defn competitor-component [competitors]
+(defn competitor-component [competitors include-number?]
   [:div ""
    [:ul
     (for [competitor competitors]
       ^{:key competitor}
-      [:li
-       (str "Competitor number: "
-            (:competitor/number competitor)
-            " - "
-            (:competitor/name competitor)
-            " / "
-            (:competitor/club competitor))])]])
+      [:li 
+       (str (if include-number?
+              (str "Tävlande nummer : " (:competitor/number competitor) " - "))
+            (str (:competitor/name competitor)
+                 " från "
+                 (:competitor/club competitor)))])]])
 
 (defn class-component [classes]
   [:h3 "Classes"]
   [:div
    (for [cls classes]
-     ^{:key cls} [:div
-                  (:class/name cls)
-                  [competitor-component (:class/competitors cls)]
-                  ])])
-
-;; (defn competition-component []
-;;   [:div
-;;    [:h2 "Competition"]
-;;    [:h3 (str "Name :" (:competition/name @app-state)) ]
-;;    [:h3 (str "Date :" (:competition/date @app-state)) ]
-;;    [:h3 (str "Location :" (:competition/location @app-state))]
-;;    [:h3 (str "Classes :")] 
-;;    [class-component (:competition/classes @app-state)]])
-
-;(defn competition-component [])
+     ^{:key cls}
+     [:div
+      (:class/name cls)
+      [competitor-component (:class/competitors cls) true]])])
 
 (defn competition-item []
   (let [open (atom false)]
@@ -122,13 +117,19 @@
         [:label  (str (:competition/name competition) " i "
                       (:competition/location competition) " den "
                       (:competition/date competition))]
-        [:input.btn.btn-default {:type "button"
-                                 :value (if @open "Stäng" "Öppna")
-                                 :on-click #(swap! open not)}]]
+        [:input.btn.btn-default
+         {:type "button"
+          :value (if @open "Stäng" "Öppna")
+          :on-click #(swap! open not)}]]
        (if @open
          [:div
           [:h4 "Klasser :"]
           [class-component (:competition/classes competition)]])])))
+
+(defn competitors-component []
+  [:div
+   [:h2 "Tillgängliga dansare"]
+   [competitor-component (get-dancers (:competitions @app-state))]])
 
 (defn import-component []
   [:div
@@ -139,12 +140,10 @@
       ^{:key competition} [competition-item competition])]
    [:h2 "Importera en ny tävling : "]
    [:input.btn.btn-default {:type "file" :value "Import file"
-                            :onChange #(on-click-import-file %)}]
-   ])
+                            :onChange #(on-click-import-file %)}]])
 
 (defn menu-component []
-  (let [visible-component (atom :competitions;:none
-                   )]
+  (let [visible-component (atom :none)]
     (fn []
       [:div.container
        [:div.header
@@ -157,31 +156,15 @@
          {:type "button" :value "Domare" :on-click #(reset! visible-component :adjudicators)}]
         ;[:h2 (str "visible-component " @visible-component)]
         ]
-       (if (= @visible-component :competitions)
-         [import-component])
+       (condp = @visible-component
+         :competitions [import-component]
+         :competitors [competitors-component]
+         :adjudicators [:div]
+         :none [:div])
        ])))
-
-(def click-count (atom 0))
-
-;; (defn counting-component []
-;;   (let [click-count2 (atom 0)]
-;;     [:div
-;;      "The atom " [:code "click-count"] " has value: "
-;;      @click-count " And " @click-count2
-;;      [:input {:type "button" :value "Click me!"
-;;               :on-click #(do (swap! click-count inc) (swap! click-count2 inc))}]]))
-
-;; (defn timer-component []
-;;   (let [seconds-elapsed (atom 0)]
-;;     (fn []
-;;       (js/setTimeout #(swap! seconds-elapsed inc) 1000)
-;;       [:div
-;;        "Seconds Elapsed: " @seconds-elapsed])))
 
 (defn ^:export run []
   (reagent/render-component [menu-component] (.-body js/document)))
-
-;; {:competition/date #inst "2014-11-22T00:00:00.000-00:00", :competition/name "TurboMegatävling", :dance-perfect/version "4.1", :competition/location "THUNDERDOME", :competition/classes [{:class/name "Hiphop Singel Star B", :class/competitors [{:competitor/name "Rulle Trulle", :competitor/number 1, :competitor/club "Rulles M&M"} {:competitor/name "Katchyk Wrong", :competitor/number 2, :competitor/club "Sccchhh"}]} {:class/name "Hiphop Singel Star J Fl", :class/competitors [{:competitor/name "Ringo Stingo", :competitor/number 20, :competitor/club "Kapangg"} {:competitor/name "Greve Turbo", :competitor/number 21, :competitor/club "OOoost"}]}]}}
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Socket handling
