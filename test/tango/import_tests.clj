@@ -4,7 +4,8 @@
             [tango.import :as imp]
             [clj-time.core :as tc]
             [clj-time.coerce :as tcr]
-            [clojure.xml :as xml]))
+            [clojure.xml :as xml]
+            [tango.test-data :as data]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Import
@@ -13,32 +14,11 @@
 
 (def small-exampel-xml (xml/parse (clojure.java.io/file "./test/tango/small-example.xml")))
 
-(def small-file-expected-content
-  {:competition/name "TurboMegatävling"
-   :competition/date (tcr/to-date (tc/date-time 2014 11 22))
-   :competition/location "THUNDERDOME"
-   :competition/classes
-   [{:class/name "Hiphop Singel Star B"
-     :class/competitors
-     [{:competitor/name "Rulle Trulle"
-       :competitor/club "Rulles M&M"
-       :competitor/number 1}
-      {:competitor/name "Katchyk Wrong"
-       :competitor/club "Sccchhh"
-       :competitor/number 2}]}
-    {:class/name "Hiphop Singel Star J Fl"
-     :class/competitors
-     [{:competitor/name "Ringo Stingo"
-       :competitor/club "Kapangg"
-       :competitor/number 20}
-      {:competitor/name "Greve Turbo"
-       :competitor/club "OOoost"
-       :competitor/number 21}]}]})
+(def large-exampel-xml (xml/parse (clojure.java.io/file "./test/tango/DPTest.xml")))
 
 (deftest import-dance-perfect-file
   (testing "Import of a Dance Perfect xml file"
-    (let [imported-file (imp/import-file "./test/tango/small-example.xml"
-                                         )]
+    (let [imported-file (imp/import-file "./test/tango/small-example.xml")]
       (is (= (:file/version imported-file)
              "4.1"))
       (is (= (:file/import-status imported-file)
@@ -46,7 +26,13 @@
       (is (= (:file/import-errors imported-file)
              []))
       (is (= (:file/content imported-file)
-             small-file-expected-content)))))
+             data/small-file-expected-content)))))
+
+(deftest import-large-dance-perfect-file
+  (testing "Import of a large Dance Perfect xml file"
+    (let [imported-file (imp/import-file "./test/tango/DPTest.xml")]
+      (is (= imported-file
+             data/large-file-expected-content)))))
 
 (deftest import-of-path-that-do-not-exist
   (testing "Import of an invalid file path"
@@ -81,7 +67,7 @@
 (deftest read-dance-perfect-competition-classes
   (testing "Import competition classes of Dance Perfect file"
     (is (= (:competition/classes (imp/dance-perfect-xml->data small-exampel-xml))
-           (:competition/classes small-file-expected-content)))))
+           (:competition/classes data/small-file-expected-content)))))
 
 ;; TODO - file that do not exist
 ;; TODO - call with path that is not string

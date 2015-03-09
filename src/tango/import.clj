@@ -3,6 +3,19 @@
             [clj-time.coerce :as tcr]
             [clj-time.format :as tf]))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Utils
+(defn- to-number [s]
+  {:pre [(string? s)]}
+  (let [prepared-string (clojure.string/replace s #" " "")]
+    (cond (re-seq #"^[-+]?\d*[\.,]\d*$" prepared-string)
+          (Double/parseDouble (clojure.string/replace prepared-string #"," "."))
+          (re-seq #"^[-+]?\d+$" prepared-string)
+          (Integer/parseInt (clojure.string/replace prepared-string #"\+" ""))
+          :else s)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Import
 (defn read-xml [file]
   (xml/parse file))
 
@@ -12,7 +25,7 @@
 (defn- dance-perfect-xml-competitors->competitors [dp-competitors-xml]
   (mapv #(hash-map :competitor/name (get-in % [:attrs :Name])
                    :competitor/club (get-in % [:attrs :Club])
-                   :competitor/number (Integer/parseInt (get-in % [:attrs :Number])))
+                   :competitor/number (to-number (get-in % [:attrs :Number])))
         dp-competitors-xml))
 
 ; Kan en klass bara ha en startlista? - make a test
