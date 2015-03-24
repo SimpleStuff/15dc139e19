@@ -13,9 +13,10 @@
 (deftest export-dance-perfect-file
   (testing "Export of a Dance Perfect xml file"
     (let [imported-file (imp/import-file "./test/tango/small-example.xml")
-          exported-file (imp/export-file imported-file)]
+          ;exported-file (imp/export-file (:file/version imported-file) (:file/content imported-file))
+          xml-data (imp/data->dance-perfect-xml (:file/version imported-file) (:file/content imported-file))]
       (is (= (imp/read-xml "./test/tango/small-example.xml")
-             exported-file)))))
+             xml-data)))))
 
 (def small-exampel-data
   {:file/version "4.1",

@@ -77,39 +77,16 @@
          []))
       (create-import-info "" [] :failed [:file-not-found]))))
 
-;{:tag :item, :attrs {:id "1"}, :content ["First"]}
-;(spit "test.xml" (with-out-str (clojure.xml/emit simple-xml-map)))
-(def small-exampel-data
-  {:file/version "4.1",
-   :file/content
-   {:competition/name "TurboMegatävling",
-    :competition/location "THUNDERDOME",
-    :competition/date #inst "2014-11-22T00:00:00.000-00:00",
-    :competition/classes
-    [{:class/name "Hiphop Singel Star B", :class/competitors
-      [{:competitor/name "Rulle Trulle", :competitor/number 1, :competitor/club "Rulles M&M"}
-       {:competitor/name "Katchyk Wrong", :competitor/number 2, :competitor/club "Sccchhh"}]}
-     {:class/name "Hiphop Singel Star J Fl", :class/competitors
-      [{:competitor/name "Ringo Stingo", :competitor/number 20, :competitor/club "Kapangg"}
-       {:competitor/name "Greve Turbo", :competitor/number 21, :competitor/club "OOoost"}]}]},
-   :file/import-status :success, :file/import-errors []})
-
- ;; <Class Name="Hiphop Singel Star B" Seq="0">
- ;;      <StartList Qty="2">
- ;;        <Couple Name="Rulle Trulle" Seq="0" License="" Club="Rulles M&amp;M" Number="1"/>
- ;;        <Couple Name="Katchyk Wrong" Seq="1" License="" Club="Sccchhh" Number="2"/>
- ;;      </StartList>
- ;;    </Class>
-
 (defn competitor->xml [competitor seq-nr]
   {:tag :Couple :attrs {:Name (:competitor/name competitor)
-                        :Seq seq-nr
+                        :Seq (str seq-nr)
                         :License ""
                         :Club (:competitor/club competitor)
-                        :Number (:competitor/number competitor)}})
+                        :Number (str (:competitor/number competitor))}
+   :content nil})
 
 (defn competitors->dance-perfect-xml-start-list [competitiors]
-  [{:tag :StartList :attrs {:Qty (count competitiors)} :content
+  [{:tag :StartList :attrs {:Qty (str (count competitiors))} :content
     (reduce (fn [start-list-xml competitor]
               (conj start-list-xml (competitor->xml competitor (count start-list-xml))))
             []
@@ -119,22 +96,26 @@
   (reduce (fn [classes-xml class]
             (conj classes-xml {:tag :Class :attrs
                                {:Name (:class/name class)
-                                :Seq (count classes-xml)}
+                                :Seq (str (count classes-xml))}
                                :content (competitors->dance-perfect-xml-start-list (:class/competitors class))}))
           []
-          class-ex))
+          classes))
 
 (defn date->dance-perfect-format [date]
   (.format (java.text.SimpleDateFormat. "yyyy-MM-dd") date))
 
+(defn data->dance-perfect-xml [version dance-perfect-data]
+  {:tag :DancePerfect :attrs {:Version version} :content
+   [{:tag :CompData :attrs {:Name (:competition/name dance-perfect-data)
+                            :Date (date->dance-perfect-format (:competition/date dance-perfect-data))
+                            :Place (:competition/location dance-perfect-data)}
+     :content nil}
+    {:tag :AdjPanelList :attrs nil :content [{:tag :AdjList :attrs nil :content nil}]}
+    {:tag :ClassList :attrs nil :content
+     (classes->dance-perfect-xml-classes (:competition/classes dance-perfect-data))}]})
+
 (defn export-file [version dance-perfect-data]
-  (xml/emit {:tag :DancePerfect :attrs {:Version version} :content
-             [{:tag :CompData :attrs {:Name (:competition/name dance-perfect-data)
-                                      :Date (date->dance-perfect-format (:competition/date dance-perfect-data))
-                                      :Place (:competition/location dance-perfect-data)}}
-              {:tag :AdjPanelList :content [{:tag :AdjList}]}
-              {:tag :ClassList :content
-               (classes->dance-perfect-xml-classes (:competition/classes dance-perfect-data))}]}))
+  (xml/emit (data->dance-perfect-xml version dance-perfect-data)))
 
 (defn import-file-stream [{:keys [content]}]
   (dance-perfect-xml->data (read-xml-string content)))
