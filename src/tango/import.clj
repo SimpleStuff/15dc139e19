@@ -61,8 +61,7 @@
      :competition/date (tcr/to-date
                         (tf/parse (tf/formatter "yyyy-MM-dd")
                                   (get-in competition-data [:attrs :Date])))
-     :competition/classes (dance-perfect-xml-classes->classes classes-xml)
-     }))
+     :competition/classes (dance-perfect-xml-classes->classes classes-xml)}))
 
 (defn import-file [path]
   {:pre [(string? path)]}
@@ -77,7 +76,12 @@
          []))
       (create-import-info "" [] :failed [:file-not-found]))))
 
-(defn competitor->xml [competitor seq-nr]
+(defn import-file-stream [{:keys [content]}]
+  (dance-perfect-xml->data (read-xml-string content)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Export
+(defn- competitor->xml [competitor seq-nr]
   {:tag :Couple :attrs {:Name (:competitor/name competitor)
                         :Seq (str seq-nr)
                         :License ""
@@ -85,14 +89,14 @@
                         :Number (str (:competitor/number competitor))}
    :content nil})
 
-(defn competitors->dance-perfect-xml-start-list [competitiors]
+(defn- competitors->dance-perfect-xml-start-list [competitiors]
   [{:tag :StartList :attrs {:Qty (str (count competitiors))} :content
     (reduce (fn [start-list-xml competitor]
               (conj start-list-xml (competitor->xml competitor (count start-list-xml))))
             []
             competitiors)}])
 
-(defn classes->dance-perfect-xml-classes [classes]
+(defn- classes->dance-perfect-xml-classes [classes]
   (reduce (fn [classes-xml class]
             (conj classes-xml {:tag :Class :attrs
                                {:Name (:class/name class)
@@ -101,10 +105,10 @@
           []
           classes))
 
-(defn date->dance-perfect-format [date]
+(defn- date->dance-perfect-format [date]
   (.format (java.text.SimpleDateFormat. "yyyy-MM-dd") date))
 
-(defn data->dance-perfect-xml [version dance-perfect-data]
+(defn data->dance-perfect-xml-data [version dance-perfect-data]
   {:tag :DancePerfect :attrs {:Version version} :content
    [{:tag :CompData :attrs {:Name (:competition/name dance-perfect-data)
                             :Date (date->dance-perfect-format (:competition/date dance-perfect-data))
@@ -114,11 +118,10 @@
     {:tag :ClassList :attrs nil :content
      (classes->dance-perfect-xml-classes (:competition/classes dance-perfect-data))}]})
 
-(defn export-file [version dance-perfect-data]
-  (xml/emit (data->dance-perfect-xml version dance-perfect-data)))
+(defn data->dance-perfect-xml [version dance-perfect-data]
+  (with-out-str (xml/emit (data->dance-perfect-xml-data version dance-perfect-data))))
 
-(defn import-file-stream [{:keys [content]}]
-  (dance-perfect-xml->data (read-xml-string content)))
+
 
 ;(spit "export.xml" (with-out-str (export-file 4.1 (:file/content small-exampel-data))))
 ;http://blog.fogus.me/2011/09/08/10-technical-papers-every-programmer-should-read-at-least-twice/
