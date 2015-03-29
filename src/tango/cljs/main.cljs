@@ -59,22 +59,28 @@
     (set! (.-onload r) #(on-file-read % r))
     (.readAsText r file)))
 
-(defonce app-state
-  (atom {:competitions []}))
+(defn on-export-click [e competition]
+  (log "Export clicked")
+  (log (str competition))
+  (chsk-send! [:file/export {:file/format :dance-perfect
+                             :file/content competition}]))
 
-;; (defonce app-state 
-;;   (atom {:competitions
-;;          [{:competition/date #inst "2014-11-22T00:00:00.000-00:00",
-;;            :competition/name "TurboMegatävling",
-;;            :dance-perfect/version "4.1",
-;;            :competition/location "THUNDERDOME",
-;;            :competition/classes
-;;            [{:class/name "Hiphop Singel Star B", :class/competitors
-;;              [{:competitor/name "Rulle Trulle", :competitor/number 1, :competitor/club "Rulles M&M"}
-;;               {:competitor/name "Katchyk Wrong", :competitor/number 2, :competitor/club "Sccchhh"}]}
-;;             {:class/name "Hiphop Singel Star J Fl", :class/competitors
-;;              [{:competitor/name "Ringo Stingo" :competitor/number 20, :competitor/club "Kapangg"}
-;;               {:competitor/name "Greve Turbo", :competitor/number 21, :competitor/club "OOoost"}]}]}]}))
+;; (defonce app-state
+;;   (atom {:competitions []}))
+
+(defonce app-state 
+  (atom {:competitions
+         [{:competition/date #inst "2014-11-22T00:00:00.000-00:00",
+           :competition/name "TurboMegatävling",
+           :dance-perfect/version "4.1",
+           :competition/location "THUNDERDOME",
+           :competition/classes
+           [{:class/name "Hiphop Singel Star B", :class/competitors
+             [{:competitor/name "Rulle Trulle", :competitor/number 1, :competitor/club "Rulles M&M"}
+              {:competitor/name "Katchyk Wrong", :competitor/number 2, :competitor/club "Sccchhh"}]}
+            {:class/name "Hiphop Singel Star J Fl", :class/competitors
+             [{:competitor/name "Ringo Stingo" :competitor/number 20, :competitor/club "Kapangg"}
+              {:competitor/name "Greve Turbo", :competitor/number 21, :competitor/club "OOoost"}]}]}]}))
 
 ;; TODO - Let the server return dancers in a UI-normalized way
 (defn get-dancers [competitions]
@@ -114,15 +120,21 @@
     (fn [competition]
       [:li 
        [:div.view
-        [:label  (str (:competition/name competition) " i "
+        [:label {:on-click #(log "Klickz")} (str (:competition/name competition) " i "
                       (:competition/location competition) " den "
-                      (:competition/date competition))]
+                      (:competition/date competition))
+         ]
         [:input.btn.btn-default
          {:type "button"
           :value (if @open "Stäng" "Öppna")
           :on-click #(swap! open not)}]]
        (if @open
          [:div
+          [:input.btn.btn-default
+           {:type "button"
+            :value "Exportera"
+            ;; TODO - only send competition id when we got back-end storage
+            :on-click #(on-export-click % competition)}]
           [:h4 "Klasser :"]
           [class-component (:competition/classes competition)]])])))
 

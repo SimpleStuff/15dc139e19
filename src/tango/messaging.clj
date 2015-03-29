@@ -9,10 +9,28 @@
 ;; Provides useful Timbre aliases in this ns
 (log/refer-timbre)
 
+(defn find-handler [handler-k handler-map]
+  (log/info (str "Find handler for [" handler-k "]"))
+  (let [handler (get handler-map handler-k)]
+    (if handler
+      (do
+        (log/info (str "Found handler [" handler-k "]"))
+        handler)
+      (log/info (str "Failed to find handler [" handler-k "]")))))
+
+;; Match incoming client messages and translate to server side format with for example
+;; the client id to be able to send responses async to the correct client.
+;; The handler-map contains handlers that produce the result that should be sent back to the client.
+;; TODO - fix an error pattern so that the client receives the errors and our message loop do not die.
 (defn message-dispatch [handler-map {:keys [topic payload sender]} ]
   (match [topic payload]
          [:file/import xml]
-         {:id sender :message [:file/imported {:content ((:file-import handler-map) xml)}]}
+         {:id sender :message [:file/imported {:content ((find-handler :file-import handler-map) xml)}]}
+         [:file/export _]
+         (let [handler (find-handler :file-export handler-map)]
+           (if handler
+             {:id sender :message [:file/export {:content (handler (:dance-perfect/version (:file/content payload)) (:file/content payload))}]}
+             {:id sender :message [:server/error {:error/message "Failed to export file"}]}))
          [:client/ping p]
          {:id sender :message [:server/pong []]}
          :else {:id sender :message [:client/unkown-topic {:topic topic}]}))
@@ -55,7 +73,8 @@
     (let [msg-send (start-message-send-loop (fn [msg] (ws/send-socket! ws-connection (:id msg) (:message msg)))
                                             (:messages-send-chan channels) (:system-chan channels))
           msg-rec (start-message-loop
-                   (partial message-dispatch {:file-import #(import/import-file-stream %)})
+                   (partial message-dispatch {:file-import #(import/import-file-stream %)
+                                              :file-export #(import/data->dance-perfect-xml %1 %2)})
                    (:messages-receive-chan channels) (:messages-send-chan channels) (:system-chan channels))]
       (assoc component :message-sender msg-send :message-receiver msg-rec)))
 
