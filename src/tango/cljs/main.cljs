@@ -52,6 +52,8 @@
   (let [result (.-result file-reader)]
     (chsk-send! [:file/import {:content result}])))
 
+
+
 (defn on-click-import-file [e]
   (log "Import clicked")
   (let [file (.item (.. e -target -files) 0)
@@ -115,6 +117,8 @@
       (:class/name cls)
       [competitor-component (:class/competitors cls) true]])])
 
+
+
 (defn competition-item []
   (let [open (atom false)]
     (fn [competition]
@@ -133,8 +137,11 @@
           [:input.btn.btn-default
            {:type "button"
             :value "Exportera"
-            ;; TODO - only send competition id when we got back-end storage
+            ;; TODO - send competition id when we got back-end storage
             :on-click #(on-export-click % competition)}]
+          [:a {:id "export-download-link"
+               :href (str "/exported-files/" (:competition/name competition) ".xml")
+               :download (str (:competition/name competition) ".xml")}]
           [:h4 "Klasser :"]
           [class-component (:competition/classes competition)]])])))
 
@@ -178,6 +185,23 @@
 (defn ^:export run []
   (reagent/render-component [menu-component] (.-body js/document)))
 
+;; Exempel till "Export"
+;; <a id="document-download-link" download="project.goy" href=""></a>
+
+;; (defn save-document []
+;; (let [download-link (. js/document (getElementById "document-download-link"))
+;; app-state-to-save (get-in @app/app-state [:main-app])
+;; document-content (pr-str app-state-to-save)
+;; compressed-content (.compressToBase64 js/LZString document-content)
+;; href-content (str "data:application/octet-stream;base64," compressed-content)]
+;; (set! (.-href download-link) href-content)
+;; (.click download-link)))
+
+(defn handle-export []
+  (let [export-link (. js/document (getElementById "export-download-link"))]
+    (log "Exporting competition")
+    (.click export-link)
+    ))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Socket handling
 (defn- event-handler [[id data :as ev] _]
@@ -189,6 +213,8 @@
            (swap! app-state #(hash-map :competitions (conj (:competitions %) (:content content))))
            (log (str @app-state))
            )
+         [:chsk/recv [:file/export content]]
+         (handle-export)
     [:chsk/state [:first-open _]] (log "Channel socket successfully established!")
     ;[:chsk/state new-state] (log (str "Chsk state change: " new-state))
     ;[:chsk/recv payload] (log (str "Push event from server: " payload))

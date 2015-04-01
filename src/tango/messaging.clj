@@ -29,7 +29,10 @@
          [:file/export _]
          (let [handler (find-handler :file-export handler-map)]
            (if handler
-             {:id sender :message [:file/export {:content (handler (:dance-perfect/version (:file/content payload)) (:file/content payload))}]}
+             {:id sender :message [:file/export
+                                   {:content
+                                    (handler (:dance-perfect/version (:file/content payload))
+                                             (:file/content payload))}]}
              {:id sender :message [:server/error {:error/message "Failed to export file"}]}))
          [:client/ping p]
          {:id sender :message [:server/pong []]}
@@ -74,7 +77,11 @@
                                             (:messages-send-chan channels) (:system-chan channels))
           msg-rec (start-message-loop
                    (partial message-dispatch {:file-import #(import/import-file-stream %)
-                                              :file-export #(import/data->dance-perfect-xml %1 %2)})
+                                              :file-export
+                                              #(spit (str "resources/public/exported-files/"
+                                                          (:competition/name %2)
+                                                          ".xml")
+                                                     (import/data->dance-perfect-xml %1 %2))})
                    (:messages-receive-chan channels) (:messages-send-chan channels) (:system-chan channels))]
       (assoc component :message-sender msg-send :message-receiver msg-rec)))
 

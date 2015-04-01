@@ -18,12 +18,19 @@
 
 ;; TODO input validation of message dispatch
 ;; TODO test verification of broken handler map
+;; TODO expand on the "find handler" semantics
+;; TODO make testest for the component creation, i.e. that the dispatch map is correct
 (deftest message-dispatching
   (testing "Dispatching of client messages"
-    (let [handler-map {:file-import #(hash-map :file-import-called %)}
+    (let [handler-map {:file-import #(hash-map :file-import-called %)
+                       :file-export (fn [version content] [:file-export-called version content])}
           message-disp (msg/create-message-dispatch handler-map)]
       (is (= (message-disp {:topic :file/import :payload :the-payload :sender 1})
              {:id 1 :message [:file/imported {:content {:file-import-called :the-payload}}]}))
+      (is (= (message-disp {:topic :file/export
+                            :payload {:file/content {:dance-perfect/version "1" :content [1]}} :sender 1})
+             {:id 1 :message [:file/export {:content [:file-export-called "1"
+                                                      {:dance-perfect/version "1" :content [1]}]}]}))
       (is (= (message-disp {:topic :client/ping :payload :the-payload :sender 2})
              {:id 2 :message [:server/pong []]}))
       (is (= (message-disp {:topic :no-match :payload :the-payload :sender 3})
