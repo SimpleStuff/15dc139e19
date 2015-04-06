@@ -44,6 +44,7 @@
 
 (def system nil)
 
+;; TODO - log-level must be fixed with tests, not tests spew loggs
 (defn init []
   (alter-var-root 
    #'system (constantly (production-system {:port 1337 :log-file "loggs/test.log" :log-level :debug}))))

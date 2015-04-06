@@ -14,7 +14,8 @@
                  [org.clojure/core.match "0.3.0-alpha4"]
                  [ring/ring-defaults "0.1.3"]
                  [com.stuartsierra/component "0.2.2"]
-                 [org.clojure/tools.namespace "0.2.9"]]
+                 [org.clojure/tools.namespace "0.2.9"]
+                 [org.clojure/data.xml "0.0.8"]]
   
   :plugins [[lein-cljsbuild "1.0.3"]]
 
