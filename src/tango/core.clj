@@ -22,11 +22,10 @@
 
 (defn production-system [configuration]
   (let [{:keys [port log-file log-level]} configuration]
-    (if log-file
-      (do
-        (log/info "Enable file logging to " log-file)
-        (log/set-config! [:Appenders :spit :enabled?] true)
-        (log/set-config! [:shared-appender-config :spit-filename] log-file)))
+    (when log-file
+      (log/info "Enable file logging to " log-file)
+      (log/set-config! [:Appenders :spit :enabled?] true)
+      (log/set-config! [:shared-appender-config :spit-filename] log-file))
     (if log-level
       (log/set-level! log-level))
     (component/system-map

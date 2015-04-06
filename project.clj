@@ -15,7 +15,10 @@
                  [ring/ring-defaults "0.1.3"]
                  [com.stuartsierra/component "0.2.2"]
                  [org.clojure/tools.namespace "0.2.9"]
-                 [org.clojure/data.xml "0.0.8"]]
+                 [org.clojure/data.xml "0.0.8"]
+                 ; Code cleaness tools
+                 [repetition-hunter "1.0.0"]
+                 ]
   
   :plugins [[lein-cljsbuild "1.0.3"]]
 

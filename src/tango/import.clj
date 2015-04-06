@@ -14,6 +14,12 @@
           (Integer/parseInt (clojure.string/replace prepared-string #"\+" ""))
           :else s)))
 
+(defn- str-count [seq]
+  (str (count seq)))
+
+(defn- get-name-attr [xml-node]
+  (get-in xml-node [:attrs :Name]))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Import
 (defn read-xml [file]
@@ -23,14 +29,14 @@
   (xml/parse (java.io.ByteArrayInputStream. (.getBytes s))))
 
 (defn- dance-perfect-xml-competitors->competitors [dp-competitors-xml]
-  (mapv #(hash-map :competitor/name (get-in % [:attrs :Name])
+  (mapv #(hash-map :competitor/name (get-name-attr %)
                    :competitor/club (get-in % [:attrs :Club])
                    :competitor/number (to-number (get-in % [:attrs :Number])))
         dp-competitors-xml))
 
 ; Kan en klass bara ha en startlista? - make a test
 (defn- dance-perfect-xml-classes->classes [dp-classes-xml]
-  (mapv #(hash-map :class/name (get-in % [:attrs :Name])
+  (mapv #(hash-map :class/name (get-name-attr %)
                    :class/competitors
                    (dance-perfect-xml-competitors->competitors (:content (first (:content %)))))
         (:content dp-classes-xml)))
@@ -55,7 +61,7 @@
         competition-data (:competition-data-xml xml-parts)
         classes-xml (:class-list-xml xml-parts)]
     {:dance-perfect/version (get-in (:dance-perfect-xml xml-parts) [:attrs :Version])
-     :competition/name (get-in competition-data [:attrs :Name])
+     :competition/name (get-name-attr competition-data)
      :competition/location (get-in competition-data [:attrs :Place])
      :competition/date (tcr/to-date
                         (tf/parse (tf/formatter "yyyy-MM-dd")
@@ -88,7 +94,7 @@
             :Number (str (:competitor/number competitor))}])
 
 (defn- competitors->dance-perfect-xml-start-list [competitiors]
-  (into [:StartList {:Qty (str (count competitiors))}]
+  (into [:StartList {:Qty (str-count competitiors)}]
         (reduce (fn [start-list-xml competitor]
                     (conj start-list-xml (competitor->xml competitor (count start-list-xml))))
                   []
@@ -98,7 +104,7 @@
   (reduce (fn [classes-xml class]
             (conj classes-xml [:Class
                                {:Name (:class/name class)
-                                :Seq (str (count classes-xml))}
+                                :Seq (str-count classes-xml)}
                                (competitors->dance-perfect-xml-start-list (:class/competitors class))
                                ]))
           []
