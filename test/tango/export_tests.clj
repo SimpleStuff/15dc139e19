@@ -44,25 +44,4 @@
    :file/import-status :success, :file/import-errors []})
 
 (def small-exampel-xml
-"<?xml version='1.0' encoding='UTF-8'?>
-<DancePerfect Version='4.1'>
-<CompData Name='TurboMegatävling' Date='2014-11-22' Place='THUNDERDOME'/>
-<AdjPanelList>
-<AdjList/>
-</AdjPanelList>
-<ClassList>
-<Class Name='Hiphop Singel Star B' Seq='0'>
-<StartList Qty='2'>
-<Couple Name='Rulle Trulle' Seq='0' License='' Club='Rulles M&M' Number='1'/>
-<Couple Name='Katchyk Wrong' Seq='1' License='' Club='Sccchhh' Number='2'/>
-</StartList>
-</Class>
-<Class Name='Hiphop Singel Star J Fl' Seq='1'>
-<StartList Qty='2'>
-<Couple Name='Ringo Stingo' Seq='0' License='' Club='Kapangg' Number='20'/>
-<Couple Name='Greve Turbo' Seq='1' License='' Club='OOoost' Number='21'/>
-</StartList>
-</Class>
-</ClassList>
-</DancePerfect>
-")
+  "<?xml version=\"1.0\" encoding=\"UTF-8\"?><DancePerfect Version=\"4.1\"><CompData Name=\"TurboMegatävling\" Date=\"2014-11-22\" Place=\"THUNDERDOME\"></CompData><AdjPanelList><AdjList></AdjList></AdjPanelList><ClassList><Class Name=\"Hiphop Singel Star B\" Seq=\"0\"><StartList Qty=\"2\"><Couple Name=\"Rulle Trulle\" Seq=\"0\" License=\"\" Club=\"Rulles M&amp;M\" Number=\"1\"></Couple><Couple Name=\"Katchyk Wrong\" Seq=\"1\" License=\"\" Club=\"Sccchhh\" Number=\"2\"></Couple></StartList></Class><Class Name=\"Hiphop Singel Star J Fl\" Seq=\"1\"><StartList Qty=\"2\"><Couple Name=\"Ringo Stingo\" Seq=\"0\" License=\"\" Club=\"Kapangg\" Number=\"20\"></Couple><Couple Name=\"Greve Turbo\" Seq=\"1\" License=\"\" Club=\"OOoost\" Number=\"21\"></Couple></StartList></Class></ClassList></DancePerfect>")
