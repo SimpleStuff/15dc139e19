@@ -68,9 +68,10 @@
           (send-fn msg))
         (catch Exception e
           (log/error e "Exception in message send go loop")
-          (async/>! system-ch (create-exception-message e))
-          ))
+          (async/>! system-ch (create-exception-message e))))
       (recur))))
+
+(defn start-message-looper [])
 
 (defrecord MessageHandler [dispatch-fn ws-connection channels database]
   component/Lifecycle
