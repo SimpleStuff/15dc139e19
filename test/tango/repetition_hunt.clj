@@ -31,7 +31,6 @@
    "2 repetitions of complexity 4\n\nLine 58 - tango.messaging:\n(async/>! system-ch (create-exception-message e))\n\nLine 71 - tango.messaging:\n(async/>! system-ch (create-exception-message e))\n\n======================================================================\n\n" ""))
 
 ;; fixa simple check
-;; fixa eastwood
 
 ;;https://github.com/greglook/lein-hiera
 ;;https://github.com/jakemcc/lein-test-refresh

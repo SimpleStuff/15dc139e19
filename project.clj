@@ -20,7 +20,17 @@
                  [repetition-hunter "1.0.0"]
                  ]
   
-  :plugins [[lein-cljsbuild "1.0.3"]]
+  :plugins [[lein-cljsbuild "1.0.3"]
+            [lein-hiera "0.9.0"]
+            [lein-kibit "0.0.8"]
+            [jonase/eastwood "0.2.1"]]
+
+  :hiera {:path "specs/tango-hierarchy.png"
+          :vertical true
+          :show-external false
+          :cluster-depth 0
+          :trim-ns-prefix true
+          :ignore-ns #{}}
 
   :cljsbuild {:builds [{:id "dev"
                         :source-paths ["src/tango/cljs"]

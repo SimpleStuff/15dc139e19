@@ -6,10 +6,14 @@
             [clj-time.core :as tc]
             [clj-time.coerce :as tcr]
             [clojure.xml :as xml]
+            [taoensso.timbre :as log]
             [clojure.core.async
              :as a
              :refer [>! <! >!! <!! chan buffer close! thread
                      alts! alts!! timeout go-loop]]))
+
+;; Turn off logging while testing
+(log/set-config! [:appenders :standard-out :enabled?] false)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Import
