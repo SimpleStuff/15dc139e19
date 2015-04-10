@@ -44,3 +44,6 @@
   :main ^:skip-aot tango.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}})
+
+;; fixa simple check
+;; https://github.com/jakemcc/lein-test-refresh
