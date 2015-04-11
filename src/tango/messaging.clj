@@ -41,33 +41,37 @@
 (defn create-message-dispatch [handler-map]
   (partial message-dispatch handler-map))
 
+(defn- create-exception-message [e]
+  (str "Exception message: " (.getMessage e)))
+
+;; TODO - refactor into generic message loop that runs body
 (defn start-message-loop [dispatch-fn messages-receive-ch messages-send-ch system-ch]
   (async/go-loop []
     (when-let [msg (async/<! messages-receive-ch)]
       (try
-        (if msg
-          (do
-            (log/info (str "Message: [" (:topic msg) "] from sender id: " (:sender msg)))
-            (log/trace (str "Payload: " (:payload msg)))
-            (async/>! messages-send-ch (dispatch-fn msg))))
+        (when msg
+          (log/info (str "Message: [" (:topic msg) "] from sender id: " (:sender msg)))
+          (log/trace (str "Payload: " (:payload msg)))
+          (async/>! messages-send-ch (dispatch-fn msg)))
         (catch Exception e
           (log/error e "Exception in message receive go loop")
-          (async/>! system-ch (str "Exception message: " (.getMessage e)))))
+          (async/>! system-ch (create-exception-message e))))
       (recur))))
 
 (defn start-message-send-loop [send-fn messages-send-chan system-ch]
   (async/go-loop []
     (when-let [msg (async/<! messages-send-chan)]
       (try
-        (if msg
-          (do
-            (log/info (str "Sending: [" (first (:message msg)) "] to client id: " (:id msg)))
-            (log/trace (str "full message " (:message msg)))
-            (send-fn msg)))
+        (when msg
+          (log/info (str "Sending: [" (first (:message msg)) "] to client id: " (:id msg)))
+          (log/trace (str "full message " (:message msg)))
+          (send-fn msg))
         (catch Exception e
           (log/error e "Exception in message send go loop")
-          (async/>! system-ch (str "Exception message: " (.getMessage e)))))
+          (async/>! system-ch (create-exception-message e))))
       (recur))))
+
+(defn start-message-looper [])
 
 (defrecord MessageHandler [dispatch-fn ws-connection channels database]
   component/Lifecycle

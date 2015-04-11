@@ -1,3 +1,7 @@
+;; ## Tango System composition
+;; `tango.core` is the main entry point for the application and is
+;; responsible for managing the life-cycle of all the other system
+;; components.
 (ns tango.core
   (:gen-class)
   (:require [com.stuartsierra.component :as component]
@@ -12,21 +16,47 @@
 (log/refer-timbre)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Resources
-;http://www.core-async.info/tutorial/a-minimal-client
-;https://github.com/enterlab/rente
-;http://stuartsierra.com/2013/12/08/parallel-processing-with-core-async
-;https://github.com/danielsz/system
-; http://localhost:1337/admin
+;; ## Resources
+;;
+;; - http://www.core-async.info/tutorial/a-minimal-client
+;; - https://github.com/enterlab/rente
+;; - http://stuartsierra.com/2013/12/08/parallel-processing-with-core-async
+;; - https://github.com/danielsz/system
+;; - http://localhost:1337/admin
+;; - https://github.com/weavejester/codox
+;; - http://gdeer81.github.io/marginalia/
+;; - https://github.com/gdeer81/marginalia/blob/master/src/marginalia/core.clj
+;; - https://en.wikipedia.org/wiki/Markdown
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn production-system [configuration]
+(defn production-system
+  "Creates a system configured for production use.
+   
+   Configuration map can contain the following :
+  
+    {:port
+     :log-file
+     :log-level}
+
+   `:port` - integer that specifies the port number to start the http server on.
+
+   `:log-file` - string that specifies the path for log file output.
+
+   `:log-level` - Log level can be any of:
+
+   - `:debug`
+   - `:info` 
+   - `:trace`
+   - `:error`
+   - `:warn`
+   - `:fatal`
+  "
+  [configuration]
   (let [{:keys [port log-file log-level]} configuration]
-    (if log-file
-      (do
-        (log/info "Enable file logging to " log-file)
-        (log/set-config! [:Appenders :spit :enabled?] true)
-        (log/set-config! [:shared-appender-config :spit-filename] log-file)))
+    (when log-file
+      (log/info "Enable file logging to " log-file)
+      (log/set-config! [:Appenders :spit :enabled?] true)
+      (log/set-config! [:shared-appender-config :spit-filename] log-file))
     (if log-level
       (log/set-level! log-level))
     (component/system-map
@@ -40,30 +70,41 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Application
-
+;; Defines a pointer to the current system.
 (def system nil)
 
-;; TODO - log-level must be fixed with tests, not tests spew loggs
-(defn init []
+(defn init
+  "Initializes a Production system with default values."
+  []
   (alter-var-root 
    #'system (constantly (production-system {:port 1337 :log-file "loggs/test.log" :log-level :debug}))))
 
-(defn start []
+(defn start
+  "Recursivly starts all components in the system"
+  []
   (alter-var-root #'system component/start))
 
-(defn stop []
+(defn stop
+  "Recursivly stops all components in the system"
+  []
   (alter-var-root #'system (fn [s] (when s (component/stop s)))))
 
-(defn go []
+(defn go
+  "Entry point from a REPL, will initilize a default system and start it."
+  []
   (init)
   (start))
 
-(defn reset []
+(defn reset
+  "REPL helper that allow to restart the application and reload namespaces."
+  []
   (stop)
   (refresh :after 'tango.core/go))
 
-(defn -main [& args]
+(defn -main 
+  "Main entry point for the application. Valid args is an integer value that
+  specify port number for the http-server to start on."
+  [& args]
   (let [[port] args]
     (if-not port
       (println "Port number missing")

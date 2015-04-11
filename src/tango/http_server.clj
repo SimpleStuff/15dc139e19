@@ -42,8 +42,8 @@
         (assoc component :server-stop server-stop))))
   (stop [component]
     (when server-stop
-      (do (server-stop)
-          (log/info "HTTP server stopped")))
+      (server-stop)
+      (log/info "HTTP server stopped"))
     (assoc component :server-stop nil)))
 
 (defn create-http-server [port]
