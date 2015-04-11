@@ -9,5 +9,7 @@ echo "Running linter (lein eastwood)"
 lein eastwood '{:exclude-linters [:constant-test]}'
 echo "Running tests"
 lein test
+echo "Generating documentation (lein marg)"
+lein marg src test --dir "./doc"
 echo "Git status"
 git status
