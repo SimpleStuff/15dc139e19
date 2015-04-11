@@ -28,14 +28,13 @@ Running main give the option of specifing port number.
    $ lein run 80
    ```
 
-## Examples
+## Developer info
 
-### Bugs
-
+A shell-script called "pre-commit" is included that will run tests and code analysis. The script will also generate the following :
+ - "doc/uberdoc.html" that contains src with comments.
+ - "specs/tango-hierarchy.png" that show a namespace graph.
 
 ## License
 
 Copyright © 2014 Mårten Larsson, Stefan Karlsson, Thomas Didriksson
 
-Distributed under the Eclipse Public License either version 1.0 or (at
-your option) any later version.
