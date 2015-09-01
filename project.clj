@@ -3,25 +3,35 @@
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[org.clojure/clojure "1.6.0"]
-                 [com.taoensso/sente "1.3.0"]
-                 [compojure "1.2.0"]
-                 [http-kit "2.1.18"]
-                 [org.clojure/clojurescript "0.0-2371"]
-                 [org.clojure/core.async "0.1.346.0-17112a-alpha"]
-                 [reagent "0.4.3"]
-                 [clj-time "0.8.0"]
+  :dependencies [;; Core
+                 [org.clojure/clojure "1.7.0"]
+                 [org.clojure/core.async "0.1.346.0-17112a-alpha"]                 
+                 [org.clojure/tools.namespace "0.2.10"]
+                 [org.clojure/clojurescript "1.7.48"]
                  [org.clojure/core.match "0.3.0-alpha4"]
-                 [ring/ring-defaults "0.1.3"]
-                 [com.stuartsierra/component "0.2.2"]
-                 [org.clojure/tools.namespace "0.2.9"]
+
+                 ;; Utils
+                 [com.stuartsierra/component "0.2.3"]
                  [org.clojure/data.xml "0.0.8"]
+                 [clj-time "0.8.0"]
+
+                 ;; Web UI
+                 [com.taoensso/sente "1.5.0"]
+                 [com.taoensso/timbre "3.4.0"]
+
+                 [http-kit "2.1.19"]
+
+                 [ring                      "1.3.2"]
+                 [ring/ring-defaults        "0.1.5"]
+
+                 [compojure "1.3.4"]
+                                          
+                 [reagent "0.5.0"]
+                                  
                  ; Code cleaness tools
-                 [repetition-hunter "1.0.0"]
-                 
-                 ]
+                 [repetition-hunter "1.0.0"]]
   
-  :plugins [[lein-cljsbuild "1.0.3"]
+  :plugins [[lein-cljsbuild "1.0.6"]
             [lein-hiera "0.9.0"]
             [lein-kibit "0.0.8"]
             [jonase/eastwood "0.2.1"]

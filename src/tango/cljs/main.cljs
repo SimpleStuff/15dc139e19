@@ -1,4 +1,4 @@
-(ns tango-client
+(ns tango.client
   (:require-macros
    [cljs.core.async.macros :as asyncm :refer (go go-loop)])
   (:require [reagent.core :as reagent :refer [atom]]
