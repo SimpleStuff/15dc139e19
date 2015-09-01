@@ -1,5 +1,6 @@
 (ns tango.web-socket
   (:require [taoensso.sente :as sente]
+            [taoensso.sente.server-adapters.http-kit :refer (sente-web-server-adapter)]
             [clojure.core.async :as async]
             [com.stuartsierra.component :as component]
             [taoensso.timbre :as log]))
@@ -21,7 +22,7 @@
       component
       (let [{:keys [ch-recv send-fn connected-uids
                     ajax-post-fn ajax-get-or-ws-handshake-fn]}
-            (sente/make-channel-socket!)]
+            (sente/make-channel-socket! sente-web-server-adapter {})]
         (log/info "Start web socket")
         (assoc component
           :ch-recv ch-recv
