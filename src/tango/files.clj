@@ -2,6 +2,7 @@
   (:require [clojure.core.async :as async]
             [com.stuartsierra.component :as component]
             [taoensso.timbre :as log]
+            [tango.import :as import]
             [clojure.core.match :refer [match]]))
 
 (defn start-message-handler [in-channel out-channel]
@@ -13,8 +14,9 @@
                 payload (:payload message)]
             (log/trace (str "Files received: " message))
             (match [topic payload]
-                   [:import/dummy p]
-                   (async/put! out-channel (merge message {:topic :import/verified :payload p}))
+                   [:file/import p]
+                   (async/put! out-channel (merge message {:topic :file/imported
+                                                           :payload (import/import-file-stream p)}))
                    :else (async/>!! out-channel {:topic :files/unkown-topic :payload {:topic topic}}))))
         (catch Exception e
           (log/error e "Exception in Files message go loop")
