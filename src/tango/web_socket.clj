@@ -33,9 +33,6 @@
     (async/>!! out-channel adapted)
     (log/info (str "Web Socket sent message to out channel: " adapted))))
 
-;; (defn send-socket! [ws-connection user-id event]
-;;   ((:send-fn ws-connection) user-id event))
-
 (defn- create-exception-message [e]
   (str "Exception message: " (.getMessage e)))
 

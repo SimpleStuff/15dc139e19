@@ -84,11 +84,7 @@
      ;; Message broker
      :message-broker (component/using (broker/create-message-broker)
                                       {:channel-connection-channels client-connection
-                                       :file-handler-channels :file-handler-channels})
-     ;; :message-handler
-     ;; (component/using (messaging/create-message-handler) [:ws-connection :channels])
-     )))
-
+                                       :file-handler-channels :file-handler-channels}))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Defines a pointer to the current system.
