@@ -209,7 +209,7 @@
     ;; TODO Match your events here <...>
          [:chsk/recv [:file/imported content]]
          (do
-           (swap! app-state #(hash-map :competitions (conj (:competitions %) (:content content))))
+           (swap! app-state #(hash-map :competitions (conj (:competitions %) content)))
            (log (str @app-state))
            )
          [:chsk/recv [:file/export content]]
