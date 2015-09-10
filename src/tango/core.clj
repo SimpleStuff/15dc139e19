@@ -6,11 +6,15 @@
   (:gen-class)
   (:require [com.stuartsierra.component :as component]
             [clojure.tools.namespace.repl :refer [refresh]]
+            [taoensso.timbre :as log]
+
+            [tango.broker :as broker]
             [tango.web-socket :as ws]
             [tango.http-server :as http]
             [tango.channels :as channels]
-            [tango.messaging :as messaging]
-            [taoensso.timbre :as log]))
+            [tango.files :as files]
+            ;[tango.messaging :as messaging]
+            ))
 
 ;; Provides useful Timbre aliases in this ns
 (log/refer-timbre)
@@ -52,22 +56,35 @@
    - `:fatal`
   "
   [configuration]
-  (let [{:keys [port log-file log-level]} configuration]
+  (log/info "Creating system")
+  (let [{:keys [port log-file log-level id-generator-fn client-connection]} configuration
+        id-gen-fn (if id-generator-fn id-generator-fn (fn [] (str (java.util.UUID/randomUUID))))]
     (when log-file
+      (log/set-config! [:appenders :standard-out :enabled?] true)
       (log/info "Enable file logging to " log-file)
-      (log/set-config! [:Appenders :spit :enabled?] true)
+      (log/set-config! [:appenders :spit :enabled?] true)
       (log/set-config! [:shared-appender-config :spit-filename] log-file))
     (if log-level
       (log/set-level! log-level))
     (component/system-map
-     :channels (channels/create-channels)
-     :ws-connection
-     (component/using (ws/create-ws-connection) [:channels])
-     :http-server
-     (component/using (http/create-http-server port) [:ws-connection])
-     :message-handler
-     (component/using (messaging/create-message-handler) [:ws-connection :channels]))))
 
+     ;; Import handling
+     :file-handler-channels (files/create-file-handler-channels)
+     :file-handler (component/using (files/create-file-handler) [:file-handler-channels])
+
+     ;; Client channels
+     :channel-connection-channels (channels/create-channel-connection-channels)
+     :channel-connection (component/using (channels/create-channel-connection) [:channel-connection-channels])
+
+     ;; Http/WS-Service
+     :ws-connection-channels (ws/create-ws-channels)
+     :ws-connection (component/using (ws/create-ws-connection) [:ws-connection-channels])
+     :http-server (component/using (http/create-http-server port) [:ws-connection])
+     
+     ;; Message broker
+     :message-broker (component/using (broker/create-message-broker)
+                                      {:channel-connection-channels client-connection
+                                       :file-handler-channels :file-handler-channels}))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Defines a pointer to the current system.
@@ -77,7 +94,8 @@
   "Initializes a Production system with default values."
   []
   (alter-var-root 
-   #'system (constantly (production-system {:port 1337 :log-file "loggs/test.log" :log-level :debug}))))
+   #'system (constantly (production-system {:port 1337 :log-file "loggs/test.log" :log-level :debug
+                                            :client-connection :ws-connection-channels}))))
 
 (defn start
   "Recursivly starts all components in the system"

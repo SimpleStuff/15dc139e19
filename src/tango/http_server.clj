@@ -24,6 +24,7 @@
 (defn ring-handlers [ws-connection]
   (:ring-handlers ws-connection))
 
+;; TODO - handle that port is nil
 (defrecord HttpServer [port ws-connection server-stop]
   component/Lifecycle
   (start [component]
@@ -31,8 +32,7 @@
       (do
         (log/info "Server already started")
         component)
-      (let [{:keys [ajax-post-fn ajax-get-or-ws-handshake-fn]}
-            (ring-handlers ws-connection)
+      (let [{:keys [ajax-post-fn ajax-get-or-ws-handshake-fn]} (ring-handlers ws-connection)
 
             handler (handler ajax-post-fn ajax-get-or-ws-handshake-fn)
 

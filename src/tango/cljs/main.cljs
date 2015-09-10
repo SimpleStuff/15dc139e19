@@ -169,6 +169,9 @@
          {:type "button" :value "Dansare" :on-click #(reset! visible-component :competitors)}]
         [:input.btn.btn-primary.btn-lg
          {:type "button" :value "Domare" :on-click #(reset! visible-component :adjudicators)}]
+
+        [:input.btn.btn-default
+         {:type "button" :value "Debug Button" :on-click #(chsk-send! [:debug/test {:test "Test"}])}]
         ;[:h2 (str "visible-component " @visible-component)]
         ]
        (condp = @visible-component
@@ -206,7 +209,7 @@
     ;; TODO Match your events here <...>
          [:chsk/recv [:file/imported content]]
          (do
-           (swap! app-state #(hash-map :competitions (conj (:competitions %) (:content content))))
+           (swap! app-state #(hash-map :competitions (conj (:competitions %) content)))
            (log (str @app-state))
            )
          [:chsk/recv [:file/export content]]
