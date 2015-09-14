@@ -99,7 +99,7 @@
     (log/info "Closing WSConnection Channels")
     (if-let [in-chan (:in-channel component)]
       (async/close! in-chan))
-    (if-let [out-chan (:in-channel component)]
+    (if-let [out-chan (:out-channel component)]
       (async/close! out-chan))
     (assoc component
           :in-channel nil
