@@ -31,25 +31,43 @@
   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (defn on-click [e owner]
-;;   (log "Clicked w/o callback")
-;;   (chsk-send! [:test.event/clicked {:data "no callback"}]))
+;; (defonce app-state
+;;   (atom {:competitions []}))
 
-;; (defn on-edit [e owner]
-;;   (log "Edit w/o callback")
-;;   (chsk-send! [:test.event/clicked {:data (.. e -target -value)}]))
+(defonce app-state
+  (atom {:selected-page :import
 
-;; (defn on-click-cb [e owner]
-;;   (log "Click w callback")
-;;   (chsk-send! [:test.event/clicked {:data "Callback"}] 5000
-;;               (fn [cb-reply] (log (str "Callback reply: " cb-reply)))))
-
-(defn on-click-get-dancers []
-  (log "Clicked w/o callback")
-  (chsk-send! [:dancers/get {:all-of-them-now-damit! :please}]))
+         :competition
+         {:competition/date #inst "2014-11-22T00:00:00.000-00:00",
+          :competition/name "Elittävling",
+          :dance-perfect/version "4.1",
+          :competition/location "VÄSTERÅS",
+          :competition/classes
+          [{:class/name "Hiphop Singel Star B",
+            :class/competitors
+            [{:competitor/name "Saga Boström-Fors", :competitor/number 10, :competitor/club "M&M"}
+               {:competitor/name "Tyra Hedin", :competitor/number 11, :competitor/club "Uddans"}
+               {:competitor/name "Elina Ahlberg", :competitor/number 12, :competitor/club "SDC"}
+               {:competitor/name "Thyra Söderström", :competitor/number 13, :competitor/club "Uddans"}
+               {:competitor/name "Wilma Lindström Åslund", :competitor/number 14, :competitor/club "MD"}]}
+           
+           {:class/name "Hiphop Singel Star J Fl",
+            :class/competitors
+            [{:competitor/name "Tilda Strandberg", :competitor/number 30, :competitor/club "Uddans"}
+             {:competitor/name "Tove Gärdin", :competitor/number 31, :competitor/club "BF"}
+             {:competitor/name "Esther Wallmo", :competitor/number 32, :competitor/club "Uddans"}
+             {:competitor/name "Felicia Dackell", :competitor/number 33, :competitor/club "Uddans"}
+             {:competitor/name "Emma Fredriksson", :competitor/number 34, :competitor/club "DVT"}]}
+           
+           {:class/name "Hiphop Singel Star J Po",
+            :class/competitors
+            [{:competitor/name "Axel Carlsson", :competitor/number 60, :competitor/club "DTLH/DV"}
+             {:competitor/name "Tom Matei", :competitor/number 61, :competitor/club "SDC"}
+             {:competitor/name "Jacob Olsson", :competitor/number 62, :competitor/club "DTLH/DV"}]}]}}))
 
 (defn on-file-read [e file-reader]
   (let [result (.-result file-reader)]
+    (log "On file read: send :file/import")
     (chsk-send! [:file/import {:content result}])))
 
 (defn on-click-import-file [e]
@@ -59,130 +77,98 @@
     (set! (.-onload r) #(on-file-read % r))
     (.readAsText r file)))
 
+(defn dispatch [props]
+  (let [id (first props)
+        data (into [] (rest props))]
+    (log (str "Dispatch of " id " with data " data))
+    (match [id data]
+           [:file/import [file]]
+           (inc 1))))
+
 (defn on-export-click [e competition]
   (log "Export clicked")
   (log (str competition))
   (chsk-send! [:file/export {:file/format :dance-perfect
                              :file/content competition}]))
 
-(defonce app-state
-  (atom {:competitions []}))
 
-;; (defonce app-state 
-;;   (atom {:competitions
-;;          [{:competition/date #inst "2014-11-22T00:00:00.000-00:00",
-;;            :competition/name "TurboMegatävling",
-;;            :dance-perfect/version "4.1",
-;;            :competition/location "THUNDERDOME",
-;;            :competition/classes
-;;            [{:class/name "Hiphop Singel Star B", :class/competitors
-;;              [{:competitor/name "Rulle Trulle", :competitor/number 1, :competitor/club "Rulles M&M"}
-;;               {:competitor/name "Katchyk Wrong", :competitor/number 2, :competitor/club "Sccchhh"}]}
-;;             {:class/name "Hiphop Singel Star J Fl", :class/competitors
-;;              [{:competitor/name "Ringo Stingo" :competitor/number 20, :competitor/club "Kapangg"}
-;;               {:competitor/name "Greve Turbo", :competitor/number 21, :competitor/club "OOoost"}]}]}]}))
 
-;; TODO - Let the server return dancers in a UI-normalized way
-(defn get-dancers [competitions]
-  (into #{}
-        (map #(dissoc % :competitor/number) 
-             (for [competition competitions
-                   classes (:competition/classes competition)
-                   competitors (:class/competitors classes)]
-               competitors))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Components
 
-(defonce component-state
-  (atom {:competitions-visible false}))
+(defn dp-classes-component []
+  ;; table with #, class name (Dansdisciplin), Typ av dans, Antal Startande, Status
+  [:table.table
+   [:thead
+    [:tr
+     [:th {:with "20"} "#"]
+     [:th {:with "200"} "Dansdisciplin"]
+     [:th {:with "20"} "Typ"]
+     [:th {:with "20"} "Startande"]
+     [:th {:with "20"} "Status"]]]
+   [:tbody
+    (for [class (:competition/classes (:competition @app-state))]
+      ^{:key class}
+      [:tr
+       [:td "-"]
+       [:td (:class/name class)]
+       [:td "-"]
+       [:td (str (count (:class/competitors class)) "/" (count (:class/competitors class)))]
+       [:td "-"]])]])
 
-(defn competitor-component [competitors include-number?]
-  [:div ""
-   [:ul
-    (for [competitor competitors]
-      ^{:key competitor}
-      [:li 
-       (str (if include-number?
-              (str "Tävlande nummer : " (:competitor/number competitor) " - "))
-            (str (:competitor/name competitor)
-                 " från "
-                 (:competitor/club competitor)))])]])
-
-(defn class-component [classes]
-  [:h3 "Classes"]
-  [:div
-   (for [cls classes]
-     ^{:key cls}
-     [:div
-      (:class/name cls)
-      [competitor-component (:class/competitors cls) true]])])
-
-(defn competition-item []
-  (let [open (atom false)]
-    (fn [competition]
-      [:li 
-       [:div.view
-        [:label {:on-click #(log "Klickz")} (str (:competition/name competition) " i "
-                      (:competition/location competition) " den "
-                      (:competition/date competition))
-         ]
-        [:input.btn.btn-default
-         {:type "button"
-          :value (if @open "Stäng" "Öppna")
-          :on-click #(swap! open not)}]]
-       (if @open
-         [:div
-          [:input.btn.btn-default
-           {:type "button"
-            :value "Exportera"
-            ;; TODO - send competition id when we got back-end storage
-            :on-click #(on-export-click % competition)}]
-          [:a {:id "export-download-link"
-               :href (str "/exported-files/" (:competition/name competition) ".xml")
-               :download (str (:competition/name competition) ".xml")}]
-          [:h4 "Klasser :"]
-          [class-component (:competition/classes competition)]])])))
-
-(defn competitors-component []
-  [:div
-   [:h2 "Tillgängliga dansare"]
-   [competitor-component (get-dancers (:competitions @app-state))]])
-
+;; TODO - make the on-click event run thoughe dispatch
 (defn import-component []
   [:div
-   
-   [:h2 "Tillgängliga tävlingar"]
-   [:ul
-    (for [competition (:competitions @app-state)]
-      ^{:key competition} [competition-item competition])]
    [:h2 "Importera en ny tävling : "]
-   [:input.btn.btn-default {:type "file" :value "Import file"
-                            :onChange #(on-click-import-file %)}]])
+   [:input.btn.btn-primary.btn-lg {:type "file" :value "Import file"
+                                   :onChange #(on-click-import-file %)}]])
 
 (defn menu-component []
-  (let [visible-component (atom :none)]
-    (fn []
-      [:div.container
-       [:div.header
-        [:h2 "Välkommen till Tango!"]
-        [:input.btn.btn-primary.btn-lg.navbar-btn
-         {:type "button" :value "Tävlingar" :on-click #(reset! visible-component :competitions)}]
-        [:input.btn.btn-primary.btn-lg
-         {:type "button" :value "Dansare" :on-click #(reset! visible-component :competitors)}]
-        [:input.btn.btn-primary.btn-lg
-         {:type "button" :value "Domare" :on-click #(reset! visible-component :adjudicators)}]
+;  [:div]
+  ;; (fn []
+  ;;   (if (= (:selected-page @app-state) :import)))
+  [:div
+   [import-component]
+   [:h3 "Klasser"]
+   [dp-classes-component]])
 
-        [:input.btn.btn-default
-         {:type "button" :value "Debug Button" :on-click #(chsk-send! [:debug/test {:test "Test"}])}]
-        ;[:h2 (str "visible-component " @visible-component)]
-        ]
-       (condp = @visible-component
-         :competitions [import-component]
-         :competitors [competitors-component]
-         :adjudicators [:div]
-         :none [:div])
-       ])))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Application
 
 (defn ^:export run []
   (reagent/render-component [menu-component] (.-body js/document)))
+
+;; (defn handle-export []
+;;   (let [export-link (. js/document (getElementById "export-download-link"))]
+;;     (log "Exporting competition")
+;;     (.click export-link)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Socket handling
+(defn- event-handler [[id data :as ev] _]
+  (log (str "Event: " id))
+  (match [id data]
+    ;; TODO Match your events here <...>
+         [:chsk/recv [:file/imported content]]
+         (do
+           (swap! app-state #(merge % {:selected-page :classes
+                                       :competition content}))
+           ;(swap! app-state #(hash-map :competitions (conj (:competitions %) content)))
+           (log (str @app-state))
+           )
+         ;; [:chsk/recv [:file/export content]]
+         ;; (handle-export)
+    [:chsk/state [:first-open _]] (log "Channel socket successfully established!")
+    ;[:chsk/state new-state] (log (str "Chsk state change: " new-state))
+    ;[:chsk/recv payload] (log (str "Push event from server: " payload))
+    :else (log (str "Unmatched event: " ev)))
+  )
+
+(defonce chsk-router
+  (sente/start-chsk-router-loop! event-handler ch-chsk))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Purgatory
 
 ;; Exempel till "Export"
 ;; <a id="document-download-link" download="project.goy" href=""></a>
@@ -196,29 +182,104 @@
 ;; (set! (.-href download-link) href-content)
 ;; (.click download-link)))
 
-(defn handle-export []
-  (let [export-link (. js/document (getElementById "export-download-link"))]
-    (log "Exporting competition")
-    (.click export-link)
-    ))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Socket handling
-(defn- event-handler [[id data :as ev] _]
-  (log (str "Event: " ev))
-  (match [id data]
-    ;; TODO Match your events here <...>
-         [:chsk/recv [:file/imported content]]
-         (do
-           (swap! app-state #(hash-map :competitions (conj (:competitions %) content)))
-           (log (str @app-state))
-           )
-         [:chsk/recv [:file/export content]]
-         (handle-export)
-    [:chsk/state [:first-open _]] (log "Channel socket successfully established!")
-    ;[:chsk/state new-state] (log (str "Chsk state change: " new-state))
-    ;[:chsk/recv payload] (log (str "Push event from server: " payload))
-    :else (log (str "Unmatched event: " ev)))
-  )
 
-(defonce chsk-router
-  (sente/start-chsk-router-loop! event-handler ch-chsk))
+;; TODO - Let the server return dancers in a UI-normalized way
+;; (defn get-dancers [competitions]
+;;   (into #{}
+;;         (map #(dissoc % :competitor/number) 
+;;              (for [competition competitions
+;;                    classes (:competition/classes competition)
+;;                    competitors (:class/competitors classes)]
+;;                competitors))))
+
+;; (defonce component-state
+;;   (atom {:competitions-visible false}))
+
+;; (defn competitor-component [competitors include-number?]
+;;   [:div ""
+;;    [:ul
+;;     (for [competitor competitors]
+;;       ^{:key competitor}
+;;       [:li 
+;;        (str (if include-number?
+;;               (str "Tävlande nummer : " (:competitor/number competitor) " - "))
+;;             (str (:competitor/name competitor)
+;;                  " från "
+;;                  (:competitor/club competitor)))])]])
+
+;; (defn class-component [classes]
+;;   [:h3 "Classes"]
+;;   [:div
+;;    (for [cls classes]
+;;      ^{:key cls}
+;;      [:div
+;;       (:class/name cls)
+;;       [competitor-component (:class/competitors cls) true]])])
+
+;; (defn competition-item []
+;;   (let [open (atom false)]
+;;     (fn [competition]
+;;       [:li 
+;;        [:div.view
+;;         [:label {:on-click #(log "Klickz")} (str (:competition/name competition) " i "
+;;                       (:competition/location competition) " den "
+;;                       (:competition/date competition))
+;;          ]
+;;         [:input.btn.btn-default
+;;          {:type "button"
+;;           :value (if @open "Stäng" "Öppna")
+;;           :on-click #(swap! open not)}]]
+;;        (if @open
+;;          [:div
+;;           [:input.btn.btn-default
+;;            {:type "button"
+;;             :value "Exportera"
+;;             ;; TODO - send competition id when we got back-end storage
+;;             :on-click #(on-export-click % competition)}]
+;;           [:a {:id "export-download-link"
+;;                :href (str "/exported-files/" (:competition/name competition) ".xml")
+;;                :download (str (:competition/name competition) ".xml")}]
+;;           [:h4 "Klasser :"]
+;;           [class-component (:competition/classes competition)]])])))
+
+;; (defn competitors-component []
+;;   [:div
+;;    [:h2 "Tillgängliga dansare"]
+;;    [competitor-component (get-dancers (:competitions @app-state))]])
+
+;; (defn import-component []
+;;   [:div
+   
+;;    [:h2 "Tillgängliga tävlingar"]
+;;    [:ul
+;;     (for [competition (:competitions @app-state)]
+;;       ^{:key competition} [competition-item competition])]
+;;    [:h2 "Importera en ny tävling : "]
+;;    [:input.btn.btn-default {:type "file" :value "Import file"
+;;                             :onChange ;#(dispatch [:file/import (.item (.. % -target -files) 0)])
+;;                             #(on-click-import-file %)
+;;                             }]])
+
+;; (defn menu-component []
+;;   (let [visible-component (atom :none)]
+;;     (fn []
+;;       [:div.container
+;;        [:div.header
+;;         [:h2 "Välkommen till Tango!"]
+;;         [:input.btn.btn-primary.btn-lg.navbar-btn
+;;          {:type "button" :value "Tävlingar" :on-click #(reset! visible-component :competitions)}]
+;;         [:input.btn.btn-primary.btn-lg
+;;          {:type "button" :value "Dansare" :on-click #(reset! visible-component :competitors)}]
+;;         [:input.btn.btn-primary.btn-lg
+;;          {:type "button" :value "Domare" :on-click #(reset! visible-component :adjudicators)}]
+
+;;         [:input.btn.btn-default
+;;          {:type "button" :value "Debug Button" :on-click #(chsk-send! [:debug/test {:test "Test"}])}]
+;;         ;[:h2 (str "visible-component " @visible-component)]
+;;         ]
+;;        (condp = @visible-component
+;;          :competitions [import-component]
+;;          :competitors [competitors-component]
+;;          :adjudicators [:div]
+;;          :none [:div])
+;;        ])))
