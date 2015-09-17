@@ -17,25 +17,23 @@
           (Integer/parseInt (clojure.string/replace prepared-string #"\+" ""))
           :else s)))
 
-(defn- str-count [seq]
-  (str (count seq)))
-
-;; (defn- get-name-attr [xml-node]
-;;   (get-in xml-node [:attrs :Name]))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Utils
 (defn read-xml [file]
   (xml/parse (java.io.FileReader. file)))
 
-(defn read-xml-string [s]
-  (xml/parse (java.io.ByteArrayInputStream. (.getBytes s))))
+(defn- str-count [seq]
+  (str (count seq)))
+
+(defn- get-name-attr [loc]
+  (zx/attr loc :Name))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Zipper implementation
+
 (defn couple->map [couples-loc]
   (for [couple couples-loc]
-    {:competitor/name (zx/attr couple :Name)
+    {:competitor/name (get-name-attr couple) ;;(zx/attr couple :Name)
      :competitor/club (zx/attr couple :Club)
      :competitor/number (to-number (zx/attr couple :Number))}))
 
@@ -46,7 +44,7 @@
 
 (defn competition->map [loc]
   (let [competition-data (first (zx/xml-> loc :CompData))]
-    {:competition/name (zx/attr competition-data :Name)
+    {:competition/name (get-name-attr competition-data)            ;(zx/attr competition-data :Name)
      :competition/date (tcr/to-date
                         (tf/parse (tf/formatter "yyyy-MM-dd")
                                   (zx/attr competition-data :Date)))
@@ -65,12 +63,8 @@
    :file/import-status status
    :file/import-errors errors})
 
-(defn import->data [file]
-  (dance-perfect->map
-   (zip/xml-zip (clojure.xml/parse (clojure.java.io/file "./test/tango/small-example.xml")))))
-
 (defn dance-perfect-xml->data [xml-src]
-  (dance-perfect->map xml-src :success []))
+  (competition->map (zip/xml-zip xml-src)))
 
 ;; TODO : add generic exception handling
 (defn import-file [path]
@@ -79,110 +73,19 @@
     (if (.exists file)
       (let [xml-src (zip/xml-zip (clojure.xml/parse file))
             dance-perfect-data (dance-perfect->map xml-src :success [])]
-        dance-perfect-data
-        ;; (create-import-info
-        ;;  ()
-        ;;  (dissoc dance-perfect-data :dance-perfect/version)
-        ;;  :success
-        ;;  [])
-        )
+        dance-perfect-data)
       (create-import-info "" [] :failed [:file-not-found]))))
 
+;; TODO - add test
+;; TODO - add exception catch
 (defn import-file-stream [{:keys [content]}]
-  (dance-perfect->map (clojure.xml/parse (java.io.ByteArrayInputStream. (.getBytes content)))))
-
-;; (defn import-file-stream [{:keys [content]}]
-;;   (dance-perfect-xml->data (read-xml-string content)))
-
-;; TODO : add generic exception handling
-;; (defn import-file [path]
-;;   {:pre [(string? path)]}
-;;   (let [file (clojure.java.io/file path)]
-;;     (if (.exists file)
-;;       (let [xml-src (read-xml file)
-;;             dance-perfect-data (dance-perfect-xml->data xml-src)]
-;;         (create-import-info
-;;          (:dance-perfect/version dance-perfect-data)
-;;          (dissoc dance-perfect-data :dance-perfect/version)
-;;          :success
-;;          []))
-;;       (create-import-info "" [] :failed [:file-not-found]))))
-
-
-
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Import
-
-
-;; (defn- dance-perfect-xml-competitors->competitors [dp-competitors-xml]
-;;   (mapv #(hash-map :competitor/name (get-name-attr %)
-;;                    :competitor/club (get-in % [:attrs :Club])
-;;                    :competitor/number (to-number (get-in % [:attrs :Number])))
-;;         dp-competitors-xml))
-
-;; parses a class with its <StartList> of <Couple>
-;; Note that for some classes the <StartList> will be empty
-;; TODO - parsing with (first :content) etc is not robust, do it another way
-;; (defn- dance-perfect-xml-classes->classes [dp-classes-xml]
-;;   (mapv #(hash-map :class/name (get-name-attr %)
-;;                    :class/competitors
-;;                    (if-let [competitiors (seq (:content (first (:content %))))]
-;;                      [competitiors]
-;;                      ;(dance-perfect-xml-competitors->competitors competitiors)
-;;                      []))
-;;         (:content dp-classes-xml)))
-
-;; Iterate over all xml-nodes,
-;; nodes can be of types:
-;; <DancePerfect> - Describes meta data about the file
-;; <ClassList> - Describes a class and its couples
-;; <CompData> - Describes information about a competition such as date and place
-;; (defn- build-dance-perfect-xml-parts [dp-xml]
-;;   (apply merge
-;;          (for [node (xml-seq dp-xml)]
-;;            (condp = (:tag node)
-;;              :DancePerfect {:dance-perfect-xml node}
-;;              :ClassList {:class-list-xml node}
-;;              :CompData {:competition-data-xml node}
-;;              nil))))
-
-
-
-;; First the xml is made into a map of each part then
-;; each part is converted from xml to data structures
-;; (defn dance-perfect-xml->data [dp-xml]
-;;   (let [xml-parts (build-dance-perfect-xml-parts dp-xml)
-;;         competition-data (:competition-data-xml xml-parts)
-;;         classes-xml (:class-list-xml xml-parts)]
-;;     {:dance-perfect/version (get-in (:dance-perfect-xml xml-parts) [:attrs :Version])
-;;      :competition/name (get-name-attr competition-data)
-;;      :competition/location (get-in competition-data [:attrs :Place])
-;;      :competition/date (tcr/to-date
-;;                         (tf/parse (tf/formatter "yyyy-MM-dd")
-;;                                   (get-in competition-data [:attrs :Date])))
-;;      :competition/classes (dance-perfect-xml-classes->classes classes-xml)}))
-
-;; TODO : add generic exception handling
-;; (defn import-file [path]
-;;   {:pre [(string? path)]}
-;;   (let [file (clojure.java.io/file path)]
-;;     (if (.exists file)
-;;       (let [xml-src (read-xml file)
-;;             dance-perfect-data (dance-perfect-xml->data xml-src)]
-;;         (create-import-info
-;;          (:dance-perfect/version dance-perfect-data)
-;;          (dissoc dance-perfect-data :dance-perfect/version)
-;;          :success
-;;          []))
-;;       (create-import-info "" [] :failed [:file-not-found]))))
-
-;; (defn import-file-stream [{:keys [content]}]
-;;   (dance-perfect-xml->data (read-xml-string content)))
+  (dance-perfect->map (zip/xml-zip (clojure.xml/parse (java.io.ByteArrayInputStream. (.getBytes content))))
+                      :success
+                      []))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Export
+
 (defn- competitor->xml [competitor seq-nr]
   [:Couple {:Name (:competitor/name competitor)
             :Seq (str seq-nr)
