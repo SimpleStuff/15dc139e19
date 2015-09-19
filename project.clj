@@ -13,6 +13,7 @@
                  ;; Utils
                  [com.stuartsierra/component "0.2.3"]
                  [org.clojure/data.xml "0.0.8"]
+                 [org.clojure/data.zip "0.1.1"]
                  [clj-time "0.8.0"]
 
                  ;; Web UI

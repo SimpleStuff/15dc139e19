@@ -69,5 +69,15 @@
     (is (= (:competition/classes (imp/dance-perfect-xml->data small-exampel-xml))
            (:competition/classes data/small-file-expected-content)))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Files that have caused problems
+(deftest file-with-class-with-empty-start-list
+  (testing "File that have been known to produce error when imported, it contains a class representing \"Unused Couples\" wich contains empty list of dancers and startlist"
+    (let [imported-file (imp/import-file "./test/tango/unused-couples.xml")]
+      (is (= (:file/import-status imported-file)
+             :success))
+      (is (= (:file/import-errors imported-file)
+             [])))))
+
 ;; TODO - file that do not exist
 ;; TODO - call with path that is not string

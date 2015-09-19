@@ -152,7 +152,7 @@
          [:chsk/recv [:file/imported content]]
          (do
            (swap! app-state #(merge % {:selected-page :classes
-                                       :competition content}))
+                                       :competition (:file/content content)}))
            ;(swap! app-state #(hash-map :competitions (conj (:competitions %) content)))
            (log (str @app-state))
            )
