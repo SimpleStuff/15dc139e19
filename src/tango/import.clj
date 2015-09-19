@@ -33,7 +33,7 @@
 
 (defn couple->map [couples-loc]
   (for [couple couples-loc]
-    {:competitor/name (get-name-attr couple) ;;(zx/attr couple :Name)
+    {:competitor/name (get-name-attr couple)
      :competitor/club (zx/attr couple :Club)
      :competitor/number (to-number (zx/attr couple :Number))}))
 
@@ -44,7 +44,7 @@
 
 (defn competition->map [loc]
   (let [competition-data (first (zx/xml-> loc :CompData))]
-    {:competition/name (get-name-attr competition-data)            ;(zx/attr competition-data :Name)
+    {:competition/name (get-name-attr competition-data)
      :competition/date (tcr/to-date
                         (tf/parse (tf/formatter "yyyy-MM-dd")
                                   (zx/attr competition-data :Date)))
@@ -84,7 +84,7 @@
                       []))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Export
+;; Export - this implementation is stale, look at is as experimental!
 
 (defn- competitor->xml [competitor seq-nr]
   [:Couple {:Name (:competitor/name competitor)
