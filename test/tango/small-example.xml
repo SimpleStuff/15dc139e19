@@ -6,12 +6,16 @@
   </AdjPanelList>
   <ClassList>
     <Class Name="Hiphop Singel Star B" Seq="0">
+      <DanceList>
+        <Dance Seq="0" Name="Medium"/>
+      </DanceList>
       <StartList Qty="2">
         <Couple Name="Rulle Trulle" Seq="0" License="" Club="Rulles M&amp;M" Number="1"/>
         <Couple Name="Katchyk Wrong" Seq="1" License="" Club="Sccchhh" Number="2"/>
       </StartList>
     </Class>
     <Class Name="Hiphop Singel Star J Fl" Seq="1">
+      <DanceList Qty="0"/>
       <StartList Qty="2">
         <Couple Name="Ringo Stingo" Seq="0" License="" Club="Kapangg" Number="20"/>
         <Couple Name="Greve Turbo" Seq="1" License="" Club="OOoost" Number="21"/>

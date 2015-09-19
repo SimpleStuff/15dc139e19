@@ -8,6 +8,8 @@
    :competition/location "THUNDERDOME"
    :competition/classes
    [{:class/name "Hiphop Singel Star B"
+     :class/dances
+     [{:dance/name "Medium"}]
      :class/competitors
      [{:competitor/name "Rulle Trulle"
        :competitor/club "Rulles M&M"
@@ -16,6 +18,8 @@
        :competitor/club "Sccchhh"
        :competitor/number 2}]}
     {:class/name "Hiphop Singel Star J Fl"
+     :class/dances
+     []
      :class/competitors
      [{:competitor/name "Ringo Stingo"
        :competitor/club "Kapangg"
