@@ -37,10 +37,16 @@
      :competitor/club (zx/attr couple :Club)
      :competitor/number (to-number (zx/attr couple :Number))}))
 
+(defn dance-list->map [dances-loc]
+  (for [dance dances-loc]
+    {:dance/name (get-name-attr dance)}))
+
 (defn class-list->map [classes-loc]
   (for [class classes-loc]
     {:class/name (zx/attr class :Name)
-     :class/competitors (into [] (couple->map (zx/xml-> class :StartList :Couple)))}))
+     :class/adjudicator-panel (to-number (zx/attr class :AdjPanel))
+     :class/competitors (into [] (couple->map (zx/xml-> class :StartList :Couple)))
+     :class/dances (into [] (dance-list->map (zx/xml-> class :DanceList :Dance)))}))
 
 (defn competition->map [loc]
   (let [competition-data (first (zx/xml-> loc :CompData))]

@@ -2,20 +2,123 @@
 <DancePerfect Version="4.1">
   <CompData Name="TurboMegatävling" Date="2014-11-22" Place="THUNDERDOME"/>
   <AdjPanelList>
-    <AdjList/>
+    <AdjList Qty="6">
+      <Adjudicator Seq="0" Name="Anders" Country=""/>
+      <Adjudicator Seq="1" Name="Bertil" Country=""/>
+      <Adjudicator Seq="2" Name="Cesar" Country=""/>
+      <Adjudicator Seq="3" Name="David" Country=""/>
+      <Adjudicator Seq="4" Name="Erik" Country=""/>
+      <Adjudicator Seq="5" Name="Fredrik" Country=""/>
+    </AdjList>
+    <PanelList Qty="30">
+      <Panel Seq="0" Qty="3">
+        <PanelAdj Seq="0" AdjNumber="0"/>
+        <PanelAdj Seq="1" AdjNumber="1"/>
+        <PanelAdj Seq="2" AdjNumber="2"/>
+      </Panel>
+      <Panel Seq="1" Qty="3">
+        <PanelAdj Seq="0" AdjNumber="3"/>
+        <PanelAdj Seq="1" AdjNumber="4"/>
+        <PanelAdj Seq="2" AdjNumber="5"/>
+      </Panel>
+      <Panel Seq="2" Qty="3">
+        <PanelAdj Seq="0" AdjNumber="0"/>
+        <PanelAdj Seq="1" AdjNumber="2"/>
+        <PanelAdj Seq="2" AdjNumber="4"/>
+      </Panel>
+      <Panel Seq="3" Qty="0"/>
+      <Panel Seq="4" Qty="0"/>
+      <Panel Seq="5" Qty="0"/>
+      <Panel Seq="6" Qty="0"/>
+      <Panel Seq="7" Qty="0"/>
+      <Panel Seq="8" Qty="0"/>
+      <Panel Seq="9" Qty="0"/>
+      <Panel Seq="10" Qty="0"/>
+      <Panel Seq="11" Qty="0"/>
+      <Panel Seq="12" Qty="0"/>
+      <Panel Seq="13" Qty="0"/>
+      <Panel Seq="14" Qty="0"/>
+      <Panel Seq="15" Qty="0"/>
+      <Panel Seq="16" Qty="0"/>
+      <Panel Seq="17" Qty="0"/>
+      <Panel Seq="18" Qty="0"/>
+      <Panel Seq="19" Qty="0"/>
+      <Panel Seq="20" Qty="0"/>
+      <Panel Seq="21" Qty="0"/>
+      <Panel Seq="22" Qty="0"/>
+      <Panel Seq="23" Qty="0"/>
+      <Panel Seq="24" Qty="0"/>
+      <Panel Seq="25" Qty="0"/>
+      <Panel Seq="26" Qty="0"/>
+      <Panel Seq="27" Qty="0"/>
+      <Panel Seq="28" Qty="0"/>
+      <Panel Seq="29" Qty="0"/>
+    </PanelList>
   </AdjPanelList>
   <ClassList>
-    <Class Name="Hiphop Singel Star B" Seq="0">
-      <StartList Qty="2">
-        <Couple Name="Rulle Trulle" Seq="0" License="" Club="Rulles M&amp;M" Number="1"/>
-        <Couple Name="Katchyk Wrong" Seq="1" License="" Club="Sccchhh" Number="2"/>
+    <Class Seq="0" Name="Hiphop Singel Star B" AdjPanel="1">
+      <!-- A dance list can contain several dances that will be run in this class -->
+      <DanceList Qty="10">
+        <Dance Seq="0" Name="Medium"/>
+	<Dance Seq="1" Name="Tango"/>
+	<Dance Seq="2" Name="VienWaltz"/>
+        <Dance Seq="3" Name="Foxtrot"/>
+        <Dance Seq="4" Name="Quickstep"/>
+        <Dance Seq="5" Name="Samba"/>
+        <Dance Seq="6" Name="Cha-Cha"/>
+        <Dance Seq="7" Name="Rumba"/>
+        <Dance Seq="8" Name="Paso-Doble"/>
+        <Dance Seq="9" Name="Jive"/>
+      </DanceList>
+      <StartList Qty="3">
+        <Couple Seq="0" Number="30" Name="Rulle Trulle" Club="Sinclairs" License=""/>
+        <Couple Seq="1" Number="31" Name="Milan Lund" Club="Wilson" License=""/>
+        <Couple Seq="2" Number="32" Name="Douglas Junger" Club="RGDT" License=""/>
       </StartList>
+       <Results Qty="1">
+        <Result Seq="0" Round="F" AdjQty="3" D3="0">
+          <AdjList>
+            <Adjudicator Seq="0" Number="3"/>
+            <Adjudicator Seq="1" Number="4"/>
+            <Adjudicator Seq="2" Number="5"/>
+          </AdjList>
+          <DanceList>
+            <Dance Seq="0" Name="X-Quick Forward"/>
+          </DanceList>
+          <ResultArray>
+            <Couple Seq="0" DanceQty="1" AdjQty="3" Number="30" Recalled=" ">
+              <MarkList>
+                <Mark Seq="0" X="1" D3="" A="" B=""/>
+                <Mark Seq="1" X="1" D3="" A="" B=""/>
+                <Mark Seq="2" X="1" D3="" A="" B=""/>
+              </MarkList>
+            </Couple>
+            <Couple Seq="1" DanceQty="1" AdjQty="3" Number="31" Recalled=" ">
+              <MarkList>
+                <Mark Seq="0" X="2" D3="" A="" B=""/>
+                <Mark Seq="1" X="2" D3="" A="" B=""/>
+                <Mark Seq="2" X="2" D3="" A="" B=""/>
+              </MarkList>
+            </Couple>
+            <Couple Seq="2" DanceQty="1" AdjQty="3" Number="32" Recalled=" ">
+              <MarkList>
+                <Mark Seq="0" X="3" D3="" A="" B=""/>
+                <Mark Seq="1" X="3" D3="" A="" B=""/>
+                <Mark Seq="2" X="3" D3="" A="" B=""/>
+              </MarkList>
+            </Couple>
+          </ResultArray>
+        </Result>
+      </Results>
     </Class>
-    <Class Name="Hiphop Singel Star J Fl" Seq="1">
+
+    <Class Seq="1" Name="Hiphop Singel Star J Fl" AdjPanel="0">
+      <DanceList Qty="0"/>
       <StartList Qty="2">
         <Couple Name="Ringo Stingo" Seq="0" License="" Club="Kapangg" Number="20"/>
         <Couple Name="Greve Turbo" Seq="1" License="" Club="OOoost" Number="21"/>
       </StartList>
+      <Results Qty="0"/>
     </Class>   
   </ClassList>
 </DancePerfect>

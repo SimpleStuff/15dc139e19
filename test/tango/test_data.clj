@@ -8,14 +8,32 @@
    :competition/location "THUNDERDOME"
    :competition/classes
    [{:class/name "Hiphop Singel Star B"
+     :class/adjudicator-panel 1
+     :class/dances
+     [{:dance/name "Medium"}
+      {:dance/name "Tango"}
+      {:dance/name "VienWaltz"}
+      {:dance/name "Foxtrot"}
+      {:dance/name "Quickstep"}
+      {:dance/name "Samba"}
+      {:dance/name "Cha-Cha"}
+      {:dance/name "Rumba"}
+      {:dance/name "Paso-Doble"}
+      {:dance/name "Jive"}]
      :class/competitors
      [{:competitor/name "Rulle Trulle"
-       :competitor/club "Rulles M&M"
-       :competitor/number 1}
-      {:competitor/name "Katchyk Wrong"
-       :competitor/club "Sccchhh"
-       :competitor/number 2}]}
+       :competitor/club "Sinclairs"
+       :competitor/number 30}
+      {:competitor/name "Milan Lund"
+       :competitor/club "Wilson"
+       :competitor/number 31}
+      {:competitor/name "Douglas Junger"
+       :competitor/club "RGDT"
+       :competitor/number 32}]}
     {:class/name "Hiphop Singel Star J Fl"
+     :class/adjudicator-panel 0
+     :class/dances
+     []
      :class/competitors
      [{:competitor/name "Ringo Stingo"
        :competitor/club "Kapangg"

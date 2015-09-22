@@ -44,6 +44,9 @@
           :competition/location "VÄSTERÅS",
           :competition/classes
           [{:class/name "Hiphop Singel Star B",
+            :class/adjudicator-panel 1
+            :class/dances
+            [{:dance/name "Medium"} {:dance/name "Waltz"}]
             :class/competitors
             [{:competitor/name "Saga Boström-Fors", :competitor/number 10, :competitor/club "M&M"}
                {:competitor/name "Tyra Hedin", :competitor/number 11, :competitor/club "Uddans"}
@@ -52,6 +55,8 @@
                {:competitor/name "Wilma Lindström Åslund", :competitor/number 14, :competitor/club "MD"}]}
            
            {:class/name "Hiphop Singel Star J Fl",
+            :class/adjudicator-panel 0
+            :class/dances [{:dance/name "Quick"}]
             :class/competitors
             [{:competitor/name "Tilda Strandberg", :competitor/number 30, :competitor/club "Uddans"}
              {:competitor/name "Tove Gärdin", :competitor/number 31, :competitor/club "BF"}
@@ -60,6 +65,8 @@
              {:competitor/name "Emma Fredriksson", :competitor/number 34, :competitor/club "DVT"}]}
            
            {:class/name "Hiphop Singel Star J Po",
+            :class/adjudicator-panel 2
+            :class/dances []
             :class/competitors
             [{:competitor/name "Axel Carlsson", :competitor/number 60, :competitor/club "DTLH/DV"}
              {:competitor/name "Tom Matei", :competitor/number 61, :competitor/club "SDC"}
@@ -91,18 +98,23 @@
   (chsk-send! [:file/export {:file/format :dance-perfect
                              :file/content competition}]))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; UI utils
 
+(defn make-dance-type-presentation [dances]
+  ;; Dances are presented as a list of the first letters of each dance
+  (apply str (map #(first (:dance/name %)) dances)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Components
 
 (defn dp-classes-component []
-  ;; table with #, class name (Dansdisciplin), Typ av dans, Antal Startande, Status
   [:table.table
    [:thead
     [:tr
      [:th {:with "20"} "#"]
      [:th {:with "200"} "Dansdisciplin"]
+     [:th {:with "20"} "Panel"]
      [:th {:with "20"} "Typ"]
      [:th {:with "20"} "Startande"]
      [:th {:with "20"} "Status"]]]
@@ -112,7 +124,8 @@
       [:tr
        [:td "-"]
        [:td (:class/name class)]
-       [:td "-"]
+       [:td (:class/adjudicator-panel class)]
+       [:td (make-dance-type-presentation (:class/dances class))]
        [:td (str (count (:class/competitors class)) "/" (count (:class/competitors class)))]
        [:td "-"]])]])
 

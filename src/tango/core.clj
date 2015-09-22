@@ -119,6 +119,7 @@
   (stop)
   (refresh :after 'tango.core/go))
 
+;; TODO - fix that all production logging goes to file and not to console
 (defn -main 
   "Main entry point for the application. Valid args is an integer value that
   specify port number for the http-server to start on."
@@ -127,5 +128,7 @@
     (if-not port
       (println "Port number missing")
       (do
-        (component/start (production-system {:port (Integer/parseInt port)}))
+        (component/start
+         (production-system {:port 1337 :log-file "loggs/production.log" :log-level :info
+                             :client-connection :ws-connection-channels}))
         (log/info (str "Server started on port " port))))))
