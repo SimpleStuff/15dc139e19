@@ -44,6 +44,7 @@
 (defn class-list->map [classes-loc]
   (for [class classes-loc]
     {:class/name (zx/attr class :Name)
+     :class/adjudicator-panel (to-number (zx/attr class :AdjPanel))
      :class/competitors (into [] (couple->map (zx/xml-> class :StartList :Couple)))
      :class/dances (into [] (dance-list->map (zx/xml-> class :DanceList :Dance)))}))
 
