@@ -22,11 +22,14 @@
       {:dance/name "Jive"}]
      :class/competitors
      [{:competitor/name "Rulle Trulle"
-       :competitor/club "Rulles M&M"
-       :competitor/number 1}
-      {:competitor/name "Katchyk Wrong"
-       :competitor/club "Sccchhh"
-       :competitor/number 2}]}
+       :competitor/club "Sinclairs"
+       :competitor/number 30}
+      {:competitor/name "Milan Lund"
+       :competitor/club "Wilson"
+       :competitor/number 31}
+      {:competitor/name "Douglas Junger"
+       :competitor/club "RGDT"
+       :competitor/number 32}]}
     {:class/name "Hiphop Singel Star J Fl"
      :class/adjudicator-panel 0
      :class/dances
