@@ -73,17 +73,47 @@
      :class/results
      [{:result/round "S"
        :result/adjudicators
-       [{:adjudicator/number 3}
-        {:adjudicator/number 4}
-        {:adjudicator/number 5}]
+       [{:adjudicator/number 3 :adjudicator/position 0}
+        {:adjudicator/number 4 :adjudicator/position 1}
+        {:adjudicator/number 5 :adjudicator/position 2}]
        :result/dance {:dance/name "X-Quick Forward"}
        :result/results
        [{:competitor/number 30
-         :competitor/marks
-         [{:adjudicator/number 3 :mark/x true}
-          {:adjudicator/number 4 :mark/x false}
-          {:adjudicator/number 5 :mark/x true}]
-         :competitor/recalled :x}]
+         :competitor/recalled ""
+         :competitor/results
+         [{:result/adjudicator
+           {:adjudicator/number 3, :adjudicator/position 0},
+           :result/x-mark true}
+          {:result/adjudicator
+           {:adjudicator/number 4, :adjudicator/position 1},
+           :result/x-mark false}
+          {:result/adjudicator
+           {:adjudicator/number 5, :adjudicator/position 2},
+           :result/x-mark true}]}
+        {:competitor/number 31,
+         :competitor/recalled "",
+         :competitor/results
+         [{:result/adjudicator
+           {:adjudicator/number 3, :adjudicator/position 0},
+           :result/x-mark false}
+          {:result/adjudicator
+           {:adjudicator/number 4, :adjudicator/position 1},
+           :result/x-mark true}
+          {:result/adjudicator
+           {:adjudicator/number 5, :adjudicator/position 2},
+           :result/x-mark false}]}
+        {:competitor/number 32,
+         :competitor/recalled "",
+         :competitor/results
+         [{:result/adjudicator
+           {:adjudicator/number 3, :adjudicator/position 0},
+           :result/x-mark true}
+          {:result/adjudicator
+           {:adjudicator/number 4, :adjudicator/position 1},
+           :result/x-mark false}
+          {:result/adjudicator
+           {:adjudicator/number 5, :adjudicator/position 2},
+           :result/x-mark false}]}]
        }]}
     
     

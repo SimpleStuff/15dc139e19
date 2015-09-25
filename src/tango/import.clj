@@ -58,7 +58,12 @@
 (defn mark-list->map [result-couple-loc adjudicators]
   (for [couple result-couple-loc]
     {:competitor/number (to-number (zx/attr couple :Number))
-     :competitor/recalled (zx/attr couple :Recalled)
+     :competitor/recalled
+     (condp = (zx/attr couple :Recalled)
+       "X" :x
+       "R" :r
+       " " ""
+       (str "unexpected recalled value"))
      :competitor/results (into [] (marks->map (zx/xml-> couple :MarkList :Mark) adjudicators))}))
 
 (defn result-list->map [result-loc]
@@ -66,7 +71,7 @@
     (let [adjudicators (adjudicator-list->map (zx/xml-> result :AdjList :Adjudicator))]
       {:result/round (zx/attr result :Round)
        :result/dance (first (dance-list->map (zx/xml-> result :DanceList :Dance)))
-       :result/adjudicators adjudicators
+       :result/adjudicators (into [] adjudicators)
        :result/results (into [] (mark-list->map (zx/xml-> result :ResultArray :Couple) adjudicators))})))
 
 (defn class-list->map [classes-loc]
