@@ -83,7 +83,7 @@
          [{:adjudicator/number 3 :mark/x true}
           {:adjudicator/number 4 :mark/x false}
           {:adjudicator/number 5 :mark/x true}]
-         :competitor/recalled true}]
+         :competitor/recalled :x}]
        }]}
     
     

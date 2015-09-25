@@ -43,11 +43,23 @@
 
 (defn adjudicator-list->map [adjudicator-loc]
   (for [adjudicator adjudicator-loc]
-    {:adjudicator/number (to-number (zx/attr adjudicator :Number))}))
+    {:adjudicator/number (to-number (zx/attr adjudicator :Number))
+     :adjudicator/position (to-number (zx/attr adjudicator :Seq))}))
+
+(defn marks->map [marks-loc adjudicators]
+  (for [mark marks-loc]
+    {:result/adjudicator
+     (first (filter
+             #(= (:adjudicator/position %)
+                 (to-number (zx/attr mark :Seq)))
+             adjudicators))
+     :result/x-mark (= (zx/attr mark :X) "X")}))
 
 (defn mark-list->map [result-couple-loc adjudicators]
   (for [couple result-couple-loc]
-    {:competitor/number (to-number (zx/attr couple :Number))}))
+    {:competitor/number (to-number (zx/attr couple :Number))
+     :competitor/recalled (zx/attr couple :Recalled)
+     :competitor/results (into [] (marks->map (zx/xml-> couple :MarkList :Mark) adjudicators))}))
 
 (defn result-list->map [result-loc]
   (for [result result-loc]

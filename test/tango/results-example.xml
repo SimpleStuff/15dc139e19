@@ -84,7 +84,11 @@
             <number X> -> "Round X"
 	    
        Note that for "F" the marks will not be "X" but some number made up by the judge
-       i.e. "1" "2" or "6"-->
+       i.e. "1" "2" or "6"
+
+      The number of competitors still in the competition is decided by the number of "R"
+      (already recalled from previous round) and "X" (marked in the current round). So
+      "X" + "R" in the last result = The number of competitiors still in the competition -->
        <Results Qty="1">
         <Result Seq="0" Round="S" AdjQty="3" D3="0">
           <AdjList>
