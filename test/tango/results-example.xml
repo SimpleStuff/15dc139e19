@@ -82,7 +82,8 @@
             "S" -> "Semifinal"
 	    "O" -> "Retry"
             <number X> -> "Round X"
-	    
+	    No results yield "Not Started"
+
        Note that for "F" the marks will not be "X" but some number made up by the judge
        i.e. "1" "2" or "6"
 
