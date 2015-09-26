@@ -35,7 +35,8 @@
   (for [couple couples-loc]
     {:competitor/name (get-name-attr couple)
      :competitor/club (zx/attr couple :Club)
-     :competitor/number (to-number (zx/attr couple :Number))}))
+     :competitor/number (to-number (zx/attr couple :Number))
+     :competitor/position (to-number (zx/attr couple :Seq))}))
 
 (defn dance-list->map [dances-loc]
   (for [dance dances-loc]
@@ -43,23 +44,41 @@
 
 (defn adjudicator-list->map [adjudicator-loc]
   (for [adjudicator adjudicator-loc]
-    {:adjudicator/number (to-number (zx/attr adjudicator :Number))}))
+    {:adjudicator/number (to-number (zx/attr adjudicator :Number))
+     :adjudicator/position (to-number (zx/attr adjudicator :Seq))}))
+
+(defn marks->map [marks-loc adjudicators]
+  (for [mark marks-loc]
+    {:result/adjudicator
+     (first (filter
+             #(= (:adjudicator/position %)
+                 (to-number (zx/attr mark :Seq)))
+             adjudicators))
+     :result/x-mark (= (zx/attr mark :X) "X")}))
 
 (defn mark-list->map [result-couple-loc adjudicators]
   (for [couple result-couple-loc]
-    {:competitor/number (to-number (zx/attr couple :Number))}))
+    {:competitor/number (to-number (zx/attr couple :Number))
+     :competitor/recalled
+     (condp = (zx/attr couple :Recalled)
+       "X" :x
+       "R" :r
+       " " ""
+       (str "unexpected recalled value"))
+     :competitor/results (into [] (marks->map (zx/xml-> couple :MarkList :Mark) adjudicators))}))
 
 (defn result-list->map [result-loc]
   (for [result result-loc]
     (let [adjudicators (adjudicator-list->map (zx/xml-> result :AdjList :Adjudicator))]
       {:result/round (zx/attr result :Round)
        :result/dance (first (dance-list->map (zx/xml-> result :DanceList :Dance)))
-       :result/adjudicators adjudicators
+       :result/adjudicators (into [] adjudicators)
        :result/results (into [] (mark-list->map (zx/xml-> result :ResultArray :Couple) adjudicators))})))
 
 (defn class-list->map [classes-loc]
   (for [class classes-loc]
     {:class/name (zx/attr class :Name)
+     :class/position (to-number (zx/attr class :Seq))
      :class/adjudicator-panel (to-number (zx/attr class :AdjPanel))
      :class/competitors (into [] (couple->map (zx/xml-> class :StartList :Couple)))
      :class/dances (into [] (dance-list->map (zx/xml-> class :DanceList :Dance)))

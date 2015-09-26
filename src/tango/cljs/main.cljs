@@ -37,40 +37,130 @@
 (defonce app-state
   (atom {:selected-page :import
 
+         ;; :competition
+         ;; {:competition/date #inst "2014-11-22T00:00:00.000-00:00",
+         ;;  :competition/name "Elittävling",
+         ;;  :dance-perfect/version "4.1",
+         ;;  :competition/location "VÄSTERÅS",
+         ;;  :competition/classes
+         ;;  [{:class/name "Hiphop Singel Star B",
+         ;;    :class/adjudicator-panel 1
+         ;;    :class/dances
+         ;;    [{:dance/name "Medium"} {:dance/name "Waltz"}]
+         ;;    :class/competitors
+         ;;    [{:competitor/name "Saga Boström-Fors", :competitor/number 10, :competitor/club "M&M"}
+         ;;       {:competitor/name "Tyra Hedin", :competitor/number 11, :competitor/club "Uddans"}
+         ;;       {:competitor/name "Elina Ahlberg", :competitor/number 12, :competitor/club "SDC"}
+         ;;       {:competitor/name "Thyra Söderström", :competitor/number 13, :competitor/club "Uddans"}
+         ;;       {:competitor/name "Wilma Lindström Åslund", :competitor/number 14, :competitor/club "MD"}]}
+           
+         ;;   {:class/name "Hiphop Singel Star J Fl",
+         ;;    :class/adjudicator-panel 0
+         ;;    :class/dances [{:dance/name "Quick"}]
+         ;;    :class/competitors
+         ;;    [{:competitor/name "Tilda Strandberg", :competitor/number 30, :competitor/club "Uddans"}
+         ;;     {:competitor/name "Tove Gärdin", :competitor/number 31, :competitor/club "BF"}
+         ;;     {:competitor/name "Esther Wallmo", :competitor/number 32, :competitor/club "Uddans"}
+         ;;     {:competitor/name "Felicia Dackell", :competitor/number 33, :competitor/club "Uddans"}
+         ;;     {:competitor/name "Emma Fredriksson", :competitor/number 34, :competitor/club "DVT"}]}
+           
+         ;;   {:class/name "Hiphop Singel Star J Po",
+         ;;    :class/adjudicator-panel 2
+         ;;    :class/dances []
+         ;;    :class/competitors
+         ;;    [{:competitor/name "Axel Carlsson", :competitor/number 60, :competitor/club "DTLH/DV"}
+         ;;     {:competitor/name "Tom Matei", :competitor/number 61, :competitor/club "SDC"}
+         ;;     {:competitor/name "Jacob Olsson", :competitor/number 62, :competitor/club "DTLH/DV"}]}]}
+
          :competition
-         {:competition/date #inst "2014-11-22T00:00:00.000-00:00",
-          :competition/name "Elittävling",
-          :dance-perfect/version "4.1",
-          :competition/location "VÄSTERÅS",
+         {:competition/name "TurboMegatävling"
+          :competition/date #inst "2014-11-22T00:00:00.000-00:00"
+          :competition/location "THUNDERDOME"
           :competition/classes
-          [{:class/name "Hiphop Singel Star B",
+          [{:class/name "Hiphop Singel Star B"
+            :class/position 1
             :class/adjudicator-panel 1
             :class/dances
-            [{:dance/name "Medium"} {:dance/name "Waltz"}]
+            [{:dance/name "Medium"}
+             {:dance/name "Tango"}
+             {:dance/name "VienWaltz"}
+             {:dance/name "Foxtrot"}
+             {:dance/name "Quickstep"}
+             {:dance/name "Samba"}
+             {:dance/name "Cha-Cha"}
+             {:dance/name "Rumba"}
+             {:dance/name "Paso-Doble"}
+             {:dance/name "Jive"}]
             :class/competitors
-            [{:competitor/name "Saga Boström-Fors", :competitor/number 10, :competitor/club "M&M"}
-               {:competitor/name "Tyra Hedin", :competitor/number 11, :competitor/club "Uddans"}
-               {:competitor/name "Elina Ahlberg", :competitor/number 12, :competitor/club "SDC"}
-               {:competitor/name "Thyra Söderström", :competitor/number 13, :competitor/club "Uddans"}
-               {:competitor/name "Wilma Lindström Åslund", :competitor/number 14, :competitor/club "MD"}]}
+            [{:competitor/name "Rulle Trulle"
+              :competitor/club "Sinclairs"
+              :competitor/number 30}
+             {:competitor/name "Milan Lund"
+              :competitor/club "Wilson"
+              :competitor/number 31}
+             {:competitor/name "Douglas Junger"
+              :competitor/club "RGDT"
+              :competitor/number 32}]
+            :class/results
+            [{:result/round "S"
+              :result/adjudicators
+              [{:adjudicator/number 3 :adjudicator/position 0}
+               {:adjudicator/number 4 :adjudicator/position 1}
+               {:adjudicator/number 5 :adjudicator/position 2}]
+              :result/dance {:dance/name "X-Quick Forward"}
+              :result/results
+              [{:competitor/number 30
+                :competitor/recalled ""
+                :competitor/results
+                [{:result/adjudicator
+                  {:adjudicator/number 3, :adjudicator/position 0},
+                  :result/x-mark true}
+                 {:result/adjudicator
+                  {:adjudicator/number 4, :adjudicator/position 1},
+                  :result/x-mark false}
+                 {:result/adjudicator
+                  {:adjudicator/number 5, :adjudicator/position 2},
+                  :result/x-mark true}]}
+               {:competitor/number 31,
+                :competitor/recalled :r,
+                :competitor/results
+                [{:result/adjudicator
+                  {:adjudicator/number 3, :adjudicator/position 0},
+                  :result/x-mark false}
+                 {:result/adjudicator
+                  {:adjudicator/number 4, :adjudicator/position 1},
+                  :result/x-mark true}
+                 {:result/adjudicator
+                  {:adjudicator/number 5, :adjudicator/position 2},
+                  :result/x-mark false}]}
+               {:competitor/number 32,
+                :competitor/recalled :x,
+                :competitor/results
+                [{:result/adjudicator
+                  {:adjudicator/number 3, :adjudicator/position 0},
+                  :result/x-mark true}
+                 {:result/adjudicator
+                  {:adjudicator/number 4, :adjudicator/position 1},
+                  :result/x-mark false}
+                 {:result/adjudicator
+                  {:adjudicator/number 5, :adjudicator/position 2},
+                  :result/x-mark false}]}]
+              }]}
            
-           {:class/name "Hiphop Singel Star J Fl",
+           
+           {:class/name "Hiphop Singel Star J Fl"
+            :class/position 0
             :class/adjudicator-panel 0
-            :class/dances [{:dance/name "Quick"}]
+            :class/dances
+            []
             :class/competitors
-            [{:competitor/name "Tilda Strandberg", :competitor/number 30, :competitor/club "Uddans"}
-             {:competitor/name "Tove Gärdin", :competitor/number 31, :competitor/club "BF"}
-             {:competitor/name "Esther Wallmo", :competitor/number 32, :competitor/club "Uddans"}
-             {:competitor/name "Felicia Dackell", :competitor/number 33, :competitor/club "Uddans"}
-             {:competitor/name "Emma Fredriksson", :competitor/number 34, :competitor/club "DVT"}]}
-           
-           {:class/name "Hiphop Singel Star J Po",
-            :class/adjudicator-panel 2
-            :class/dances []
-            :class/competitors
-            [{:competitor/name "Axel Carlsson", :competitor/number 60, :competitor/club "DTLH/DV"}
-             {:competitor/name "Tom Matei", :competitor/number 61, :competitor/club "SDC"}
-             {:competitor/name "Jacob Olsson", :competitor/number 62, :competitor/club "DTLH/DV"}]}]}}))
+            [{:competitor/name "Ringo Stingo"
+              :competitor/club "Kapangg"
+              :competitor/number 20}
+             {:competitor/name "Greve Turbo"
+              :competitor/club "OOoost"
+              :competitor/number 21}]
+            :class/results []}]}}))
 
 (defn on-file-read [e file-reader]
   (let [result (.-result file-reader)]
@@ -105,6 +195,33 @@
   ;; Dances are presented as a list of the first letters of each dance
   (apply str (map #(first (:dance/name %)) dances)))
 
+(defn- to-number [s]
+  {:pre [(string? s)]}
+  (let [prepared-string (clojure.string/replace s #" " "")]
+    (cond (re-seq #"^[-+]?\d*[\.,]\d*$" prepared-string)
+          (js/parseDouble (clojure.string/replace prepared-string #"," "."))
+          (re-seq #"^[-+]?\d+$" prepared-string)
+          (js/parseInt (clojure.string/replace prepared-string #"\+" ""))
+          :else s)))
+
+(defn number-string? [s]
+  (if s
+    (re-seq #"\d+" s)))
+
+(defn make-round-presentation [round-status round-count]
+  (str
+   round-count " - "
+   (if round-status
+     (if (number-string? round-status)
+       (str "Round " round-status)
+       (condp = round-status
+         "S" (str "Semifinal" )
+         "E" "2nd Try"
+         "F" "Final"
+         "O" "Retry"
+         (str "Unknown status : " round-status)))
+     "Not Started")))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Components
 
@@ -119,15 +236,33 @@
      [:th {:with "20"} "Startande"]
      [:th {:with "20"} "Status"]]]
    [:tbody
-    (for [class (:competition/classes (:competition @app-state))]
+    (for [class (sort-by :class/position (:competition/classes (:competition @app-state)))]
       ^{:key class}
       [:tr
-       [:td "-"]
+       [:td (inc (:class/position class))]
        [:td (:class/name class)]
        [:td (:class/adjudicator-panel class)]
        [:td (make-dance-type-presentation (:class/dances class))]
-       [:td (str (count (:class/competitors class)) "/" (count (:class/competitors class)))]
-       [:td "-"]])]])
+       
+       [:td
+        (let [results (:result/results (last (:class/results class)))
+              started (count (:class/competitors class))
+              recalled-count
+              (if (empty? results)
+                started
+                (reduce
+                 (fn [x y]
+                   (if (contains?
+                        #{:r :x}
+                        (:competitor/recalled y))
+                     (inc x)
+                     x))
+                 0
+                 results))]
+          (str recalled-count "/" started))]
+
+       [:td (make-round-presentation (:result/round (last (:class/results class)))
+                                     (count (:class/results class)))]])]])
 
 ;; TODO - make the on-click event run thoughe dispatch
 (defn import-component []
