@@ -78,6 +78,7 @@
           :competition/location "THUNDERDOME"
           :competition/classes
           [{:class/name "Hiphop Singel Star B"
+            :class/position 1
             :class/adjudicator-panel 1
             :class/dances
             [{:dance/name "Medium"}
@@ -148,6 +149,7 @@
            
            
            {:class/name "Hiphop Singel Star J Fl"
+            :class/position 0
             :class/adjudicator-panel 0
             :class/dances
             []
@@ -234,10 +236,10 @@
      [:th {:with "20"} "Startande"]
      [:th {:with "20"} "Status"]]]
    [:tbody
-    (for [class (:competition/classes (:competition @app-state))]
+    (for [class (sort-by :class/position (:competition/classes (:competition @app-state)))]
       ^{:key class}
       [:tr
-       [:td "-"]
+       [:td (inc (:class/position class))]
        [:td (:class/name class)]
        [:td (:class/adjudicator-panel class)]
        [:td (make-dance-type-presentation (:class/dances class))]

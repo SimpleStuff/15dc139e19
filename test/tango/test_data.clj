@@ -8,6 +8,7 @@
    :competition/location "THUNDERDOME"
    :competition/classes
    [{:class/name "Hiphop Singel Star B"
+     :class/position 0
      :class/adjudicator-panel 1
      :class/dances
      [{:dance/name "Medium"}
@@ -23,24 +24,33 @@
      :class/competitors
      [{:competitor/name "Rulle Trulle"
        :competitor/club "Sinclairs"
-       :competitor/number 30}
+       :competitor/number 30
+       :competitor/position 0}
       {:competitor/name "Milan Lund"
        :competitor/club "Wilson"
-       :competitor/number 31}
+       :competitor/number 31
+       :competitor/position 1}
       {:competitor/name "Douglas Junger"
        :competitor/club "RGDT"
-       :competitor/number 32}]}
+       :competitor/number 32
+       :competitor/position 2}]
+     :class/results []}
+
     {:class/name "Hiphop Singel Star J Fl"
+     :class/position 1
      :class/adjudicator-panel 0
      :class/dances
      []
      :class/competitors
      [{:competitor/name "Ringo Stingo"
        :competitor/club "Kapangg"
-       :competitor/number 20}
+       :competitor/number 20
+       :competitor/position 0}
       {:competitor/name "Greve Turbo"
        :competitor/club "OOoost"
-       :competitor/number 21}]}]})
+       :competitor/number 21
+       :competitor/position 1}]
+     :class/results []}]})
 
 (def results-file-expected-content
   {:competition/name "TurboMegatävling"
@@ -48,6 +58,7 @@
    :competition/location "THUNDERDOME"
    :competition/classes
    [{:class/name "Hiphop Singel Star B"
+     :class/position 0
      :class/adjudicator-panel 1
      :class/dances
      [{:dance/name "Medium"}
@@ -62,12 +73,15 @@
       {:dance/name "Jive"}]
      :class/competitors
      [{:competitor/name "Rulle Trulle"
+       :competitor/position 0
        :competitor/club "Sinclairs"
        :competitor/number 30}
       {:competitor/name "Milan Lund"
+       :competitor/position 1
        :competitor/club "Wilson"
        :competitor/number 31}
       {:competitor/name "Douglas Junger"
+       :competitor/position 2
        :competitor/club "RGDT"
        :competitor/number 32}]
      :class/results
@@ -118,14 +132,17 @@
     
     
     {:class/name "Hiphop Singel Star J Fl"
+     :class/position 1
      :class/adjudicator-panel 0
      :class/dances
      []
      :class/competitors
      [{:competitor/name "Ringo Stingo"
        :competitor/club "Kapangg"
-       :competitor/number 20}
+       :competitor/number 20
+       :competitor/position 0}
       {:competitor/name "Greve Turbo"
        :competitor/club "OOoost"
-       :competitor/number 21}]
+       :competitor/number 21
+       :competitor/position 1}]
      :class/results []}]})
