@@ -121,7 +121,7 @@
                   {:adjudicator/number 5, :adjudicator/position 2},
                   :result/x-mark true}]}
                {:competitor/number 31,
-                :competitor/recalled "",
+                :competitor/recalled :r,
                 :competitor/results
                 [{:result/adjudicator
                   {:adjudicator/number 3, :adjudicator/position 0},
@@ -133,7 +133,7 @@
                   {:adjudicator/number 5, :adjudicator/position 2},
                   :result/x-mark false}]}
                {:competitor/number 32,
-                :competitor/recalled "",
+                :competitor/recalled :x,
                 :competitor/results
                 [{:result/adjudicator
                   {:adjudicator/number 3, :adjudicator/position 0},
@@ -241,7 +241,24 @@
        [:td (:class/name class)]
        [:td (:class/adjudicator-panel class)]
        [:td (make-dance-type-presentation (:class/dances class))]
-       [:td (str (count (:class/competitors class)) "/" (count (:class/competitors class)))]
+       
+       [:td
+        (let [results (:result/results (last (:class/results class)))
+              started (count (:class/competitors class))
+              recalled-count
+              (if (empty? results)
+                started
+                (reduce
+                 (fn [x y]
+                   (if (contains?
+                        #{:r :x}
+                        (:competitor/recalled y))
+                     (inc x)
+                     x))
+                 0
+                 results))]
+          (str recalled-count "/" started))]
+
        [:td (make-round-presentation (:result/round (last (:class/results class)))
                                      (count (:class/results class)))]])]])
 
