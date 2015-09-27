@@ -38,12 +38,12 @@
 
             server-stop (http-kit-server/run-server
                          (defaults/wrap-defaults handler defaults/site-defaults) {:port port})]
-        (log/info "HTTP server started")
+        (log/report "HTTP server started")
         (assoc component :server-stop server-stop))))
   (stop [component]
     (when server-stop
       (server-stop)
-      (log/info "HTTP server stopped"))
+      (log/report "HTTP server stopped"))
     (assoc component :server-stop nil)))
 
 (defn create-http-server [port]

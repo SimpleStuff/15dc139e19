@@ -8,8 +8,9 @@
 (defn start-message-handler [in-channel out-channel]
   (async/go-loop []
     (when-let [message (async/<! in-channel)]
-      (try
-        (when message
+      (log/debug (str "Raw message : " message))
+      (when message
+        (try
           (let [topic (:topic message)
                 payload (:payload message)]
             (log/trace (str "Files received: " message))
@@ -17,21 +18,23 @@
                    [:file/import p]
                    (async/put! out-channel (merge message {:topic :file/imported
                                                            :payload (import/import-file-stream p)}))
-                   :else (async/>!! out-channel {:topic :files/unkown-topic :payload {:topic topic}}))))
-        (catch Exception e
-          (log/error e "Exception in Files message go loop")
-          (async/>! out-channel (str "Exception message: " (.getMessage e)))))
-      (recur))))
+                   :else (async/>!! out-channel {:topic :files/unkown-topic :payload {:topic topic}})))
+          (catch Exception e
+            (log/error e "Exception in Files message go loop")
+            (async/>! out-channel (str "Exception message: " (.getMessage e)))))
+        (recur)))))
 
 (defrecord FileHandler [file-handler-channels message-handler]
   component/Lifecycle
   (start [component]
+    (log/report "Starting FileHandler")
     (if (and file-handler-channels message-handler)
       component
       (let [message-handler (start-message-handler (:in-channel file-handler-channels)
                                                    (:out-channel file-handler-channels))]
         (assoc component :message-handler message-handler))))
   (stop [component]
+    (log/report "Stopping FileHandler")
     (assoc component :message-handler nil)))
 
 (defn create-file-handler []

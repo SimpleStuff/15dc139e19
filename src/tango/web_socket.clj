@@ -29,9 +29,10 @@
 (defn event-msg-handler* [out-channel {:as ev-msg :keys [id ?data event ring-req]}]
   (let [adapted (sente-ws-bus-adapter-in ev-msg)]
     (log/trace "Web Socket receive: " ev-msg)
-    (log/info (str "Receive Adapted: " adapted))
+    (log/trace (str "Receive Adapted: " adapted))
+    (log/info (str "Web Socket received message from client : [" id " " event "]"))
     (async/>!! out-channel adapted)
-    (log/info (str "Web Socket sent message to out channel: " adapted))))
+    (log/trace (str "Web Socket sent message to out channel: " adapted))))
 
 (defn- create-exception-message [e]
   (str "Exception message: " (.getMessage e)))
@@ -39,17 +40,19 @@
 (defn start-message-send-loop [send-fn messages-send-chan system-ch out-adapter-fn]
   (async/go-loop []
     (when-let [msg (async/<! messages-send-chan)]
-      (try
-        (when msg
+      (log/debug (str "Raw message : " msg))
+      (when msg
+        (try
           (let [adapted (out-adapter-fn msg)]
-            (log/trace (str "full message " msg))
-            (log/info (str "Sending: " msg))
-            (log/info (str "Adapted: " adapted))
-            (send-fn adapted)))
-        (catch Exception e
-          (log/error e "Exception in Web-socket message send go loop")
-          (async/>! system-ch (create-exception-message e))))
-      (recur))))
+            (log/debug (str "Sending: " msg))
+            (log/debug (str "Adapted: " adapted))
+            (send-fn adapted))
+          (catch Exception e
+            (log/error e "Exception in Web-socket message send go loop")
+            ;; TODO - do we want a system channel or should it be sent to broker?
+            ;;(async/>! system-ch (create-exception-message e))
+            ))
+        (recur)))))
 
 (defrecord WSRingHandlers [ajax-post-fn ajax-get-or-ws-handshake-fn])
 
@@ -61,7 +64,7 @@
       (let [{:keys [ch-recv send-fn connected-uids
                     ajax-post-fn ajax-get-or-ws-handshake-fn]}
             (sente/make-channel-socket! sente-web-server-adapter {})]
-        (log/info "Start web socket")
+        (log/report "Start web socket")
         (assoc component
           :ch-recv ch-recv
           :connected-uids connected-uids
@@ -74,11 +77,10 @@
                         (send-fn user-id event))
                       (:in-channel ws-connection-channels)
                       (async/chan)
-                                        ;(:system-chan channels)
                       sente-ws-bus-adapter-out)))))
   (stop [component]
-    (log/info "Stop web socket")
-    (:stop-the-thing component)
+    (log/report "Stop web socket")
+    ((:stop-the-thing component))
     (assoc component
       :ch-recv nil :connected-uids nil :send-fn nil :ring-handlers nil)))
 
