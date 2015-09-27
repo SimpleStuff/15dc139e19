@@ -2866,16 +2866,28 @@ net.brehaut.ClojureTools = (function (SH) {
   };
 })(SyntaxHighlighter);
 </script><title>tango -- Marginalia</title></head><body><table><tr><td class="docs"><div class="header"><h1 class="project-name"><a href="http://example.com/FIXME">tango</a></h1><h2 class="project-version">0.1.0-SNAPSHOT</h2><br /><p>Tango</p>
-</div><div class="dependencies"><h3>dependencies</h3><table><tr><td class="dep-name">org.clojure/clojure</td><td class="dotted"><hr /></td><td class="dep-version">1.7.0</td></tr><tr><td class="dep-name">org.clojure/core.async</td><td class="dotted"><hr /></td><td class="dep-version">0.1.346.0-17112a-alpha</td></tr><tr><td class="dep-name">org.clojure/tools.namespace</td><td class="dotted"><hr /></td><td class="dep-version">0.2.10</td></tr><tr><td class="dep-name">org.clojure/clojurescript</td><td class="dotted"><hr /></td><td class="dep-version">1.7.48</td></tr><tr><td class="dep-name">org.clojure/core.match</td><td class="dotted"><hr /></td><td class="dep-version">0.3.0-alpha4</td></tr><tr><td class="dep-name">com.stuartsierra/component</td><td class="dotted"><hr /></td><td class="dep-version">0.2.3</td></tr><tr><td class="dep-name">org.clojure/data.xml</td><td class="dotted"><hr /></td><td class="dep-version">0.0.8</td></tr><tr><td class="dep-name">org.clojure/data.zip</td><td class="dotted"><hr /></td><td class="dep-version">0.1.1</td></tr><tr><td class="dep-name">clj-time</td><td class="dotted"><hr /></td><td class="dep-version">0.8.0</td></tr><tr><td class="dep-name">com.taoensso/sente</td><td class="dotted"><hr /></td><td class="dep-version">1.5.0</td></tr><tr><td class="dep-name">com.taoensso/timbre</td><td class="dotted"><hr /></td><td class="dep-version">3.4.0</td></tr><tr><td class="dep-name">http-kit</td><td class="dotted"><hr /></td><td class="dep-version">2.1.19</td></tr><tr><td class="dep-name">ring</td><td class="dotted"><hr /></td><td class="dep-version">1.3.2</td></tr><tr><td class="dep-name">ring/ring-defaults</td><td class="dotted"><hr /></td><td class="dep-version">0.1.5</td></tr><tr><td class="dep-name">compojure</td><td class="dotted"><hr /></td><td class="dep-version">1.3.4</td></tr><tr><td class="dep-name">reagent</td><td class="dotted"><hr /></td><td class="dep-version">0.5.0</td></tr><tr><td class="dep-name">repetition-hunter</td><td class="dotted"><hr /></td><td class="dep-version">1.0.0</td></tr></table></div></td><td class="codes" style="text-align: center; vertical-align: middle;color: #666;padding-right:20px"><br /><br /><br />(this space intentionally left almost blank)</td></tr><tr><td class="docs"><div class="toc"><a name="toc"><h3>namespaces</h3></a><ul><li><a href="#tango.channels">tango.channels</a></li><li><a href="#tango.broker">tango.broker</a></li><li><a href="#tango.http-server">tango.http-server</a></li><li><a href="#tango.client">tango.client</a></li><li><a href="#tango.files">tango.files</a></li><li><a href="#tango.import">tango.import</a></li><li><a href="#tango.web-socket">tango.web-socket</a></li><li><a href="#tango.core">tango.core</a></li><li><a href="#messaging.clj">messaging.clj</a></li><li><a href="#tango.repetition-hunt">tango.repetition-hunt</a></li><li><a href="#tango.import-tests">tango.import-tests</a></li><li><a href="#tango.test-data">tango.test-data</a></li><li><a href="#tango.export-tests">tango.export-tests</a></li><li><a href="#tango.core-test">tango.core-test</a></li></ul></div></td><td class="codes">&nbsp;</td></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#tango.channels" name="tango.channels"><h1 class="project-name">tango.channels</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
+</div><div class="dependencies"><h3>dependencies</h3><table><tr><td class="dep-name">org.clojure/clojure</td><td class="dotted"><hr /></td><td class="dep-version">1.7.0</td></tr><tr><td class="dep-name">org.clojure/core.async</td><td class="dotted"><hr /></td><td class="dep-version">0.1.346.0-17112a-alpha</td></tr><tr><td class="dep-name">org.clojure/tools.namespace</td><td class="dotted"><hr /></td><td class="dep-version">0.2.10</td></tr><tr><td class="dep-name">org.clojure/clojurescript</td><td class="dotted"><hr /></td><td class="dep-version">1.7.48</td></tr><tr><td class="dep-name">org.clojure/core.match</td><td class="dotted"><hr /></td><td class="dep-version">0.3.0-alpha4</td></tr><tr><td class="dep-name">com.stuartsierra/component</td><td class="dotted"><hr /></td><td class="dep-version">0.2.3</td></tr><tr><td class="dep-name">org.clojure/data.xml</td><td class="dotted"><hr /></td><td class="dep-version">0.0.8</td></tr><tr><td class="dep-name">org.clojure/data.zip</td><td class="dotted"><hr /></td><td class="dep-version">0.1.1</td></tr><tr><td class="dep-name">clj-time</td><td class="dotted"><hr /></td><td class="dep-version">0.8.0</td></tr><tr><td class="dep-name">com.taoensso/sente</td><td class="dotted"><hr /></td><td class="dep-version">1.5.0</td></tr><tr><td class="dep-name">com.taoensso/timbre</td><td class="dotted"><hr /></td><td class="dep-version">3.4.0</td></tr><tr><td class="dep-name">http-kit</td><td class="dotted"><hr /></td><td class="dep-version">2.1.19</td></tr><tr><td class="dep-name">ring</td><td class="dotted"><hr /></td><td class="dep-version">1.3.2</td></tr><tr><td class="dep-name">ring/ring-defaults</td><td class="dotted"><hr /></td><td class="dep-version">0.1.5</td></tr><tr><td class="dep-name">compojure</td><td class="dotted"><hr /></td><td class="dep-version">1.3.4</td></tr><tr><td class="dep-name">reagent</td><td class="dotted"><hr /></td><td class="dep-version">0.5.0</td></tr><tr><td class="dep-name">repetition-hunter</td><td class="dotted"><hr /></td><td class="dep-version">1.0.0</td></tr></table></div></td><td class="codes" style="text-align: center; vertical-align: middle;color: #666;padding-right:20px"><br /><br /><br />(this space intentionally left almost blank)</td></tr><tr><td class="docs"><div class="toc"><a name="toc"><h3>namespaces</h3></a><ul><li><a href="#tango.channels">tango.channels</a></li><li><a href="#tango.broker">tango.broker</a></li><li><a href="#tango.http-server">tango.http-server</a></li><li><a href="#tango.client">tango.client</a></li><li><a href="#tango.files">tango.files</a></li><li><a href="#tango.import">tango.import</a></li><li><a href="#tango.web-socket">tango.web-socket</a></li><li><a href="#tango.core">tango.core</a></li><li><a href="#tango.repetition-hunt">tango.repetition-hunt</a></li><li><a href="#tango.import-tests">tango.import-tests</a></li><li><a href="#tango.test-data">tango.test-data</a></li><li><a href="#tango.export-tests">tango.export-tests</a></li><li><a href="#tango.core-test">tango.core-test</a></li></ul></div></td><td class="codes">&nbsp;</td></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#tango.channels" name="tango.channels"><h1 class="project-name">tango.channels</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><h2>Tango core.async clients component</h2>
+
+<p>'tango.channels' provides core.async in/out channels for clients to
+send and receive messages on. This is primarely of interest for
+in-memory clients.</p>
 </td><td class="codes"><pre class="brush: clojure">(ns tango.channels
   (:require [com.stuartsierra.component :as component]
             [clojure.core.async :as async]
             [taoensso.timbre :as log]))</pre></td></tr><tr><td class="docs"><p>Provides useful Timbre aliases in this ns</p>
-</td><td class="codes"><pre class="brush: clojure">(log/refer-timbre)</pre></td></tr><tr><td class="docs"><p>Component</p>
-</td><td class="codes"><pre class="brush: clojure">(defn start-clients-handler [out-channel clients-in-channel]
+</td><td class="codes"><pre class="brush: clojure">(log/refer-timbre)</pre></td></tr><tr><td class="docs"><p>Utils</p>
+</td><td class="codes"><pre class="brush: clojure">(defn- create-exception-message [e]
+  (str &quot;Exception message: &quot; (.getMessage e)))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn- log-raw-message [message]
+  (log/debug (str &quot;Raw message : &quot; message)))</pre></td></tr><tr><td class="docs"><p>Receives messages on a core.async channel used by clients and
+  puts those messages on this components out-channel.</p>
+
+<p>Component</p>
+</td><td class="codes"><pre class="brush: clojure">(defn start-clients-handler 
+  [out-channel clients-in-channel]
   (async/go-loop []
     (when-let [message (async/&lt;! clients-in-channel)]
-      (log/debug (str &quot;Raw message : &quot; message))
+      (log-raw-message message)
       (when message
         (try
           (let [topic (:topic message)
@@ -2884,12 +2896,14 @@ net.brehaut.ClojureTools = (function (SH) {
             (async/put! out-channel message))
           (catch Exception e
             (log/error e &quot;Exception in Client ChannelConnection message go loop&quot;)
-            (async/&gt;! out-channel (str &quot;Exception message: &quot; (.getMessage e)))))
-        (recur)))))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn start-message-handler [in-channel out-channel clients-out-channel]
+            (async/&gt;! out-channel (create-exception-message e))))
+        (recur)))))</pre></td></tr><tr><td class="docs"><p>Receives system messages to be sent to clients, any messages on
+  the components in-channel are put on the clients out-channel.</p>
+</td><td class="codes"><pre class="brush: clojure">(defn start-message-handler
+  [in-channel out-channel clients-out-channel]
   (async/go-loop []
     (when-let [message (async/&lt;! in-channel)]
-      (log/debug (str &quot;Raw message : &quot; message))
+      (log-raw-message message)
       (when message
         (try
           (let [topic (:topic message)
@@ -2898,7 +2912,7 @@ net.brehaut.ClojureTools = (function (SH) {
             (async/put! clients-out-channel message))
           (catch Exception e
             (log/error e &quot;Exception in ChannelConnection message go loop&quot;)
-            (async/&gt;! out-channel (str &quot;Exception message: &quot; (.getMessage e)))))
+            (async/&gt;! out-channel (create-exception-message e))))
         (recur)))))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defrecord ChannelConnection [channel-connection-channels in-channel out-channel message-handler]
   component/Lifecycle
@@ -2954,16 +2968,18 @@ net.brehaut.ClojureTools = (function (SH) {
   {:channels channels-connection-channels
    :file-handler file-handler-channels})</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn message-dispatch [{:keys [topic payload sender] :as message} components]
-  (match [topic payload]
-         [:file/import _]
-         (async/&gt;!! (:in-channel (:file-handler components)) message)
-         [:file/imported _]
-         (async/&gt;!! (:in-channel (:channels components)) message)
-         :else (async/&gt;!! (:in-channel (:channels components))
-                          {:sender sender :topic :broker/unkown-topic :payload {:topic topic}})))</pre></td></tr><tr><td class="docs"><p>TODO - mapping :out-channels is not a greate idea, if we get a nil all msg procs
+  (let [client-in-channel (:in-channel (:channels components))]
+    (match [topic payload]
+           [:file/import _]
+           (async/&gt;!! (:in-channel (:file-handler components)) message)
+           [:file/imported _]
+           (async/&gt;!! client-in-channel message)
+           :else (async/&gt;!!
+                  client-in-channel
+                  {:sender sender :topic :broker/unkown-topic :payload {:topic topic}}))))</pre></td></tr><tr><td class="docs"><p>TODO - mapping :out-channels is not a greate idea, if we get a nil all msg procs
 dies, fixit damn it!</p>
 </td><td class="codes"><pre class="brush: clojure">(defn start-message-process [dispatch-fn components-m]
-  (let [out-chans (into [] (map :out-channel (vals components-m)))]
+  (let [out-chans (vec (map :out-channel (vals components-m)))]
     (log/debug (str &quot;Broker Channels : &quot; out-chans))
     (log/info &quot;Broker message process starting&quot;)
     (async/go-loop []
@@ -3188,7 +3204,7 @@ Utils</p>
     (.readAsText r file)))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn dispatch [props]
   (let [id (first props)
-        data (into [] (rest props))]
+        data (vec (rest props))]
     (log (str &quot;Dispatch of &quot; id &quot; with data &quot; data))
     (match [id data]
            [:file/import [file]]
@@ -3201,7 +3217,7 @@ Utils</p>
 </td><td class="codes"></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn make-dance-type-presentation [dances]
   ;; Dances are presented as a list of the first letters of each dance
-  (apply str (map #(first (:dance/name %)) dances)))</pre></td></tr><tr><td class="docs">
+  (clojure.string/join (map #(first (:dance/name %)) dances)))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn- to-number [s]
   {:pre [(string? s)]}
   (let [prepared-string (clojure.string/replace s #&quot; &quot; )]
@@ -3483,32 +3499,36 @@ href-content (str "data:application/octet-stream;base64," compressed-content)]
 </td><td class="codes"><pre class="brush: clojure">(defn- str-count [seq]
   (str (count seq)))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn- get-name-attr [loc]
-  (zx/attr loc :Name))</pre></td></tr><tr><td class="docs"><p>Zipper implementation</p>
+  (zx/attr loc :Name))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn- get-number-attr [loc]
+  (to-number (zx/attr loc :Number)))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn- get-seq-attr [loc]
+  (to-number (zx/attr loc :Seq)))</pre></td></tr><tr><td class="docs"><p>Zipper implementation</p>
 </td><td class="codes"></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn couple-&gt;map [couples-loc]
   (for [couple couples-loc]
     {:competitor/name (get-name-attr couple)
      :competitor/club (zx/attr couple :Club)
-     :competitor/number (to-number (zx/attr couple :Number))
-     :competitor/position (to-number (zx/attr couple :Seq))}))</pre></td></tr><tr><td class="docs">
+     :competitor/number (get-number-attr couple)
+     :competitor/position (get-seq-attr couple)}))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn dance-list-&gt;map [dances-loc]
   (for [dance dances-loc]
     {:dance/name (get-name-attr dance)}))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn adjudicator-list-&gt;map [adjudicator-loc]
   (for [adjudicator adjudicator-loc]
-    {:adjudicator/number (to-number (zx/attr adjudicator :Number))
-     :adjudicator/position (to-number (zx/attr adjudicator :Seq))}))</pre></td></tr><tr><td class="docs">
+    {:adjudicator/number (get-number-attr adjudicator)
+     :adjudicator/position (get-seq-attr adjudicator)}))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn marks-&gt;map [marks-loc adjudicators]
   (for [mark marks-loc]
     {:result/adjudicator
      (first (filter
              #(= (:adjudicator/position %)
-                 (to-number (zx/attr mark :Seq)))
+                 (get-seq-attr mark))
              adjudicators))
      :result/x-mark (= (zx/attr mark :X) &quot;X&quot;)}))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn mark-list-&gt;map [result-couple-loc adjudicators]
   (for [couple result-couple-loc]
-    {:competitor/number (to-number (zx/attr couple :Number))
+    {:competitor/number (get-number-attr couple)
      :competitor/recalled
      (condp = (zx/attr couple :Recalled)
        &quot;X&quot; :x
@@ -3526,7 +3546,7 @@ href-content (str "data:application/octet-stream;base64," compressed-content)]
 </td><td class="codes"><pre class="brush: clojure">(defn class-list-&gt;map [classes-loc]
   (for [class classes-loc]
     {:class/name (zx/attr class :Name)
-     :class/position (to-number (zx/attr class :Seq))
+     :class/position (get-seq-attr class)
      :class/adjudicator-panel (to-number (zx/attr class :AdjPanel))
      :class/competitors (into [] (couple-&gt;map (zx/xml-&gt; class :StartList :Couple)))
      :class/dances (into [] (dance-list-&gt;map (zx/xml-&gt; class :DanceList :Dance)))
@@ -3538,6 +3558,7 @@ href-content (str "data:application/octet-stream;base64," compressed-content)]
                         (tf/parse (tf/formatter &quot;yyyy-MM-dd&quot;)
                                   (zx/attr competition-data :Date)))
      :competition/location (zx/attr competition-data :Place)
+     :dance-perfect/flags {:adj-order-final (to-number (zx/attr competition-data :AdjOrderFinal)) }
      :competition/classes (into [] (class-list-&gt;map (zx/xml-&gt; loc :ClassList :Class)))}))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn- create-import-info [version content status errors]
   {:file/version version
@@ -3608,19 +3629,25 @@ TODO - add exception catch</p>
   (xml/emit (xml/sexp-as-element (data->dance-perfect-xml-data "4.1" (:file/content small-exampel-data))) out-file))</p>
 </td><td class="codes"></td></tr><tr><td class="docs"><p>(spit "export.xml" (with-out-str (export-file 4.1 (:file/content small-exampel-data))))
 http://blog.fogus.me/2011/09/08/10-technical-papers-every-programmer-should-read-at-least-twice/</p>
-</td><td class="codes"></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#tango.web-socket" name="tango.web-socket"><h1 class="project-name">tango.web-socket</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
+</td><td class="codes"></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#tango.web-socket" name="tango.web-socket"><h1 class="project-name">tango.web-socket</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><h2>Tango web-socket clients component</h2>
+
+<p>'tango.web-socket' provides support for clojurescript clients
+running 'sente' to connect to the system via web-socket.</p>
 </td><td class="codes"><pre class="brush: clojure">(ns tango.web-socket
   (:require [taoensso.sente :as sente]
             [taoensso.sente.server-adapters.http-kit :refer (sente-web-server-adapter)]
             [clojure.core.async :as async]
             [com.stuartsierra.component :as component]
             [taoensso.timbre :as log]))</pre></td></tr><tr><td class="docs"><p>Provides useful Timbre aliases in this ns</p>
-</td><td class="codes"><pre class="brush: clojure">(log/refer-timbre)</pre></td></tr><tr><td class="docs"><p>Convert a internal message to a sente socket event :
+</td><td class="codes"><pre class="brush: clojure">(log/refer-timbre)</pre></td></tr><tr><td class="docs"><p>Utils</p>
+</td><td class="codes"><pre class="brush: clojure">(defn- create-exception-message [e]
+  (str &quot;Exception message: &quot; (.getMessage e)))</pre></td></tr><tr><td class="docs"><p>Sente web-socket implementation</p>
+</td><td class="codes"></td></tr><tr><td class="docs"><p>Convert a internal message to a sente socket event :
   [user-id event] where event [<ev-id> <?ev-data>], 
   e.g. [:my-app/some-req {:data data}]</p>
 </td><td class="codes"><pre class="brush: clojure">(defn sente-ws-bus-adapter-out
   [{:keys [topic payload sender]}]
-  (let [sender-id (if sender sender :sente/all-users-without-uid)]
+  (let [sender-id (or sender :sente/all-users-without-uid)]
     [sender-id [topic payload]]))</pre></td></tr><tr><td class="docs"><p>Convert a sente web-socket message to internal message format.
   Some special handling are needed for all sente specific messages</p>
 </td><td class="codes"><pre class="brush: clojure">(defn sente-ws-bus-adapter-in
@@ -3629,17 +3656,21 @@ http://blog.fogus.me/2011/09/08/10-technical-papers-every-programmer-should-read
         (cond
          (= id :chsk/uidport-open) :client/connect
          :default id)]
-    {:topic adapted-topic :payload ?data :sender (:uid (:session ring-req))}))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn event-msg-handler* [out-channel {:as ev-msg :keys [id ?data event ring-req]}]
+    {:topic adapted-topic :payload ?data :sender (:uid (:session ring-req))}))</pre></td></tr><tr><td class="docs"><p>The message handler registerd to receive messages from sente.
+  Messages are adapted to an internal format before they are put on this
+  components out-channel.</p>
+</td><td class="codes"><pre class="brush: clojure">(defn event-msg-handler*
+  [out-channel {:as ev-msg :keys [id ?data event ring-req]}]
   (let [adapted (sente-ws-bus-adapter-in ev-msg)]
     (log/trace &quot;Web Socket receive: &quot; ev-msg)
     (log/trace (str &quot;Receive Adapted: &quot; adapted))
     (log/info (str &quot;Web Socket received message from client : [&quot; id &quot; &quot; event &quot;]&quot;))
     (async/&gt;!! out-channel adapted)
-    (log/trace (str &quot;Web Socket sent message to out channel: &quot; adapted))))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn- create-exception-message [e]
-  (str &quot;Exception message: &quot; (.getMessage e)))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn start-message-send-loop [send-fn messages-send-chan system-ch out-adapter-fn]
+    (log/trace (str &quot;Web Socket sent message to out channel: &quot; adapted))))</pre></td></tr><tr><td class="docs"><p>Message loop that will listen on this components in-channel.
+  Any message received will be adapted to sente format and then sent
+  using sentes send funtion.</p>
+</td><td class="codes"><pre class="brush: clojure">(defn start-message-send-loop 
+  [send-fn messages-send-chan system-ch out-adapter-fn]
   (async/go-loop []
     (when-let [msg (async/&lt;! messages-send-chan)]
       (log/debug (str &quot;Raw message : &quot; msg))
@@ -3759,7 +3790,7 @@ components.</p>
   [configuration]
   (log/report &quot;Creating system&quot;)
   (let [{:keys [port log-file log-level id-generator-fn client-connection]} configuration
-        id-gen-fn (if id-generator-fn id-generator-fn (fn [] (str (java.util.UUID/randomUUID))))]
+        id-gen-fn (or id-generator-fn (fn [] (str (java.util.UUID/randomUUID))))]
     (when log-file
       ;; - everything should always be logged to file
       ;; - Production console only logg report
@@ -3820,93 +3851,7 @@ components.</p>
         (component/start
          (production-system {:port 1337 :log-file &quot;loggs/production.log&quot; :log-level :info
                              :client-connection :ws-connection-channels}))
-        (log/report (str &quot;Server started on port &quot; port))))))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#messaging.clj" name="messaging.clj"><h1 class="project-name">messaging.clj</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><p>(ns tango.messaging
-  (:require [tango.web-socket :as ws]
-            [tango.import :as import]
-            [clojure.core.async :as async]
-            [com.stuartsierra.component :as component]
-            [clojure.core.match :refer [match]]
-            [taoensso.timbre :as log]))</p>
-</td><td class="codes"></td></tr><tr><td class="docs"><p> Provides useful Timbre aliases in this ns
-(log/refer-timbre)</p>
-</td><td class="codes"></td></tr><tr><td class="docs"><p>(defn find-handler [handler-k handler-map]
-  (log/info (str "Find handler for [" handler-k "]"))
-  (let [handler (get handler-map handler-k)]
-    (if handler
-      (do
-        (log/info (str "Found handler [" handler-k "]"))
-        handler)
-      (log/info (str "Failed to find handler [" handler-k "]")))))</p>
-</td><td class="codes"></td></tr><tr><td class="docs"><p> Match incoming client messages and translate to server side format with for example
- the client id to be able to send responses async to the correct client.
- The handler-map contains handlers that produce the result that should be sent back to the client.
- TODO - fix an error pattern so that the client receives the errors and our message loop do not die.
-(defn message-dispatch [handler-map {:keys [topic payload sender]} ]
-  (match [topic payload]
-         [:file/import xml]
-         {:id sender :message [:file/imported {:content ((find-handler :file-import handler-map) xml)}]}
-         [:file/export _]
-         (let [handler (find-handler :file-export handler-map)]
-           (if handler
-             {:id sender :message [:file/export
-                                   {:content
-                                    (handler (:dance-perfect/version (:file/content payload))
-                                             (:file/content payload))}]}
-             {:id sender :message [:server/error {:error/message "Failed to export file"}]}))
-         [:client/ping p]
-         {:id sender :message [:server/pong []]}
-         :else {:id sender :message [:client/unkown-topic {:topic topic}]}))</p>
-</td><td class="codes"></td></tr><tr><td class="docs"><p>(defn create-message-dispatch [handler-map]
-  (partial message-dispatch handler-map))</p>
-</td><td class="codes"></td></tr><tr><td class="docs"><p>(defn- create-exception-message [e]
-  (str "Exception message: " (.getMessage e)))</p>
-</td><td class="codes"></td></tr><tr><td class="docs"><p> TODO - refactor into generic message loop that runs body
-(defn start-message-loop [dispatch-fn messages-receive-ch messages-send-ch system-ch]
-  (async/go-loop []
-    (when-let [msg (async/<! messages-receive-ch)]
-      (try
-        (when msg
-          (log/info (str "Message: [" (:topic msg) "] from sender id: " (:sender msg)))
-          (log/trace (str "Payload: " (:payload msg)))
-          (async/>! messages-send-ch (dispatch-fn msg)))
-        (catch Exception e
-          (log/error e "Exception in message receive go loop")
-          (async/>! system-ch (create-exception-message e))))
-      (recur))))</p>
-</td><td class="codes"></td></tr><tr><td class="docs"><p>(defn start-message-send-loop [send-fn messages-send-chan system-ch]
-  (async/go-loop []
-    (when-let [msg (async/<! messages-send-chan)]
-      (try
-        (when msg
-          (log/info (str "Sending: [" (first (:message msg)) "] to client id: " (:id msg)))
-          (log/trace (str "full message " (:message msg)))
-          (send-fn msg))
-        (catch Exception e
-          (log/error e "Exception in message send go loop")
-          (async/>! system-ch (create-exception-message e))))
-      (recur))))</p>
-</td><td class="codes"></td></tr><tr><td class="docs"><p>(defn start-message-looper [])</p>
-</td><td class="codes"></td></tr><tr><td class="docs"><p>(defrecord MessageHandler [dispatch-fn ws-connection channels database]
-  component/Lifecycle
-  (start [component]
-    (log/info "Starting Message Handler")
-    (let [msg-send (start-message-send-loop (fn [msg] (ws/send-socket! ws-connection (:id msg) (:message msg)))
-                                            (:messages-send-chan channels) (:system-chan channels))
-          msg-rec (start-message-loop
-                   (partial message-dispatch {:file-import #(import/import-file-stream %)
-                                              :file-export
-                                              #(spit (str "resources/public/exported-files/"
-                                                          (:competition/name %2)
-                                                          ".xml")
-                                                     (import/data->dance-perfect-xml %1 %2))})
-                   (:messages-receive-chan channels) (:messages-send-chan channels) (:system-chan channels))]
-      (assoc component :message-sender msg-send :message-receiver msg-rec)))</p>
-</td><td class="codes"></td></tr><tr><td class="docs"><p>  (stop [component]
-    (log/info "Stopping Message Handling")
-    (assoc component :message-sender nil :message-receiver nil)))</p>
-</td><td class="codes"></td></tr><tr><td class="docs"><p>(defn create-message-handler []
-  (map->MessageHandler {}))</p>
-</td><td class="codes"></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#tango.repetition-hunt" name="tango.repetition-hunt"><h1 class="project-name">tango.repetition-hunt</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
+        (log/report (str &quot;Server started on port &quot; port))))))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#tango.repetition-hunt" name="tango.repetition-hunt"><h1 class="project-name">tango.repetition-hunt</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(ns tango.repetition-hunt
   (:require [clojure.test :refer :all]
             [repetition.hunter :as hunter]
@@ -3914,19 +3859,21 @@ components.</p>
 </td><td class="codes"></td></tr><tr><td class="docs"><p>Find all namespaces in src</p>
 </td><td class="codes"><pre class="brush: clojure">(def all-src-ns (clojure.tools.namespace.find/find-namespaces-in-dir (clojure.java.io/file &quot;./src&quot;)))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(:require all-src-ns)</pre></td></tr><tr><td class="docs"><p>Async stuff that must be inside a go-block seems to be a false positive,
-make a nicer filtering if needed.</p>
-</td><td class="codes"><pre class="brush: clojure">(declare async-simple-filter)</pre></td></tr><tr><td class="docs">
+make a nicer filtering if needed.
+(declare async-simple-filter)
+(declare channels-todo-filter)</p>
+</td><td class="codes"></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(deftest repetitions
   (testing &quot;Eliminate repetitions&quot;
     (with-open [out-file (java.io.FileWriter. &quot;./test/repetitions.txt&quot;)]
       (binding [*out* out-file]
         (dorun (map #(hunter/hunt %1) all-src-ns))))
-    (let [repetitions-found (async-simple-filter (slurp &quot;./test/repetitions.txt&quot;))]
-      (is (= true (empty? repetitions-found)) &quot;See ./test/repetitions.txt for details&quot;))))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn async-simple-filter [s]
+    (let [repetitions-found (slurp &quot;./test/repetitions.txt&quot;)]
+      (is (= true (empty? repetitions-found)) &quot;See ./test/repetitions.txt for details&quot;))))</pre></td></tr><tr><td class="docs"><p>(defn async-simple-filter [s]
   (clojure.string/replace
    s
-   &quot;2 repetitions of complexity 4\n\nLine 58 - tango.messaging:\n(async/&gt;! system-ch (create-exception-message e))\n\nLine 71 - tango.messaging:\n(async/&gt;! system-ch (create-exception-message e))\n\n======================================================================\n\n&quot; ))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#tango.import-tests" name="tango.import-tests"><h1 class="project-name">tango.import-tests</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
+   "2 repetitions of complexity 4\n\nLine 58 - tango.messaging:\n(async/>! system-ch (create-exception-message e))\n\nLine 71 - tango.messaging:\n(async/>! system-ch (create-exception-message e))\n\n======================================================================\n\n" ""))</p>
+</td><td class="codes"></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#tango.import-tests" name="tango.import-tests"><h1 class="project-name">tango.import-tests</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(ns tango.import-tests
   (:require [clojure.test :refer :all]
             ;[tango.core :refer :all]
@@ -4011,6 +3958,8 @@ TODO - call with path that is not string</p>
   {:competition/name &quot;TurboMegatävling&quot;
    :competition/date (tcr/to-date (tc/date-time 2014 11 22))
    :competition/location &quot;THUNDERDOME&quot;
+   :dance-perfect/flags
+   {:adj-order-final 1}
    :competition/classes
    [{:class/name &quot;Hiphop Singel Star B&quot;
      :class/position 0
@@ -4059,6 +4008,7 @@ TODO - call with path that is not string</p>
   {:competition/name &quot;TurboMegatävling&quot;
    :competition/date (tcr/to-date (tc/date-time 2014 11 22))
    :competition/location &quot;THUNDERDOME&quot;
+   :dance-perfect/flags {:adj-order-final 1}
    :competition/classes
    [{:class/name &quot;Hiphop Singel Star B&quot;
      :class/position 0
@@ -4249,7 +4199,7 @@ TODO make testest for the component creation, i.e. that the dispatch map is corr
       ;; exceptions should be put on system channel
       (>!! in-ch {:test :exception})
       (is (= "Exception message: Divide by zero" (<!! called-with-ch))))))</p>
-</td><td class="codes"></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr></table><div class="footer">Generated by <a href="https://github.com/gdeer81/marginalia">Marginalia</a>.&nbsp;&nbsp;Syntax highlighting provided by Alex Gorbatchev's <a href="http://alexgorbatchev.com/SyntaxHighlighter/">SyntaxHighlighter</a><div id="floating-toc"><ul><li class="floating-toc-li" id="floating-toc_tango.channels">tango.channels</li><li class="floating-toc-li" id="floating-toc_tango.broker">tango.broker</li><li class="floating-toc-li" id="floating-toc_tango.http-server">tango.http-server</li><li class="floating-toc-li" id="floating-toc_tango.client">tango.client</li><li class="floating-toc-li" id="floating-toc_tango.files">tango.files</li><li class="floating-toc-li" id="floating-toc_tango.import">tango.import</li><li class="floating-toc-li" id="floating-toc_tango.web-socket">tango.web-socket</li><li class="floating-toc-li" id="floating-toc_tango.core">tango.core</li><li class="floating-toc-li" id="floating-toc_messaging.clj">messaging.clj</li><li class="floating-toc-li" id="floating-toc_tango.repetition-hunt">tango.repetition-hunt</li><li class="floating-toc-li" id="floating-toc_tango.import-tests">tango.import-tests</li><li class="floating-toc-li" id="floating-toc_tango.test-data">tango.test-data</li><li class="floating-toc-li" id="floating-toc_tango.export-tests">tango.export-tests</li><li class="floating-toc-li" id="floating-toc_tango.core-test">tango.core-test</li></ul></div></div><script type="text/javascript">SyntaxHighlighter.defaults['gutter'] = false;
+</td><td class="codes"></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr></table><div class="footer">Generated by <a href="https://github.com/gdeer81/marginalia">Marginalia</a>.&nbsp;&nbsp;Syntax highlighting provided by Alex Gorbatchev's <a href="http://alexgorbatchev.com/SyntaxHighlighter/">SyntaxHighlighter</a><div id="floating-toc"><ul><li class="floating-toc-li" id="floating-toc_tango.channels">tango.channels</li><li class="floating-toc-li" id="floating-toc_tango.broker">tango.broker</li><li class="floating-toc-li" id="floating-toc_tango.http-server">tango.http-server</li><li class="floating-toc-li" id="floating-toc_tango.client">tango.client</li><li class="floating-toc-li" id="floating-toc_tango.files">tango.files</li><li class="floating-toc-li" id="floating-toc_tango.import">tango.import</li><li class="floating-toc-li" id="floating-toc_tango.web-socket">tango.web-socket</li><li class="floating-toc-li" id="floating-toc_tango.core">tango.core</li><li class="floating-toc-li" id="floating-toc_tango.repetition-hunt">tango.repetition-hunt</li><li class="floating-toc-li" id="floating-toc_tango.import-tests">tango.import-tests</li><li class="floating-toc-li" id="floating-toc_tango.test-data">tango.test-data</li><li class="floating-toc-li" id="floating-toc_tango.export-tests">tango.export-tests</li><li class="floating-toc-li" id="floating-toc_tango.core-test">tango.core-test</li></ul></div></div><script type="text/javascript">SyntaxHighlighter.defaults['gutter'] = false;
 SyntaxHighlighter.all();
 
 // hackity hack
