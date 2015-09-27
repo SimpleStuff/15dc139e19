@@ -26,7 +26,7 @@
 ;; TODO - mapping :out-channels is not a greate idea, if we get a nil all msg procs
 ;; dies, fixit damn it!
 (defn start-message-process [dispatch-fn components-m]
-  (let [out-chans (into [] (map :out-channel (vals components-m)))]
+  (let [out-chans (vec (map :out-channel (vals components-m)))]
     (log/debug (str "Broker Channels : " out-chans))
     (log/info "Broker message process starting")
     (async/go-loop []

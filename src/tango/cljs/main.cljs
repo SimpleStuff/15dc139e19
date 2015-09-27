@@ -176,7 +176,7 @@
 
 (defn dispatch [props]
   (let [id (first props)
-        data (into [] (rest props))]
+        data (vec (rest props))]
     (log (str "Dispatch of " id " with data " data))
     (match [id data]
            [:file/import [file]]
@@ -193,7 +193,7 @@
 
 (defn make-dance-type-presentation [dances]
   ;; Dances are presented as a list of the first letters of each dance
-  (apply str (map #(first (:dance/name %)) dances)))
+  (clojure.string/join (map #(first (:dance/name %)) dances)))
 
 (defn- to-number [s]
   {:pre [(string? s)]}

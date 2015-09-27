@@ -24,7 +24,7 @@
   [user-id event] where event [<ev-id> <?ev-data>], 
   e.g. [:my-app/some-req {:data data}]"
   [{:keys [topic payload sender]}]
-  (let [sender-id (if sender sender :sente/all-users-without-uid)]
+  (let [sender-id (or sender :sente/all-users-without-uid)]
     [sender-id [topic payload]]))
 
 (defn sente-ws-bus-adapter-in
