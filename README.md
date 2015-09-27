@@ -46,6 +46,7 @@ Currently new builds need to be published manually.
 
  Now overwrite tango-0.1.0-SNAPSHOT-standalone.jar with the new version, and commit it.
 
+=======
 
 ## License
 
