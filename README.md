@@ -34,6 +34,8 @@ A shell-script called "pre-commit" is included that will run tests and code anal
  - "doc/uberdoc.html" that contains src with comments.
  - "specs/tango-hierarchy.png" that show a namespace graph.
 
+To be able to run the script "graphviz" is needed (lein hiera).
+
 ## License
 
 Copyright © 2014 Mårten Larsson, Stefan Karlsson, Thomas Didriksson
