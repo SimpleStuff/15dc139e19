@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <DancePerfect Version="4.1">
-  <CompData Name="TurboMegatävling" Date="2014-11-22" Place="THUNDERDOME"/>
+  <CompData Name="TurboMegatävling" Date="2014-11-22" Place="THUNDERDOME" AdjOrderFinal="1"/>
   <AdjPanelList>
     <AdjList Qty="6">
       <Adjudicator Seq="0" Name="Anders" Country=""/>
