@@ -1,3 +1,7 @@
+;; ## Tango core.async clients component
+;; 'tango.channels' provides core.async in/out channels for clients to
+;; send and receive messages on. This is primarely of interest for
+;; in-memory clients.
 (ns tango.channels
   (:require [com.stuartsierra.component :as component]
             [clojure.core.async :as async]
@@ -16,7 +20,10 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Component
-(defn start-clients-handler [out-channel clients-in-channel]
+(defn start-clients-handler 
+  "Receives messages on a core.async channel used by clients and
+  puts those messages on this components out-channel."
+  [out-channel clients-in-channel]
   (async/go-loop []
     (when-let [message (async/<! clients-in-channel)]
       (log-raw-message message)
@@ -31,7 +38,10 @@
             (async/>! out-channel (create-exception-message e))))
         (recur)))))
 
-(defn start-message-handler [in-channel out-channel clients-out-channel]
+(defn start-message-handler
+  "Receives system messages to be sent to clients, any messages on
+  the components in-channel are put on the clients out-channel."
+  [in-channel out-channel clients-out-channel]
   (async/go-loop []
     (when-let [message (async/<! in-channel)]
       (log-raw-message message)
