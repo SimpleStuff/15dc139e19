@@ -11,34 +11,37 @@
 (defn start-clients-handler [out-channel clients-in-channel]
   (async/go-loop []
     (when-let [message (async/<! clients-in-channel)]
-      (try
-        (when message
+      (log/debug (str "Raw message : " message))
+      (when message
+        (try
           (let [topic (:topic message)
                 payload (:payload message)]
             (log/trace (str "Client ChannelConnection received: " message))
-            (async/put! out-channel message)))
-        (catch Exception e
-          (log/error e "Exception in Client ChannelConnection message go loop")
-          (async/>! out-channel (str "Exception message: " (.getMessage e)))))
-      (recur))))
+            (async/put! out-channel message))
+          (catch Exception e
+            (log/error e "Exception in Client ChannelConnection message go loop")
+            (async/>! out-channel (str "Exception message: " (.getMessage e)))))
+        (recur)))))
 
 (defn start-message-handler [in-channel out-channel clients-out-channel]
   (async/go-loop []
     (when-let [message (async/<! in-channel)]
-      (try
-        (when message
+      (log/debug (str "Raw message : " message))
+      (when message
+        (try
           (let [topic (:topic message)
                 payload (:payload message)]
             (log/trace (str "ChannelConnection received: " message))
-            (async/put! clients-out-channel message)))
-        (catch Exception e
-          (log/error e "Exception in ChannelConnection message go loop")
-          (async/>! out-channel (str "Exception message: " (.getMessage e)))))
-      (recur))))
+            (async/put! clients-out-channel message))
+          (catch Exception e
+            (log/error e "Exception in ChannelConnection message go loop")
+            (async/>! out-channel (str "Exception message: " (.getMessage e)))))
+        (recur)))))
 
 (defrecord ChannelConnection [channel-connection-channels in-channel out-channel message-handler]
   component/Lifecycle
   (start [component]
+    (log/report "Starting ChannelConnection")
     (if (and channel-connection-channels message-handler)
       component
       (let [clients-in-channel (async/chan)
@@ -53,6 +56,7 @@
           :in-channel clients-in-channel
           :out-channel clients-out-channel))))
   (stop [component]
+    (log/report "Stopping ChannelConnection")
     (assoc component :message-handler nil :in-channel nil :out-channel nil)))
 
 (defn create-channel-connection []

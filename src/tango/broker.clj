@@ -25,29 +25,31 @@
 ;; dies, fixit damn it!
 (defn start-message-process [dispatch-fn components-m]
   (let [out-chans (into [] (map :out-channel (vals components-m)))]
-    (log/info (str "Channels " out-chans))
+    (log/debug (str "Broker Channels : " out-chans))
+    (log/info "Broker message process starting")
     (async/go-loop []
       (when-let [[message _] (async/alts! out-chans) ]
-        (try
-          (when message
-            (log/info (str "Broker received : " message))
-            (async/thread (dispatch-fn message components-m)))
-          (catch Exception e
-            (log/error e "Exception in MessageBroker router loop")))
-        (recur)))))
+        (log/debug (str "Broker raw message : " message))
+        (when message
+          (log/info (str "Broker received : " message))
+          (try
+            (async/thread (dispatch-fn message components-m))
+            (catch Exception e
+              (log/error e "Exception in MessageBroker router loop")))
+          (recur))))))
 
 ;; TODO - need to fix som pub/sub pattern
 (defrecord MessageBroker [channel-connection-channels file-handler-channels]
   component/Lifecycle
   (start [component]
-    (log/info "Starting MessageBroker")
+    (log/report "Starting MessageBroker")
     (let [broker-process (start-message-process
                           message-dispatch
                           (create-dispatch-components channel-connection-channels
                                                       file-handler-channels))]
       (assoc component :broker-process broker-process)))
   (stop [component]
-    (log/info "Stopping MessageBroker")
+    (log/report "Stopping MessageBroker")
     (assoc component :broker-process nil)))
 
 (defn create-message-broker []

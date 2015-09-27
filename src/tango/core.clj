@@ -12,9 +12,7 @@
             [tango.web-socket :as ws]
             [tango.http-server :as http]
             [tango.channels :as channels]
-            [tango.files :as files]
-            ;[tango.messaging :as messaging]
-            ))
+            [tango.files :as files]))
 
 ;; Provides useful Timbre aliases in this ns
 (log/refer-timbre)
@@ -56,12 +54,16 @@
    - `:fatal`
   "
   [configuration]
-  (log/info "Creating system")
+  (log/report "Creating system")
   (let [{:keys [port log-file log-level id-generator-fn client-connection]} configuration
         id-gen-fn (if id-generator-fn id-generator-fn (fn [] (str (java.util.UUID/randomUUID))))]
     (when log-file
+      ;; - everything should always be logged to file
+      ;; - Production console only logg report
+      ;; - Dev console can be set
       (log/set-config! [:appenders :standard-out :enabled?] true)
-      (log/info "Enable file logging to " log-file)
+      (log/set-config! [:appenders :standard-out :min-level] :error)
+      (log/report "Enable file logging to " log-file)
       (log/set-config! [:appenders :spit :enabled?] true)
       (log/set-config! [:shared-appender-config :spit-filename] log-file))
     (if log-level
@@ -94,7 +96,7 @@
   "Initializes a Production system with default values."
   []
   (alter-var-root 
-   #'system (constantly (production-system {:port 1337 :log-file "loggs/test.log" :log-level :debug
+   #'system (constantly (production-system {:port 1337 :log-file "loggs/test.log" :log-level :info
                                             :client-connection :ws-connection-channels}))))
 
 (defn start
@@ -119,7 +121,8 @@
   (stop)
   (refresh :after 'tango.core/go))
 
-;; TODO - fix that all production logging goes to file and not to console
+;; TODO - Add possibillity to set log level as a param
+;; #{:trace :debug :info :warn :error :fatal :report}
 (defn -main 
   "Main entry point for the application. Valid args is an integer value that
   specify port number for the http-server to start on."
@@ -131,4 +134,4 @@
         (component/start
          (production-system {:port 1337 :log-file "loggs/production.log" :log-level :info
                              :client-connection :ws-connection-channels}))
-        (log/info (str "Server started on port " port))))))
+        (log/report (str "Server started on port " port))))))
