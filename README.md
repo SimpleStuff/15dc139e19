@@ -34,6 +34,16 @@ A shell-script called "pre-commit" is included that will run tests and code anal
  - "doc/uberdoc.html" that contains src with comments.
  - "specs/tango-hierarchy.png" that show a namespace graph.
 
+## Publishing new builds
+
+Currently new builds need to be published manually.
+ 
+ git clone git@github.com:SimpleStuff/15dc139e19.git tango-pub
+ cd tango-pub
+ git checkout gh-pages 
+
+ Now overwrite tango-0.1.0-SNAPSHOT-standalone.jar with the new version, and commit it.
+
 ## License
 
 Copyright © 2014 Mårten Larsson, Stefan Karlsson, Thomas Didriksson
