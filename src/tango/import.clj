@@ -91,6 +91,7 @@
                         (tf/parse (tf/formatter "yyyy-MM-dd")
                                   (zx/attr competition-data :Date)))
      :competition/location (zx/attr competition-data :Place)
+     :dance-perfect/flags {:adj-order-final (to-number (zx/attr competition-data :AdjOrderFinal)) }
      :competition/classes (into [] (class-list->map (zx/xml-> loc :ClassList :Class)))}))
 
 (defn- create-import-info [version content status errors]
