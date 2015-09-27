@@ -56,7 +56,7 @@
   [configuration]
   (log/report "Creating system")
   (let [{:keys [port log-file log-level id-generator-fn client-connection]} configuration
-        id-gen-fn (if id-generator-fn id-generator-fn (fn [] (str (java.util.UUID/randomUUID))))]
+        id-gen-fn (or id-generator-fn (fn [] (str (java.util.UUID/randomUUID))))]
     (when log-file
       ;; - everything should always be logged to file
       ;; - Production console only logg report
