@@ -38,9 +38,9 @@ A shell-script called "pre-commit" is included that will run tests and code anal
 
 Currently new builds need to be published manually.
  
- git clone git@github.com:SimpleStuff/15dc139e19.git tango-pub
- cd tango-pub
- git checkout gh-pages 
+ - git clone git@github.com:SimpleStuff/15dc139e19.git tango-pub
+ - cd tango-pub
+ - git checkout gh-pages 
 
  Now overwrite tango-0.1.0-SNAPSHOT-standalone.jar with the new version, and commit it.
 
