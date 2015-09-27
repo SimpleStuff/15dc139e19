@@ -34,9 +34,9 @@
   
   :plugins [[lein-cljsbuild "1.0.6"]
             [lein-hiera "0.9.0"]
-            [lein-kibit "0.0.8"]
+            [lein-kibit "0.1.2"]
             [jonase/eastwood "0.2.1"]
-            [lein-marginalia "0.8.0"]]
+            [michaelblume/lein-marginalia "0.9.0"]]
 
   :hiera {:path "specs/tango-hierarchy.png"
           :vertical true
