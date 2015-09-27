@@ -7,11 +7,19 @@
 (log/refer-timbre)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Utils
+(defn- create-exception-message [e]
+  (str "Exception message: " (.getMessage e)))
+
+(defn- log-raw-message [message]
+  (log/debug (str "Raw message : " message)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Component
 (defn start-clients-handler [out-channel clients-in-channel]
   (async/go-loop []
     (when-let [message (async/<! clients-in-channel)]
-      (log/debug (str "Raw message : " message))
+      (log-raw-message message)
       (when message
         (try
           (let [topic (:topic message)
@@ -20,13 +28,13 @@
             (async/put! out-channel message))
           (catch Exception e
             (log/error e "Exception in Client ChannelConnection message go loop")
-            (async/>! out-channel (str "Exception message: " (.getMessage e)))))
+            (async/>! out-channel (create-exception-message e))))
         (recur)))))
 
 (defn start-message-handler [in-channel out-channel clients-out-channel]
   (async/go-loop []
     (when-let [message (async/<! in-channel)]
-      (log/debug (str "Raw message : " message))
+      (log-raw-message message)
       (when message
         (try
           (let [topic (:topic message)
@@ -35,7 +43,7 @@
             (async/put! clients-out-channel message))
           (catch Exception e
             (log/error e "Exception in ChannelConnection message go loop")
-            (async/>! out-channel (str "Exception message: " (.getMessage e)))))
+            (async/>! out-channel (create-exception-message e))))
         (recur)))))
 
 (defrecord ChannelConnection [channel-connection-channels in-channel out-channel message-handler]

@@ -13,13 +13,15 @@
    :file-handler file-handler-channels})
 
 (defn message-dispatch [{:keys [topic payload sender] :as message} components]
-  (match [topic payload]
-         [:file/import _]
-         (async/>!! (:in-channel (:file-handler components)) message)
-         [:file/imported _]
-         (async/>!! (:in-channel (:channels components)) message)
-         :else (async/>!! (:in-channel (:channels components))
-                          {:sender sender :topic :broker/unkown-topic :payload {:topic topic}})))
+  (let [client-in-channel (:in-channel (:channels components))]
+    (match [topic payload]
+           [:file/import _]
+           (async/>!! (:in-channel (:file-handler components)) message)
+           [:file/imported _]
+           (async/>!! client-in-channel message)
+           :else (async/>!!
+                  client-in-channel
+                  {:sender sender :topic :broker/unkown-topic :payload {:topic topic}}))))
 
 ;; TODO - mapping :out-channels is not a greate idea, if we get a nil all msg procs
 ;; dies, fixit damn it!

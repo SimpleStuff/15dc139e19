@@ -28,6 +28,12 @@
 (defn- get-name-attr [loc]
   (zx/attr loc :Name))
 
+(defn- get-number-attr [loc]
+  (to-number (zx/attr loc :Number)))
+
+(defn- get-seq-attr [loc]
+  (to-number (zx/attr loc :Seq)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Zipper implementation
 
@@ -35,8 +41,8 @@
   (for [couple couples-loc]
     {:competitor/name (get-name-attr couple)
      :competitor/club (zx/attr couple :Club)
-     :competitor/number (to-number (zx/attr couple :Number))
-     :competitor/position (to-number (zx/attr couple :Seq))}))
+     :competitor/number (get-number-attr couple)
+     :competitor/position (get-seq-attr couple)}))
 
 (defn dance-list->map [dances-loc]
   (for [dance dances-loc]
@@ -44,21 +50,21 @@
 
 (defn adjudicator-list->map [adjudicator-loc]
   (for [adjudicator adjudicator-loc]
-    {:adjudicator/number (to-number (zx/attr adjudicator :Number))
-     :adjudicator/position (to-number (zx/attr adjudicator :Seq))}))
+    {:adjudicator/number (get-number-attr adjudicator)
+     :adjudicator/position (get-seq-attr adjudicator)}))
 
 (defn marks->map [marks-loc adjudicators]
   (for [mark marks-loc]
     {:result/adjudicator
      (first (filter
              #(= (:adjudicator/position %)
-                 (to-number (zx/attr mark :Seq)))
+                 (get-seq-attr mark))
              adjudicators))
      :result/x-mark (= (zx/attr mark :X) "X")}))
 
 (defn mark-list->map [result-couple-loc adjudicators]
   (for [couple result-couple-loc]
-    {:competitor/number (to-number (zx/attr couple :Number))
+    {:competitor/number (get-number-attr couple)
      :competitor/recalled
      (condp = (zx/attr couple :Recalled)
        "X" :x
@@ -78,7 +84,7 @@
 (defn class-list->map [classes-loc]
   (for [class classes-loc]
     {:class/name (zx/attr class :Name)
-     :class/position (to-number (zx/attr class :Seq))
+     :class/position (get-seq-attr class)
      :class/adjudicator-panel (to-number (zx/attr class :AdjPanel))
      :class/competitors (into [] (couple->map (zx/xml-> class :StartList :Couple)))
      :class/dances (into [] (dance-list->map (zx/xml-> class :DanceList :Dance)))
