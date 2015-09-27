@@ -1,3 +1,6 @@
+;; ## Tango web-socket clients component
+;; 'tango.web-socket' provides support for clojurescript clients
+;; running 'sente' to connect to the system via web-socket.
 (ns tango.web-socket
   (:require [taoensso.sente :as sente]
             [taoensso.sente.server-adapters.http-kit :refer (sente-web-server-adapter)]
@@ -7,6 +10,14 @@
 
 ;; Provides useful Timbre aliases in this ns
 (log/refer-timbre)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Utils
+(defn- create-exception-message [e]
+  (str "Exception message: " (.getMessage e)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Sente web-socket implementation
 
 (defn sente-ws-bus-adapter-out
   "Convert a internal message to a sente socket event :
@@ -26,7 +37,11 @@
          :default id)]
     {:topic adapted-topic :payload ?data :sender (:uid (:session ring-req))}))
 
-(defn event-msg-handler* [out-channel {:as ev-msg :keys [id ?data event ring-req]}]
+(defn event-msg-handler*
+  "The message handler registerd to receive messages from sente.
+  Messages are adapted to an internal format before they are put on this
+  components out-channel."
+  [out-channel {:as ev-msg :keys [id ?data event ring-req]}]
   (let [adapted (sente-ws-bus-adapter-in ev-msg)]
     (log/trace "Web Socket receive: " ev-msg)
     (log/trace (str "Receive Adapted: " adapted))
@@ -34,10 +49,11 @@
     (async/>!! out-channel adapted)
     (log/trace (str "Web Socket sent message to out channel: " adapted))))
 
-(defn- create-exception-message [e]
-  (str "Exception message: " (.getMessage e)))
-
-(defn start-message-send-loop [send-fn messages-send-chan system-ch out-adapter-fn]
+(defn start-message-send-loop 
+  "Message loop that will listen on this components in-channel.
+  Any message received will be adapted to sente format and then sent
+  using sentes send funtion."
+  [send-fn messages-send-chan system-ch out-adapter-fn]
   (async/go-loop []
     (when-let [msg (async/<! messages-send-chan)]
       (log/debug (str "Raw message : " msg))
