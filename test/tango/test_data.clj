@@ -58,6 +58,7 @@
   {:competition/name "TurboMegatävling"
    :competition/date (tcr/to-date (tc/date-time 2014 11 22))
    :competition/location "THUNDERDOME"
+   :dance-perfect/flags {:adj-order-final 1}
    :competition/classes
    [{:class/name "Hiphop Singel Star B"
      :class/position 0
