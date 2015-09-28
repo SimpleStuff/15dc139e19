@@ -52,6 +52,16 @@
       (is (= (:file/content imported-file)
              data/events-file-expected-content)))))
 
+(deftest convert-round-values
+  (testing "Convert DP round int values to keys"
+    (is (= (mapv imp/round-value->key (range 0 22))
+           [:none
+            :normal-x :semifinal-x :final-x :b-final-x :retry-x :2nd-try-x
+            :normal-1-5 :semifinal-1-5 :retry-1-5 :2nd-try-1-5
+            :normal-3d :semifinal-3d :retry-3d :2nd-try-3d
+            :normal-a+b :semifinal-a+b :final-a+b :b-final-a+b :retry-a+b :2nd-try-a+b
+            :presentation]))))
+
 ;; TODO - this test gets to unwieldy when data is changed, re-think
 ;;  could be interesting to look at prismatic schema generation
 ;; (deftest import-large-dance-perfect-file

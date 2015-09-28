@@ -220,7 +220,7 @@
      :event/comment ""
      :event/adjudicator-panel 0
      :event/heats 1
-     :event/round 32
+     :event/round :unknown-round-value
      :event/status 0
      :event/start-order 0}
 
@@ -231,6 +231,6 @@
      :event/comment "A comment"
      :event/adjudicator-panel 4
      :event/heats 2
-     :event/round 1
+     :event/round :normal-x
      :event/status 0
      :event/start-order 0}]})

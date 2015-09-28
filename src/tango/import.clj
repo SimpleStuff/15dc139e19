@@ -34,6 +34,17 @@
 (defn- get-seq-attr [loc]
   (to-number (zx/attr loc :Seq)))
 
+(defn round-value->key [val]
+  (get
+   [:none
+    :normal-x :semifinal-x :final-x :b-final-x :retry-x :2nd-try-x
+    :normal-1-5 :semifinal-1-5 :retry-1-5 :2nd-try-1-5
+    :normal-3d :semifinal-3d :retry-3d :2nd-try-3d
+    :normal-a+b :semifinal-a+b :final-a+b :b-final-a+b :retry-a+b :2nd-try-a+b
+    :presentation]
+   val
+   :unknown-round-value))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Zipper implementation
 
@@ -99,7 +110,7 @@
      :event/comment (zx/attr event :Comment)
      :event/adjudicator-panel (to-number (zx/attr event :AdjPanel))
      :event/heats (to-number (zx/attr event :Heats))
-     :event/round (to-number (zx/attr event :Round))
+     :event/round (round-value->key (to-number (zx/attr event :Round)))
      :event/status (to-number (zx/attr event :Status))
      :event/start-order (to-number (zx/attr event :Startorder))}))
 

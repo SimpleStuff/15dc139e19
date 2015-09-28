@@ -89,6 +89,43 @@
   </ClassList>
   
   <EventList>
+     <!-- Event attributes description:
+    
+    Round:
+    The values in Round are indexes in a UI list box in DP, with the following values:
+     0  - None
+     1  - Normal (X)
+     2  - Semifinal (X)
+     3  - Final
+     4  - B-Final
+     5  - Retry (X)
+     6  - 2nd try (X)
+     7  - Normal (1-5)
+     8  - Semifinal (1-5)
+     9  - Retry (1-5)
+     10 - 2nd try (1-5)
+     11 - Normal (3D)
+     12 - Semifinal (3D)
+     13 - Retry (3D)
+     14 - 2nd try (3D)
+     15 - Normal (A+B)
+     16 - Semifinal (A+B)
+     17 - Final (A+B)
+     18 - B-Final (A+B)
+     19 - Retry (A+B)
+     20 - 2nd try (A+B)
+     21 - Presentation
+
+     32 - ?
+
+    AdjPanel:
+    Again this attributes references UI index where the first two are "Specify below" and "All adjudicators".
+    So to get the actual Seq of the AdjPanel defined take this attributes - 3.
+
+    ClassNumber:
+    UI index where index 0 is "Use comment", so - 1 to get the actual class
+    -->
+
     <Event Seq="0" ClassNumber="0" DanceQty="0" EventNumber="" Time="" Comment="" AdjPanel="0" Heats="1" Round="32" Status="0" Startorder="0">
       <DanceList Qty="0"/>
       <Panel Qty="0"/>
