@@ -37,10 +37,10 @@
 (defn round-value->key [val]
   (get
    [:none
-    :normal-x :semifinal-x :final-x :b-final-x :retry-x :2nd-try-x
-    :normal-1-5 :semifinal-1-5 :retry-1-5 :2nd-try-1-5
-    :normal-3d :semifinal-3d :retry-3d :2nd-try-3d
-    :normal-a+b :semifinal-a+b :final-a+b :b-final-a+b :retry-a+b :2nd-try-a+b
+    :normal-x :semifinal-x :final-x :b-final-x :retry-x :second-try-x
+    :normal-1-5 :semifinal-1-5 :retry-1-5 :second-try-1-5
+    :normal-3d :semifinal-3d :retry-3d :second-try-3d
+    :normal-a+b :semifinal-a+b :final-a+b :b-final-a+b :retry-a+b :second-try-a+b
     :presentation]
    val
    :unknown-round-value))
@@ -123,7 +123,8 @@
      :competition/location (zx/attr competition-data :Place)
      :dance-perfect/flags {:adj-order-final (to-number (zx/attr competition-data :AdjOrderFinal)) }
      :competition/classes (into [] (class-list->map (zx/xml-> loc :ClassList :Class)))
-     :competition/events (vec (event-list->map (zx/xml-> loc :EventList :Event)))}))
+     :competition/events (vec (event-list->map (zx/xml-> loc :EventList :Event)))
+     }))
 
 (defn- create-import-info [version content status errors]
   {:file/version version
