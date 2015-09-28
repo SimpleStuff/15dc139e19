@@ -90,6 +90,10 @@
      :class/dances (into [] (dance-list->map (zx/xml-> class :DanceList :Dance)))
      :class/results (into [] (result-list->map (zx/xml-> class :Results :Result)))}))
 
+(defn event-list->map [events-loc]
+  (for [event events-loc]
+    {:event/position (get-seq-attr event)}))
+
 (defn competition->map [loc]
   (let [competition-data (first (zx/xml-> loc :CompData))]
     {:competition/name (get-name-attr competition-data)
@@ -98,7 +102,8 @@
                                   (zx/attr competition-data :Date)))
      :competition/location (zx/attr competition-data :Place)
      :dance-perfect/flags {:adj-order-final (to-number (zx/attr competition-data :AdjOrderFinal)) }
-     :competition/classes (into [] (class-list->map (zx/xml-> loc :ClassList :Class)))}))
+     :competition/classes (into [] (class-list->map (zx/xml-> loc :ClassList :Class)))
+     :competition/events (vec (event-list->map (zx/xml-> loc :EventList :Event)))}))
 
 (defn- create-import-info [version content status errors]
   {:file/version version
