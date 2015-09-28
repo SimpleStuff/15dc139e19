@@ -213,5 +213,24 @@
      :class/results []}]
 
    :competition/events
-   [{:event/position 0}
-    {:event/position 1}]})
+   [{:event/position 0
+     :event/class-number 0
+     :event/number -1
+     :event/time ""
+     :event/comment ""
+     :event/adjudicator-panel 0
+     :event/heats 1
+     :event/round 32
+     :event/status 0
+     :event/start-order 0}
+
+    {:event/position 1
+     :event/class-number 1
+     :event/number 1
+     :event/time "10:00"
+     :event/comment "A comment"
+     :event/adjudicator-panel 4
+     :event/heats 2
+     :event/round 1
+     :event/status 0
+     :event/start-order 0}]})

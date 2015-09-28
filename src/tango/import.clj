@@ -92,7 +92,16 @@
 
 (defn event-list->map [events-loc]
   (for [event events-loc]
-    {:event/position (get-seq-attr event)}))
+    {:event/position (get-seq-attr event)
+     :event/class-number (to-number (zx/attr event :ClassNumber))
+     :event/number (if (= "" (zx/attr event :EventNumber)) -1 (to-number (zx/attr event :EventNumber)))
+     :event/time (zx/attr event :Time)
+     :event/comment (zx/attr event :Comment)
+     :event/adjudicator-panel (to-number (zx/attr event :AdjPanel))
+     :event/heats (to-number (zx/attr event :Heats))
+     :event/round (to-number (zx/attr event :Round))
+     :event/status (to-number (zx/attr event :Status))
+     :event/start-order (to-number (zx/attr event :Startorder))}))
 
 (defn competition->map [loc]
   (let [competition-data (first (zx/xml-> loc :CompData))]
