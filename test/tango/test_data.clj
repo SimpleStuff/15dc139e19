@@ -168,7 +168,7 @@
    {:adj-order-final 1}
    :competition/classes
    [{:class/name "Hiphop Singel Star B"
-     :class/position 0
+     :class/position 1
      :class/adjudicator-panel 1
      :class/dances
      [{:dance/name "Medium"}
@@ -185,19 +185,19 @@
      [{:competitor/name "Rulle Trulle"
        :competitor/club "Sinclairs"
        :competitor/number 30
-       :competitor/position 0}
+       :competitor/position 1}
       {:competitor/name "Milan Lund"
        :competitor/club "Wilson"
        :competitor/number 31
-       :competitor/position 1}
+       :competitor/position 2}
       {:competitor/name "Douglas Junger"
        :competitor/club "RGDT"
        :competitor/number 32
-       :competitor/position 2}]
+       :competitor/position 3}]
      :class/results []}
 
     {:class/name "Hiphop Singel Star J Fl"
-     :class/position 1
+     :class/position 2
      :class/adjudicator-panel 0
      :class/dances
      []
@@ -205,15 +205,15 @@
      [{:competitor/name "Ringo Stingo"
        :competitor/club "Kapangg"
        :competitor/number 20
-       :competitor/position 0}
+       :competitor/position 1}
       {:competitor/name "Greve Turbo"
        :competitor/club "OOoost"
        :competitor/number 21
-       :competitor/position 1}]
+       :competitor/position 2}]
      :class/results []}]
 
    :competition/events
-   [{:event/position 0
+   [{:event/position 1
      :event/class-number 0
      :event/number -1
      :event/time ""
@@ -222,9 +222,13 @@
      :event/heats 1
      :event/round :unknown-round-value
      :event/status 0
-     :event/start-order 0}
+     :event/start-order 0
+     :event/recall 0
+     :event/dances
+     []
+     }
 
-    {:event/position 1
+    {:event/position 2
      :event/class-number 1
      :event/number 1
      :event/time "10:00"
@@ -233,4 +237,8 @@
      :event/heats 2
      :event/round :normal-x
      :event/status 0
-     :event/start-order 0}]})
+     :event/start-order 0
+     :event/recall 6
+     :event/dances
+     [{:dance/name "Medium"}]
+     }]})

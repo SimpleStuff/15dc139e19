@@ -86,7 +86,10 @@
             :event/heats 1
             :event/round :unknown-round-value
             :event/status 0
-            :event/start-order 0}
+            :event/start-order 0
+            :event/recall 0
+            :event/dances
+            []}
            
            {:event/position 1
             :event/class-number 1
@@ -97,18 +100,25 @@
             :event/heats 2
             :event/round :normal-x
             :event/status 1
-            :event/start-order 0}
+            :event/start-order 0
+            :event/recall 0
+            :event/dances
+            [{:dance/name "Medium"}
+             {:dance/name "Waltz"}]}
 
-          {:event/position 2
-            :event/class-number 0
-            :event/number 1
-            :event/time "10:05"
-            :event/comment "A comment"
-            :event/adjudicator-panel 4
-            :event/heats 2
-            :event/round :normal-x
-            :event/status 0
-            :event/start-order 0}]
+           {:event/position 2
+           :event/class-number 0
+           :event/number 1
+           :event/time "10:05"
+           :event/comment "A comment"
+           :event/adjudicator-panel 4
+           :event/heats 2
+           :event/round :normal-x
+           :event/status 0
+           :event/start-order 0
+           :event/recall 6
+           :event/dances
+           [{:dance/name "Medium"}]}]
 
           :competition/classes
           [{:class/name "Hiphop Singel Star B"
@@ -249,10 +259,20 @@
        (when (= status 1)
          "*")))
 
+(def round-map
+  {:none ""
+   :normal-x "Normal" :semifinal-x "Semifinal" :final-x "Final" :b-final-x "-" :retry-x "-" :second-try-x "-"
+   :normal-1-5 "-" :semifinal-1-5 "-" :retry-1-5 "-" :second-try-1-5 "-"
+   :normal-3d "-" :semifinal-3d "-" :retry-3d "-" :second-try-3d "-"
+   :normal-a+b "-" :semifinal-a+b "-" :final-a+b "-" :b-final-a+b "-" :retry-a+b "-" :second-try-a+b "-"
+   :presentation "-"})
+
 (defn make-event-round-presentation [event-round]
-  (condp = event-round
-    :unknown-round-value "Okänd Runda"
-    :normal-x "Normal"))
+  (get round-map event-round)
+  ;; (condp = event-round
+  ;;   :unknown-round-value "Okänd Runda"
+  ;;   :normal-x "Normal")
+  )
 
 (defn make-round-presentation [round-status round-count]
   (str
@@ -287,7 +307,7 @@
      (for [class (sort-by :class/position (:competition/classes (:competition @app-state)))]
        ^{:key class}
        [:tr
-        [:td (inc (:class/position class))]
+        [:td (:class/position class)]
         [:td (:class/name class)]
         [:td (:class/adjudicator-panel class)]
         [:td (make-dance-type-presentation (:class/dances class))]
@@ -344,29 +364,29 @@
     [:tbody
      (doall
       (for [event (sort-by :event/position (:competition/events (:competition @app-state)))]
+        (let [referenced-class (first (filter #(= (:class/position %) (:event/class-number event))
+                                              (:competition/classes (:competition @app-state))))
+              comment-row? (= (:event/number event) -1)]
         ^{:key event}
-        [:tr
-         [:td (make-event-time-presentation (:event/time event) (:event/status event))]
-         [:td (:event/position event)]
-         ;; use comment if class number is zero
-         [:td
-          (let [t (into [] (:competition/classes (:competition @app-state)))]
-            (if (= (:event/class-number event) 0)
-              (:event/comment event)
-              (:class/name
-               (first (filter #(= (:class/position %) (:event/class-number event)) t)))
-              ;(log (:class/name (first t)))
-              ))]
+        
+          [:tr
+           [:td (make-event-time-presentation (:event/time event) (:event/status event))]
+           [:td (if comment-row? "" (:event/number event))]
+           ;; use comment if class number is zero
+           [:td
+            (let [t (into [] (:competition/classes (:competition @app-state)))]
+              (if (= (:event/class-number event) 0)
+                (:event/comment event)
+                (:class/name referenced-class)))]
 
-         ;[:td (:competition/classes @app-state)]        
-         
-         [:td "-"]        
-         [:td (make-event-round-presentation (:event/round event))]
-         [:td (:event/heats event)]
-         [:td "-"]
-         [:td (:event/adjudicator-panel event)]
-         [:td "-"]   
-         ]))]]])
+           [:td (if comment-row? "" (count (:class/competitors referenced-class)))]        
+           [:td (if comment-row? "" (make-event-round-presentation (:event/round event)))]
+           [:td (if comment-row? "" (:event/heats event))]
+           [:td (if (= 0 (:event/recall event)) "" (:event/recall event))]
+           ;; TODO - adjust adj panel in back-end
+           [:td (if comment-row? "" (- (:event/adjudicator-panel event) 2))]
+           [:td (make-dance-type-presentation (:event/dances event))]   
+           ])))]]])
 
 ; :selected-page :import
 (defn menu-component []

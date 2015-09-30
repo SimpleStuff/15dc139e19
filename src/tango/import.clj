@@ -32,7 +32,8 @@
   (to-number (zx/attr loc :Number)))
 
 (defn- get-seq-attr [loc]
-  (to-number (zx/attr loc :Seq)))
+  "Increased by one since it represent a user defined position"
+  (inc (to-number (zx/attr loc :Seq))))
 
 (defn round-value->key [val]
   (get
@@ -112,7 +113,9 @@
      :event/heats (to-number (zx/attr event :Heats))
      :event/round (round-value->key (to-number (zx/attr event :Round)))
      :event/status (to-number (zx/attr event :Status))
-     :event/start-order (to-number (zx/attr event :Startorder))}))
+     :event/start-order (to-number (zx/attr event :Startorder))
+     :event/recall (to-number (zx/attr (first (zx/xml-> event :RecallList :Recall)) :Recall))
+     :event/dances (vec (dance-list->map (zx/xml-> event :DanceList :Dance)))}))
 
 (defn competition->map [loc]
   (let [competition-data (first (zx/xml-> loc :CompData))]
