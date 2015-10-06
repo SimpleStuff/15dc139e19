@@ -2,12 +2,24 @@
   (:require [clj-time.core :as tc]
             [clj-time.coerce :as tcr]))
 
+(def small-file-expected-metadata
+  {:dance-perfect/flags {:adj-order-final 1
+                         :adj-order-other 0
+                         :same-heat-all-dances 1
+                         :preview 1
+                         :heat-text 1
+                         :name-on-number-sign 0
+                         :club-on-number-sign 0
+                         :skip-adj-letter 0
+                         :printer-select-paper 0
+                         :chinese-fonts 1}
+   :dance-perfect/fonts  {:arial-font "SimSun"
+                          :courier-font "NSimSun"}})
+
 (def small-file-expected-content
   {:competition/name "TurboMegatävling"
    :competition/date (tcr/to-date (tc/date-time 2014 11 22))
    :competition/location "THUNDERDOME"
-   :dance-perfect/flags
-   {:adj-order-final 1}
    :competition/classes
    [{:class/name "Hiphop Singel Star B"
      :class/position 0
