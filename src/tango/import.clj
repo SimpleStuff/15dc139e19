@@ -99,18 +99,23 @@
      :competition/location (zx/attr competition-data :Place)
      :competition/classes (into [] (class-list->map (zx/xml-> loc :ClassList :Class)))}))
 
+(defn read-number-attr [data attr-key]
+  (if-let [attr-value (zx/attr data attr-key)]
+    (to-number attr-value)
+    0))
+
 (defn get-metadata [loc]
   (let [competition-data (first (zx/xml-> loc :CompData))]
-    {:dance-perfect/flags {:adj-order-final (to-number (zx/attr competition-data :AdjOrderFinal))
-                           :adj-order-other (to-number (zx/attr competition-data :AdjOrderOther))
-                           :same-heat-all-dances (to-number (zx/attr competition-data :SameHeatAllDances))
-                           :preview (to-number (zx/attr competition-data :PreView))
-                           :heat-text (to-number (zx/attr competition-data :HeatText))
-                           :name-on-number-sign (to-number (zx/attr competition-data :NameOnNumberSign))
-                           :club-on-number-sign (to-number (zx/attr competition-data :ClubOnNumberSign))
-                           :skip-adj-letter (to-number (zx/attr competition-data :SkipAdjLetter))
-                           :printer-select-paper (to-number (zx/attr competition-data :PrinterSelectPaper))
-                           :chinese-fonts (to-number (zx/attr competition-data :ChineseFonts))
+    {:dance-perfect/flags {:adj-order-final (read-number-attr competition-data :AdjOrderFinal)
+                           :adj-order-other (read-number-attr competition-data :AdjOrderOther)
+                           :same-heat-all-dances (read-number-attr competition-data :SameHeatAllDances)
+                           :preview (read-number-attr competition-data :PreView)
+                           :heat-text (read-number-attr competition-data :HeatText)
+                           :name-on-number-sign (read-number-attr competition-data :NameOnNumberSign)
+                           :club-on-number-sign (read-number-attr competition-data :ClubOnNumberSign)
+                           :skip-adj-letter (read-number-attr competition-data :SkipAdjLetter)
+                           :printer-select-paper (read-number-attr competition-data :PrinterSelectPaper)
+                           :chinese-fonts (read-number-attr competition-data :ChineseFonts)
                            }
      :dance-perfect/fonts {:arial-font "SimSun"
                            :courier-font "NSimSun"}}))
