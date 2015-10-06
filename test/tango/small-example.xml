@@ -1,6 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <DancePerfect Version="4.1">
-  <CompData Name="TurboMegatävling" Date="2014-11-22" Place="THUNDERDOME" AdjOrderFinal="1"/>
+  <CompData
+      Name="TurboMegatävling"
+      Date="2014-11-22"
+      Place="THUNDERDOME"
+      AdjOrderFinal="1"
+      AdjOrderOther="0"
+      SameHeatAllDances="1"
+      PreView="1"
+      HeatText="1"
+      NameOnNumberSign="0"
+      ClubOnNumberSign="0"
+      SkipAdjLetter="0"
+      PrinterSelectPaper="0"
+      ChineseFonts="1"
+      ArialFont="SimSun"
+      CourierFont="NSimSun"/>
   <AdjPanelList>
     <AdjList Qty="6">
       <Adjudicator Seq="0" Name="Anders" Country=""/>

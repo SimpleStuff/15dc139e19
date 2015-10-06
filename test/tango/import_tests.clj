@@ -25,6 +25,8 @@
              :success))
       (is (= (:file/import-errors imported-file)
              []))
+      (is (= (:file/metadata imported-file)
+             data/small-file-expected-metadata))
       (is (= (:file/content imported-file)
              data/small-file-expected-content)))))
 
