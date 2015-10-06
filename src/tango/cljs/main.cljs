@@ -366,7 +366,8 @@
       (for [event (sort-by :event/position (:competition/events (:competition @app-state)))]
         (let [referenced-class (first (filter #(= (:class/position %) (:event/class-number event))
                                               (:competition/classes (:competition @app-state))))
-              comment-row? (= (:event/number event) -1)]
+              comment-row? (= (:event/number event) -1)
+              direct-final? (= (:event/heats event) 1)]
         ^{:key event}
         
           [:tr
@@ -379,12 +380,39 @@
                 (:event/comment event)
                 (:class/name referenced-class)))]
 
-           [:td (if comment-row? "" (count (:class/competitors referenced-class)))]        
-           [:td (if comment-row? "" (make-event-round-presentation (:event/round event)))]
-           [:td (if comment-row? "" (:event/heats event))]
-           [:td (if (= 0 (:event/recall event)) "" (:event/recall event))]
+           ;; Startande
+           ;; TODO - get ppl left from refed class
+           [:td
+            (if comment-row?
+              ""
+              (count (:class/competitors referenced-class)))]
+
+           ;; Round
+           [:td
+            (if comment-row?
+              ""
+              (if direct-final?
+                "Direct Final"
+                (make-event-round-presentation (:event/round event))))]
+
+           ;; Heats
+           ;; If there is only 1 heat is that always a Direct Final?
+           [:td
+            (if (or comment-row? direct-final?)
+              ""
+              (str (:event/heats event) " heats"))]
+
+           [:td
+            (if (= 0 (:event/recall event))
+              ""
+              (str "Recall " (:event/recall event)))]
+
            ;; TODO - adjust adj panel in back-end
-           [:td (if comment-row? "" (- (:event/adjudicator-panel event) 2))]
+           [:td
+            (if comment-row?
+              ""
+              (str "Panel " (- (:event/adjudicator-panel event) 2)))]
+
            [:td (make-dance-type-presentation (:event/dances event))]   
            ])))]]])
 
