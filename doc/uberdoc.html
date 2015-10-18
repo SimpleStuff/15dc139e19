@@ -3762,11 +3762,29 @@ TODO - events should be accessibale from its class</p>
                         (tf/parse (tf/formatter &quot;yyyy-MM-dd&quot;)
                                   (zx/attr competition-data :Date)))
      :competition/location (zx/attr competition-data :Place)
-     :dance-perfect/flags {:adj-order-final (to-number (zx/attr competition-data :AdjOrderFinal)) }
      :competition/classes classes
      :competition/events (event-list-post-process
                           (vec (event-list-&gt;map (zx/xml-&gt; loc :EventList :Event)))
                           classes)}))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn read-number-attr [data attr-key]
+  (if-let [attr-value (zx/attr data attr-key)]
+    (to-number attr-value)
+    0))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn get-metadata [loc]
+  (let [competition-data (first (zx/xml-&gt; loc :CompData))]
+    {:dance-perfect/flags {:adj-order-final (read-number-attr competition-data :AdjOrderFinal)
+                           :adj-order-other (read-number-attr competition-data :AdjOrderOther)
+                           :same-heat-all-dances (read-number-attr competition-data :SameHeatAllDances)
+                           :preview (read-number-attr competition-data :PreView)
+                           :heat-text (read-number-attr competition-data :HeatText)
+                           :name-on-number-sign (read-number-attr competition-data :NameOnNumberSign)
+                           :club-on-number-sign (read-number-attr competition-data :ClubOnNumberSign)
+                           :skip-adj-letter (read-number-attr competition-data :SkipAdjLetter)
+                           :printer-select-paper (read-number-attr competition-data :PrinterSelectPaper)
+                           :chinese-fonts (read-number-attr competition-data :ChineseFonts)
+                           }
+     :dance-perfect/fonts {:arial-font &quot;SimSun&quot;
+                           :courier-font &quot;NSimSun&quot;}}))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn- create-import-info [version content status errors]
   {:file/version version
    :file/content content
@@ -3775,6 +3793,7 @@ TODO - events should be accessibale from its class</p>
 </td><td class="codes"><pre class="brush: clojure">(defn dance-perfect-&gt;map [loc status errors]
   {:file/version (zx/attr loc :Version)
    :file/content (competition-&gt;map loc)
+   :file/metadata (get-metadata loc)
    :file/import-status status
    :file/import-errors errors})</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn dance-perfect-xml-&gt;data [xml-src]
@@ -4101,6 +4120,8 @@ make a nicer filtering if needed.
              :success))
       (is (= (:file/import-errors imported-file)
              []))
+      (is (= (:file/metadata imported-file)
+             data/small-file-expected-metadata))
       (is (= (:file/content imported-file)
              data/small-file-expected-content)))))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(deftest import-dance-perfect-file-with-results
@@ -4181,12 +4202,23 @@ TODO - call with path that is not string</p>
 </td><td class="codes"><pre class="brush: clojure">(ns tango.test-data
   (:require [clj-time.core :as tc]
             [clj-time.coerce :as tcr]))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(def small-file-expected-metadata
+  {:dance-perfect/flags {:adj-order-final 1
+                         :adj-order-other 0
+                         :same-heat-all-dances 1
+                         :preview 1
+                         :heat-text 1
+                         :name-on-number-sign 0
+                         :club-on-number-sign 0
+                         :skip-adj-letter 0
+                         :printer-select-paper 0
+                         :chinese-fonts 1}
+   :dance-perfect/fonts  {:arial-font &quot;SimSun&quot;
+                          :courier-font &quot;NSimSun&quot;}})</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(def small-file-expected-content
   {:competition/name &quot;TurboMegatävling&quot;
    :competition/date (tcr/to-date (tc/date-time 2014 11 22))
    :competition/location &quot;THUNDERDOME&quot;
-   :dance-perfect/flags
-   {:adj-order-final 1}
    :competition/classes
    [{:class/name &quot;Hiphop Singel Star B&quot;
      :class/position 1
@@ -4237,7 +4269,6 @@ TODO - call with path that is not string</p>
   {:competition/name &quot;TurboMegatävling&quot;
    :competition/date (tcr/to-date (tc/date-time 2014 11 22))
    :competition/location &quot;THUNDERDOME&quot;
-   :dance-perfect/flags {:adj-order-final 1}
    :competition/classes
    [{:class/name &quot;Hiphop Singel Star B&quot;
      :class/position 1
@@ -4333,8 +4364,6 @@ TODO - call with path that is not string</p>
   {:competition/name &quot;TurboMegatävling&quot;
    :competition/date (tcr/to-date (tc/date-time 2014 11 22))
    :competition/location &quot;THUNDERDOME&quot;
-   :dance-perfect/flags
-   {:adj-order-final 1}
    :competition/classes
    [{:class/name &quot;Hiphop Singel Star B&quot;
      :class/position 1

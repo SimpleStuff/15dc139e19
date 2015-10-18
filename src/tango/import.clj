@@ -165,11 +165,10 @@
                         (tf/parse (tf/formatter "yyyy-MM-dd")
                                   (zx/attr competition-data :Date)))
      :competition/location (zx/attr competition-data :Place)
-     :dance-perfect/flags {:adj-order-final (to-number (zx/attr competition-data :AdjOrderFinal)) }
      :competition/classes classes
      :competition/events (event-list-post-process
                           (vec (event-list->map (zx/xml-> loc :EventList :Event)))
-                          classes)}))}))
+                          classes)}))
 
 (defn read-number-attr [data attr-key]
   (if-let [attr-value (zx/attr data attr-key)]
