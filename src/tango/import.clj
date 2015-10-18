@@ -169,7 +169,28 @@
      :competition/classes classes
      :competition/events (event-list-post-process
                           (vec (event-list->map (zx/xml-> loc :EventList :Event)))
-                          classes)}))
+                          classes)}))}))
+
+(defn read-number-attr [data attr-key]
+  (if-let [attr-value (zx/attr data attr-key)]
+    (to-number attr-value)
+    0))
+
+(defn get-metadata [loc]
+  (let [competition-data (first (zx/xml-> loc :CompData))]
+    {:dance-perfect/flags {:adj-order-final (read-number-attr competition-data :AdjOrderFinal)
+                           :adj-order-other (read-number-attr competition-data :AdjOrderOther)
+                           :same-heat-all-dances (read-number-attr competition-data :SameHeatAllDances)
+                           :preview (read-number-attr competition-data :PreView)
+                           :heat-text (read-number-attr competition-data :HeatText)
+                           :name-on-number-sign (read-number-attr competition-data :NameOnNumberSign)
+                           :club-on-number-sign (read-number-attr competition-data :ClubOnNumberSign)
+                           :skip-adj-letter (read-number-attr competition-data :SkipAdjLetter)
+                           :printer-select-paper (read-number-attr competition-data :PrinterSelectPaper)
+                           :chinese-fonts (read-number-attr competition-data :ChineseFonts)
+                           }
+     :dance-perfect/fonts {:arial-font "SimSun"
+                           :courier-font "NSimSun"}}))
 
 (defn- create-import-info [version content status errors]
   {:file/version version
@@ -180,6 +201,7 @@
 (defn dance-perfect->map [loc status errors]
   {:file/version (zx/attr loc :Version)
    :file/content (competition->map loc)
+   :file/metadata (get-metadata loc)
    :file/import-status status
    :file/import-errors errors})
 
