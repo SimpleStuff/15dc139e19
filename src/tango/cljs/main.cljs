@@ -35,7 +35,7 @@
 ;;   (atom {:competitions []}))
 
 (defonce app-state
-  (atom {:selected-page :import
+  (atom {:selected-page :events ;:classes
 
          ;; :competition
          ;; {:competition/date #inst "2014-11-22T00:00:00.000-00:00",
@@ -76,6 +76,50 @@
          {:competition/name "TurboMegatävling"
           :competition/date #inst "2014-11-22T00:00:00.000-00:00"
           :competition/location "THUNDERDOME"
+          :competition/events
+          [{:event/position 0
+            :event/class-number 0
+            :event/number -1
+            :event/time ""
+            :event/comment ""
+            :event/adjudicator-panel 0
+            :event/heats 1
+            :event/round :unknown-round-value
+            :event/status 0
+            :event/start-order 0
+            :event/recall 0
+            :event/dances
+            []}
+           
+           {:event/position 1
+            :event/class-number 1
+            :event/number 1
+            :event/time "10:00"
+            :event/comment "A comment"
+            :event/adjudicator-panel 4
+            :event/heats 2
+            :event/round :normal-x
+            :event/status 1
+            :event/start-order 0
+            :event/recall 0
+            :event/dances
+            [{:dance/name "Medium"}
+             {:dance/name "Waltz"}]}
+
+           {:event/position 2
+           :event/class-number 0
+           :event/number 1
+           :event/time "10:05"
+           :event/comment "A comment"
+           :event/adjudicator-panel 4
+           :event/heats 2
+           :event/round :normal-x
+           :event/status 0
+           :event/start-order 0
+           :event/recall 6
+           :event/dances
+           [{:dance/name "Medium"}]}]
+
           :competition/classes
           [{:class/name "Hiphop Singel Star B"
             :class/position 1
@@ -180,7 +224,9 @@
     (log (str "Dispatch of " id " with data " data))
     (match [id data]
            [:file/import [file]]
-           (inc 1))))
+           (inc 1)
+           [:select-page [new-page]]
+           (swap! app-state merge {:selected-page new-page}))))
 
 (defn on-export-click [e competition]
   (log "Export clicked")
@@ -190,10 +236,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; UI utils
-
-(defn make-dance-type-presentation [dances]
-  ;; Dances are presented as a list of the first letters of each dance
-  (clojure.string/join (map #(first (:dance/name %)) dances)))
 
 (defn- to-number [s]
   {:pre [(string? s)]}
@@ -207,6 +249,30 @@
 (defn number-string? [s]
   (if s
     (re-seq #"\d+" s)))
+
+(defn make-dance-type-presentation [dances]
+  ;; Dances are presented as a list of the first letters of each dance
+  (clojure.string/join (map #(first (:dance/name %)) dances)))
+
+(defn make-event-time-presentation [time status]
+  (str time
+       (when (= status 1)
+         "*")))
+
+(def round-map
+  {:none ""
+   :normal-x "Normal" :semifinal-x "Semifinal" :final-x "Final" :b-final-x "-" :retry-x "Retry" :second-try-x "2nd try"
+   :normal-1-5 "-" :semifinal-1-5 "-" :retry-1-5 "-" :second-try-1-5 "-"
+   :normal-3d "-" :semifinal-3d "-" :retry-3d "-" :second-try-3d "-"
+   :normal-a+b "-" :semifinal-a+b "-" :final-a+b "-" :b-final-a+b "-" :retry-a+b "-" :second-try-a+b "-"
+   :presentation "-"})
+
+(defn make-event-round-presentation [event-round]
+  (get round-map event-round)
+  ;; (condp = event-round
+  ;;   :unknown-round-value "Okänd Runda"
+  ;;   :normal-x "Normal")
+  )
 
 (defn make-round-presentation [round-status round-count]
   (str
@@ -225,44 +291,57 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Components
 
-(defn dp-classes-component []
-  [:table.table
-   [:thead
-    [:tr
-     [:th {:with "20"} "#"]
-     [:th {:with "200"} "Dansdisciplin"]
-     [:th {:with "20"} "Panel"]
-     [:th {:with "20"} "Typ"]
-     [:th {:with "20"} "Startande"]
-     [:th {:with "20"} "Status"]]]
-   [:tbody
-    (for [class (sort-by :class/position (:competition/classes (:competition @app-state)))]
-      ^{:key class}
-      [:tr
-       [:td (inc (:class/position class))]
-       [:td (:class/name class)]
-       [:td (:class/adjudicator-panel class)]
-       [:td (make-dance-type-presentation (:class/dances class))]
-       
-       [:td
-        (let [results (:result/results (last (:class/results class)))
-              started (count (:class/competitors class))
-              recalled-count
-              (if (empty? results)
-                started
-                (reduce
-                 (fn [x y]
-                   (if (contains?
-                        #{:r :x}
-                        (:competitor/recalled y))
-                     (inc x)
-                     x))
-                 0
-                 results))]
-          (str recalled-count "/" started))]
+(defn count-class-recalled [class]
+  (let [results (:result/results (last (:class/results class)))
+        started (count (:class/competitors class))]
+    (if (empty? results)
+      started
+      (reduce
+       (fn [x y]
+         (if (contains?
+              #{:r :x}
+              (:competitor/recalled y))
+           (inc x)
+           x))
+       0
+       results))))
 
-       [:td (make-round-presentation (:result/round (last (:class/results class)))
-                                     (count (:class/results class)))]])]])
+(defn count-result-recalled [class-result]
+  (reduce
+   (fn [x y]
+     (if (contains?
+          #{:r :x}
+          (:competitor/recalled y))
+       (inc x)
+       x))
+   0
+   class-result))
+
+(defn dp-classes-component []
+  [:div
+   [:h3 "Klasser"]
+   [:table.table
+    [:thead
+     [:tr
+      [:th {:with "20"} "#"]
+      [:th {:with "200"} "Dansdisciplin"]
+      [:th {:with "20"} "Panel"]
+      [:th {:with "20"} "Typ"]
+      [:th {:with "20"} "Startande"]
+      [:th {:with "20"} "Status"]]]
+    [:tbody
+     (for [class (sort-by :class/position (:competition/classes (:competition @app-state)))]
+       ^{:key class}
+       [:tr
+        [:td (:class/position class)]
+        [:td (:class/name class)]
+        [:td (:class/adjudicator-panel class)]
+        [:td (make-dance-type-presentation (:class/dances class))]
+        
+        [:td (str (count-class-recalled class) "/" (count (:class/competitors class)))]
+
+        [:td (make-round-presentation (:result/round (last (:class/results class)))
+                                      (count (:class/results class)))]])]]])
 
 ;; TODO - make the on-click event run thoughe dispatch
 (defn import-component []
@@ -271,14 +350,105 @@
    [:input.btn.btn-primary.btn-lg {:type "file" :value "Import file"
                                    :onChange #(on-click-import-file %)}]])
 
-(defn menu-component []
-;  [:div]
-  ;; (fn []
-  ;;   (if (= (:selected-page @app-state) :import)))
+(defn navigation-component []
   [:div
-   [import-component]
-   [:h3 "Klasser"]
-   [dp-classes-component]])
+   [:input.btn.btn-default {:type "button" :value "Classes"
+                            :on-click #(dispatch [:select-page :classes])}]
+   [:input.btn.btn-default {:type "button" :value "Time Schedule"
+                            :on-click #(dispatch [:select-page :events])}]])
+
+(defn events-component []
+  [:div
+   [:h3 "Time Schedule"]
+   [:table.table
+    [:thead
+     [:tr
+      [:th {:with "20"} "Time"]
+      [:th {:with "20"} "#"]
+      [:th {:with "200"} "Dansdisciplin"]
+      [:th {:with "20"} "Startande"]
+      [:th {:with "20"} "Rond"]
+      [:th {:with "20"} "Heats"]
+      [:th {:with "20"} "Recall"]
+      [:th {:with "20"} "Panel"]
+      [:th {:with "20"} "Type"]]]
+    [:tbody
+     (doall
+      (for [event (sort-by :event/position (:competition/events (:competition @app-state)))]
+        (let [referenced-class (first (filter #(= (:class/position %) (:event/class-number event))
+                                              (:competition/classes (:competition @app-state))))
+              comment-row? (zero? (:event/class-number event))
+              direct-final? (= (:event/nrof-events-in-class event) 1)
+              completed? (= (:event/status event) 1)]
+        ^{:key event}
+        
+          [:tr
+           [:td (make-event-time-presentation (:event/time event) (:event/status event))]
+           [:td (if (or comment-row? (= (:event/number event) -1)) "" (:event/number event))]
+           ;; use comment if class number is zero
+           [:td
+            (let [t (vec (:competition/classes (:competition @app-state)))]
+              (if (zero? (:event/class-number event))
+                (:event/comment event)
+                (:class/name referenced-class)))]
+
+           ;; Startande
+           ;; TODO - get ppl left from refed class
+           ;; kan hända att vid importen så behöver jag lägga till någon typ av koppling
+           ;; så att ett vist event kan kopplas ihop till rätt resultat
+
+           ;; Started ska presentera hur manga som startade i det eventet och det baseras pa
+           ;; resultatet pa det tidigare eventet
+           [:td         
+            (if (or comment-row?)
+              ""
+              (cond
+               (zero? (:event/class-index event))
+               (str "Start " (:event/starting event))
+               (= (:event/class-index event) (count (:class/results referenced-class)))
+               (str "Qual " (:event/starting event))))]
+
+           ;; Round
+           [:td
+            (if comment-row?
+              ""
+              (if direct-final?
+                "Direct Final"
+                (make-event-round-presentation (:event/round event))))]
+
+           ;; Heats
+           ;; If there is only 1 heat is that always a Direct Final? NO!
+           [:td
+            (if (or comment-row? direct-final? (= (:event/round event) :final-x))
+              ""
+              (str (:event/heats event) " heats"))]
+
+           [:td
+            (if (zero? (:event/recall event))
+              ""
+              (str "Recall " (:event/recall event)))]
+
+           ;; TODO - adjust adj panel in back-end
+           [:td
+            (if comment-row?
+              ""
+              (let [panel (- (:event/adjudicator-panel event) 2)]
+                (if (zero? panel)
+                  "All adj"
+                  (str "Panel " panel))))]
+
+           [:td (make-dance-type-presentation (:event/dances event))]])))]]])
+
+; :selected-page :import
+(defn menu-component []
+ ;[:div]
+  (fn []
+    [:div
+     [import-component]
+     [navigation-component]
+     (condp = (:selected-page @app-state)
+       :classes [dp-classes-component]
+       :events [events-component])]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Application

@@ -31,7 +31,7 @@
              data/small-file-expected-content)))))
 
 (deftest import-dance-perfect-file-with-results
-  (testing "Import of a Dance Perfect xml file"
+  (testing "Import of a Dance Perfect xml file with results"
     (let [imported-file (imp/import-file "./test/tango/results-example.xml")]
       (is (= (:file/version imported-file)
              "4.1"))
@@ -41,6 +41,28 @@
              []))
       (is (= (:file/content imported-file)
              data/results-file-expected-content)))))
+
+(deftest import-dance-perfect-file-with-events
+  (testing "Import of a Dance Perfect xml file with events"
+    (let [imported-file (imp/import-file "./test/tango/event-example.xml")]
+      (is (= (:file/version imported-file)
+             "4.1"))
+      (is (= (:file/import-status imported-file)
+             :success))
+      (is (= (:file/import-errors imported-file)
+             []))
+      (is (= (:file/content imported-file)
+             data/events-file-expected-content)))))
+
+(deftest convert-round-values
+  (testing "Convert DP round int values to keys"
+    (is (= (mapv imp/round-value->key (range 0 22))
+           [:none
+            :normal-x :semifinal-x :final-x :b-final-x :retry-x :second-try-x
+            :normal-1-5 :semifinal-1-5 :retry-1-5 :second-try-1-5
+            :normal-3d :semifinal-3d :retry-3d :second-try-3d
+            :normal-a+b :semifinal-a+b :final-a+b :b-final-a+b :retry-a+b :second-try-a+b
+            :presentation]))))
 
 ;; TODO - this test gets to unwieldy when data is changed, re-think
 ;;  could be interesting to look at prismatic schema generation
