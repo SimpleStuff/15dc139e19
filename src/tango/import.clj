@@ -102,6 +102,9 @@
      :class/dances (into [] (dance-list->map (zx/xml-> class :DanceList :Dance)))
      :class/results (into [] (result-list->map (zx/xml-> class :Results :Result)))}))
 
+;; TODO - each event need to get a class position i.e. witch number of event it is
+;; for the specific class.
+;; TODO - events with class number 0 is used as comments in DP, would be better to have a comment entity
 (defn event-list->map [events-loc]
   (for [event events-loc]
     {:event/position (get-seq-attr event)
@@ -117,17 +120,105 @@
      :event/recall (to-number (zx/attr (first (zx/xml-> event :RecallList :Recall)) :Recall))
      :event/dances (vec (dance-list->map (zx/xml-> event :DanceList :Dance)))}))
 
+(def test-events [{:event/class-number 1 :event/comment "a" :event/position 1}
+                  ;;{:event/class-number 2 :event/comment "b" :event/position 2}
+                  {:event/class-number 1 :event/comment "c" :event/position 3}
+                  ;; {:event/class-number 1 :event/comment "d" :event/position 4}
+                  ;; {:event/class-number 3 :event/comment "e" :event/position 5}
+                  ;; {:event/class-number 2 :event/comment "f" :event/position 6}
+                  ])
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Utils
+;TODO consolidate with UI
+(defn count-class-recalled [class]
+  (let [results (:result/results (last (:class/results class)))
+        started (count (:class/competitors class))]
+    (if (empty? results)
+      started
+      (reduce
+       (fn [x y]
+         (if (contains?
+              #{:r :x}
+              (:competitor/recalled y))
+           (inc x)
+           x))
+       0
+       results))))
+
+(defn count-result-recalled [class-result]
+  (reduce
+   (fn [x y]
+     (if (contains?
+          #{:r :x}
+          (:competitor/recalled y))
+       (inc x)
+       x))
+   0
+   class-result))
+
+;; NOTE: class number refers to a classes position, fix this with proper ID
+;; TODO : normalize this stuff
+;; TODO - events should be accessibale from its class
+(defn event-list-post-process [events classes]
+  (vec
+   (sort-by
+    :event/position
+    (flatten
+     (for [[ref-number grp] (group-by :event/class-number events)]
+       (let [ref-class (first (filter #(= ref-number (:class/position %)) classes))]
+         (reduce-kv
+          (fn [acc k v]
+            ;(conj acc (assoc v :event/result (nth (:class/results ref-class) k nil)))
+            (conj acc (merge v {:event/result (nth (:class/results ref-class) k nil)
+                                :event/class ref-class
+                                :event/nrof-events-in-class (count grp)
+                                :event/class-index k
+                                :event/starting
+                                (let [result (nth (:class/results ref-class) (dec k) :none)]
+                                  (if (= :none result)
+                                    (count (:class/competitors ref-class))
+                                    (count-result-recalled
+                                     (:result/results result))))})))
+          [] grp)))))))
+
+;(event-list-post-process test-events (:competition/classes test-classes))
+
+(def test-classes
+  {:competition/name "TurboMegatävling", :competition/date "2", :competition/location "THUNDERDOME", :dance-perfect/flags {:adj-order-final 1}, :competition/classes [{:class/name "Hiphop Singel Star B", :class/position 1, :class/adjudicator-panel 1, :class/dances [{:dance/name "Medium"} {:dance/name "Tango"} {:dance/name "VienWaltz"} {:dance/name "Foxtrot"} {:dance/name "Quickstep"} {:dance/name "Samba"} {:dance/name "Cha-Cha"} {:dance/name "Rumba"} {:dance/name "Paso-Doble"} {:dance/name "Jive"}], :class/competitors [{:competitor/name "Rulle Trulle", :competitor/position 0, :competitor/club "Sinclairs", :competitor/number 30} {:competitor/name "Milan Lund", :competitor/position 1, :competitor/club "Wilson", :competitor/number 31} {:competitor/name "Douglas Junger", :competitor/position 2, :competitor/club "RGDT", :competitor/number 32}], :class/results [{:result/round "S", :result/adjudicators [{:adjudicator/number 3, :adjudicator/position 0} {:adjudicator/number 4, :adjudicator/position 1} {:adjudicator/number 5, :adjudicator/position 2}], :result/dance {:dance/name "X-Quick Forward"}, :result/results [{:competitor/number 30, :competitor/recalled :x, :competitor/results [{:result/adjudicator {:adjudicator/number 3, :adjudicator/position 0}, :result/x-mark true} {:result/adjudicator {:adjudicator/number 4, :adjudicator/position 1}, :result/x-mark false} {:result/adjudicator {:adjudicator/number 5, :adjudicator/position 2}, :result/x-mark true}]} {:competitor/number 31, :competitor/recalled "", :competitor/results [{:result/adjudicator {:adjudicator/number 3, :adjudicator/position 0}, :result/x-mark false} {:result/adjudicator {:adjudicator/number 4, :adjudicator/position 1}, :result/x-mark true} {:result/adjudicator {:adjudicator/number 5, :adjudicator/position 2}, :result/x-mark false}]} {:competitor/number 32, :competitor/recalled "", :competitor/results [{:result/adjudicator {:adjudicator/number 3, :adjudicator/position 0}, :result/x-mark true} {:result/adjudicator {:adjudicator/number 4, :adjudicator/position 1}, :result/x-mark false} {:result/adjudicator {:adjudicator/number 5, :adjudicator/position 2}, :result/x-mark false}]}]}]} {:class/name "Hiphop Singel Star J Fl", :class/position 2, :class/adjudicator-panel 0, :class/dances [], :class/competitors [{:competitor/name "Ringo Stingo", :competitor/club "Kapangg", :competitor/number 20, :competitor/position 0} {:competitor/name "Greve Turbo", :competitor/club "OOoost", :competitor/number 21, :competitor/position 1}], :class/results []}], :competition/events []})
+
+;; (defn event-list-post-process [events]
+;;   (vec
+;;    (sort-by :event/position
+;;     (flatten
+;;      (for [[_ grp] (group-by :event/class-number events)]
+;;        (reduce-kv (fn [acc k v] (conj acc (assoc v :event/class-result-idx  k))) [] grp))))))
+
+;; (defn competition->map [loc]
+;;   (let [competition-data (first (zx/xml-> loc :CompData))]
+;;     {:competition/name (get-name-attr competition-data)
+;;      :competition/date (tcr/to-date
+;;                         (tf/parse (tf/formatter "yyyy-MM-dd")
+;;                                   (zx/attr competition-data :Date)))
+;;      :competition/location (zx/attr competition-data :Place)
+;;      :dance-perfect/flags {:adj-order-final (to-number (zx/attr competition-data :AdjOrderFinal)) }
+;;      :competition/classes (into [] (class-list->map (zx/xml-> loc :ClassList :Class)))
+;;      :competition/events (vec (event-list->map (zx/xml-> loc :EventList :Event)))
+;;      }))
+
 (defn competition->map [loc]
-  (let [competition-data (first (zx/xml-> loc :CompData))]
+  (let [competition-data (first (zx/xml-> loc :CompData))
+        classes (into [] (class-list->map (zx/xml-> loc :ClassList :Class)))]
     {:competition/name (get-name-attr competition-data)
      :competition/date (tcr/to-date
                         (tf/parse (tf/formatter "yyyy-MM-dd")
                                   (zx/attr competition-data :Date)))
      :competition/location (zx/attr competition-data :Place)
      :dance-perfect/flags {:adj-order-final (to-number (zx/attr competition-data :AdjOrderFinal)) }
-     :competition/classes (into [] (class-list->map (zx/xml-> loc :ClassList :Class)))
-     :competition/events (vec (event-list->map (zx/xml-> loc :EventList :Event)))
-     }))
+     :competition/classes classes
+     :competition/events (event-list-post-process
+                          (vec (event-list->map (zx/xml-> loc :EventList :Event)))
+                          classes)}))
 
 (defn- create-import-info [version content status errors]
   {:file/version version

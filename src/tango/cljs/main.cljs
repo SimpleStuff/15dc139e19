@@ -261,7 +261,7 @@
 
 (def round-map
   {:none ""
-   :normal-x "Normal" :semifinal-x "Semifinal" :final-x "Final" :b-final-x "-" :retry-x "-" :second-try-x "-"
+   :normal-x "Normal" :semifinal-x "Semifinal" :final-x "Final" :b-final-x "-" :retry-x "Retry" :second-try-x "2nd try"
    :normal-1-5 "-" :semifinal-1-5 "-" :retry-1-5 "-" :second-try-1-5 "-"
    :normal-3d "-" :semifinal-3d "-" :retry-3d "-" :second-try-3d "-"
    :normal-a+b "-" :semifinal-a+b "-" :final-a+b "-" :b-final-a+b "-" :retry-a+b "-" :second-try-a+b "-"
@@ -291,6 +291,32 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Components
 
+(defn count-class-recalled [class]
+  (let [results (:result/results (last (:class/results class)))
+        started (count (:class/competitors class))]
+    (if (empty? results)
+      started
+      (reduce
+       (fn [x y]
+         (if (contains?
+              #{:r :x}
+              (:competitor/recalled y))
+           (inc x)
+           x))
+       0
+       results))))
+
+(defn count-result-recalled [class-result]
+  (reduce
+   (fn [x y]
+     (if (contains?
+          #{:r :x}
+          (:competitor/recalled y))
+       (inc x)
+       x))
+   0
+   class-result))
+
 (defn dp-classes-component []
   [:div
    [:h3 "Klasser"]
@@ -312,22 +338,7 @@
         [:td (:class/adjudicator-panel class)]
         [:td (make-dance-type-presentation (:class/dances class))]
         
-        [:td
-         (let [results (:result/results (last (:class/results class)))
-               started (count (:class/competitors class))
-               recalled-count
-               (if (empty? results)
-                 started
-                 (reduce
-                  (fn [x y]
-                    (if (contains?
-                         #{:r :x}
-                         (:competitor/recalled y))
-                      (inc x)
-                      x))
-                  0
-                  results))]
-           (str recalled-count "/" started))]
+        [:td (str (count-class-recalled class) "/" (count (:class/competitors class)))]
 
         [:td (make-round-presentation (:result/round (last (:class/results class)))
                                       (count (:class/results class)))]])]]])
@@ -366,13 +377,16 @@
       (for [event (sort-by :event/position (:competition/events (:competition @app-state)))]
         (let [referenced-class (first (filter #(= (:class/position %) (:event/class-number event))
                                               (:competition/classes (:competition @app-state))))
-              comment-row? (= (:event/number event) -1)
-              direct-final? (= (:event/heats event) 1)]
+              comment-row? (= (:event/class-number event) 0);(= (:event/number event) -1)
+              direct-final? (= (:event/nrof-events-in-class event) 1)
+              completed? (= (:event/status event) 1)
+              
+              ]
         ^{:key event}
         
           [:tr
            [:td (make-event-time-presentation (:event/time event) (:event/status event))]
-           [:td (if comment-row? "" (:event/number event))]
+           [:td (if (or comment-row? (= (:event/number event) -1)) "" (:event/number event))]
            ;; use comment if class number is zero
            [:td
             (let [t (into [] (:competition/classes (:competition @app-state)))]
@@ -382,10 +396,27 @@
 
            ;; Startande
            ;; TODO - get ppl left from refed class
-           [:td
-            (if comment-row?
+           ;; kan hända att vid importen så behöver jag lägga till någon typ av koppling
+           ;; så att ett vist event kan kopplas ihop till rätt resultat
+
+           ;; Started ska presentera hur manga som startade i det eventet och det baseras pa
+           ;; resultatet pa det tidigare eventet
+           [:td         
+            (if (or comment-row?
+                    ;; (and (not= (:event/class-index event) 0)
+                    ;;      (not= (:event/class-index event) (count (:class/results referenced-class))))
+                    )
               ""
-              (count (:class/competitors referenced-class)))]
+              (cond
+               (= (:event/class-index event) 0)
+               (str "Start " (:event/starting event))
+               (= (:event/class-index event) (count (:class/results referenced-class)))
+               (str "Qual " (:event/starting event)) )
+              ;; (if (= :none (:event/starting event))
+              ;;   (str "Qual " (count (:class/competitors ref-class)))
+              ;;   (str "Start " (:event/starting event)))
+              )
+            ]
 
            ;; Round
            [:td
@@ -396,9 +427,9 @@
                 (make-event-round-presentation (:event/round event))))]
 
            ;; Heats
-           ;; If there is only 1 heat is that always a Direct Final?
+           ;; If there is only 1 heat is that always a Direct Final? NO!
            [:td
-            (if (or comment-row? direct-final?)
+            (if (or comment-row? direct-final? (= (:event/round event) :final-x))
               ""
               (str (:event/heats event) " heats"))]
 
@@ -411,7 +442,10 @@
            [:td
             (if comment-row?
               ""
-              (str "Panel " (- (:event/adjudicator-panel event) 2)))]
+              (let [panel (- (:event/adjudicator-panel event) 2)]
+                (if (= panel 0)
+                  "All adj"
+                  (str "Panel " panel))))]
 
            [:td (make-dance-type-presentation (:event/dances event))]   
            ])))]]])
