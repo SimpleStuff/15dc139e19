@@ -377,11 +377,9 @@
       (for [event (sort-by :event/position (:competition/events (:competition @app-state)))]
         (let [referenced-class (first (filter #(= (:class/position %) (:event/class-number event))
                                               (:competition/classes (:competition @app-state))))
-              comment-row? (= (:event/class-number event) 0);(= (:event/number event) -1)
+              comment-row? (zero? (:event/class-number event))
               direct-final? (= (:event/nrof-events-in-class event) 1)
-              completed? (= (:event/status event) 1)
-              
-              ]
+              completed? (= (:event/status event) 1)]
         ^{:key event}
         
           [:tr
@@ -389,8 +387,8 @@
            [:td (if (or comment-row? (= (:event/number event) -1)) "" (:event/number event))]
            ;; use comment if class number is zero
            [:td
-            (let [t (into [] (:competition/classes (:competition @app-state)))]
-              (if (= (:event/class-number event) 0)
+            (let [t (vec (:competition/classes (:competition @app-state)))]
+              (if (zero? (:event/class-number event))
                 (:event/comment event)
                 (:class/name referenced-class)))]
 
@@ -402,21 +400,13 @@
            ;; Started ska presentera hur manga som startade i det eventet och det baseras pa
            ;; resultatet pa det tidigare eventet
            [:td         
-            (if (or comment-row?
-                    ;; (and (not= (:event/class-index event) 0)
-                    ;;      (not= (:event/class-index event) (count (:class/results referenced-class))))
-                    )
+            (if (or comment-row?)
               ""
               (cond
-               (= (:event/class-index event) 0)
+               (zero? (:event/class-index event))
                (str "Start " (:event/starting event))
                (= (:event/class-index event) (count (:class/results referenced-class)))
-               (str "Qual " (:event/starting event)) )
-              ;; (if (= :none (:event/starting event))
-              ;;   (str "Qual " (count (:class/competitors ref-class)))
-              ;;   (str "Start " (:event/starting event)))
-              )
-            ]
+               (str "Qual " (:event/starting event))))]
 
            ;; Round
            [:td
@@ -434,7 +424,7 @@
               (str (:event/heats event) " heats"))]
 
            [:td
-            (if (= 0 (:event/recall event))
+            (if (zero? (:event/recall event))
               ""
               (str "Recall " (:event/recall event)))]
 
@@ -443,12 +433,11 @@
             (if comment-row?
               ""
               (let [panel (- (:event/adjudicator-panel event) 2)]
-                (if (= panel 0)
+                (if (zero? panel)
                   "All adj"
                   (str "Panel " panel))))]
 
-           [:td (make-dance-type-presentation (:event/dances event))]   
-           ])))]]])
+           [:td (make-dance-type-presentation (:event/dances event))]])))]]])
 
 ; :selected-page :import
 (defn menu-component []
