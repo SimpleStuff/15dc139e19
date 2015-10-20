@@ -28,6 +28,9 @@
 (defn- get-name-attr [loc]
   (zx/attr loc :Name))
 
+(defn- get-adj-number-attr [loc]
+  (to-number (zx/attr loc :AdjNumber)))
+
 (defn- get-number-attr [loc]
   (to-number (zx/attr loc :Number)))
 
@@ -90,6 +93,24 @@
      :class/dances (into [] (dance-list->map (zx/xml-> class :DanceList :Dance)))
      :class/results (into [] (result-list->map (zx/xml-> class :Results :Result)))}))
 
+(defn adjudicator-list2->map [adjudicators-loc]
+  (for [adj adjudicators-loc]
+    {:adjudicator/id (get-seq-attr adj)
+     :adjudicator/name (zx/attr adj :Name)
+     :adjudicator/country (zx/attr adj :Country)}))
+
+(defn panel->map [panel-loc]
+  (for [panel panel-loc]
+    {:adjudicator-id (get-adj-number-attr panel)}))
+
+(defn adjudicator-panel-list->map [adjudicator-panels-loc]
+  (filter
+   (fn [rec] (seq (rec :panel/adjudicators)))
+   (for [panel adjudicator-panels-loc]
+     {:panel/id (get-seq-attr panel)
+      :panel/adjudicators
+      (into [] (panel->map (zx/xml-> panel :PanelAdj)))})))
+
 (defn competition->map [loc]
   (let [competition-data (first (zx/xml-> loc :CompData))]
     {:competition/name (get-name-attr competition-data)
@@ -97,7 +118,14 @@
                         (tf/parse (tf/formatter "yyyy-MM-dd")
                                   (zx/attr competition-data :Date)))
      :competition/location (zx/attr competition-data :Place)
-     :competition/classes (into [] (class-list->map (zx/xml-> loc :ClassList :Class)))}))
+     :competition/classes (into [] (class-list->map (zx/xml-> loc :ClassList :Class)))
+     :competition/adjudicators
+     (if-let [adjudicator-list-loc (zx/xml-> loc :AdjPanelList :AdjList :Adjudicator)]
+       (into [] (adjudicator-list2->map adjudicator-list-loc))
+       [])
+    :competition/adjudicator-panels
+     (into [] (adjudicator-panel-list->map (zx/xml-> loc :AdjPanelList :PanelList :Panel)))
+     }))
 
 (defn read-number-attr [data attr-key]
   (if-let [attr-value (zx/attr data attr-key)]

@@ -17,18 +17,25 @@
         <PanelAdj Seq="1" AdjNumber="1"/>
         <PanelAdj Seq="2" AdjNumber="2"/>
       </Panel>
-      <Panel Seq="1" Qty="3">
-        <PanelAdj Seq="0" AdjNumber="3"/>
-        <PanelAdj Seq="1" AdjNumber="4"/>
-        <PanelAdj Seq="2" AdjNumber="5"/>
+      <Panel Seq="1" Qty="2">
+        <PanelAdj Seq="0" AdjNumber="2"/>
+        <PanelAdj Seq="1" AdjNumber="3"/>
       </Panel>
       <Panel Seq="2" Qty="3">
         <PanelAdj Seq="0" AdjNumber="0"/>
+        <PanelAdj Seq="1" AdjNumber="1"/>
+        <PanelAdj Seq="2" AdjNumber="4"/>
+      </Panel>
+      <Panel Seq="3" Qty="3">
+        <PanelAdj Seq="0" AdjNumber="1"/>
         <PanelAdj Seq="1" AdjNumber="2"/>
         <PanelAdj Seq="2" AdjNumber="4"/>
       </Panel>
-      <Panel Seq="3" Qty="0"/>
-      <Panel Seq="4" Qty="0"/>
+      <Panel Seq="4" Qty="3">
+        <PanelAdj Seq="0" AdjNumber="0"/>
+        <PanelAdj Seq="1" AdjNumber="1"/>
+        <PanelAdj Seq="2" AdjNumber="5"/>
+      </Panel>
       <Panel Seq="5" Qty="0"/>
       <Panel Seq="6" Qty="0"/>
       <Panel Seq="7" Qty="0"/>
