@@ -261,18 +261,20 @@
 
 (def round-map
   {:none ""
-   :normal-x "Normal" :semifinal-x "Semifinal" :final-x "Final" :b-final-x "-" :retry-x "Retry" :second-try-x "2nd try"
-   :normal-1-5 "-" :semifinal-1-5 "-" :retry-1-5 "-" :second-try-1-5 "-"
-   :normal-3d "-" :semifinal-3d "-" :retry-3d "-" :second-try-3d "-"
-   :normal-a+b "-" :semifinal-a+b "-" :final-a+b "-" :b-final-a+b "-" :retry-a+b "-" :second-try-a+b "-"
-   :presentation "-"})
+   :normal-x "Normal" :semifinal-x "Semifinal" :final-x "Final"
+   :b-final-x "B-Final" :retry-x "Retry" :second-try-x "2nd try"
+
+   :normal-1-5 "Normal 1-5" :semifinal-1-5 "Semifinal 1-5" :retry-1-5 "Retry 1-5" :second-try-1-5 "2nd try 1-5"
+
+   :normal-3d "Normal 3D" :semifinal-3d "Semifinal 3D" :retry-3d "Retry 3D" :second-try-3d "2nd try 3D"
+
+   :normal-a+b "Normal A+B" :semifinal-a+b "Semifinal A+B" :final-a+b "Final A+B"
+   :b-final-a+b "B-Final A+B" :retry-a+b "Retry A+B" :second-try-a+b "2nd try A+B"
+
+   :presentation "Presentation"})
 
 (defn make-event-round-presentation [event-round]
-  (get round-map event-round)
-  ;; (condp = event-round
-  ;;   :unknown-round-value "Okänd Runda"
-  ;;   :normal-x "Normal")
-  )
+  (get round-map event-round))
 
 (defn make-round-presentation [round-status round-count]
   (str
@@ -384,7 +386,7 @@
         
           [:tr
            [:td (make-event-time-presentation (:event/time event) (:event/status event))]
-           [:td (if (or comment-row? (= (:event/number event) -1)) "" (:event/number event))]
+           [:td (if (or  (= (:event/number event) -1)) "" (:event/number event))]
            ;; use comment if class number is zero
            [:td
             (let [t (vec (:competition/classes (:competition @app-state)))]
@@ -424,7 +426,7 @@
               (str (:event/heats event) " heats"))]
 
            [:td
-            (if (zero? (:event/recall event))
+            (if (or (zero? (:event/recall event)) comment-row?)
               ""
               (str "Recall " (:event/recall event)))]
 
@@ -437,7 +439,10 @@
                   "All adj"
                   (str "Panel " panel))))]
 
-           [:td (make-dance-type-presentation (:event/dances event))]])))]]])
+           [:td
+            (if comment-row?
+              ""
+              (make-dance-type-presentation (:event/dances event)))]])))]]])
 
 ; :selected-page :import
 (defn menu-component []
