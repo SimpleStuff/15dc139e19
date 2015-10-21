@@ -34,8 +34,24 @@
 (defn- get-number-attr [loc]
   (to-number (zx/attr loc :Number)))
 
-(defn- get-seq-attr [loc]
+(defn- get-seq-attr-no-inc [loc]
   (to-number (zx/attr loc :Seq)))
+
+(defn- get-seq-attr
+  "Increased by one since it represent a user defined position"
+  [loc]
+  (inc (to-number (zx/attr loc :Seq))))
+
+(defn round-value->key [val]
+  (get
+   [:none
+    :normal-x :semifinal-x :final-x :b-final-x :retry-x :second-try-x
+    :normal-1-5 :semifinal-1-5 :retry-1-5 :second-try-1-5
+    :normal-3d :semifinal-3d :retry-3d :second-try-3d
+    :normal-a+b :semifinal-a+b :final-a+b :b-final-a+b :retry-a+b :second-try-a+b
+    :presentation]
+   val
+   :unknown-round-value))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Zipper implementation
@@ -95,7 +111,7 @@
 
 (defn adjudicator-list2->map [adjudicators-loc]
   (for [adj adjudicators-loc]
-    {:adjudicator/id (get-seq-attr adj)
+    {:adjudicator/id (get-seq-attr-no-inc adj)
      :adjudicator/name (zx/attr adj :Name)
      :adjudicator/country (zx/attr adj :Country)}))
 
@@ -107,18 +123,76 @@
   (filter
    (fn [rec] (seq (rec :panel/adjudicators)))
    (for [panel adjudicator-panels-loc]
-     {:panel/id (get-seq-attr panel)
+     {:panel/id (get-seq-attr-no-inc panel)
       :panel/adjudicators
       (into [] (panel->map (zx/xml-> panel :PanelAdj)))})))
 
+;; TODO - each event need to get a class position i.e. witch number of event it is
+;; for the specific class.
+;; TODO - events with class number 0 is used as comments in DP, would be better to have a comment entity
+(defn event-list->map [events-loc]
+  (for [event events-loc]
+    {:event/position (get-seq-attr event)
+     :event/class-number (to-number (zx/attr event :ClassNumber))
+     :event/number (if (= "" (zx/attr event :EventNumber)) -1 (to-number (zx/attr event :EventNumber)))
+     :event/time (zx/attr event :Time)
+     :event/comment (zx/attr event :Comment)
+     :event/adjudicator-panel (to-number (zx/attr event :AdjPanel))
+     :event/heats (to-number (zx/attr event :Heats))
+     :event/round (round-value->key (to-number (zx/attr event :Round)))
+     :event/status (to-number (zx/attr event :Status))
+     :event/start-order (to-number (zx/attr event :Startorder))
+     :event/recall (to-number (zx/attr (first (zx/xml-> event :RecallList :Recall)) :Recall))
+     :event/dances (vec (dance-list->map (zx/xml-> event :DanceList :Dance)))}))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Utils
+;TODO consolidate with UI
+(defn count-result-recalled [class-result]
+  (reduce
+   (fn [x y]
+     (if (contains?
+          #{:r :x}
+          (:competitor/recalled y))
+       (inc x)
+       x))
+   0
+   class-result))
+
+;; NOTE: class number refers to a classes position, fix this with proper ID
+;; TODO : normalize this stuff
+;; TODO - events should be accessibale from its class
+(defn event-list-post-process [events classes]
+  (vec
+   (sort-by
+    :event/position
+    (flatten
+     (for [[ref-number grp] (group-by :event/class-number events)]
+       (let [ref-class (first (filter #(= ref-number (:class/position %)) classes))]
+         (reduce-kv
+          (fn [acc k v]
+            (conj acc (merge v {:event/nrof-events-in-class (count grp)
+                                :event/class-index k
+                                :event/starting
+                                (let [result (nth (:class/results ref-class) (dec k) :none)]
+                                  (if (= :none result)
+                                    (count (:class/competitors ref-class))
+                                    (count-result-recalled
+                                     (:result/results result))))})))
+          [] grp)))))))
+
 (defn competition->map [loc]
-  (let [competition-data (first (zx/xml-> loc :CompData))]
+  (let [competition-data (first (zx/xml-> loc :CompData))
+        classes (vec (class-list->map (zx/xml-> loc :ClassList :Class)))]
     {:competition/name (get-name-attr competition-data)
      :competition/date (tcr/to-date
                         (tf/parse (tf/formatter "yyyy-MM-dd")
                                   (zx/attr competition-data :Date)))
      :competition/location (zx/attr competition-data :Place)
-     :competition/classes (into [] (class-list->map (zx/xml-> loc :ClassList :Class)))
+     :competition/classes classes
+     :competition/events (event-list-post-process
+                          (vec (event-list->map (zx/xml-> loc :EventList :Event)))
+                          classes)
      :competition/adjudicators
      (if-let [adjudicator-list-loc (zx/xml-> loc :AdjPanelList :AdjList :Adjudicator)]
        (into [] (adjudicator-list2->map adjudicator-list-loc))
