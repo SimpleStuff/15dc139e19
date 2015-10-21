@@ -65,9 +65,10 @@
        :competitor/number 21
        :competitor/position 2}]
      :class/results []}]
-
-   :competition/events
-   []})
+   :competition/events []
+   :competition/adjudicators []
+   :competition/adjudicator-panels []
+   })
 
 (def results-file-expected-content
   {:competition/name "TurboMegatävling"
@@ -164,8 +165,47 @@
        :competitor/position 2}]
      :class/results []}]
 
-   :competition/events
-   []})
+   :competition/events []
+   :competition/adjudicators
+   [{:adjudicator/id 0
+     :adjudicator/name "Anders"
+     :adjudicator/country ""}
+    {:adjudicator/id 1
+     :adjudicator/name "Bertil"
+     :adjudicator/country ""}
+    {:adjudicator/id 2
+     :adjudicator/name "Cesar"
+     :adjudicator/country ""}
+    {:adjudicator/id 3
+     :adjudicator/name "David"
+     :adjudicator/country ""}
+    {:adjudicator/id 4
+     :adjudicator/name "Erik"
+     :adjudicator/country ""}
+    {:adjudicator/id 5
+     :adjudicator/name "Fredrik"
+     :adjudicator/country ""}]
+
+   :competition/adjudicator-panels
+   [{:panel/id 0
+     :panel/adjudicators [{:adjudicator-id 0}
+                        {:adjudicator-id 1}
+                        {:adjudicator-id 2}]}
+    {:panel/id 1
+     :panel/adjudicators [{:adjudicator-id 2}
+                        {:adjudicator-id 3}]}
+    {:panel/id 2
+     :panel/adjudicators [{:adjudicator-id 0}
+                        {:adjudicator-id 1}
+                        {:adjudicator-id 4}]}
+    {:panel/id 3
+     :panel/adjudicators [{:adjudicator-id 1}
+                        {:adjudicator-id 2}
+                        {:adjudicator-id 4}]}
+    {:panel/id 4
+     :panel/adjudicators [{:adjudicator-id 0}
+                        {:adjudicator-id 1}
+                        {:adjudicator-id 5}]}]})
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -220,7 +260,6 @@
        :competitor/number 21
        :competitor/position 2}]
      :class/results []}]
-
    :competition/events
    [{:event/recall 0,
      :event/round :unknown-round-value,
@@ -252,4 +291,7 @@
      :event/number 1,
      :event/start-order 0,
      :event/heats 2,
-     :event/status 0}]})
+     :event/status 0}]
+   :competition/adjudicators []
+   :competition/adjudicator-panels []
+})

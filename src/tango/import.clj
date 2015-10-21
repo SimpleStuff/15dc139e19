@@ -28,8 +28,14 @@
 (defn- get-name-attr [loc]
   (zx/attr loc :Name))
 
+(defn- get-adj-number-attr [loc]
+  (to-number (zx/attr loc :AdjNumber)))
+
 (defn- get-number-attr [loc]
   (to-number (zx/attr loc :Number)))
+
+(defn- get-seq-attr-no-inc [loc]
+  (to-number (zx/attr loc :Seq)))
 
 (defn- get-seq-attr
   "Increased by one since it represent a user defined position"
@@ -103,6 +109,24 @@
      :class/dances (into [] (dance-list->map (zx/xml-> class :DanceList :Dance)))
      :class/results (into [] (result-list->map (zx/xml-> class :Results :Result)))}))
 
+(defn adjudicator-list2->map [adjudicators-loc]
+  (for [adj adjudicators-loc]
+    {:adjudicator/id (get-seq-attr-no-inc adj)
+     :adjudicator/name (zx/attr adj :Name)
+     :adjudicator/country (zx/attr adj :Country)}))
+
+(defn panel->map [panel-loc]
+  (for [panel panel-loc]
+    {:adjudicator-id (get-adj-number-attr panel)}))
+
+(defn adjudicator-panel-list->map [adjudicator-panels-loc]
+  (filter
+   (fn [rec] (seq (rec :panel/adjudicators)))
+   (for [panel adjudicator-panels-loc]
+     {:panel/id (get-seq-attr-no-inc panel)
+      :panel/adjudicators
+      (into [] (panel->map (zx/xml-> panel :PanelAdj)))})))
+
 ;; TODO - each event need to get a class position i.e. witch number of event it is
 ;; for the specific class.
 ;; TODO - events with class number 0 is used as comments in DP, would be better to have a comment entity
@@ -170,7 +194,14 @@
      :competition/classes classes
      :competition/events (event-list-post-process
                           (vec (event-list->map (zx/xml-> loc :EventList :Event)))
-                          classes)}))
+                          classes)
+     :competition/adjudicators
+     (if-let [adjudicator-list-loc (zx/xml-> loc :AdjPanelList :AdjList :Adjudicator)]
+       (into [] (adjudicator-list2->map adjudicator-list-loc))
+       [])
+    :competition/adjudicator-panels
+     (into [] (adjudicator-panel-list->map (zx/xml-> loc :AdjPanelList :PanelList :Panel)))
+     }))
 
 (defn read-number-attr [data attr-key]
   (if-let [attr-value (zx/attr data attr-key)]
