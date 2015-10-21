@@ -3278,16 +3278,15 @@ Utils</p>
          &quot;*&quot;)))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(def round-map
   {:none 
-   :normal-x &quot;Normal&quot; :semifinal-x &quot;Semifinal&quot; :final-x &quot;Final&quot; :b-final-x &quot;-&quot; :retry-x &quot;Retry&quot; :second-try-x &quot;2nd try&quot;
-   :normal-1-5 &quot;-&quot; :semifinal-1-5 &quot;-&quot; :retry-1-5 &quot;-&quot; :second-try-1-5 &quot;-&quot;
-   :normal-3d &quot;-&quot; :semifinal-3d &quot;-&quot; :retry-3d &quot;-&quot; :second-try-3d &quot;-&quot;
-   :normal-a+b &quot;-&quot; :semifinal-a+b &quot;-&quot; :final-a+b &quot;-&quot; :b-final-a+b &quot;-&quot; :retry-a+b &quot;-&quot; :second-try-a+b &quot;-&quot;
-   :presentation &quot;-&quot;})</pre></td></tr><tr><td class="docs">
+   :normal-x &quot;Normal&quot; :semifinal-x &quot;Semifinal&quot; :final-x &quot;Final&quot;
+   :b-final-x &quot;B-Final&quot; :retry-x &quot;Retry&quot; :second-try-x &quot;2nd try&quot;
+   :normal-1-5 &quot;Normal 1-5&quot; :semifinal-1-5 &quot;Semifinal 1-5&quot; :retry-1-5 &quot;Retry 1-5&quot; :second-try-1-5 &quot;2nd try 1-5&quot;
+   :normal-3d &quot;Normal 3D&quot; :semifinal-3d &quot;Semifinal 3D&quot; :retry-3d &quot;Retry 3D&quot; :second-try-3d &quot;2nd try 3D&quot;
+   :normal-a+b &quot;Normal A+B&quot; :semifinal-a+b &quot;Semifinal A+B&quot; :final-a+b &quot;Final A+B&quot;
+   :b-final-a+b &quot;B-Final A+B&quot; :retry-a+b &quot;Retry A+B&quot; :second-try-a+b &quot;2nd try A+B&quot;
+   :presentation &quot;Presentation&quot;})</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn make-event-round-presentation [event-round]
-  (get round-map event-round)
-  ;; (condp = event-round
-  ;;   :unknown-round-value &quot;Okänd Runda&quot;
-  ;;   :normal-x &quot;Normal&quot;))</pre></td></tr><tr><td class="docs">
+  (get round-map event-round))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn make-round-presentation [round-status round-count]
   (str
    round-count &quot; - &quot;
@@ -3381,12 +3380,13 @@ Utils</p>
         (let [referenced-class (first (filter #(= (:class/position %) (:event/class-number event))
                                               (:competition/classes (:competition @app-state))))
               comment-row? (zero? (:event/class-number event))
-              direct-final? (= (:event/nrof-events-in-class event) 1)
+              direct-final? (and (= (:event/nrof-events-in-class event) 1)
+                                 (not= (:event/round event) :presentation))
               completed? (= (:event/status event) 1)]
         ^{:key event}
           [:tr
            [:td (make-event-time-presentation (:event/time event) (:event/status event))]
-           [:td (if (or comment-row? (= (:event/number event) -1))  (:event/number event))]
+           [:td (if (or  (= (:event/number event) -1))  (:event/number event))]
            ;; use comment if class number is zero
            [:td
             (let [t (vec (:competition/classes (:competition @app-state)))]
@@ -3404,6 +3404,8 @@ Utils</p>
               (cond
                (zero? (:event/class-index event))
                (str &quot;Start &quot; (:event/starting event))
+               direct-final?
+               (str &quot;Start &quot; (count (:class/competitors referenced-class)))
                (= (:event/class-index event) (count (:class/results referenced-class)))
                (str &quot;Qual &quot; (:event/starting event))))]
            ;; Round
@@ -3413,21 +3415,24 @@ Utils</p>
                 &quot;Direct Final&quot;
                 (make-event-round-presentation (:event/round event))))]
            ;; Heats
-           ;; If there is only 1 heat is that always a Direct Final? NO!
            [:td
             (if (or comment-row? direct-final? (= (:event/round event) :final-x))
-              (str (:event/heats event) &quot; heats&quot;))]
+              (let [heats (:event/heats event)
+                    suffix (if (= 1 heats)  &quot;s&quot;)]
+                (str  heats &quot; heat&quot; suffix)))]
            [:td
-            (if (zero? (:event/recall event))
+            (if (or (zero? (:event/recall event)) comment-row?)
               (str &quot;Recall &quot; (:event/recall event)))]
            ;; TODO - adjust adj panel in back-end
            [:td
-            (if comment-row?
+            (if (or comment-row? (= (:event/round event) :presentation))
               (let [panel (- (:event/adjudicator-panel event) 2)]
                 (if (zero? panel)
                   &quot;All adj&quot;
                   (str &quot;Panel &quot; panel))))]
-           [:td (make-dance-type-presentation (:event/dances event))]])))]]])</pre></td></tr><tr><td class="docs">
+           [:td
+            (if comment-row?
+              (make-dance-type-presentation (:event/dances event)))]])))]]])</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn menu-component []
  ;[:div]
   (fn []
@@ -3745,7 +3750,9 @@ TODO - events should be accessibale from its class</p>
        (let [ref-class (first (filter #(= ref-number (:class/position %)) classes))]
          (reduce-kv
           (fn [acc k v]
-            (conj acc (merge v {:event/nrof-events-in-class (count grp)
+            (conj acc (merge v {:event/nrof-events-in-class
+                                (count
+                                 (filter #(not= (:event/round %) :presentation) grp))
                                 :event/class-index k
                                 :event/starting
                                 (let [result (nth (:class/results ref-class) (dec k) :none)]
@@ -4171,7 +4178,63 @@ make a nicer filtering if needed.
       (is (= (:file/import-errors imported-file)
              [:file-not-found]))
       (is (= (:file/content imported-file)
-             [])))))</pre></td></tr><tr><td class="docs">
+             [])))))</pre></td></tr><tr><td class="docs"><p>event post processing</p>
+</td><td class="codes"></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(deftest post-processing-of-events
+  (testing &quot;Testing adaptions of events to fix DP format quirks&quot;
+   (let [events [{:event/class-number 1 :event/position 1}
+                 {:event/class-number 2 :event/position 3}
+                 {:event/class-number 1 :event/position 2}]
+         classes [{:class/position 1 :class/competitors
+                   [{:competitor/name &quot;Rulle Trulle&quot;
+                     :competitor/club &quot;MegaTurbo&quot;
+                     :competitor/number 30
+                     :competitor/position 1}
+                    {:competitor/name &quot;Robot Lund&quot;
+                     :competitor/club &quot;Skrot&quot;
+                     :competitor/number 31
+                     :competitor/position 2}]}
+                  {:class/position 2 :class/competitors []}]]
+     (is (= (imp/event-list-post-process events classes)
+            [{:event/class-number 1,
+              :event/position 1,
+              :event/nrof-events-in-class 2,
+              :event/class-index 0,
+              :event/starting 2}
+             {:event/class-number 1,
+              :event/position 2,
+              :event/nrof-events-in-class 2,
+              :event/class-index 1,
+              :event/starting 2}
+             {:event/class-number 2,
+              :event/position 3,
+              :event/nrof-events-in-class 1,
+              :event/class-index 0,
+              :event/starting 0}])))))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(deftest post-processing-of-events-should-not-count-presentations
+  (testing &quot;Event number for a class should not count 'presentation' events&quot;
+   (let [events [{:event/class-number 1 :event/position 1 :event/round :normal}
+                 {:event/class-number 1 :event/position 2 :event/round :presentation}]
+         classes [{:class/position 1 :class/competitors
+                   [{:competitor/name &quot;Rulle Trulle&quot;
+                     :competitor/club &quot;MegaTurbo&quot;
+                     :competitor/number 30
+                     :competitor/position 1}]}
+                  {:class/position 2 :class/competitors []}]]
+     (is (= (imp/event-list-post-process events classes)
+            [{:event/class-number 1,
+              :event/position 1,
+              :event/round :normal
+              :event/nrof-events-in-class 1,
+              :event/class-index 0,
+              :event/starting 1}
+             {:event/class-number 1,
+              :event/position 2,
+              :event/round :presentation,
+              :event/nrof-events-in-class 1,
+              :event/class-index 1,
+              :event/starting 1}])))))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(deftest read-dance-perfect-competition-name
   (testing &quot;Import competition name of Dance Perfect file&quot;
     (is (= (:competition/name (imp/dance-perfect-xml-&gt;data small-exampel-xml))

@@ -85,6 +85,67 @@
       (is (= (:file/content imported-file)
              [])))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; event post processing
+
+(deftest post-processing-of-events
+  (testing "Testing adaptions of events to fix DP format quirks"
+   (let [events [{:event/class-number 1 :event/position 1}
+                 {:event/class-number 2 :event/position 3}
+                 {:event/class-number 1 :event/position 2}]
+         classes [{:class/position 1 :class/competitors
+                   [{:competitor/name "Rulle Trulle"
+                     :competitor/club "MegaTurbo"
+                     :competitor/number 30
+                     :competitor/position 1}
+                    {:competitor/name "Robot Lund"
+                     :competitor/club "Skrot"
+                     :competitor/number 31
+                     :competitor/position 2}]}
+                  {:class/position 2 :class/competitors []}]]
+     (is (= (imp/event-list-post-process events classes)
+            [{:event/class-number 1,
+              :event/position 1,
+              :event/nrof-events-in-class 2,
+              :event/class-index 0,
+              :event/starting 2}
+             {:event/class-number 1,
+              :event/position 2,
+              :event/nrof-events-in-class 2,
+              :event/class-index 1,
+              :event/starting 2}
+             {:event/class-number 2,
+              :event/position 3,
+              :event/nrof-events-in-class 1,
+              :event/class-index 0,
+              :event/starting 0}])))))
+
+(deftest post-processing-of-events-should-not-count-presentations
+  (testing "Event number for a class should not count 'presentation' events"
+   (let [events [{:event/class-number 1 :event/position 1 :event/round :presentation}
+                 {:event/class-number 1 :event/position 2 :event/round :normal}]
+         classes [{:class/position 1 :class/competitors
+                   [{:competitor/name "Rulle Trulle"
+                     :competitor/club "MegaTurbo"
+                     :competitor/number 30
+                     :competitor/position 1}]}
+                  {:class/position 2 :class/competitors []}]]
+     (is (= (imp/event-list-post-process events classes)
+            [{:event/class-number 1,
+              :event/position 1,
+              :event/round :presentation
+              :event/nrof-events-in-class 1,
+              :event/class-index 0,
+              :event/starting 1}
+             {:event/class-number 1,
+              :event/position 2,
+              :event/round :normal,
+              :event/nrof-events-in-class 1,
+              :event/class-index 1,
+              :event/starting 1}])))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (deftest read-dance-perfect-competition-name
   (testing "Import competition name of Dance Perfect file"
     (is (= (:competition/name (imp/dance-perfect-xml->data small-exampel-xml))
