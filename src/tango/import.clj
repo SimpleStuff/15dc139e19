@@ -147,7 +147,9 @@
        (let [ref-class (first (filter #(= ref-number (:class/position %)) classes))]
          (reduce-kv
           (fn [acc k v]
-            (conj acc (merge v {:event/nrof-events-in-class (count grp)
+            (conj acc (merge v {:event/nrof-events-in-class
+                                (count
+                                 (filter #(not= (:event/round %) :presentation) grp))
                                 :event/class-index k
                                 :event/starting
                                 (let [result (nth (:class/results ref-class) (dec k) :none)]

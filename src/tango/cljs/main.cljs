@@ -380,7 +380,8 @@
         (let [referenced-class (first (filter #(= (:class/position %) (:event/class-number event))
                                               (:competition/classes (:competition @app-state))))
               comment-row? (zero? (:event/class-number event))
-              direct-final? (= (:event/nrof-events-in-class event) 1)
+              direct-final? (and (= (:event/nrof-events-in-class event) 1)
+                                 (not= (:event/round event) :presentation))
               completed? (= (:event/status event) 1)]
         ^{:key event}
         
@@ -407,6 +408,8 @@
               (cond
                (zero? (:event/class-index event))
                (str "Start " (:event/starting event))
+               direct-final?
+               (str "Start " (count (:class/competitors referenced-class)))
                (= (:event/class-index event) (count (:class/results referenced-class)))
                (str "Qual " (:event/starting event))))]
 
@@ -419,11 +422,12 @@
                 (make-event-round-presentation (:event/round event))))]
 
            ;; Heats
-           ;; If there is only 1 heat is that always a Direct Final? NO!
            [:td
             (if (or comment-row? direct-final? (= (:event/round event) :final-x))
               ""
-              (str (:event/heats event) " heats"))]
+              (let [heats (:event/heats event)
+                    suffix (if (= 1 heats) "" "s")]
+                (str  heats " heat" suffix)))]
 
            [:td
             (if (or (zero? (:event/recall event)) comment-row?)
@@ -432,7 +436,7 @@
 
            ;; TODO - adjust adj panel in back-end
            [:td
-            (if comment-row?
+            (if (or comment-row? (= (:event/round event) :presentation))
               ""
               (let [panel (- (:event/adjudicator-panel event) 2)]
                 (if (zero? panel)
