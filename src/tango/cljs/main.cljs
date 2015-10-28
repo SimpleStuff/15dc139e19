@@ -319,6 +319,39 @@
    0
    class-result))
 
+(defn adjudictors-component []
+  [:div
+   [:h3 "Domare"]
+   [:table.table
+    [:thead
+     [:tr
+      [:th {:with "20"} "#"]
+      [:th {:with "200"} "Name"]
+      [:th {:with "20"} "Country"]]]
+    [:tbody
+     (for [adjudicator (sort-by :adjudicator/id (:competition/adjudicators (:competition @app-state)))]
+       ^{:key adjudicator}
+       [:tr
+        [:td (:adjudicator/id adjudicator)]
+        [:td (:adjudicator/name adjudicator)]
+        [:td (:adjudicator/country adjudicator)]])]]])
+
+
+(defn adjudictor-panels-component []
+  [:div
+   [:h3 "Domare"]
+   [:table.table
+    [:thead
+     [:tr
+      [:th {:with "20"} "#"]
+      [:th {:with "200"} "Domare"]]]
+    [:tbody
+     (for [adjudicator-panel (sort-by :panel/id (:competition/adjudicator-panels (:competition @app-state)))]
+       ^{:key adjudicator-panel}
+       [:tr
+        [:td (:panel/id adjudicator-panel)]
+        [:td (clojure.string/join ", " (mapcat vals (:panel/adjudicators adjudicator-panel)))]])]]])
+
 (defn dp-classes-component []
   [:div
    [:h3 "Klasser"]
@@ -357,7 +390,11 @@
    [:input.btn.btn-default {:type "button" :value "Classes"
                             :on-click #(dispatch [:select-page :classes])}]
    [:input.btn.btn-default {:type "button" :value "Time Schedule"
-                            :on-click #(dispatch [:select-page :events])}]])
+                            :on-click #(dispatch [:select-page :events])}]
+   [:input.btn.btn-default {:type "button" :value "Adjudicators"
+                            :on-click #(dispatch [:select-page :adjudicators])}]
+   [:input.btn.btn-default {:type "button" :value "Adjudicator panels"
+                            :on-click #(dispatch [:select-page :adjudicator-panels])}]])
 
 (defn events-component []
   [:div
@@ -457,7 +494,10 @@
      [navigation-component]
      (condp = (:selected-page @app-state)
        :classes [dp-classes-component]
-       :events [events-component])]))
+       :events [events-component]
+       :adjudicators [adjudictors-component]
+       :adjudicator-panels [adjudictor-panels-component]
+       )]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Application
