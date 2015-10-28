@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Snippets>
+  <CompDataSnippets>
+    <CompData
+	Name="TurboMegatävling"
+	Date="2014-11-22"
+	Place="THUNDERDOME"
+	AdjOrderFinal="1"
+	AdjOrderOther="0"
+	SameHeatAllDances="1"
+	PreView="1"
+	HeatText="1"
+	NameOnNumberSign="0"
+	ClubOnNumberSign="0"
+	SkipAdjLetter="0"
+	PrinterSelectPaper="0"
+	ChineseFonts="1"
+	ArialFont="SimSun"
+	CourierFont="NSimSun"/>
+  </CompDataSnippets>
+
+  <AdjPanelListSnippets>
+    <AdjPanelList>
+      <AdjList Qty="6">
+	<Adjudicator Seq="0" Name="Anders" Country=""/>
+	<Adjudicator Seq="1" Name="Bertil" Country=""/>
+	<Adjudicator Seq="2" Name="Cesar" Country=""/>
+	<Adjudicator Seq="3" Name="David" Country=""/>
+	<Adjudicator Seq="4" Name="Erik" Country=""/>
+	<Adjudicator Seq="5" Name="Fredrik" Country=""/>
+      </AdjList>
+      <PanelList Qty="30">
+	<Panel Seq="0" Qty="3">
+          <PanelAdj Seq="0" AdjNumber="0"/>
+          <PanelAdj Seq="1" AdjNumber="1"/>
+          <PanelAdj Seq="2" AdjNumber="2"/>
+	</Panel>
+	<Panel Seq="1" Qty="3">
+          <PanelAdj Seq="0" AdjNumber="3"/>
+          <PanelAdj Seq="1" AdjNumber="4"/>
+          <PanelAdj Seq="2" AdjNumber="5"/>
+	</Panel>
+	<Panel Seq="2" Qty="3">
+          <PanelAdj Seq="0" AdjNumber="0"/>
+          <PanelAdj Seq="1" AdjNumber="2"/>
+          <PanelAdj Seq="2" AdjNumber="4"/>
+	</Panel>
+	<Panel Seq="3" Qty="0"/>
+	<Panel Seq="4" Qty="0"/>
+	<Panel Seq="5" Qty="0"/>
+	<Panel Seq="6" Qty="0"/>
+	<Panel Seq="7" Qty="0"/>
+	<Panel Seq="8" Qty="0"/>
+	<Panel Seq="9" Qty="0"/>
+	<Panel Seq="10" Qty="0"/>
+	<Panel Seq="11" Qty="0"/>
+	<Panel Seq="12" Qty="0"/>
+	<Panel Seq="13" Qty="0"/>
+	<Panel Seq="14" Qty="0"/>
+	<Panel Seq="15" Qty="0"/>
+	<Panel Seq="16" Qty="0"/>
+	<Panel Seq="17" Qty="0"/>
+	<Panel Seq="18" Qty="0"/>
+	<Panel Seq="19" Qty="0"/>
+	<Panel Seq="20" Qty="0"/>
+	<Panel Seq="21" Qty="0"/>
+	<Panel Seq="22" Qty="0"/>
+	<Panel Seq="23" Qty="0"/>
+	<Panel Seq="24" Qty="0"/>
+	<Panel Seq="25" Qty="0"/>
+	<Panel Seq="26" Qty="0"/>
+	<Panel Seq="27" Qty="0"/>
+	<Panel Seq="28" Qty="0"/>
+	<Panel Seq="29" Qty="0"/>
+      </PanelList>
+    </AdjPanelList>
+  </AdjPanelListSnippets>
+</Snippets>

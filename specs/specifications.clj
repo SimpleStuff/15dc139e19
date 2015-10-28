@@ -58,6 +58,13 @@
    :result/judgings [example-judging-1]
    :result/recalled true})
 
+;; :none
+;;             :normal-x :semifinal-x :final-x :b-final-x :retry-x :second-try-x
+;;             :normal-1-5 :semifinal-1-5 :retry-1-5 :second-try-1-5
+;;             :normal-3d :semifinal-3d :retry-3d :second-try-3d
+;;             :normal-a+b :semifinal-a+b :final-a+b :b-final-a+b :retry-a+b :second-try-a+b
+;;             :presentation
+
 (def example-round-1
   {:round/activity [example-activity-1]
    :round/starting [example-participant-1]
