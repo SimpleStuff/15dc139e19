@@ -10,6 +10,6 @@ lein eastwood '{:exclude-linters [:constant-test]}'
 echo "Running tests"
 lein test
 echo "Generating documentation (lein marg)"
-lein marg src test --dir "./doc"
+lein marg src test specs --dir "./doc"
 echo "Git status"
 git status
