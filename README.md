@@ -37,14 +37,15 @@ A shell-script called "pre-commit" is included that will run tests and code anal
 To be able to run the script "graphviz" is needed (lein hiera).
 
 ## Publishing new builds
-
-Currently new builds need to be published manually.
  
+ ### Preparation
+ Make sure tango-pub is has the same parent folder as the project.
  - git clone git@github.com:SimpleStuff/15dc139e19.git tango-pub
  - cd tango-pub
  - git checkout gh-pages 
 
- Now overwrite tango-0.1.0-SNAPSHOT-standalone.jar with the new version, and commit it.
+ ### Publish
+ - run publish.sh from the project folder
 
 ## License
 
