@@ -68,43 +68,39 @@
 (defn- get-adj-number-attr [loc]
   (to-number (zx/attr loc :AdjNumber)))
 
-(defn panel->map [panel-loc id-generator-fn adjudicators]
+(defn- panel->map [panel-loc id-generator-fn adjudicators]
   (for [panel panel-loc]
     (dissoc
      (first (filter #(= (get-adj-number-attr panel) (:dp/temp-id %))
                     adjudicators))
-     :dp/temp-id)
-    ;; {:adjudicator-id (get-adj-number-attr panel)
-    ;;  }
-    ))
+     :dp/temp-id)))
 
-;; (defn adjudicator-panel-list->map [adjudicator-panels-loc]
-;;   (filter
-;;    (fn [rec] (seq (rec :panel/adjudicators)))
-;;    (for [panel adjudicator-panels-loc]
-;;      {:panel/id 1;(get-seq-attr-no-inc panel)
-;;       :panel/adjudicators
-;;       (into [] (panel->map (zx/xml-> panel :PanelAdj)))})))
+(defn- get-seq-attr
+  "Increased by one since it represent a user defined position"
+  [loc]
+  (to-number (zx/attr loc :Seq)))
 
-	;; <Panel Seq="0" Qty="2">
-        ;;   <PanelAdj Seq="0" AdjNumber="0"/>
-        ;;   <PanelAdj Seq="1" AdjNumber="1"/>
-        ;; </Panel>
-
-(defn adjudicator-panel-list->map
-  ""
+(defn- adjudicator-panel-list->map
   [xml-loc id-generator-fn adjudicators]
   (filter
    ;; Adjudicators can be empty and if so its an empty panel and should not
    ;; be used
    (fn [adjudicators] (seq (:adjudicator-panel/adjudicators adjudicators)))
    (for [panel xml-loc]
-     {:adjudicator-panel/name (str (inc (to-number (zx/attr panel :Seq))))
+     {:adjudicator-panel/name (str (inc (get-seq-attr panel)))
       :adjudicator-panel/id (id-generator-fn)          ;(get-seq-attr-no-inc panel)
       :adjudicator-panel/adjudicators
       (into [] (panel->map (zx/xml-> panel :PanelAdj) id-generator-fn adjudicators))})))
 
-
+(defn- class-list->map [classes-loc]
+  (for [class classes-loc]
+    {:class/name (zx/attr class :Name)
+     :class/position (get-seq-attr class)
+     :class/adjudicator-panel (to-number (zx/attr class :AdjPanel))
+     :class/competitors [] ;(into [] (couple->map (zx/xml-> class :StartList :Couple)))
+     :class/dances [] ;(into [] (dance-list->map (zx/xml-> class :DanceList :Dance)))
+     :class/results [] ;(into [] (result-list->map (zx/xml-> class :Results :Result)))
+     }))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Import API
@@ -116,6 +112,9 @@
 
 (defn adjudicator-panels-xml->map [xml id-generator-fn adjudicators]
   (adjudicator-panel-list->map (zx/xml-> xml :AdjPanelList :PanelList :Panel) id-generator-fn adjudicators))
+
+(defn classes-xml->map [xml]
+  (class-list->map (zx/xml-> xml :ClassList :Class)))
 
 (defn competition-data-xml->map [xml]
   (competition-data->map (first (zx/xml-> xml :CompData))))

@@ -66,8 +66,22 @@
       :adjudicator/country ""}]
     :adjudicator-panel/id 2}])
 
+(def expected-classes
+  {:class/name "Class 1"
+   :class/dances [] ;[example-dance-1]
+   :class/position "1"
+   :class/starting [] ;[example-participant-1]
+   :class/remaining []
+   :class/rounds [] ;[example-round-1]
+   })
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Tests
+
+(deftest import-classes
+  (testing "Import classes"
+    (is (= (imp/classes-xml->map competition-snippet)
+           expected-classes))))
 
 (deftest import-adjudicator
   (testing "Import of adjudicator part"
@@ -129,5 +143,6 @@
                {:adjudicator/name "Cesar"
                 :adjudicator/id 3
                 :adjudicator/country ""}]
+
               :competitor/activities []
               :competition/classes []})))))
