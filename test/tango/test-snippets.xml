@@ -71,18 +71,11 @@
           <Dance Seq="0" Name="Medium"/>
 	  <Dance Seq="1" Name="Tango"/>
 	  <Dance Seq="2" Name="VienWaltz"/>
-          <Dance Seq="3" Name="Foxtrot"/>
-          <Dance Seq="4" Name="Quickstep"/>
-          <Dance Seq="5" Name="Samba"/>
-          <Dance Seq="6" Name="Cha-Cha"/>
-          <Dance Seq="7" Name="Rumba"/>
-          <Dance Seq="8" Name="Paso-Doble"/>
-          <Dance Seq="9" Name="Jive"/>
-	</DanceList>
+        </DanceList>
 	<StartList Qty="3">
-          <Couple Seq="0" Number="30" Name="Rulle Trulle" Club="Sinclairs" License=""/>
-          <Couple Seq="1" Number="31" Name="Milan Lund" Club="Wilson" License=""/>
-          <Couple Seq="2" Number="32" Name="Douglas Junger" Club="RGDT" License=""/>
+          <Couple Seq="0" Number="30" Name="Rulle Trulle" Club="Sinus" License=""/>
+          <Couple Seq="1" Number="31" Name="Hush Bush" Club="Zilson" License=""/>
+          <Couple Seq="2" Number="32" Name="Banana Hamock" Club="Zzzz" License=""/>
 	</StartList>
 	<!-- Results contains a list of all round results.
              There are different kinds of rounds:

@@ -67,21 +67,63 @@
     :adjudicator-panel/id 2}])
 
 (def expected-classes
-  {:class/name "Class 1"
-   :class/dances [] ;[example-dance-1]
-   :class/position "1"
-   :class/starting [] ;[example-participant-1]
-   :class/remaining []
-   :class/rounds [] ;[example-round-1]
-   })
+  [{:class/name "Hiphop Singel Star B"
+    :class/position 1
+    
+    :class/dances
+    [{:dance/name "Medium"}
+     {:dance/name "Tango"}
+     {:dance/name "VienWaltz"}]
+    
+    :class/starting
+    [{:participant/name "Rulle Trulle"
+      :participant/id 1
+      :participant/number 30
+      :participant/club "Sinus"}
+     
+     {:participant/name "Hush Bush"
+      :participant/id 2
+      :participant/number 31
+      :participant/club "Zilson"}
+     
+     {:participant/name "Banana Hamock"
+      :participant/id 3
+      :participant/number 32
+      :participant/club "Zzzz"}]
+    
+    :class/remaining []
+    :class/rounds []
+    }
+
+   ;; Example two
+   {:class/name "Hiphop Singel Star J Fl"
+    :class/position 2
+    
+    :class/dances []
+    
+    :class/starting
+    [{:participant/name "Ringo Stingo"
+      :participant/id 4
+      :participant/number 20
+      :participant/club "Kapangg"}
+     
+     {:participant/name "Greve Turbo"
+      :participant/id 5
+      :participant/number 21
+      :participant/club "OOoost"}]
+    
+    :class/remaining []
+    :class/rounds []
+    }])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Tests
 
 (deftest import-classes
   (testing "Import classes"
-    (is (= (imp/classes-xml->map competition-snippet)
-           expected-classes))))
+    (let [current-id (atom 0)]
+      (is (= (imp/classes-xml->map competition-snippet #(swap! current-id inc))
+             expected-classes)))))
 
 (deftest import-adjudicator
   (testing "Import of adjudicator part"

@@ -76,9 +76,11 @@
      :dp/temp-id)))
 
 (defn- get-seq-attr
-  "Increased by one since it represent a user defined position"
   [loc]
   (to-number (zx/attr loc :Seq)))
+
+(defn- get-number-attr [loc]
+  (to-number (zx/attr loc :Number)))
 
 (defn- adjudicator-panel-list->map
   [xml-loc id-generator-fn adjudicators]
@@ -92,14 +94,29 @@
       :adjudicator-panel/adjudicators
       (into [] (panel->map (zx/xml-> panel :PanelAdj) id-generator-fn adjudicators))})))
 
-(defn- class-list->map [classes-loc]
+(defn- couple->map [couples-loc id-generator-fn]
+  (for [couple couples-loc]
+    {:participant/name (get-name-attr couple)
+     :participant/club (zx/attr couple :Club)
+     :participant/number (get-number-attr couple)
+     :participant/id (id-generator-fn)
+     ;:competitor/position (get-seq-attr couple)
+     }))
+
+(defn- dance-list->map [dances-loc]
+  (for [dance dances-loc]
+    {:dance/name (get-name-attr dance)}))
+
+(defn- class-list->map [classes-loc id-generator-fn]
   (for [class classes-loc]
     {:class/name (zx/attr class :Name)
-     :class/position (get-seq-attr class)
-     :class/adjudicator-panel (to-number (zx/attr class :AdjPanel))
-     :class/competitors [] ;(into [] (couple->map (zx/xml-> class :StartList :Couple)))
-     :class/dances [] ;(into [] (dance-list->map (zx/xml-> class :DanceList :Dance)))
-     :class/results [] ;(into [] (result-list->map (zx/xml-> class :Results :Result)))
+     :class/position (inc (get-seq-attr class))
+     ;:class/adjudicator-panel (to-number (zx/attr class :AdjPanel))
+     :class/starting (into [] (couple->map (zx/xml-> class :StartList :Couple) id-generator-fn))
+     :class/dances (into [] (dance-list->map (zx/xml-> class :DanceList :Dance)))
+     :class/remaining []
+     :class/rounds []
+     ;:class/results [] ;(into [] (result-list->map (zx/xml-> class :Results :Result)))
      }))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -113,8 +130,8 @@
 (defn adjudicator-panels-xml->map [xml id-generator-fn adjudicators]
   (adjudicator-panel-list->map (zx/xml-> xml :AdjPanelList :PanelList :Panel) id-generator-fn adjudicators))
 
-(defn classes-xml->map [xml]
-  (class-list->map (zx/xml-> xml :ClassList :Class)))
+(defn classes-xml->map [xml id-generator-fn]
+  (class-list->map (zx/xml-> xml :ClassList :Class) id-generator-fn))
 
 (defn competition-data-xml->map [xml]
   (competition-data->map (first (zx/xml-> xml :CompData))))
