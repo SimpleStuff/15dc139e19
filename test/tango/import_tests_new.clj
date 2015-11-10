@@ -66,6 +66,19 @@
       :adjudicator/country ""}]
     :adjudicator-panel/id 2}])
 
+(def expected-rounds
+  [{:round/activity nil ;[example-activity-1]
+    :round/starting [] ;[example-participant-1]
+    :round/start-time (tcr/to-date (tc/date-time 2014 11 22))
+    :round/panel {} ;[example-panel-1]
+    :round/results [] ;[example-result-1]
+    :round/recall 5
+    :round/number 1 ;; the rounds number in its class
+    :round/heats 4
+    :round/status :not-started
+    :round/dances [] ;[example-dance-1]
+    :round/type :semi-final}])
+
 (def expected-classes
   [{:class/name "Hiphop Singel Star B"
     :class/position 1
@@ -118,6 +131,14 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Tests
+
+(deftest import-rounds
+  (testing "Import rounds"
+    (let [current-id (atom 0)]
+      (is (= (imp/rounds-xml->map competition-snippet
+                                  (tcr/to-date (tc/date-time 2014 11 22))
+                                  #(swap! current-id inc))
+             expected-rounds)))))
 
 (deftest import-classes
   (testing "Import classes"

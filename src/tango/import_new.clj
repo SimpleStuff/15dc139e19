@@ -117,7 +117,70 @@
      :class/remaining []
      :class/rounds []
      ;:class/results [] ;(into [] (result-list->map (zx/xml-> class :Results :Result)))
+     ;:dp/temp-class-id (inc (get-seq-attr class))
      }))
+
+;; TODO - each event need to get a class position i.e. witch number of event it is
+;; for the specific class.
+;; TODO - events with class number 0 is used as comments in DP, would be better to have a comment entity
+;; (defn event-list->map [events-loc]
+;;   (for [event events-loc]
+;;     {:event/position (get-seq-attr event)
+;;      :event/class-number (to-number (zx/attr event :ClassNumber))
+;;      :event/number (if (= "" (zx/attr event :EventNumber)) -1 (to-number (zx/attr event :EventNumber)))
+;;      :event/time (zx/attr event :Time)
+;;      :event/comment (zx/attr event :Comment)
+;;      :event/adjudicator-panel (to-number (zx/attr event :AdjPanel))
+;;      :event/heats (to-number (zx/attr event :Heats))
+;;      :event/round (round-value->key (to-number (zx/attr event :Round)))
+;;      :event/status (to-number (zx/attr event :Status))
+;;      :event/start-order (to-number (zx/attr event :Startorder))
+;;      :event/recall (to-number (zx/attr (first (zx/xml-> event :RecallList :Recall)) :Recall))
+;;      :event/dances (vec (dance-list->map (zx/xml-> event :DanceList :Dance)))}))
+
+(defn round-value->key [val]
+  (get
+   [:none
+    :normal-x :semifinal-x :final-x :b-final-x :retry-x :second-try-x
+    :normal-1-5 :semifinal-1-5 :retry-1-5 :second-try-1-5
+    :normal-3d :semifinal-3d :retry-3d :second-try-3d
+    :normal-a+b :semifinal-a+b :final-a+b :b-final-a+b :retry-a+b :second-try-a+b
+    :presentation]
+   val
+   :unknown-round-value))
+
+;; TODO - Activity stuff need to be parsed
+(defn- round-list->map [rounds-loc id-generator-fn]
+  (for [round rounds-loc]
+    {:dp/temp-class-id (to-number (zx/attr round :ClassNumber))
+                                        ;:round/activity nil ;[example-activity-1]
+     ;; TODO - fix activity
+     :activity/number (if (= "" (zx/attr round :EventNumber)) -1 (to-number (zx/attr round :EventNumber)))
+
+     ;; TODO - Post process
+     ;:round/starting [] ;[example-participant-1]
+
+     ;; TODO - parsa time and plus with compdate
+     ;:round/start-time (zx/attr round :Time) ;(tcr/to-date)
+ 
+     ;; TODO - PP
+     ;; Save the id of the adjudicator panel to be able to look it up in post processing.
+     ;; Subtract 3 since the 'index' in the file refer to a UI index witch is 3 of from
+     ;; the Adjudicator index in this file beeing parsed.
+     :round/panel {:dp/temp-id (- (to-number (zx/attr round :AdjPanel)) 3)}
+
+     ;:round/results [] ;[example-result-1]
+     :round/recall (to-number (zx/attr (first (zx/xml-> round :RecallList :Recall)) :Recall))
+     
+     ;; TODO - PP
+     ;:round/number 1 ;; the rounds number in its class
+
+     :round/heats (to-number (zx/attr round :Heats))
+     :round/status (if (= 1 (to-number (zx/attr round :Status))) :completed :not-started)
+     :round/dances (vec (dance-list->map (zx/xml-> round :DanceList :Dance))) ;[example-dance-1]
+     
+     ;; CONSIDER - maybe this should be left as a number for DB and then up to any presenter to parse?
+     :round/type (round-value->key (to-number (zx/attr round :Round)))}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Import API
@@ -129,6 +192,9 @@
 
 (defn adjudicator-panels-xml->map [xml id-generator-fn adjudicators]
   (adjudicator-panel-list->map (zx/xml-> xml :AdjPanelList :PanelList :Panel) id-generator-fn adjudicators))
+
+(defn rounds-xml->map [xml id-generator-fn]
+  (round-list->map (zx/xml-> xml :EventList :Event) id-generator-fn))
 
 (defn classes-xml->map [xml id-generator-fn]
   (class-list->map (zx/xml-> xml :ClassList :Class) id-generator-fn))
