@@ -107,6 +107,44 @@
   (for [dance dances-loc]
     {:dance/name (get-name-attr dance)}))
 
+(defn marks->map [marks-loc adjudicators]
+  (for [mark marks-loc]
+    {:judging/adjudicator
+     (first (filter
+             #(= (:adjudicator/position %)
+                 (get-seq-attr mark))
+             adjudicators))
+     :juding/marks [{:mark/x (= (zx/attr mark :X) "X")}]}))
+
+(defn mark-list->map [result-couple-loc adjudicators]
+  (for [couple result-couple-loc]
+    {:result/participant-number (get-number-attr couple)
+     :result/recalled
+     (condp = (zx/attr couple :Recalled)
+       "X" :x
+       "R" :r
+       " " ""
+       (str "unexpected recalled value"))
+     :result/judgings (into [] (marks->map (zx/xml-> couple :MarkList :Mark) adjudicators))}))
+
+(defn- result-adjudicator [adjudicator-panels-loc]
+  (filter
+   (fn [rec] (seq (rec :panel/adjudicators)))
+   (for [panel adjudicator-panels-loc]
+     {:panel/id (get-seq-attr panel)
+      :panel/adjudicators
+      [:todo]                ;(panel->map (zx/xml-> panel :PanelAdj))
+      })))
+
+(defn- result-list->map [result-loc]
+  (for [result result-loc]
+    (let [adjudicators (result-adjudicator (zx/xml-> result :AdjList :Adjudicator))]
+      {;; TODO beh;ver sparas n[gon stans
+       ;:result/round (zx/attr result :Round)
+       ;:result/dance (first (dance-list->map (zx/xml-> result :DanceList :Dance)))
+       :result/adjudicators (into [] adjudicators)
+       :result/results (into [] (mark-list->map (zx/xml-> result :ResultArray :Couple) adjudicators))})))
+
 (defn- class-list->map [classes-loc id-generator-fn]
   (for [class classes-loc]
     {:class/name (zx/attr class :Name)
@@ -116,7 +154,7 @@
      :class/dances (into [] (dance-list->map (zx/xml-> class :DanceList :Dance)))
      :class/remaining []
      :class/rounds []
-     ;:class/results [] ;(into [] (result-list->map (zx/xml-> class :Results :Result)))
+     :class/results (into [] (result-list->map (zx/xml-> class :Results :Result)))
      ;:dp/temp-class-id (inc (get-seq-attr class))
      }))
 
@@ -157,7 +195,7 @@
      ;; TODO - fix activity
      :activity/number (if (= "" (zx/attr round :EventNumber)) -1 (to-number (zx/attr round :EventNumber)))
 
-     ;; TODO - Post process
+     ;; TODO - Post process, need to get this from the previous round
      ;:round/starting [] ;[example-participant-1]
 
      ;; TODO - parsa time and plus with compdate
@@ -167,13 +205,14 @@
      ;; Save the id of the adjudicator panel to be able to look it up in post processing.
      ;; Subtract 3 since the 'index' in the file refer to a UI index witch is 3 of from
      ;; the Adjudicator index in this file beeing parsed.
-     :round/panel {:dp/temp-id (- (to-number (zx/attr round :AdjPanel)) 3)}
+     :round/panel {:dp/panel-id (- (to-number (zx/attr round :AdjPanel)) 3)}
 
+     ;; TODO - PP need to get this from class
      ;:round/results [] ;[example-result-1]
      :round/recall (to-number (zx/attr (first (zx/xml-> round :RecallList :Recall)) :Recall))
      
-     ;; TODO - PP
-     ;:round/number 1 ;; the rounds number in its class
+     ;; Index is set in PP
+     :round/index -1 ;; the rounds number in its class
 
      :round/heats (to-number (zx/attr round :Heats))
      :round/status (if (= 1 (to-number (zx/attr round :Status))) :completed :not-started)
@@ -181,6 +220,22 @@
      
      ;; CONSIDER - maybe this should be left as a number for DB and then up to any presenter to parse?
      :round/type (round-value->key (to-number (zx/attr round :Round)))}))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Post process
+(defn round-list-post-process [rounds classes]
+  (vec
+   (flatten
+    (for [[class-id round-group] (group-by :dp/temp-class-id rounds)]
+      (let [rounds-class (first (filter #(= class-id (:class/position %)) classes))]
+        (reduce-kv
+         (fn [post-processed-rounds k round]
+           (conj post-processed-rounds
+                 (merge round {:round/index k})))
+         []
+         round-group))))))
+
+(defn class-list-post-process [classes])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Import API
@@ -193,8 +248,10 @@
 (defn adjudicator-panels-xml->map [xml id-generator-fn adjudicators]
   (adjudicator-panel-list->map (zx/xml-> xml :AdjPanelList :PanelList :Panel) id-generator-fn adjudicators))
 
-(defn rounds-xml->map [xml id-generator-fn]
-  (round-list->map (zx/xml-> xml :EventList :Event) id-generator-fn))
+(defn rounds-xml->map [xml id-generator-fn classes]
+  (round-list-post-process
+   (round-list->map (zx/xml-> xml :EventList :Event) id-generator-fn)
+   classes))
 
 (defn classes-xml->map [xml id-generator-fn]
   (class-list->map (zx/xml-> xml :ClassList :Class) id-generator-fn))

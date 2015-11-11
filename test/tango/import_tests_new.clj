@@ -136,8 +136,9 @@
   (testing "Import rounds"
     (let [current-id (atom 0)]
       (is (= (imp/rounds-xml->map competition-snippet
-                                  (tcr/to-date (tc/date-time 2014 11 22))
-                                  #(swap! current-id inc))
+                                  ;(tcr/to-date (tc/date-time 2014 11 22))
+                                  #(swap! current-id inc)
+                                  expected-classes)
              expected-rounds)))))
 
 (deftest import-classes
