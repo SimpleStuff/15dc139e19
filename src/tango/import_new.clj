@@ -118,6 +118,7 @@
      ;;         adjudicators))
      :juding/marks [{:mark/x (= (zx/attr mark :X) "X")}]}))
 
+;; TODO - change participant number to actual id
 (defn mark-list->map [result-couple-loc adjudicators]
   (for [couple result-couple-loc]
     {:result/participant-number (get-number-attr couple)
@@ -132,10 +133,12 @@
 (defn- result-adjudicator [adjudicator-panels-loc]
   (filter
 ;   (fn [rec] (seq (rec :panel/adjudicator)))
-   :panel/adjudicator
+   ;:panel/adjudicator
+   :dp/temp-id
    (for [panel adjudicator-panels-loc]
      {:dp/result-local-panel-id (get-seq-attr panel)
-      :panel/adjudicator (get-number-attr panel)
+      ;:panel/adjudicator (get-number-attr panel)
+      :dp/temp-id (get-number-attr panel)
       })))
 
 (defn- result-list->map [result-loc]
@@ -225,50 +228,72 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Post process
-(defn round-list-post-process [rounds classes]
-  (vec
-   (flatten
-    (for [[class-id round-group] (group-by :dp/temp-class-id rounds)]
-      (let [rounds-class (first (filter #(= class-id (:class/position %)) classes))]
-        (reduce-kv
-         (fn [post-processed-rounds k round]
-           (conj post-processed-rounds
-                 (merge round {:round/index k})))
-         []
-         round-group))))))
+;; (defn round-list-post-process [rounds classes]
+;;   (vec
+;;    (flatten
+;;     (for [[class-id round-group] (group-by :dp/temp-class-id rounds)]
+;;       (let [rounds-class (first (filter #(= class-id (:class/position %)) classes))]
+;;         (reduce-kv
+;;          (fn [post-processed-rounds k round]
+;;            (conj post-processed-rounds
+;;                  (merge round {:round/index k})))
+;;          []
+;;          round-group))))))
 
-(defn prep-class-result [results panels]
+(defn prep-class-result [results result-panel adjudicators]
   (for [result (:result/results results)]
     (merge
      result
      {:result/judgings
       (for [judging (:result/judgings result)]
-        (merge judging
-               {:judging/adjudicator
-                (:panel/adjudicators
-                 (first
-                  (filter #(= (:dp/temp-local-adjudicator judging)
-                              (:dp/result-local-panel-id %))
-                          panels)))}))})))
+        (dissoc
+         (merge judging
+                {:judging/adjudicator
+                 (let [temp-id (:dp/temp-id
+                                (first
+                                 (filter #(= (:dp/temp-local-adjudicator judging)
+                                             (:dp/result-local-panel-id %))
+                                         result-panel)))]
+                   (:adjudicator/id (first (filter #(= temp-id (:dp/temp-id %)) adjudicators))))})
+         :dp/temp-local-adjudicator))})))
+
+;; TODO
+(defn prep-round-starting []
+  )
 
 ;; TODO can we add adjs to rounds aswell here?
-(defn class-list-post-process [classes rounds]
+(defn class-list-post-process [classes rounds adjudicators panels]
   (for [class classes]
-    (merge class
-           {:class/rounds
-            (reduce
-             (fn [res round]
-               (conj res (dissoc (merge round {:round/index (count res)
-                                               :round/results
-                                               (prep-class-result
-                                                (get (:class/results class) (count res))
-                                                (:result/adjudicators
-                                                 (first (:class/results class))))})
-                                 :dp/temp-class-id)))
-             []
-             (filter #(= (:class/position class) (:dp/temp-class-id %)) rounds))
-
-            :class/adjudicator-panel :x})))
+    (dissoc
+     (merge class
+            {:class/rounds
+             (reduce
+              (fn [res round]
+                (conj
+                 res
+                 (dissoc
+                  (merge
+                   round
+                   {:round/index (count res)
+                    :round/results (prep-class-result
+                                    (get (:class/results class) (count res))
+                                    (:result/adjudicators
+                                     (first (:class/results class)))
+                                    adjudicators)
+                    :round/panel (dissoc
+                                  (first (filter
+                                          #(= (:dp/panel-id (:round/panel round)) (:dp/panel-id %))
+                                          panels))
+                                  :dp/panel-id)
+                    :round/starting (if (= (count res) 0)
+                                      (:class/starting class)
+                                      (prep-round-starting))})
+                  :dp/temp-class-id)))
+              []
+              (filter #(= (:class/position class) (:dp/temp-class-id %)) rounds))
+             
+             :class/adjudicator-panel :x})
+     :class/results)))
 
 ;; (defn class-list-post-process [classes rounds]
 ;;   (for [class classes]

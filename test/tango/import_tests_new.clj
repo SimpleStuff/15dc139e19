@@ -212,3 +212,15 @@
 
               :competitor/activities []
               :competition/classes []})))))
+
+
+(clojure.pprint/pprint (let [current-id (atom 0)
+                             adjudicators (imp/adjudicators-xml->map competition-snippet #(swap! current-id inc))]
+                         (imp/class-list-post-process
+                          (imp/classes-xml->map competition-snippet #(swap! current-id inc))
+                          (imp/rounds-xml->map competition-snippet #(swap! current-id inc))
+                          adjudicators
+                          (imp/adjudicator-panels-xml->map
+                           competition-snippet
+                           #(swap! current-id inc)
+                           adjudicators))))
