@@ -144,7 +144,9 @@
 (deftest import-classes
   (testing "Import classes"
     (let [current-id (atom 0)]
-      (is (= (imp/classes-xml->map competition-snippet #(swap! current-id inc))
+      (is (= (imp/class-list-post-process
+              (imp/classes-xml->map competition-snippet #(swap! current-id inc))
+              (imp/rounds-xml->map competition-snippet #(swap! current-id inc)))
              expected-classes)))))
 
 (deftest import-adjudicator

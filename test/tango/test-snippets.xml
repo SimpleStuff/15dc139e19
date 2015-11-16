@@ -95,9 +95,9 @@
 	<Results Qty="1">
           <Result Seq="0" Round="S" AdjQty="3" D3="0">
             <AdjList>
-              <Adjudicator Seq="0" Number="3"/>
-              <Adjudicator Seq="1" Number="4"/>
-              <Adjudicator Seq="2" Number="5"/>
+              <Adjudicator Seq="0" Number="0"/>
+              <Adjudicator Seq="1" Number="1"/>
+              <Adjudicator Seq="2" Number="2"/>
             </AdjList>
             <DanceList>
               <Dance Seq="0" Name="X-Quick Forward"/>

@@ -89,7 +89,8 @@
    ;; be used
    (fn [adjudicators] (seq (:adjudicator-panel/adjudicators adjudicators)))
    (for [panel xml-loc]
-     {:adjudicator-panel/name (str (inc (get-seq-attr panel)))
+     {:dp/panel-id (get-seq-attr panel)
+      :adjudicator-panel/name (str (inc (get-seq-attr panel)))
       :adjudicator-panel/id (id-generator-fn)          ;(get-seq-attr-no-inc panel)
       :adjudicator-panel/adjudicators
       (into [] (panel->map (zx/xml-> panel :PanelAdj) id-generator-fn adjudicators))})))
@@ -109,11 +110,12 @@
 
 (defn marks->map [marks-loc adjudicators]
   (for [mark marks-loc]
-    {:judging/adjudicator
-     (first (filter
-             #(= (:adjudicator/position %)
-                 (get-seq-attr mark))
-             adjudicators))
+    {:dp/temp-local-adjudicator (get-seq-attr mark)
+     :judging/adjudicator :todo
+     ;; (first (filter
+     ;;         #(= (:adjudicator/position %)
+     ;;             (get-seq-attr mark))
+     ;;         adjudicators))
      :juding/marks [{:mark/x (= (zx/attr mark :X) "X")}]}))
 
 (defn mark-list->map [result-couple-loc adjudicators]
@@ -129,11 +131,11 @@
 
 (defn- result-adjudicator [adjudicator-panels-loc]
   (filter
-   (fn [rec] (seq (rec :panel/adjudicators)))
+;   (fn [rec] (seq (rec :panel/adjudicator)))
+   :panel/adjudicator
    (for [panel adjudicator-panels-loc]
-     {:panel/id (get-seq-attr panel)
-      :panel/adjudicators
-      [:todo]                ;(panel->map (zx/xml-> panel :PanelAdj))
+     {:dp/result-local-panel-id (get-seq-attr panel)
+      :panel/adjudicator (get-number-attr panel)
       })))
 
 (defn- result-list->map [result-loc]
@@ -196,10 +198,10 @@
      :activity/number (if (= "" (zx/attr round :EventNumber)) -1 (to-number (zx/attr round :EventNumber)))
 
      ;; TODO - Post process, need to get this from the previous round
-     ;:round/starting [] ;[example-participant-1]
+     :round/starting [] ;[example-participant-1]
 
      ;; TODO - parsa time and plus with compdate
-     ;:round/start-time (zx/attr round :Time) ;(tcr/to-date)
+     :round/start-time "TODO" ;(zx/attr round :Time) ;(tcr/to-date)
  
      ;; TODO - PP
      ;; Save the id of the adjudicator panel to be able to look it up in post processing.
@@ -208,7 +210,7 @@
      :round/panel {:dp/panel-id (- (to-number (zx/attr round :AdjPanel)) 3)}
 
      ;; TODO - PP need to get this from class
-     ;:round/results [] ;[example-result-1]
+     :round/results [] ;[example-result-1]
      :round/recall (to-number (zx/attr (first (zx/xml-> round :RecallList :Recall)) :Recall))
      
      ;; Index is set in PP
@@ -235,7 +237,44 @@
          []
          round-group))))))
 
-(defn class-list-post-process [classes])
+(defn prep-class-result [results panels]
+  (for [result (:result/results results)]
+    (merge
+     result
+     {:result/judgings
+      (for [judging (:result/judgings result)]
+        (merge judging
+               {:judging/adjudicator
+                (:panel/adjudicators
+                 (first
+                  (filter #(= (:dp/temp-local-adjudicator judging)
+                              (:dp/result-local-panel-id %))
+                          panels)))}))})))
+
+;; TODO can we add adjs to rounds aswell here?
+(defn class-list-post-process [classes rounds]
+  (for [class classes]
+    (merge class
+           {:class/rounds
+            (reduce
+             (fn [res round]
+               (conj res (dissoc (merge round {:round/index (count res)
+                                               :round/results
+                                               (prep-class-result
+                                                (get (:class/results class) (count res))
+                                                (:result/adjudicators
+                                                 (first (:class/results class))))})
+                                 :dp/temp-class-id)))
+             []
+             (filter #(= (:class/position class) (:dp/temp-class-id %)) rounds))
+
+            :class/adjudicator-panel :x})))
+
+;; (defn class-list-post-process [classes rounds]
+;;   (for [class classes]
+;;     (merge class
+;;            {:class/rounds
+;;             (filter #(= (:class/position class) (:dp/temp-class-id %)) rounds)})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Import API
@@ -248,10 +287,9 @@
 (defn adjudicator-panels-xml->map [xml id-generator-fn adjudicators]
   (adjudicator-panel-list->map (zx/xml-> xml :AdjPanelList :PanelList :Panel) id-generator-fn adjudicators))
 
-(defn rounds-xml->map [xml id-generator-fn classes]
-  (round-list-post-process
-   (round-list->map (zx/xml-> xml :EventList :Event) id-generator-fn)
-   classes))
+(defn rounds-xml->map [xml id-generator-fn]
+;  (round-list-post-process)
+  (round-list->map (zx/xml-> xml :EventList :Event) id-generator-fn))
 
 (defn classes-xml->map [xml id-generator-fn]
   (class-list->map (zx/xml-> xml :ClassList :Class) id-generator-fn))
