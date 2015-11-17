@@ -193,53 +193,62 @@
    val
    :unknown-round-value))
 
+(defn make-activity [name number comment id position source-id]
+  {:activity/name name ;"Round 1"
+   :activity/number number ;"1A"
+   :activity/comment comment ;"Comment"
+   :activity/id id ;"1"
+   :activity/position position ;"1"
+   :activity/source-id source-id
+   })
+
 ;; TODO - Activity stuff need to be parsed
 (defn- round-list->map [rounds-loc id-generator-fn]
   (for [round rounds-loc]
-    {:dp/temp-class-id (to-number (zx/attr round :ClassNumber))
+    (let [round-id (id-generator-fn)]
+      {:dp/temp-class-id (to-number (zx/attr round :ClassNumber))
+       
+       :round/id round-id
                                         ;:round/activity nil ;[example-activity-1]
-     ;; TODO - fix activity
-     :activity/number (if (= "" (zx/attr round :EventNumber)) -1 (to-number (zx/attr round :EventNumber)))
+       ;; TODO - This should be Seq!
+       ;; TODO - maybe create the activity here and then suck it out?
+       :temp/activity (make-activity
+                       "Class name ?"
+                       (if (= "" (zx/attr round :EventNumber)) -1 (to-number (zx/attr round :EventNumber)))
+                       "Comment"
+                       (id-generator-fn)
+                       (inc (get-seq-attr round))
+                       round-id)
 
-     ;; TODO - Post process, need to get this from the previous round
-     :round/starting [] ;[example-participant-1]
+       :round/number (if (= "" (zx/attr round :EventNumber)) -1 (to-number (zx/attr round :EventNumber)))
+       ;; TODO - Post process, need to get this from the previous round
+       :round/starting [] ;[example-participant-1]
 
-     ;; TODO - parsa time and plus with compdate
-     :round/start-time (zx/attr round :Time)
- 
-     ;; TODO - PP
-     ;; Save the id of the adjudicator panel to be able to look it up in post processing.
-     ;; Subtract 3 since the 'index' in the file refer to a UI index witch is 3 of from
-     ;; the Adjudicator index in this file beeing parsed.
-     :round/panel {:dp/panel-id (- (to-number (zx/attr round :AdjPanel)) 3)}
+       ;; TODO - parsa time and plus with compdate
+       :round/start-time (zx/attr round :Time)
+       
+       ;; TODO - PP
+       ;; Save the id of the adjudicator panel to be able to look it up in post processing.
+       ;; Subtract 3 since the 'index' in the file refer to a UI index witch is 3 of from
+       ;; the Adjudicator index in this file beeing parsed.
+       :round/panel {:dp/panel-id (- (to-number (zx/attr round :AdjPanel)) 3)}
 
-     ;; TODO - PP need to get this from class
-     :round/results [] ;[example-result-1]
-     :round/recall (to-number (zx/attr (first (zx/xml-> round :RecallList :Recall)) :Recall))
-     
-     ;; Index is set in PP
-     :round/index -1 ;; the rounds number in its class
+       ;; TODO - PP need to get this from class
+       :round/results [] ;[example-result-1]
+       :round/recall (to-number (zx/attr (first (zx/xml-> round :RecallList :Recall)) :Recall))
+       
+       ;; Index is set in PP
+       :round/index -1 ;; the rounds number in its class
 
-     :round/heats (to-number (zx/attr round :Heats))
-     :round/status (if (= 1 (to-number (zx/attr round :Status))) :completed :not-started)
-     :round/dances (vec (dance-list->map (zx/xml-> round :DanceList :Dance))) ;[example-dance-1]
-     
-     ;; CONSIDER - maybe this should be left as a number for DB and then up to any presenter to parse?
-     :round/type (round-value->key (to-number (zx/attr round :Round)))}))
+       :round/heats (to-number (zx/attr round :Heats))
+       :round/status (if (= 1 (to-number (zx/attr round :Status))) :completed :not-started)
+       :round/dances (vec (dance-list->map (zx/xml-> round :DanceList :Dance))) ;[example-dance-1]
+       
+       ;; CONSIDER - maybe this should be left as a number for DB and then up to any presenter to parse?
+       :round/type (round-value->key (to-number (zx/attr round :Round)))})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Post process
-;; (defn round-list-post-process [rounds classes]
-;;   (vec
-;;    (flatten
-;;     (for [[class-id round-group] (group-by :dp/temp-class-id rounds)]
-;;       (let [rounds-class (first (filter #(= class-id (:class/position %)) classes))]
-;;         (reduce-kv
-;;          (fn [post-processed-rounds k round]
-;;            (conj post-processed-rounds
-;;                  (merge round {:round/index k})))
-;;          []
-;;          round-group))))))
 
 (defn prep-class-result [results result-panel adjudicators]
   (for [result (:result/results results)]
@@ -314,12 +323,6 @@
                                                      panels))})
      :class/results)))
 
-;; (defn class-list-post-process [classes rounds]
-;;   (for [class classes]
-;;     (merge class
-;;            {:class/rounds
-;;             (filter #(= (:class/position class) (:dp/temp-class-id %)) rounds)})))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Import API
 
@@ -343,15 +346,23 @@
 
 (defn competition-xml->map [xml id-generator-fn]
   (let [comp-data (competition-data-xml->map xml)
-        dp-adjudicators (adjudicators-xml->map xml id-generator-fn)]
+        dp-adjudicators (adjudicators-xml->map xml id-generator-fn)
+        dp-classes (classes-xml->map xml id-generator-fn)
+        dp-rounds (rounds-xml->map xml id-generator-fn)
+        dp-panels (adjudicator-panels-xml->map xml id-generator-fn dp-adjudicators)]
     (make-competition
      (:competition/name comp-data)
      (:competition/date comp-data)
      (:competition/location comp-data)
-     (adjudicator-panels-xml->map xml id-generator-fn dp-adjudicators)
+     dp-panels ;(adjudicator-panels-xml->map xml id-generator-fn dp-adjudicators)
      (mapv #(dissoc % :dp/temp-id) dp-adjudicators)
-     []
-     [])))
+     (mapv :temp/activity dp-rounds)
+     (class-list-post-process
+      dp-classes
+      dp-rounds
+      dp-adjudicators
+      dp-panels
+      (:competition/date comp-data)))))
 
 ;; (defn competition->map [loc]
 ;;   (let [competition-data (first (zx/xml-> loc :CompData))

@@ -217,13 +217,16 @@
               :competition/classes []})))))
 
 
-(clojure.pprint/pprint (let [current-id (atom 0)
-                             adjudicators (imp/adjudicators-xml->map competition-snippet #(swap! current-id inc))]
-                         (imp/class-list-post-process
-                          (imp/classes-xml->map competition-snippet #(swap! current-id inc))
-                          (imp/rounds-xml->map competition-snippet #(swap! current-id inc))
-                          adjudicators
-                          (imp/adjudicator-panels-xml->map
-                           competition-snippet
-                           #(swap! current-id inc)
-                           adjudicators))))
+
+
+(clojure.pprint/pprint (first (let [current-id (atom 0)
+                                    adjudicators (imp/adjudicators-xml->map real-snippet #(swap! current-id inc))]
+                                (imp/class-list-post-process
+                                 (imp/classes-xml->map real-snippet #(swap! current-id inc))
+                                 (imp/rounds-xml->map real-snippet #(swap! current-id inc))
+                                 adjudicators
+                                 (imp/adjudicator-panels-xml->map
+                                  real-snippet
+                                  #(swap! current-id inc)
+                                  adjudicators)
+                                 (tcr/to-date (tc/date-time 2014 11 22))))))
