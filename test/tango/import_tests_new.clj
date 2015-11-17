@@ -25,6 +25,9 @@
 (def competition-snippet
   (zip/xml-zip (xml/parse (clojure.java.io/file "./test/tango/test-snippets.xml"))))
 
+(def real-snippet
+  (zip/xml-zip (xml/parse (clojure.java.io/file "./test/tango/real-example.xml"))))
+
 (def expected-lookup-table
   {:adjudicator-index
    {:0 1

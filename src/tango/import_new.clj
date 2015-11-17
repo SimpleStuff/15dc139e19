@@ -1,6 +1,7 @@
 (ns tango.import-new
   (:require [clj-time.coerce :as tcr]
             [clj-time.format :as tf]
+            [clj-time.core :as t]
             [clojure.data.xml :as xml]
             [clojure.xml :as cxml]
             [clojure.zip :as zip]
@@ -154,7 +155,7 @@
   (for [class classes-loc]
     {:class/name (zx/attr class :Name)
      :class/position (inc (get-seq-attr class))
-     ;:class/adjudicator-panel (to-number (zx/attr class :AdjPanel))
+     :class/adjudicator-panel {:dp/temp-id (dec (to-number (zx/attr class :AdjPanel)))}
      :class/starting (into [] (couple->map (zx/xml-> class :StartList :Couple) id-generator-fn))
      :class/dances (into [] (dance-list->map (zx/xml-> class :DanceList :Dance)))
      :class/remaining []
@@ -204,7 +205,7 @@
      :round/starting [] ;[example-participant-1]
 
      ;; TODO - parsa time and plus with compdate
-     :round/start-time "TODO" ;(zx/attr round :Time) ;(tcr/to-date)
+     :round/start-time (zx/attr round :Time)
  
      ;; TODO - PP
      ;; Save the id of the adjudicator panel to be able to look it up in post processing.
@@ -258,11 +259,24 @@
          :dp/temp-local-adjudicator))})))
 
 ;; TODO
-(defn prep-round-starting []
-  )
+(defn prep-round-starting [prev-results participants]
+  (vec
+   (remove
+    nil?
+    (for [prev-result prev-results]
+      (if (contains? #{:r :x} (:result/recalled prev-result))
+        (first (filter
+                #(= (:result/participant-number prev-result)
+                    (:participant/number %))
+                participants)))))))
+
+;; Might be abit redundant to convert twice..
+(defn start-time-to-date [time-str date]
+  (let [[hh mm] (map to-number (clojure.string/split time-str #":"))]
+    (tcr/to-date (t/plus (tcr/to-date-time date) (t/hours hh) (t/minutes mm)))))
 
 ;; TODO can we add adjs to rounds aswell here?
-(defn class-list-post-process [classes rounds adjudicators panels]
+(defn class-list-post-process [classes rounds adjudicators panels competition-date]
   (for [class classes]
     (dissoc
      (merge class
@@ -275,11 +289,11 @@
                   (merge
                    round
                    {:round/index (count res)
-                    :round/results (prep-class-result
-                                    (get (:class/results class) (count res))
-                                    (:result/adjudicators
-                                     (first (:class/results class)))
-                                    adjudicators)
+                    :round/results (vec (prep-class-result
+                                         (get (:class/results class) (count res))
+                                         (:result/adjudicators
+                                          (first (:class/results class)))
+                                         adjudicators))
                     :round/panel (dissoc
                                   (first (filter
                                           #(= (:dp/panel-id (:round/panel round)) (:dp/panel-id %))
@@ -287,12 +301,17 @@
                                   :dp/panel-id)
                     :round/starting (if (= (count res) 0)
                                       (:class/starting class)
-                                      (prep-round-starting))})
+                                      (prep-round-starting
+                                       (:round/results (last res))
+                                       (:class/starting class)))
+                    :round/start-time (start-time-to-date (:round/start-time round) competition-date)})
                   :dp/temp-class-id)))
               []
               (filter #(= (:class/position class) (:dp/temp-class-id %)) rounds))
              
-             :class/adjudicator-panel :x})
+             :class/adjudicator-panel (first (filter #(= (:dp/temp-id (:class/adjudicator-panel class))
+                                                         (:dp/panel-id %))
+                                                     panels))})
      :class/results)))
 
 ;; (defn class-list-post-process [classes rounds]
