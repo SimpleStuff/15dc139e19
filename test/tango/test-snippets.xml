@@ -177,7 +177,7 @@
     UI index where index 0 is "Use comment", so - 1 to get the actual class
     -->
 
-    <Event Seq="0" ClassNumber="0" DanceQty="0" EventNumber="" Time="" Comment="" AdjPanel="0" Heats="1" Round="32" Status="0" Startorder="0">
+    <Event Seq="0" ClassNumber="0" DanceQty="0" EventNumber="" Time="" Comment="A comment" AdjPanel="0" Heats="1" Round="32" Status="0" Startorder="0">
       <DanceList Qty="0"/>
       <Panel Qty="0"/>
       <RecallList Qty="10">
@@ -194,7 +194,7 @@
       </RecallList>
     </Event>
     
-    <Event Seq="1" ClassNumber="1" DanceQty="1" EventNumber="1" Time="10:00" Comment="A comment" AdjPanel="4" Heats="2" Round="1" Status="0" Startorder="0">
+    <Event Seq="1" ClassNumber="1" DanceQty="1" EventNumber="1" Time="10:00" Comment="" AdjPanel="4" Heats="2" Round="1" Status="0" Startorder="0">
       <DanceList Qty="1">
         <Dance Seq="0" Name="Medium"/>
       </DanceList>

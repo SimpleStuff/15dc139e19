@@ -216,7 +216,8 @@
               :competitor/activities []
               :competition/classes []})))))
 
-
+(let [current-id (atom 0)]
+  (imp/competition-xml->map competition-snippet #(swap! current-id inc)))
 
 
 (clojure.pprint/pprint (first (let [current-id (atom 0)

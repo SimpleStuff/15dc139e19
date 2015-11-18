@@ -28,7 +28,7 @@
    :competition/location location
    :competition/panels panels ;[]
    :competition/adjudicators adjudicators ;[example-adjudicator-1]
-   :competitor/activities activites ;[example-round-1]
+   :competition/activities activites ;[example-round-1]
    :competition/classes classes ;[example-class-1]
    })
 
@@ -203,6 +203,10 @@
    })
 
 ;; TODO - Activity stuff need to be parsed
+
+;; comment:
+ ;; <Event Seq="0" ClassNumber="0" DanceQty="0" EventNumber="" Time="" 
+;; Comment="FREESTYLE" AdjPanel="0" Heats="1" Round="0" Status="0" Startorder="0">
 (defn- round-list->map [rounds-loc id-generator-fn]
   (for [round rounds-loc]
     (let [round-id (id-generator-fn)]
@@ -212,13 +216,16 @@
                                         ;:round/activity nil ;[example-activity-1]
        ;; TODO - This should be Seq!
        ;; TODO - maybe create the activity here and then suck it out?
-       :temp/activity (make-activity
-                       "Class name ?"
-                       (if (= "" (zx/attr round :EventNumber)) -1 (to-number (zx/attr round :EventNumber)))
-                       "Comment"
-                       (id-generator-fn)
-                       (inc (get-seq-attr round))
-                       round-id)
+       :temp/activity (assoc (make-activity
+                              ;; Post processed
+                              ""
+                              ;; Events that represent comments do not have an EventNumber and do now get -1
+                              (if (= "" (zx/attr round :EventNumber)) -1 (to-number (zx/attr round :EventNumber)))
+                              (zx/attr round :Comment)
+                              (id-generator-fn)
+                              (inc (get-seq-attr round))
+                              round-id)
+                        :dp/temp-class-id (to-number (zx/attr round :ClassNumber)))
 
        :round/number (if (= "" (zx/attr round :EventNumber)) -1 (to-number (zx/attr round :EventNumber)))
        ;; TODO - Post process, need to get this from the previous round
@@ -344,25 +351,45 @@
 (defn competition-data-xml->map [xml]
   (competition-data->map (first (zx/xml-> xml :CompData))))
 
+;; TODO - set the real source from post processed rounds
+(defn make-activities [raw-activities classes]
+  (reduce
+   (fn [result activity]
+     (conj
+      result
+      (dissoc
+       (merge activity
+              {:activity/name
+               (if-let [name (:class/name
+                              (first
+                               (filter #(= (:class/position %) (:dp/temp-class-id activity)) classes)))]
+                 name
+                 "")})
+       :dp/temp-class-id)))
+   []
+   raw-activities))
+
 (defn competition-xml->map [xml id-generator-fn]
   (let [comp-data (competition-data-xml->map xml)
         dp-adjudicators (adjudicators-xml->map xml id-generator-fn)
         dp-classes (classes-xml->map xml id-generator-fn)
         dp-rounds (rounds-xml->map xml id-generator-fn)
-        dp-panels (adjudicator-panels-xml->map xml id-generator-fn dp-adjudicators)]
+        dp-panels (adjudicator-panels-xml->map xml id-generator-fn dp-adjudicators)
+        classes (class-list-post-process
+                 dp-classes
+                 dp-rounds
+                 dp-adjudicators
+                 dp-panels
+                 (:competition/date comp-data))]
     (make-competition
      (:competition/name comp-data)
      (:competition/date comp-data)
      (:competition/location comp-data)
      dp-panels ;(adjudicator-panels-xml->map xml id-generator-fn dp-adjudicators)
      (mapv #(dissoc % :dp/temp-id) dp-adjudicators)
-     (mapv :temp/activity dp-rounds)
-     (class-list-post-process
-      dp-classes
-      dp-rounds
-      dp-adjudicators
-      dp-panels
-      (:competition/date comp-data)))))
+     (make-activities (mapv :temp/activity dp-rounds) classes)
+     classes
+     )))
 
 ;; (defn competition->map [loc]
 ;;   (let [competition-data (first (zx/xml-> loc :CompData))
