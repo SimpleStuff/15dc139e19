@@ -224,7 +224,9 @@
                               (zx/attr round :Comment)
                               (id-generator-fn)
                               (inc (get-seq-attr round))
-                              round-id)
+                              ;; TODO - put real source here, needs to be done in pp
+                              round-id
+                              )
                         :dp/temp-class-id (to-number (zx/attr round :ClassNumber)))
 
        :round/number (if (= "" (zx/attr round :EventNumber)) -1 (to-number (zx/attr round :EventNumber)))
@@ -321,7 +323,8 @@
                                        (:round/results (last res))
                                        (:class/starting class)))
                     :round/start-time (start-time-to-date (:round/start-time round) competition-date)})
-                  :dp/temp-class-id)))
+                  :dp/temp-class-id
+                  :temp/activity)))
               []
               (filter #(= (:class/position class) (:dp/temp-class-id %)) rounds))
              
@@ -352,7 +355,7 @@
   (competition-data->map (first (zx/xml-> xml :CompData))))
 
 ;; TODO - set the real source from post processed rounds
-(defn make-activities [raw-activities classes]
+(defn make-activities [raw-activities classes rounds]
   (reduce
    (fn [result activity]
      (conj
@@ -364,8 +367,14 @@
                               (first
                                (filter #(= (:class/position %) (:dp/temp-class-id activity)) classes)))]
                  name
-                 "")})
-       :dp/temp-class-id)))
+                 "")
+
+               :activity/source 
+               (first
+                (filter #(= (:activity/source-id activity) (:round/id %)) rounds))
+                                 })
+       :dp/temp-class-id
+       :activity/source-id)))
    []
    raw-activities))
 
@@ -385,9 +394,9 @@
      (:competition/name comp-data)
      (:competition/date comp-data)
      (:competition/location comp-data)
-     dp-panels ;(adjudicator-panels-xml->map xml id-generator-fn dp-adjudicators)
+     (mapv #(dissoc % :dp/panel-id) dp-panels) ;(adjudicator-panels-xml->map xml id-generator-fn dp-adjudicators)
      (mapv #(dissoc % :dp/temp-id) dp-adjudicators)
-     (make-activities (mapv :temp/activity dp-rounds) classes)
+     (make-activities (mapv :temp/activity dp-rounds) classes (mapcat :class/rounds classes))
      classes
      )))
 
