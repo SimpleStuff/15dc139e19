@@ -257,44 +257,48 @@
 ;; TODO - add :class/remaining
 (defn class-list-post-process [classes rounds adjudicators panels competition-date]
   (for [class classes]
-    (dissoc
-     (merge class
-            {:class/rounds
-             (reduce
-              (fn [res round]
-                (conj
-                 res
-                 (dissoc
-                  (merge
-                   round
-                   {:round/index (count res)
-                    :round/results (vec (prep-class-result
-                                         (get (:class/results class) (count res))
-                                         (:result/adjudicators
-                                          (first (:class/results class)))
-                                         adjudicators))
-                    :round/panel (dissoc
-                                  (first (filter
-                                          #(= (:dp/panel-id (:round/panel round)) (:dp/panel-id %))
-                                          panels))
-                                  :dp/panel-id)
-                    :round/starting (if (= (count res) 0)
-                                      (:class/starting class)
-                                      (prep-round-starting
-                                       (:round/results (last res))
-                                       (:class/starting class)))
-                    :round/start-time (start-time-to-date (:round/start-time round) competition-date)})
-                  :dp/temp-class-id
-                  :temp/activity)))
-              []
-              (filter #(= (:class/position class) (:dp/temp-class-id %)) rounds))
-             
-             :class/adjudicator-panel (dissoc
-                                       (first (filter #(= (:dp/temp-id (:class/adjudicator-panel class))
-                                                          (:dp/panel-id %))
-                                                      panels))
-                                       :dp/panel-id)})
-     :class/results)))
+    (let [processed-rounds
+          (reduce
+           (fn [res round]
+             (conj
+              res
+              (dissoc
+               (merge
+                round
+                {:round/index (count res)
+                 :round/results (vec (prep-class-result
+                                      (get (:class/results class) (count res))
+                                      (:result/adjudicators
+                                       (first (:class/results class)))
+                                      adjudicators))
+                 :round/panel (dissoc
+                               (first (filter
+                                       #(= (:dp/panel-id (:round/panel round)) (:dp/panel-id %))
+                                       panels))
+                               :dp/panel-id)
+                 :round/starting (if (= (count res) 0)
+                                   (:class/starting class)
+                                   (prep-round-starting
+                                    (:round/results (last res))
+                                    (:class/starting class)))
+                 :round/start-time (start-time-to-date (:round/start-time round) competition-date)})
+               :dp/temp-class-id
+               :temp/activity)))
+           []
+           (filter #(= (:class/position class) (:dp/temp-class-id %)) rounds))]
+      (dissoc
+       (merge class
+              {:class/rounds processed-rounds
+               
+               :class/adjudicator-panel (dissoc
+                                         (first (filter #(= (:dp/temp-id (:class/adjudicator-panel class))
+                                                            (:dp/panel-id %))
+                                                        panels))
+                                         :dp/panel-id)
+
+               ;; Remaining participants with a result of X or R has already been calculated
+               :class/remaining (:round/starting (last processed-rounds))})
+       :class/results))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Import API
