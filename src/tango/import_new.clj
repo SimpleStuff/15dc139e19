@@ -107,13 +107,13 @@
   (for [dance dances-loc]
     {:dance/name (get-name-attr dance)}))
 
-(defn marks->map [marks-loc adjudicators]
+(defn- marks->map [marks-loc adjudicators]
   (for [mark marks-loc]
     {:dp/temp-local-adjudicator (get-seq-attr mark)
      :judging/adjudicator :todo
      :juding/marks [{:mark/x (= (zx/attr mark :X) "X")}]}))
 
-(defn mark-list->map [result-couple-loc adjudicators]
+(defn- mark-list->map [result-couple-loc adjudicators]
   (for [couple result-couple-loc]
     {:result/participant-number (get-number-attr couple)
      :result/recalled
@@ -148,7 +148,7 @@
      :class/rounds []
      :class/results (into [] (result-list->map (zx/xml-> class :Results :Result)))}))
 
-(defn round-value->key [val]
+(defn- round-value->key [val]
   (get
    [:none
     :normal-x :semifinal-x :final-x :b-final-x :retry-x :second-try-x
@@ -159,7 +159,7 @@
    val
    :unknown-round-value))
 
-(defn make-activity [name number comment id position source-id]
+(defn- make-activity [name number comment id position source-id]
   {:activity/name name ;"Round 1"
    :activity/number number ;"1A"
    :activity/comment comment ;"Comment"
@@ -220,7 +220,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Post process
 
-(defn prep-class-result [results result-panel adjudicators]
+(defn- prep-class-result [results result-panel adjudicators]
   (for [result (:result/results results)]
     (merge
      result
@@ -237,7 +237,7 @@
                    (:adjudicator/id (first (filter #(= temp-id (:dp/temp-id %)) adjudicators))))})
          :dp/temp-local-adjudicator))})))
 
-(defn prep-round-starting [prev-results participants]
+(defn- prep-round-starting [prev-results participants]
   (vec
    (remove
     nil?
@@ -248,14 +248,12 @@
                     (:participant/number %))
                 participants)))))))
 
-(defn start-time-to-date [time-str date]
+(defn- start-time-to-date [time-str date]
   (let [[hh mm] (map to-number (clojure.string/split time-str #":"))]
-    (if (and (number? hh) (number? mm))
-      (tcr/to-date (t/plus (tcr/to-date-time date) (t/hours hh) (t/minutes mm)))
-      nil)))
+    (when (and (number? hh) (number? mm))
+      (tcr/to-date (t/plus (tcr/to-date-time date) (t/hours hh) (t/minutes mm))))))
 
-;; TODO - add :class/remaining
-(defn class-list-post-process [classes rounds adjudicators panels competition-date]
+(defn- class-list-post-process [classes rounds adjudicators panels competition-date]
   (for [class classes]
     (let [processed-rounds
           (reduce
@@ -300,27 +298,24 @@
                :class/remaining (:round/starting (last processed-rounds))})
        :class/results))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Import API
-
-(defn adjudicators-xml->map [xml id-generator-fn]
+(defn- adjudicators-xml->map [xml id-generator-fn]
   (mapv
    #(adjudicators->map % id-generator-fn)
    (zx/xml-> xml :AdjPanelList :AdjList :Adjudicator)))
 
-(defn adjudicator-panels-xml->map [xml id-generator-fn adjudicators]
+(defn- adjudicator-panels-xml->map [xml id-generator-fn adjudicators]
   (adjudicator-panel-list->map (zx/xml-> xml :AdjPanelList :PanelList :Panel) id-generator-fn adjudicators))
 
-(defn rounds-xml->map [xml id-generator-fn]
+(defn- rounds-xml->map [xml id-generator-fn]
   (round-list->map (zx/xml-> xml :EventList :Event) id-generator-fn))
 
-(defn classes-xml->map [xml id-generator-fn]
+(defn- classes-xml->map [xml id-generator-fn]
   (class-list->map (zx/xml-> xml :ClassList :Class) id-generator-fn))
 
-(defn competition-data-xml->map [xml]
+(defn- competition-data-xml->map [xml]
   (competition-data->map (first (zx/xml-> xml :CompData))))
 
-(defn make-activities [raw-activities classes rounds]
+(defn- make-activities [raw-activities classes rounds]
   (reduce
    (fn [result activity]
      (conj
@@ -343,6 +338,8 @@
    []
    raw-activities))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Import API
 (defn competition-xml->map [xml id-generator-fn]
   (let [comp-data (competition-data-xml->map xml)
         dp-adjudicators (adjudicators-xml->map xml id-generator-fn)
