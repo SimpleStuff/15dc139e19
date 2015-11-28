@@ -72,139 +72,143 @@
          ;;     {:competitor/name "Tom Matei", :competitor/number 61, :competitor/club "SDC"}
          ;;     {:competitor/name "Jacob Olsson", :competitor/number 62, :competitor/club "DTLH/DV"}]}]}
 
-         :competition
-         {:competition/name "TurboMegatävling"
-          :competition/date #inst "2014-11-22T00:00:00.000-00:00"
-          :competition/location "THUNDERDOME"
-          :competition/events
-          [{:event/position 0
-            :event/class-number 0
-            :event/number -1
-            :event/time ""
-            :event/comment ""
-            :event/adjudicator-panel 0
-            :event/heats 1
-            :event/round :unknown-round-value
-            :event/status 0
-            :event/start-order 0
-            :event/recall 0
-            :event/dances
-            []}
-           
-           {:event/position 1
-            :event/class-number 1
-            :event/number 1
-            :event/time "10:00"
-            :event/comment "A comment"
-            :event/adjudicator-panel 4
-            :event/heats 2
-            :event/round :normal-x
-            :event/status 1
-            :event/start-order 0
-            :event/recall 0
-            :event/dances
-            [{:dance/name "Medium"}
-             {:dance/name "Waltz"}]}
+         :competition-new {}
 
-           {:event/position 2
-           :event/class-number 0
-           :event/number 1
-           :event/time "10:05"
-           :event/comment "A comment"
-           :event/adjudicator-panel 4
-           :event/heats 2
-           :event/round :normal-x
-           :event/status 0
-           :event/start-order 0
-           :event/recall 6
-           :event/dances
-           [{:dance/name "Medium"}]}]
 
-          :competition/classes
-          [{:class/name "Hiphop Singel Star B"
-            :class/position 1
-            :class/adjudicator-panel 1
-            :class/dances
-            [{:dance/name "Medium"}
-             {:dance/name "Tango"}
-             {:dance/name "VienWaltz"}
-             {:dance/name "Foxtrot"}
-             {:dance/name "Quickstep"}
-             {:dance/name "Samba"}
-             {:dance/name "Cha-Cha"}
-             {:dance/name "Rumba"}
-             {:dance/name "Paso-Doble"}
-             {:dance/name "Jive"}]
-            :class/competitors
-            [{:competitor/name "Rulle Trulle"
-              :competitor/club "Sinclairs"
-              :competitor/number 30}
-             {:competitor/name "Milan Lund"
-              :competitor/club "Wilson"
-              :competitor/number 31}
-             {:competitor/name "Douglas Junger"
-              :competitor/club "RGDT"
-              :competitor/number 32}]
-            :class/results
-            [{:result/round "S"
-              :result/adjudicators
-              [{:adjudicator/number 3 :adjudicator/position 0}
-               {:adjudicator/number 4 :adjudicator/position 1}
-               {:adjudicator/number 5 :adjudicator/position 2}]
-              :result/dance {:dance/name "X-Quick Forward"}
-              :result/results
-              [{:competitor/number 30
-                :competitor/recalled ""
-                :competitor/results
-                [{:result/adjudicator
-                  {:adjudicator/number 3, :adjudicator/position 0},
-                  :result/x-mark true}
-                 {:result/adjudicator
-                  {:adjudicator/number 4, :adjudicator/position 1},
-                  :result/x-mark false}
-                 {:result/adjudicator
-                  {:adjudicator/number 5, :adjudicator/position 2},
-                  :result/x-mark true}]}
-               {:competitor/number 31,
-                :competitor/recalled :r,
-                :competitor/results
-                [{:result/adjudicator
-                  {:adjudicator/number 3, :adjudicator/position 0},
-                  :result/x-mark false}
-                 {:result/adjudicator
-                  {:adjudicator/number 4, :adjudicator/position 1},
-                  :result/x-mark true}
-                 {:result/adjudicator
-                  {:adjudicator/number 5, :adjudicator/position 2},
-                  :result/x-mark false}]}
-               {:competitor/number 32,
-                :competitor/recalled :x,
-                :competitor/results
-                [{:result/adjudicator
-                  {:adjudicator/number 3, :adjudicator/position 0},
-                  :result/x-mark true}
-                 {:result/adjudicator
-                  {:adjudicator/number 4, :adjudicator/position 1},
-                  :result/x-mark false}
-                 {:result/adjudicator
-                  {:adjudicator/number 5, :adjudicator/position 2},
-                  :result/x-mark false}]}]
-              }]}
+         :competition {}
+         ;; {:competition/name "TurboMegatävling"
+         ;;  :competition/date #inst "2014-11-22T00:00:00.000-00:00"
+         ;;  :competition/location "THUNDERDOME"
+         ;;  :competition/events
+         ;;  [{:event/position 0
+         ;;    :event/class-number 0
+         ;;    :event/number -1
+         ;;    :event/time ""
+         ;;    :event/comment ""
+         ;;    :event/adjudicator-panel 0
+         ;;    :event/heats 1
+         ;;    :event/round :unknown-round-value
+         ;;    :event/status 0
+         ;;    :event/start-order 0
+         ;;    :event/recall 0
+         ;;    :event/dances
+         ;;    []}
+           
+         ;;   {:event/position 1
+         ;;    :event/class-number 1
+         ;;    :event/number 1
+         ;;    :event/time "10:00"
+         ;;    :event/comment "A comment"
+         ;;    :event/adjudicator-panel 4
+         ;;    :event/heats 2
+         ;;    :event/round :normal-x
+         ;;    :event/status 1
+         ;;    :event/start-order 0
+         ;;    :event/recall 0
+         ;;    :event/dances
+         ;;    [{:dance/name "Medium"}
+         ;;     {:dance/name "Waltz"}]}
+
+         ;;   {:event/position 2
+         ;;   :event/class-number 0
+         ;;   :event/number 1
+         ;;   :event/time "10:05"
+         ;;   :event/comment "A comment"
+         ;;   :event/adjudicator-panel 4
+         ;;   :event/heats 2
+         ;;   :event/round :normal-x
+         ;;   :event/status 0
+         ;;   :event/start-order 0
+         ;;   :event/recall 6
+         ;;   :event/dances
+         ;;   [{:dance/name "Medium"}]}]
+
+         ;;  :competition/classes
+         ;;  [{:class/name "Hiphop Singel Star B"
+         ;;    :class/position 1
+         ;;    :class/adjudicator-panel 1
+         ;;    :class/dances
+         ;;    [{:dance/name "Medium"}
+         ;;     {:dance/name "Tango"}
+         ;;     {:dance/name "VienWaltz"}
+         ;;     {:dance/name "Foxtrot"}
+         ;;     {:dance/name "Quickstep"}
+         ;;     {:dance/name "Samba"}
+         ;;     {:dance/name "Cha-Cha"}
+         ;;     {:dance/name "Rumba"}
+         ;;     {:dance/name "Paso-Doble"}
+         ;;     {:dance/name "Jive"}]
+         ;;    :class/competitors
+         ;;    [{:competitor/name "Rulle Trulle"
+         ;;      :competitor/club "Sinclairs"
+         ;;      :competitor/number 30}
+         ;;     {:competitor/name "Milan Lund"
+         ;;      :competitor/club "Wilson"
+         ;;      :competitor/number 31}
+         ;;     {:competitor/name "Douglas Junger"
+         ;;      :competitor/club "RGDT"
+         ;;      :competitor/number 32}]
+         ;;    :class/results
+         ;;    [{:result/round "S"
+         ;;      :result/adjudicators
+         ;;      [{:adjudicator/number 3 :adjudicator/position 0}
+         ;;       {:adjudicator/number 4 :adjudicator/position 1}
+         ;;       {:adjudicator/number 5 :adjudicator/position 2}]
+         ;;      :result/dance {:dance/name "X-Quick Forward"}
+         ;;      :result/results
+         ;;      [{:competitor/number 30
+         ;;        :competitor/recalled ""
+         ;;        :competitor/results
+         ;;        [{:result/adjudicator
+         ;;          {:adjudicator/number 3, :adjudicator/position 0},
+         ;;          :result/x-mark true}
+         ;;         {:result/adjudicator
+         ;;          {:adjudicator/number 4, :adjudicator/position 1},
+         ;;          :result/x-mark false}
+         ;;         {:result/adjudicator
+         ;;          {:adjudicator/number 5, :adjudicator/position 2},
+         ;;          :result/x-mark true}]}
+         ;;       {:competitor/number 31,
+         ;;        :competitor/recalled :r,
+         ;;        :competitor/results
+         ;;        [{:result/adjudicator
+         ;;          {:adjudicator/number 3, :adjudicator/position 0},
+         ;;          :result/x-mark false}
+         ;;         {:result/adjudicator
+         ;;          {:adjudicator/number 4, :adjudicator/position 1},
+         ;;          :result/x-mark true}
+         ;;         {:result/adjudicator
+         ;;          {:adjudicator/number 5, :adjudicator/position 2},
+         ;;          :result/x-mark false}]}
+         ;;       {:competitor/number 32,
+         ;;        :competitor/recalled :x,
+         ;;        :competitor/results
+         ;;        [{:result/adjudicator
+         ;;          {:adjudicator/number 3, :adjudicator/position 0},
+         ;;          :result/x-mark true}
+         ;;         {:result/adjudicator
+         ;;          {:adjudicator/number 4, :adjudicator/position 1},
+         ;;          :result/x-mark false}
+         ;;         {:result/adjudicator
+         ;;          {:adjudicator/number 5, :adjudicator/position 2},
+         ;;          :result/x-mark false}]}]
+         ;;      }]}
            
            
-           {:class/name "Hiphop Singel Star J Fl"
-            :class/position 0
-            :class/adjudicator-panel 0
-            :class/dances
-            []
-            :class/competitors
-            [{:competitor/name "Ringo Stingo"
-              :competitor/club "Kapangg"
-              :competitor/number 20}
-             {:competitor/name "Greve Turbo"
-              :competitor/club "OOoost"
-              :competitor/number 21}]
-            :class/results []}]}}))
+         ;;   {:class/name "Hiphop Singel Star J Fl"
+         ;;    :class/position 0
+         ;;    :class/adjudicator-panel 0
+         ;;    :class/dances
+         ;;    []
+         ;;    :class/competitors
+         ;;    [{:competitor/name "Ringo Stingo"
+         ;;      :competitor/club "Kapangg"
+         ;;      :competitor/number 20}
+         ;;     {:competitor/name "Greve Turbo"
+         ;;      :competitor/club "OOoost"
+         ;;      :competitor/number 21}]
+         ;;    :class/results []}]}}
+         }))
 
 
 
@@ -213,6 +217,18 @@
   (let [result (.-result file-reader)]
     (log "On file read: send :file/import")
     (chsk-send! [:file/import {:content result}])))
+
+(defn on-file-read-new [e file-reader]
+  (let [result (.-result file-reader)]
+    (log "On file read new: send :file/import-new")
+    (chsk-send! [:file/import-new {:content result}])))
+
+(defn on-click-import-file-new [e]
+  (log "Import new clicked")
+  (let [file (.item (.. e -target -files) 0)
+        r (js/FileReader.)]
+    (set! (.-onload r) #(on-file-read-new % r))
+    (.readAsText r file)))
 
 (defn on-click-import-file [e]
   (log "Import clicked")
@@ -229,7 +245,8 @@
            [:file/import [file]]
            (inc 1)
            [:select-page [new-page]]
-           (swap! app-state merge {:selected-page new-page}))))
+           (swap! app-state merge {:selected-page new-page})
+           )))
 
 (defn on-export-click [e competition]
   (log "Export clicked")
@@ -278,6 +295,8 @@
 
 (defn make-event-round-presentation [event-round]
   (get round-map event-round))
+
+
 
 (defn make-round-presentation [round-status round-count]
   (str
@@ -422,6 +441,66 @@
         [:td (:panel/id adjudicator-panel)]
         [:td (clojure.string/join ", " (mapcat vals (:panel/adjudicators adjudicator-panel)))]])]]])
 
+;; :class/adjudicator-panel {:adjudicator-panel/adjudicators [{:adjudicator/name "Anders", :adjudicator/country "Sweden", :adjudicator/id #uuid "4938cfaa-3af6-40e0-ba9c-532efde47bdd"} {:adjudicator/name "Bertil", :adjudicator/country "", :adjudicator/id #uuid "2cbab2aa-9c42-42c1-8385-2e0ba2856afe"}], :adjudicator-panel/name "1"
+
+(defn make-round-presentation-new-2 [round-status round-count]
+;;  (log round-status)
+  (str
+   round-count " - "
+   (if round-status
+     (if (number-string? round-status)
+       (str "Round " round-status)
+       (condp = round-status
+         "S" (str "Semifinal" )
+         "E" "2nd Try"
+         "F" "Final"
+         "O" "Retry"
+         (str "Unknown status : " round-status)))
+     "Not Started"))
+  )
+
+(defn make-round-presentation-new [rounds]
+;;  (log round-status)
+  
+  (let [completed-rounds (filter #(= (:round/status %) :completed) rounds)]
+    (str
+     (count completed-rounds) " - "
+     (if (seq completed-rounds)
+       (let [round-type (:round/type (last completed-rounds))]
+         (if (= round-type :normal-x)
+           (str "Round " (count completed-rounds))
+           (get round-map round-type)))
+       "Not Started"))))
+
+(defn new-classes-component []
+  [:div
+   [:h3 "Klasser Ny"]
+   [:table.table
+    [:thead
+     [:tr
+      [:th {:with "20"} "#"]
+      [:th {:with "200"} "Dansdisciplin"]
+      [:th {:with "20"} "Panel"]
+      [:th {:with "20"} "Typ"]
+      [:th {:with "20"} "Startande"]
+      [:th {:with "20"} "Status"]]]
+    [:tbody
+     (for [class (sort-by :class/position (:competition/classes (:competition-new @app-state)))]
+       ^{:key class}
+       [:tr
+        [:td (:class/position class)]
+        [:td (:class/name class)]
+        [:td (:adjudicator-panel/name (:class/adjudicator-panel class))]
+        [:td (make-dance-type-presentation (:class/dances class))]
+        
+        [:td (str (count (:class/remaining class)) "/" (count (:class/starting class)))]
+
+        ;; Present how far into the competition this class is.
+        ;; The round status is given by the last completed round, if there are none
+        ;;  the class is not started
+        [:td (make-round-presentation-new (:class/rounds class))
+         ]])]]])
+
 (defn dp-classes-component []
   [:div
    [:h3 "Klasser"]
@@ -453,12 +532,16 @@
   [:div
    [:h2 "Importera en ny tävling : "]
    [:input.btn.btn-primary.btn-lg {:type "file" :value "Import file"
-                                   :onChange #(on-click-import-file %)}]])
+                                   :onChange #(on-click-import-file %)}]
+   [:input.btn.btn-primary.btn-lg {:type "file" :value "Import file new"
+                                   :onChange #(on-click-import-file-new %)}]])
 
 (defn navigation-component []
   [:div
    [:input.btn.btn-default {:type "button" :value "Classes"
                             :on-click #(dispatch [:select-page :classes])}]
+   [:input.btn.btn-default {:type "button" :value "Classes New"
+                            :on-click #(dispatch [:select-page :new-classes])}]
    [:input.btn.btn-default {:type "button" :value "Time Schedule"
                             :on-click #(dispatch [:select-page :events])}]
    [:input.btn.btn-default {:type "button" :value "NewAdjudicators"
@@ -569,6 +652,7 @@
      [navigation-component]
      (condp = (:selected-page @app-state)
        :classes [dp-classes-component]
+       :new-classes [new-classes-component]
        :events [events-component]
        :adjudicators [adjudictors-component]
        :new-adjudicators [new-adjudictors-component]
@@ -600,6 +684,10 @@
            ;(swap! app-state #(hash-map :competitions (conj (:competitions %) content)))
            (log (str @app-state))
            )
+         [:chsk/recv [:file/imported-new content]]
+         (do
+           (swap! app-state #(merge % {:competition-new content}))
+           (log (str @app-state)))
          ;; [:chsk/recv [:file/export content]]
          ;; (handle-export)
     [:chsk/state [:first-open _]] (log "Channel socket successfully established!")

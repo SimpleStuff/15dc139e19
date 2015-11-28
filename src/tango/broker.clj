@@ -19,6 +19,10 @@
            (async/>!! (:in-channel (:file-handler components)) message)
            [:file/imported _]
            (async/>!! client-in-channel message)
+           [:file/imported-new _]
+           (async/>!! client-in-channel message)
+           [:file/import-new _]
+           (async/>!! (:in-channel (:file-handler components)) message)
            :else (async/>!!
                   client-in-channel
                   {:sender sender :topic :broker/unkown-topic :payload {:topic topic}}))))
