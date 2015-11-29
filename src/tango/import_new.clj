@@ -294,9 +294,17 @@
                                                             (:dp/panel-id %))
                                                         panels))
                                          :dp/panel-id)
-
-               ;; Remaining participants with a result of X or R has already been calculated
-               :class/remaining (:round/starting (last processed-rounds))})
+               
+               ;; There can be many pre-configured rounds, the remaining participants are
+               ;; calculated from the result of the last completed round.
+               ;; If there are no rounds completed, than all participants are still remaining.
+               :class/remaining (if-let [completed-rounds
+                                         (seq 
+                                          (filter #(= (:round/status %) :completed) processed-rounds))]
+                                  (prep-round-starting
+                                   (:round/results (last completed-rounds))
+                                   (:class/starting class))
+                                  (:class/starting class))})
        :class/results))))
 
 (defn- adjudicators-xml->map [xml id-generator-fn]

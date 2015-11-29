@@ -490,7 +490,9 @@
        [:tr
         [:td (:class/position class)]
         [:td (:class/name class)]
-        [:td (:adjudicator-panel/name (:class/adjudicator-panel class))]
+        [:td (if-let [panel (:class/adjudicator-panel class)]
+               (:adjudicator-panel/name panel)
+               "0")]
         [:td (make-dance-type-presentation (:class/dances class))]
         
         [:td (str (count (:class/remaining class)) "/" (count (:class/starting class)))]
