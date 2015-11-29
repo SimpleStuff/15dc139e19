@@ -460,9 +460,9 @@
   )
 
 (defn make-round-presentation-new [rounds]
-;;  (log round-status)
-  
-  (let [completed-rounds (filter #(= (:round/status %) :completed) rounds)]
+  ;; Only count rounds that are completed and that are not presentation rounds
+  (let [completed-rounds (filter #(and (= (:round/status %) :completed)
+                                       (not= (:round/type %) :presentation)) rounds)]
     (str
      (count completed-rounds) " - "
      (if (seq completed-rounds)
