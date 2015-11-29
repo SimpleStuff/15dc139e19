@@ -146,7 +146,8 @@
      :class/dances (into [] (dance-list->map (zx/xml-> class :DanceList :Dance)))
      :class/remaining []
      :class/rounds []
-     :class/results (into [] (result-list->map (zx/xml-> class :Results :Result)))}))
+     :class/results (into [] (result-list->map (zx/xml-> class :Results :Result)))
+     :class/id (id-generator-fn)}))
 
 (defn- round-value->key [val]
   (get
@@ -210,6 +211,9 @@
        ;; Index is set in Post Process
        :round/index -1 ;; the rounds number in its class
 
+       ;; Class id is set in Post Process
+       :round/class-id -1 
+
        :round/heats (to-number (zx/attr round :Heats))
        :round/status (if (= 1 (to-number (zx/attr round :Status))) :completed :not-started)
        :round/dances (vec (dance-list->map (zx/xml-> round :DanceList :Dance))) ;[example-dance-1]
@@ -264,7 +268,8 @@
               (dissoc
                (merge
                 round
-                {:round/index (count res)
+                {:round/class-id (:class/id class)
+                 :round/index (count res)
                  :round/results (vec (prep-class-result
                                       (get (:class/results class) (count res))
                                       (:result/adjudicators

@@ -459,10 +459,13 @@
      "Not Started"))
   )
 
+(defn get-completed-rounds [rounds]
+  (filter #(and (= (:round/status %) :completed)
+                (not= (:round/type %) :presentation)) rounds))
+
 (defn make-round-presentation-new [rounds]
   ;; Only count rounds that are completed and that are not presentation rounds
-  (let [completed-rounds (filter #(and (= (:round/status %) :completed)
-                                       (not= (:round/type %) :presentation)) rounds)]
+  (let [completed-rounds (get-completed-rounds rounds)]
     (str
      (count completed-rounds) " - "
      (if (seq completed-rounds)
@@ -546,6 +549,8 @@
                             :on-click #(dispatch [:select-page :new-classes])}]
    [:input.btn.btn-default {:type "button" :value "Time Schedule"
                             :on-click #(dispatch [:select-page :events])}]
+   [:input.btn.btn-default {:type "button" :value "Time Schedule New"
+                            :on-click #(dispatch [:select-page :events-new])}]
    [:input.btn.btn-default {:type "button" :value "NewAdjudicators"
                             :on-click #(dispatch [:select-page :new-adjudicators])}]
    [:input.btn.btn-default {:type "button" :value "NewAdjudicator panels"
@@ -555,6 +560,164 @@
    [:input.btn.btn-default {:type "button" :value "Adjudicator panels"
                             :on-click #(dispatch [:select-page :adjudicator-panels])}]
    ])
+
+(defn make-time [time]
+  (str time))
+
+(defn time-schedule-activity-presenter [activity classes]
+  ;(log (:activity/comment activity))
+  (let [comment? (= (:activity/number activity) -1)
+        round (:activity/source activity)
+
+        class (first (filter #(= (:class/id %) (:round/class-id round)) classes))
+        ;; When a class have only one round that round is a direct final
+        ;; Note that a presentation round should not be considered
+        direct-final? (and (= (count (:class/rounds class)) 1)
+                           (not= (:round/type round) :presentation)
+                           )
+        
+        last-completed-round-index (:round/index (last (get-completed-rounds (:class/rounds class))))
+        ]
+    ;(log (:round/starting round))
+    {:time (if comment? ""
+               (str "TODO" (if (= (:round/status round) :completed) "*") ;(:round/start-time round)
+                    ))
+
+     :number (if (= (:activity/number activity) -1) "" (:activity/number activity))
+
+     :name (if comment? (:activity/comment activity) (:activity/name activity))
+
+     ;; TODO - Need to understan 'Qual'..
+     ;; 'Qual' is when a greater number of participants where recalled than asked for,
+     ;; then a 'Qual' round will be done to eliminate down to the requested recall number
+
+     ;; If the class has not been started yet, than all rounds except the first will not have
+     ;; a list of starters since this is not decided yet, there fore those rounds will have an
+     ;; empty string in the starting field
+     :starting (if comment?
+                 ""
+                 (cond
+                  ;; First round will show the number of starters
+                  (zero? (:round/index round)) (str "Start " (count (:round/starting round)))
+                  ;; Direct finals will show starters
+                  direct-final? (str "Start " (count (:round/starting round)))
+
+                  ;; No starters yet
+                  (zero? (count (:round/starting round))) ""
+                  ;; if the last completed round, was the round before this, this is 'Qual'
+                  (= (dec (:round/index round)) last-completed-round-index)
+                  (str "Qual " (count (:round/starting round)))
+                  :else "BROKEN"))
+
+     :round (if comment-row?
+              ""
+              (if direct-final?
+                "Direct Final"
+                (make-event-round-presentation (:round/type round))))
+
+     :heats (if (or comment? direct-final? (= (:round/type round) :final-x))
+              ""
+              (let [heats (:round/heats round)
+                    suffix (if (= 1 heats) "" "s")]
+                (str  heats " heat" suffix)))
+
+     :recall (if (or (zero? (:round/recall round)) comment?)
+               ""
+               (str "Recall " (:round/recall round)))
+
+     :panel (if (or comment? (= (:round/type round) :presentation))
+              ""
+              (let [panel (:adjudicator-panel/name (:round/panel round))]
+                (if (= panel "0")
+                  "All adj"
+                  (str "Panel " panel))))
+
+     :type (if comment?
+              ""
+              (make-dance-type-presentation (:round/dances round)))})
+  )
+
+;; (if (or comment-row?)
+            ;;   ""
+            ;;   (cond
+            ;;    (zero? (:event/class-index event))
+            ;;    (str "Start " (:event/starting event))
+            ;;    direct-final?
+            ;;    (str "Start " (count (:class/competitors referenced-class)))
+            ;;    (= (:event/class-index event) (count (:class/results referenced-class)))
+            ;;    (str "Qual " (:event/starting event))))
+
+(defn events-component-new []
+  [:div
+   [:h3 "Time Schedule Ny"]
+   [:table.table
+    [:thead
+     [:tr
+      [:th {:with "20"} "Time"]
+      [:th {:with "20"} "#"]
+      [:th {:with "200"} "Dansdisciplin"]
+      [:th {:with "20"} "Startande"]
+      [:th {:with "20"} "Rond"]
+      [:th {:with "20"} "Heats"]
+      [:th {:with "20"} "Recall"]
+      [:th {:with "20"} "Panel"]
+      [:th {:with "20"} "Type"]]]
+    [:tbody
+     (doall
+      (for [activity (sort-by :activity/position (:competition/activities (:competition-new @app-state)))]
+        (let [referenced-class (first (filter #(= (:class/position %) (:event/class-number event))
+                                              (:competition/classes (:competition @app-state))))
+
+              comment-row? (zero? (:event/class-number event))
+              direct-final? (and (= (:event/nrof-events-in-class event) 1)
+                                 (not= (:event/round event) :presentation))
+              completed? (= (:event/status event) 1)
+
+              comment? (= (:activity/number activity) -1)
+
+              
+              time-schedule (time-schedule-activity-presenter activity (:competition/classes
+                                                                        (:competition-new @app-state)))]
+        ^{:key activity}
+        
+          [:tr
+           ;; Time - TODO - convert..
+           [:td (:time time-schedule)]
+
+           ;; # 
+           [:td (:number time-schedule)]
+
+           ;; Dansdisciplin (name) - use comment if activity number is -1
+           [:td (:name time-schedule)]
+
+           ;; Startande
+           ;; TODO - get ppl left from refed class
+           ;; kan hända att vid importen så behöver jag lägga till någon typ av koppling
+           ;; så att ett vist event kan kopplas ihop till rätt resultat
+
+           ;; Started ska presentera hur manga som startade i det eventet och det baseras pa
+           ;; resultatet pa det tidigare eventet
+           [:td (:starting time-schedule)        
+            
+            ]
+
+           ;; Round
+           [:td (:round time-schedule)
+            ]
+
+           ;; Heats
+           [:td (:heats time-schedule)]
+
+           [:td (:recall time-schedule)]
+
+           ;; TODO - adjust adj panel in back-end
+           [:td (:panel time-schedule)
+            ]
+
+           [:td (:type time-schedule)
+            ]])))]]])
+
+
 
 (defn events-component []
   [:div
@@ -583,7 +746,8 @@
         ^{:key event}
         
           [:tr
-           [:td (make-event-time-presentation (:event/time event) (:event/status event))]
+           [:td (make-event-time-presentation (:event/time event) (:event/status event))
+            ]
            [:td (if (or  (= (:event/number event) -1)) "" (:event/number event))]
            ;; use comment if class number is zero
            [:td
@@ -656,6 +820,7 @@
        :classes [dp-classes-component]
        :new-classes [new-classes-component]
        :events [events-component]
+       :events-new [events-component-new]
        :adjudicators [adjudictors-component]
        :new-adjudicators [new-adjudictors-component]
        :new-adjudicator-panels [new-adjudictor-panels-component]
