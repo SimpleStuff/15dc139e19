@@ -160,18 +160,24 @@
    val
    :unknown-round-value))
 
-(defn- make-activity [name number comment id position source-id]
+(defn- make-activity [name number comment id position source-id time]
   {:activity/name name ;"Round 1"
    :activity/number number ;"1A"
    :activity/comment comment ;"Comment"
    :activity/id id ;"1"
    :activity/position position ;"1"
-   :activity/source-id source-id})
+   :activity/source-id source-id
+   :activity/time time})
 
 ;; comment:
  ;; <Event Seq="0" ClassNumber="0" DanceQty="0" EventNumber="" Time="" 
 ;; Comment="FREESTYLE" AdjPanel="0" Heats="1" Round="0" Status="0" Startorder="0">
-(defn- round-list->map [rounds-loc id-generator-fn]
+(defn- start-time-to-date [time-str date]
+  (let [[hh mm] (map to-number (clojure.string/split time-str #":"))]
+    (when (and (number? hh) (number? mm))
+      (tcr/to-date (t/plus (tcr/to-date-time date) (t/hours hh) (t/minutes mm))))))
+
+(defn- round-list->map [rounds-loc id-generator-fn base-time]
   (for [round rounds-loc]
     (let [round-id (id-generator-fn)]
       {:dp/temp-class-id (to-number (zx/attr round :ClassNumber))
@@ -188,6 +194,7 @@
                               (inc (get-seq-attr round))
                               ;; Put real source here, needs to be done in pp
                               round-id
+                              (start-time-to-date (zx/attr round :Time) base-time)
                               )
                         :dp/temp-class-id (to-number (zx/attr round :ClassNumber)))
 
@@ -197,7 +204,7 @@
        :round/starting []
 
        ;; Post process, parse time and plus with compdate
-       :round/start-time (zx/attr round :Time)
+       :round/start-time (start-time-to-date (zx/attr round :Time) base-time)
        
        ;; Save the id of the adjudicator panel to be able to look it up in post processing.
        ;; Subtract 3 since the 'index' in the file refer to a UI index witch is 3 of from
@@ -253,10 +260,7 @@
                     (:participant/number %))
                 participants)))))))
 
-(defn- start-time-to-date [time-str date]
-  (let [[hh mm] (map to-number (clojure.string/split time-str #":"))]
-    (when (and (number? hh) (number? mm))
-      (tcr/to-date (t/plus (tcr/to-date-time date) (t/hours hh) (t/minutes mm))))))
+
 
 (defn- class-list-post-process [classes rounds adjudicators panels competition-date]
   (for [class classes]
@@ -280,12 +284,16 @@
                                        #(= (:dp/panel-id (:round/panel round)) (:dp/panel-id %))
                                        panels))
                                :dp/panel-id)
-                 :round/starting (if (= (count res) 0)
+                 ;; Starters in this rounds is based on the result on the previous round.
+                 ;; If the previous round is a presentation round it will not have a result
+                 ;; and should be dissregarded
+                 :round/starting (if (= (count (filter #(not= (:round/type %) :presentation) res)) 0)
                                    (:class/starting class)
                                    (prep-round-starting
                                     (:round/results (last res))
                                     (:class/starting class)))
-                 :round/start-time (start-time-to-date (:round/start-time round) competition-date)})
+                 :round/start-time  (:round/start-time round);;(start-time-to-date (:round/start-time round) competition-date)
+                 })
                :dp/temp-class-id
                :temp/activity)))
            []
@@ -320,8 +328,8 @@
 (defn- adjudicator-panels-xml->map [xml id-generator-fn adjudicators]
   (adjudicator-panel-list->map (zx/xml-> xml :AdjPanelList :PanelList :Panel) id-generator-fn adjudicators))
 
-(defn- rounds-xml->map [xml id-generator-fn]
-  (round-list->map (zx/xml-> xml :EventList :Event) id-generator-fn))
+(defn- rounds-xml->map [xml id-generator-fn base-time]
+  (round-list->map (zx/xml-> xml :EventList :Event) id-generator-fn base-time))
 
 (defn- classes-xml->map [xml id-generator-fn]
   (class-list->map (zx/xml-> xml :ClassList :Class) id-generator-fn))
@@ -343,10 +351,8 @@
                  name
                  "")
 
-               :activity/source 
-               (first
-                (filter #(= (:activity/source-id activity) (:round/id %)) rounds))
-                                 })
+               :activity/source (first
+                                 (filter #(= (:activity/source-id activity) (:round/id %)) rounds))})
        :dp/temp-class-id
        :activity/source-id)))
    []
@@ -359,7 +365,7 @@
   (let [comp-data (competition-data-xml->map xml)
         dp-adjudicators (adjudicators-xml->map xml id-generator-fn)
         dp-classes (classes-xml->map xml id-generator-fn)
-        dp-rounds (rounds-xml->map xml id-generator-fn)
+        dp-rounds (rounds-xml->map xml id-generator-fn (:competition/date comp-data))
         dp-panels (adjudicator-panels-xml->map xml id-generator-fn dp-adjudicators)
         classes (class-list-post-process
                  dp-classes
