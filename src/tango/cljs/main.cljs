@@ -5,7 +5,11 @@
             [cljs.core.async :as async :refer (<! >! put! chan)]
             [cljs.core.match :refer-macros [match]]
             [taoensso.sente :as sente :refer (cb-success?)]
-            [clojure.string]))
+            [clojure.string]
+            [cljs-time.core :as time]
+            [cljs-time.coerce :as tc]
+            [cljs-time.format :as tf]
+            ))
 
 ;; Sente: https://github.com/ptaoussanis/sente
 ;http://markusslima.github.io/bootstrap-filestyle/
@@ -564,6 +568,23 @@
 (defn make-time [time]
   (str time))
 
+   ;(log (.getTimezoneOffset (:activity/time activity)))
+                    ;; (log (js/Date. (.setMinutes (:activity/time activity)
+                    ;;                             ;(js/Date.)
+                    ;;                             (- (.getTimezoneOffset (:activity/time activity))
+                    ;;                                (.getMinutes (:activity/time activity))
+                    ;;                                ))))
+                    ;; (log (js/Date. (.setHours (:activity/time activity)
+                    ;;                           (.getTimezoneOffset (:activity/time activity)))))
+
+            
+                    ;(log (.getTimezoneOffset (js/Date.)))
+;                    (log (.setMinutes (:activity/time activity) 20))
+                    ;(log (str "Time > " (time/local-date 2015 03 12 12 00)))
+                    ;; (str
+                    ;;  (+ (.getTime (:activity/time activity))
+                    ;;     (/ (.getTimezoneOffset (:activity/time activity)) 60)))
+
 (defn time-schedule-activity-presenter [activity classes]
   (let [round (:activity/source activity)
 
@@ -579,9 +600,13 @@
                            (not= (:round/type round) :presentation))
                 
         last-completed-round-index (:round/index (last (get-completed-rounds (:class/rounds class))))]
-    {:time (str (if (:activity/time activity) 
-                  "TODO"             ;(:round/start-time round)
-                  (if (= (:round/status round) :completed) "*" "")))
+    {:time (str (if (:activity/time activity)
+                  (let [t (tc/from-long (.getTime (:activity/time activity)))
+                        formatter (tf/formatter "HH:mm")]
+                    ;(str (time/hour t) ":" (time/minute t))
+                    (tf/unparse formatter t)
+                    ))
+                (if (= (:round/status round) :completed) "*" ""))
 
      :number (if (= (:activity/number activity) -1) "" (:activity/number activity))
 
