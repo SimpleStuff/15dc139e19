@@ -30,7 +30,12 @@
                  [reagent "0.5.0"]
                                   
                  ; Code cleaness tools
-                 [repetition-hunter "1.0.0"]]
+                 [repetition-hunter "1.0.0"]
+
+                 ;; Cljs
+                 [com.andrewmcveigh/cljs-time "0.3.14"]
+                 ]
+
   
   :plugins [[lein-cljsbuild "1.0.6"]
             [lein-hiera "0.9.0"]

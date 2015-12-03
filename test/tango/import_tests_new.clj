@@ -72,3 +72,6 @@
     (let [current-id (atom 0)]
       (is (= (imp/competition-xml->map competition-snippet #(swap! current-id inc))
              expected-small-competition)))))
+
+;; (let [current-id (atom 0)]
+;;   (imp/competition-xml->map real-snippet #(swap! current-id inc)))

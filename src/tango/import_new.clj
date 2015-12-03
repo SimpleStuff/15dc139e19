@@ -146,7 +146,8 @@
      :class/dances (into [] (dance-list->map (zx/xml-> class :DanceList :Dance)))
      :class/remaining []
      :class/rounds []
-     :class/results (into [] (result-list->map (zx/xml-> class :Results :Result)))}))
+     :class/results (into [] (result-list->map (zx/xml-> class :Results :Result)))
+     :class/id (id-generator-fn)}))
 
 (defn- round-value->key [val]
   (get
@@ -159,18 +160,24 @@
    val
    :unknown-round-value))
 
-(defn- make-activity [name number comment id position source-id]
+(defn- make-activity [name number comment id position source-id time]
   {:activity/name name ;"Round 1"
    :activity/number number ;"1A"
    :activity/comment comment ;"Comment"
    :activity/id id ;"1"
    :activity/position position ;"1"
-   :activity/source-id source-id})
+   :activity/source-id source-id
+   :activity/time time})
 
 ;; comment:
  ;; <Event Seq="0" ClassNumber="0" DanceQty="0" EventNumber="" Time="" 
 ;; Comment="FREESTYLE" AdjPanel="0" Heats="1" Round="0" Status="0" Startorder="0">
-(defn- round-list->map [rounds-loc id-generator-fn]
+(defn- start-time-to-date [time-str date]
+  (let [[hh mm] (map to-number (clojure.string/split time-str #":"))]
+    (when (and (number? hh) (number? mm))
+      (tcr/to-date (t/plus (tcr/to-date-time date) (t/hours hh) (t/minutes mm))))))
+
+(defn- round-list->map [rounds-loc id-generator-fn base-time]
   (for [round rounds-loc]
     (let [round-id (id-generator-fn)]
       {:dp/temp-class-id (to-number (zx/attr round :ClassNumber))
@@ -187,6 +194,7 @@
                               (inc (get-seq-attr round))
                               ;; Put real source here, needs to be done in pp
                               round-id
+                              (start-time-to-date (zx/attr round :Time) base-time)
                               )
                         :dp/temp-class-id (to-number (zx/attr round :ClassNumber)))
 
@@ -196,7 +204,7 @@
        :round/starting []
 
        ;; Post process, parse time and plus with compdate
-       :round/start-time (zx/attr round :Time)
+       :round/start-time (start-time-to-date (zx/attr round :Time) base-time)
        
        ;; Save the id of the adjudicator panel to be able to look it up in post processing.
        ;; Subtract 3 since the 'index' in the file refer to a UI index witch is 3 of from
@@ -210,12 +218,16 @@
        ;; Index is set in Post Process
        :round/index -1 ;; the rounds number in its class
 
+       ;; Class id is set in Post Process
+       :round/class-id -1 
+
        :round/heats (to-number (zx/attr round :Heats))
        :round/status (if (= 1 (to-number (zx/attr round :Status))) :completed :not-started)
        :round/dances (vec (dance-list->map (zx/xml-> round :DanceList :Dance))) ;[example-dance-1]
        
        ;; CONSIDER - maybe this should be left as a number for DB and then up to any presenter to parse?
-       :round/type (round-value->key (to-number (zx/attr round :Round)))})))
+       :round/type (round-value->key (to-number (zx/attr round :Round)))
+       })))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Post process
@@ -248,10 +260,7 @@
                     (:participant/number %))
                 participants)))))))
 
-(defn- start-time-to-date [time-str date]
-  (let [[hh mm] (map to-number (clojure.string/split time-str #":"))]
-    (when (and (number? hh) (number? mm))
-      (tcr/to-date (t/plus (tcr/to-date-time date) (t/hours hh) (t/minutes mm))))))
+
 
 (defn- class-list-post-process [classes rounds adjudicators panels competition-date]
   (for [class classes]
@@ -263,7 +272,8 @@
               (dissoc
                (merge
                 round
-                {:round/index (count res)
+                {:round/class-id (:class/id class)
+                 :round/index (count res)
                  :round/results (vec (prep-class-result
                                       (get (:class/results class) (count res))
                                       (:result/adjudicators
@@ -274,12 +284,16 @@
                                        #(= (:dp/panel-id (:round/panel round)) (:dp/panel-id %))
                                        panels))
                                :dp/panel-id)
-                 :round/starting (if (= (count res) 0)
+                 ;; Starters in this rounds is based on the result on the previous round.
+                 ;; If the previous round is a presentation round it will not have a result
+                 ;; and should be dissregarded
+                 :round/starting (if (= (count (filter #(not= (:round/type %) :presentation) res)) 0)
                                    (:class/starting class)
                                    (prep-round-starting
                                     (:round/results (last res))
                                     (:class/starting class)))
-                 :round/start-time (start-time-to-date (:round/start-time round) competition-date)})
+                 :round/start-time  (:round/start-time round);;(start-time-to-date (:round/start-time round) competition-date)
+                 })
                :dp/temp-class-id
                :temp/activity)))
            []
@@ -293,9 +307,17 @@
                                                             (:dp/panel-id %))
                                                         panels))
                                          :dp/panel-id)
-
-               ;; Remaining participants with a result of X or R has already been calculated
-               :class/remaining (:round/starting (last processed-rounds))})
+               
+               ;; There can be many pre-configured rounds, the remaining participants are
+               ;; calculated from the result of the last completed round.
+               ;; If there are no rounds completed, than all participants are still remaining.
+               :class/remaining (if-let [completed-rounds
+                                         (seq 
+                                          (filter #(= (:round/status %) :completed) processed-rounds))]
+                                  (prep-round-starting
+                                   (:round/results (last completed-rounds))
+                                   (:class/starting class))
+                                  (:class/starting class))})
        :class/results))))
 
 (defn- adjudicators-xml->map [xml id-generator-fn]
@@ -306,8 +328,8 @@
 (defn- adjudicator-panels-xml->map [xml id-generator-fn adjudicators]
   (adjudicator-panel-list->map (zx/xml-> xml :AdjPanelList :PanelList :Panel) id-generator-fn adjudicators))
 
-(defn- rounds-xml->map [xml id-generator-fn]
-  (round-list->map (zx/xml-> xml :EventList :Event) id-generator-fn))
+(defn- rounds-xml->map [xml id-generator-fn base-time]
+  (round-list->map (zx/xml-> xml :EventList :Event) id-generator-fn base-time))
 
 (defn- classes-xml->map [xml id-generator-fn]
   (class-list->map (zx/xml-> xml :ClassList :Class) id-generator-fn))
@@ -329,10 +351,8 @@
                  name
                  "")
 
-               :activity/source 
-               (first
-                (filter #(= (:activity/source-id activity) (:round/id %)) rounds))
-                                 })
+               :activity/source (first
+                                 (filter #(= (:activity/source-id activity) (:round/id %)) rounds))})
        :dp/temp-class-id
        :activity/source-id)))
    []
@@ -340,11 +360,12 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Import API
+
 (defn competition-xml->map [xml id-generator-fn]
   (let [comp-data (competition-data-xml->map xml)
         dp-adjudicators (adjudicators-xml->map xml id-generator-fn)
         dp-classes (classes-xml->map xml id-generator-fn)
-        dp-rounds (rounds-xml->map xml id-generator-fn)
+        dp-rounds (rounds-xml->map xml id-generator-fn (:competition/date comp-data))
         dp-panels (adjudicator-panels-xml->map xml id-generator-fn dp-adjudicators)
         classes (class-list-post-process
                  dp-classes
@@ -361,4 +382,20 @@
      (make-activities (mapv :temp/activity dp-rounds) classes (mapcat :class/rounds classes))
      classes)))
 
+;; TODO : add generic exception handling
+;; (defn import-file [path]
+;;   {:pre [(string? path)]}
+;;   (let [file (clojure.java.io/file path)]
+;;     (if (.exists file)
+;;       (let [xml-src (zip/xml-zip (clojure.xml/parse file))
+;;             competition-data (competition-xml->map xml-src)]
+;;         competition-data)
+;;       [:file-not-found]         ;(create-import-info "" [] :failed [:file-not-found])
+;;       )))
 
+;; TODO - add test
+;; TODO - add exception catch
+(defn import-file-stream [{:keys [content]}]
+  (competition-xml->map
+   (zip/xml-zip (clojure.xml/parse (java.io.ByteArrayInputStream. (.getBytes content))))
+   #(java.util.UUID/randomUUID)))

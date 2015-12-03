@@ -3,6 +3,7 @@
             [com.stuartsierra.component :as component]
             [taoensso.timbre :as log]
             [tango.import :as import]
+            [tango.import-new :as import2]
             [clojure.core.match :refer [match]]))
 
 (defn start-message-handler [in-channel out-channel]
@@ -18,6 +19,9 @@
                    [:file/import p]
                    (async/put! out-channel (merge message {:topic :file/imported
                                                            :payload (import/import-file-stream p)}))
+                   [:file/import-new p]
+                   (async/put! out-channel (merge message {:topic :file/imported-new
+                                                           :payload (import2/import-file-stream p)}))
                    :else (async/>!! out-channel {:topic :files/unkown-topic :payload {:topic topic}})))
           (catch Exception e
             (log/error e "Exception in Files message go loop")

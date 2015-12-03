@@ -2866,7 +2866,7 @@ net.brehaut.ClojureTools = (function (SH) {
   };
 })(SyntaxHighlighter);
 </script><title>tango -- Marginalia</title></head><body><table><tr><td class="docs"><div class="header"><h1 class="project-name"><a href="http://example.com/FIXME">tango</a></h1><h2 class="project-version">0.1.0-SNAPSHOT</h2><br /><p>Tango</p>
-</div><div class="dependencies"><h3>dependencies</h3><table><tr><td class="dep-name">org.clojure/clojure</td><td class="dotted"><hr /></td><td class="dep-version">1.7.0</td></tr><tr><td class="dep-name">org.clojure/core.async</td><td class="dotted"><hr /></td><td class="dep-version">0.1.346.0-17112a-alpha</td></tr><tr><td class="dep-name">org.clojure/tools.namespace</td><td class="dotted"><hr /></td><td class="dep-version">0.2.10</td></tr><tr><td class="dep-name">org.clojure/clojurescript</td><td class="dotted"><hr /></td><td class="dep-version">1.7.48</td></tr><tr><td class="dep-name">org.clojure/core.match</td><td class="dotted"><hr /></td><td class="dep-version">0.3.0-alpha4</td></tr><tr><td class="dep-name">com.stuartsierra/component</td><td class="dotted"><hr /></td><td class="dep-version">0.2.3</td></tr><tr><td class="dep-name">org.clojure/data.xml</td><td class="dotted"><hr /></td><td class="dep-version">0.0.8</td></tr><tr><td class="dep-name">org.clojure/data.zip</td><td class="dotted"><hr /></td><td class="dep-version">0.1.1</td></tr><tr><td class="dep-name">clj-time</td><td class="dotted"><hr /></td><td class="dep-version">0.8.0</td></tr><tr><td class="dep-name">com.taoensso/sente</td><td class="dotted"><hr /></td><td class="dep-version">1.5.0</td></tr><tr><td class="dep-name">com.taoensso/timbre</td><td class="dotted"><hr /></td><td class="dep-version">3.4.0</td></tr><tr><td class="dep-name">http-kit</td><td class="dotted"><hr /></td><td class="dep-version">2.1.19</td></tr><tr><td class="dep-name">ring</td><td class="dotted"><hr /></td><td class="dep-version">1.3.2</td></tr><tr><td class="dep-name">ring/ring-defaults</td><td class="dotted"><hr /></td><td class="dep-version">0.1.5</td></tr><tr><td class="dep-name">compojure</td><td class="dotted"><hr /></td><td class="dep-version">1.3.4</td></tr><tr><td class="dep-name">reagent</td><td class="dotted"><hr /></td><td class="dep-version">0.5.0</td></tr><tr><td class="dep-name">repetition-hunter</td><td class="dotted"><hr /></td><td class="dep-version">1.0.0</td></tr></table></div></td><td class="codes" style="text-align: center; vertical-align: middle;color: #666;padding-right:20px"><br /><br /><br />(this space intentionally left almost blank)</td></tr><tr><td class="docs"><div class="toc"><a name="toc"><h3>namespaces</h3></a><ul><li><a href="#tango.channels">tango.channels</a></li><li><a href="#tango.broker">tango.broker</a></li><li><a href="#tango.import-new">tango.import-new</a></li><li><a href="#tango.http-server">tango.http-server</a></li><li><a href="#tango.client">tango.client</a></li><li><a href="#tango.files">tango.files</a></li><li><a href="#tango.import">tango.import</a></li><li><a href="#tango.web-socket">tango.web-socket</a></li><li><a href="#tango.core">tango.core</a></li><li><a href="#tango.import-tests-new">tango.import-tests-new</a></li><li><a href="#tango.repetition-hunt">tango.repetition-hunt</a></li><li><a href="#tango.import-tests">tango.import-tests</a></li><li><a href="#tango.test-data">tango.test-data</a></li><li><a href="#tango.export-tests">tango.export-tests</a></li><li><a href="#tango.core-test">tango.core-test</a></li><li><a href="#tango.specifications">tango.specifications</a></li></ul></div></td><td class="codes">&nbsp;</td></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#tango.channels" name="tango.channels"><h1 class="project-name">tango.channels</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><h2>Tango core.async clients component</h2>
+</div><div class="dependencies"><h3>dependencies</h3><table><tr><td class="dep-name">org.clojure/clojure</td><td class="dotted"><hr /></td><td class="dep-version">1.7.0</td></tr><tr><td class="dep-name">org.clojure/core.async</td><td class="dotted"><hr /></td><td class="dep-version">0.1.346.0-17112a-alpha</td></tr><tr><td class="dep-name">org.clojure/tools.namespace</td><td class="dotted"><hr /></td><td class="dep-version">0.2.10</td></tr><tr><td class="dep-name">org.clojure/clojurescript</td><td class="dotted"><hr /></td><td class="dep-version">1.7.48</td></tr><tr><td class="dep-name">org.clojure/core.match</td><td class="dotted"><hr /></td><td class="dep-version">0.3.0-alpha4</td></tr><tr><td class="dep-name">com.stuartsierra/component</td><td class="dotted"><hr /></td><td class="dep-version">0.2.3</td></tr><tr><td class="dep-name">org.clojure/data.xml</td><td class="dotted"><hr /></td><td class="dep-version">0.0.8</td></tr><tr><td class="dep-name">org.clojure/data.zip</td><td class="dotted"><hr /></td><td class="dep-version">0.1.1</td></tr><tr><td class="dep-name">clj-time</td><td class="dotted"><hr /></td><td class="dep-version">0.8.0</td></tr><tr><td class="dep-name">com.taoensso/sente</td><td class="dotted"><hr /></td><td class="dep-version">1.5.0</td></tr><tr><td class="dep-name">com.taoensso/timbre</td><td class="dotted"><hr /></td><td class="dep-version">3.4.0</td></tr><tr><td class="dep-name">http-kit</td><td class="dotted"><hr /></td><td class="dep-version">2.1.19</td></tr><tr><td class="dep-name">ring</td><td class="dotted"><hr /></td><td class="dep-version">1.3.2</td></tr><tr><td class="dep-name">ring/ring-defaults</td><td class="dotted"><hr /></td><td class="dep-version">0.1.5</td></tr><tr><td class="dep-name">compojure</td><td class="dotted"><hr /></td><td class="dep-version">1.3.4</td></tr><tr><td class="dep-name">reagent</td><td class="dotted"><hr /></td><td class="dep-version">0.5.0</td></tr><tr><td class="dep-name">repetition-hunter</td><td class="dotted"><hr /></td><td class="dep-version">1.0.0</td></tr><tr><td class="dep-name">com.andrewmcveigh/cljs-time</td><td class="dotted"><hr /></td><td class="dep-version">0.3.14</td></tr></table></div></td><td class="codes" style="text-align: center; vertical-align: middle;color: #666;padding-right:20px"><br /><br /><br />(this space intentionally left almost blank)</td></tr><tr><td class="docs"><div class="toc"><a name="toc"><h3>namespaces</h3></a><ul><li><a href="#tango.channels">tango.channels</a></li><li><a href="#tango.broker">tango.broker</a></li><li><a href="#tango.import-new">tango.import-new</a></li><li><a href="#tango.http-server">tango.http-server</a></li><li><a href="#tango.client">tango.client</a></li><li><a href="#tango.files">tango.files</a></li><li><a href="#tango.import">tango.import</a></li><li><a href="#tango.web-socket">tango.web-socket</a></li><li><a href="#tango.core">tango.core</a></li><li><a href="#tango.import-tests-new">tango.import-tests-new</a></li><li><a href="#tango.repetition-hunt">tango.repetition-hunt</a></li><li><a href="#tango.import-tests">tango.import-tests</a></li><li><a href="#tango.test-data">tango.test-data</a></li><li><a href="#tango.export-tests">tango.export-tests</a></li><li><a href="#tango.core-test">tango.core-test</a></li><li><a href="#tango.specifications">tango.specifications</a></li></ul></div></td><td class="codes">&nbsp;</td></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#tango.channels" name="tango.channels"><h1 class="project-name">tango.channels</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs"><h2>Tango core.async clients component</h2>
 
 <p>'tango.channels' provides core.async in/out channels for clients to
 send and receive messages on. This is primarely of interest for
@@ -2974,6 +2974,10 @@ in-memory clients.</p>
            (async/&gt;!! (:in-channel (:file-handler components)) message)
            [:file/imported _]
            (async/&gt;!! client-in-channel message)
+           [:file/imported-new _]
+           (async/&gt;!! client-in-channel message)
+           [:file/import-new _]
+           (async/&gt;!! (:in-channel (:file-handler components)) message)
            :else (async/&gt;!!
                   client-in-channel
                   {:sender sender :topic :broker/unkown-topic :payload {:topic topic}}))))</pre></td></tr><tr><td class="docs"><p>TODO - mapping :out-channels is not a greate idea, if we get a nil all msg procs
@@ -3129,7 +3133,8 @@ dies, fixit damn it!</p>
      :class/dances (into [] (dance-list-&gt;map (zx/xml-&gt; class :DanceList :Dance)))
      :class/remaining []
      :class/rounds []
-     :class/results (into [] (result-list-&gt;map (zx/xml-&gt; class :Results :Result)))}))</pre></td></tr><tr><td class="docs">
+     :class/results (into [] (result-list-&gt;map (zx/xml-&gt; class :Results :Result)))
+     :class/id (id-generator-fn)}))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn- round-value-&gt;key [val]
   (get
    [:none
@@ -3140,16 +3145,21 @@ dies, fixit damn it!</p>
     :presentation]
    val
    :unknown-round-value))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn- make-activity [name number comment id position source-id]
+</td><td class="codes"><pre class="brush: clojure">(defn- make-activity [name number comment id position source-id time]
   {:activity/name name ;&quot;Round 1&quot;
    :activity/number number ;&quot;1A&quot;
    :activity/comment comment ;&quot;Comment&quot;
    :activity/id id ;&quot;1&quot;
    :activity/position position ;&quot;1&quot;
-   :activity/source-id source-id})</pre></td></tr><tr><td class="docs"><p>comment:
+   :activity/source-id source-id
+   :activity/time time})</pre></td></tr><tr><td class="docs"><p>comment:
 &lt;Event Seq="0" ClassNumber="0" DanceQty="0" EventNumber="" Time="" 
 Comment="FREESTYLE" AdjPanel="0" Heats="1" Round="0" Status="0" Startorder="0"></p>
-</td><td class="codes"><pre class="brush: clojure">(defn- round-list-&gt;map [rounds-loc id-generator-fn]
+</td><td class="codes"><pre class="brush: clojure">(defn- start-time-to-date [time-str date]
+  (let [[hh mm] (map to-number (clojure.string/split time-str #&quot;:&quot;))]
+    (when (and (number? hh) (number? mm))
+      (tcr/to-date (t/plus (tcr/to-date-time date) (t/hours hh) (t/minutes mm))))))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn- round-list-&gt;map [rounds-loc id-generator-fn base-time]
   (for [round rounds-loc]
     (let [round-id (id-generator-fn)]
       {:dp/temp-class-id (to-number (zx/attr round :ClassNumber))
@@ -3162,13 +3172,14 @@ Comment="FREESTYLE" AdjPanel="0" Heats="1" Round="0" Status="0" Startorder="0"><
                               (id-generator-fn)
                               (inc (get-seq-attr round))
                               ;; Put real source here, needs to be done in pp
-                              round-id)
+                              round-id
+                              (start-time-to-date (zx/attr round :Time) base-time))
                         :dp/temp-class-id (to-number (zx/attr round :ClassNumber)))
        :round/number (if (=  (zx/attr round :EventNumber)) -1 (to-number (zx/attr round :EventNumber)))
        ;; Post process, need to get this from the previous round
        :round/starting []
        ;; Post process, parse time and plus with compdate
-       :round/start-time (zx/attr round :Time)
+       :round/start-time (start-time-to-date (zx/attr round :Time) base-time)
        ;; Save the id of the adjudicator panel to be able to look it up in post processing.
        ;; Subtract 3 since the 'index' in the file refer to a UI index witch is 3 of from
        ;; the Adjudicator index in this file beeing parsed.
@@ -3178,11 +3189,14 @@ Comment="FREESTYLE" AdjPanel="0" Heats="1" Round="0" Status="0" Startorder="0"><
        :round/recall (to-number (zx/attr (first (zx/xml-&gt; round :RecallList :Recall)) :Recall))
        ;; Index is set in Post Process
        :round/index -1 ;; the rounds number in its class
+       ;; Class id is set in Post Process
+       :round/class-id -1 
        :round/heats (to-number (zx/attr round :Heats))
        :round/status (if (= 1 (to-number (zx/attr round :Status))) :completed :not-started)
        :round/dances (vec (dance-list-&gt;map (zx/xml-&gt; round :DanceList :Dance))) ;[example-dance-1]
        ;; CONSIDER - maybe this should be left as a number for DB and then up to any presenter to parse?
-       :round/type (round-value-&gt;key (to-number (zx/attr round :Round)))})))</pre></td></tr><tr><td class="docs"><p>Post process</p>
+       :round/type (round-value-&gt;key (to-number (zx/attr round :Round)))
+       })))</pre></td></tr><tr><td class="docs"><p>Post process</p>
 </td><td class="codes"></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn- prep-class-result [results result-panel adjudicators]
   (for [result (:result/results results)]
@@ -3210,10 +3224,6 @@ Comment="FREESTYLE" AdjPanel="0" Heats="1" Round="0" Status="0" Startorder="0"><
                 #(= (:result/participant-number prev-result)
                     (:participant/number %))
                 participants)))))))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn- start-time-to-date [time-str date]
-  (let [[hh mm] (map to-number (clojure.string/split time-str #&quot;:&quot;))]
-    (when (and (number? hh) (number? mm))
-      (tcr/to-date (t/plus (tcr/to-date-time date) (t/hours hh) (t/minutes mm))))))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn- class-list-post-process [classes rounds adjudicators panels competition-date]
   (for [class classes]
     (let [processed-rounds
@@ -3224,7 +3234,8 @@ Comment="FREESTYLE" AdjPanel="0" Heats="1" Round="0" Status="0" Startorder="0"><
               (dissoc
                (merge
                 round
-                {:round/index (count res)
+                {:round/class-id (:class/id class)
+                 :round/index (count res)
                  :round/results (vec (prep-class-result
                                       (get (:class/results class) (count res))
                                       (:result/adjudicators
@@ -3235,12 +3246,16 @@ Comment="FREESTYLE" AdjPanel="0" Heats="1" Round="0" Status="0" Startorder="0"><
                                        #(= (:dp/panel-id (:round/panel round)) (:dp/panel-id %))
                                        panels))
                                :dp/panel-id)
-                 :round/starting (if (= (count res) 0)
+                 ;; Starters in this rounds is based on the result on the previous round.
+                 ;; If the previous round is a presentation round it will not have a result
+                 ;; and should be dissregarded
+                 :round/starting (if (= (count (filter #(not= (:round/type %) :presentation) res)) 0)
                                    (:class/starting class)
                                    (prep-round-starting
                                     (:round/results (last res))
                                     (:class/starting class)))
-                 :round/start-time (start-time-to-date (:round/start-time round) competition-date)})
+                 :round/start-time  (:round/start-time round);;(start-time-to-date (:round/start-time round) competition-date)
+                 })
                :dp/temp-class-id
                :temp/activity)))
            []
@@ -3253,8 +3268,16 @@ Comment="FREESTYLE" AdjPanel="0" Heats="1" Round="0" Status="0" Startorder="0"><
                                                             (:dp/panel-id %))
                                                         panels))
                                          :dp/panel-id)
-               ;; Remaining participants with a result of X or R has already been calculated
-               :class/remaining (:round/starting (last processed-rounds))})
+               ;; There can be many pre-configured rounds, the remaining participants are
+               ;; calculated from the result of the last completed round.
+               ;; If there are no rounds completed, than all participants are still remaining.
+               :class/remaining (if-let [completed-rounds
+                                         (seq 
+                                          (filter #(= (:round/status %) :completed) processed-rounds))]
+                                  (prep-round-starting
+                                   (:round/results (last completed-rounds))
+                                   (:class/starting class))
+                                  (:class/starting class))})
        :class/results))))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn- adjudicators-xml-&gt;map [xml id-generator-fn]
   (mapv
@@ -3262,8 +3285,8 @@ Comment="FREESTYLE" AdjPanel="0" Heats="1" Round="0" Status="0" Startorder="0"><
    (zx/xml-&gt; xml :AdjPanelList :AdjList :Adjudicator)))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn- adjudicator-panels-xml-&gt;map [xml id-generator-fn adjudicators]
   (adjudicator-panel-list-&gt;map (zx/xml-&gt; xml :AdjPanelList :PanelList :Panel) id-generator-fn adjudicators))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn- rounds-xml-&gt;map [xml id-generator-fn]
-  (round-list-&gt;map (zx/xml-&gt; xml :EventList :Event) id-generator-fn))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn- rounds-xml-&gt;map [xml id-generator-fn base-time]
+  (round-list-&gt;map (zx/xml-&gt; xml :EventList :Event) id-generator-fn base-time))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn- classes-xml-&gt;map [xml id-generator-fn]
   (class-list-&gt;map (zx/xml-&gt; xml :ClassList :Class) id-generator-fn))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn- competition-data-xml-&gt;map [xml]
@@ -3280,19 +3303,18 @@ Comment="FREESTYLE" AdjPanel="0" Heats="1" Round="0" Status="0" Startorder="0"><
                               (first
                                (filter #(= (:class/position %) (:dp/temp-class-id activity)) classes)))]
                  name)
-               :activity/source 
-               (first
-                (filter #(= (:activity/source-id activity) (:round/id %)) rounds))
-                                 })
+               :activity/source (first
+                                 (filter #(= (:activity/source-id activity) (:round/id %)) rounds))})
        :dp/temp-class-id
        :activity/source-id)))
    []
    raw-activities))</pre></td></tr><tr><td class="docs"><p>Import API</p>
+</td><td class="codes"></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn competition-xml-&gt;map [xml id-generator-fn]
   (let [comp-data (competition-data-xml-&gt;map xml)
         dp-adjudicators (adjudicators-xml-&gt;map xml id-generator-fn)
         dp-classes (classes-xml-&gt;map xml id-generator-fn)
-        dp-rounds (rounds-xml-&gt;map xml id-generator-fn)
+        dp-rounds (rounds-xml-&gt;map xml id-generator-fn (:competition/date comp-data))
         dp-panels (adjudicator-panels-xml-&gt;map xml id-generator-fn dp-adjudicators)
         classes (class-list-post-process
                  dp-classes
@@ -3307,7 +3329,22 @@ Comment="FREESTYLE" AdjPanel="0" Heats="1" Round="0" Status="0" Startorder="0"><
      (mapv #(dissoc % :dp/panel-id) dp-panels) ;(adjudicator-panels-xml-&gt;map xml id-generator-fn dp-adjudicators)
      (mapv #(dissoc % :dp/temp-id) dp-adjudicators)
      (make-activities (mapv :temp/activity dp-rounds) classes (mapcat :class/rounds classes))
-     classes)))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#tango.http-server" name="tango.http-server"><h1 class="project-name">tango.http-server</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
+     classes)))</pre></td></tr><tr><td class="docs"><p>TODO : add generic exception handling
+(defn import-file [path]
+  {:pre [(string? path)]}
+  (let [file (clojure.java.io/file path)]
+    (if (.exists file)
+      (let [xml-src (zip/xml-zip (clojure.xml/parse file))
+            competition-data (competition-xml->map xml-src)]
+        competition-data)
+      [:file-not-found]         ;(create-import-info "" [] :failed [:file-not-found])
+      )))</p>
+</td><td class="codes"></td></tr><tr><td class="docs"><p>TODO - add test
+TODO - add exception catch</p>
+</td><td class="codes"><pre class="brush: clojure">(defn import-file-stream [{:keys [content]}]
+  (competition-xml-&gt;map
+   (zip/xml-zip (clojure.xml/parse (java.io.ByteArrayInputStream. (.getBytes content))))
+   #(java.util.UUID/randomUUID)))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#tango.http-server" name="tango.http-server"><h1 class="project-name">tango.http-server</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(ns tango.http-server
   (:require [org.httpkit.server :as http-kit-server]
             [compojure.core :refer :all]
@@ -3355,7 +3392,10 @@ Comment="FREESTYLE" AdjPanel="0" Heats="1" Round="0" Status="0" Startorder="0"><
             [cljs.core.async :as async :refer (&lt;! &gt;! put! chan)]
             [cljs.core.match :refer-macros [match]]
             [taoensso.sente :as sente :refer (cb-success?)]
-            [clojure.string]))</pre></td></tr><tr><td class="docs"><p>Sente: https://github.com/ptaoussanis/sente
+            [clojure.string]
+            [cljs-time.core :as time]
+            [cljs-time.coerce :as tc]
+            [cljs-time.format :as tf]))</pre></td></tr><tr><td class="docs"><p>Sente: https://github.com/ptaoussanis/sente
 http://markusslima.github.io/bootstrap-filestyle/
 http://getbootstrap.com/components/
 Utils</p>
@@ -3407,138 +3447,150 @@ Utils</p>
          ;;    [{:competitor/name &quot;Axel Carlsson&quot;, :competitor/number 60, :competitor/club &quot;DTLH/DV&quot;}
          ;;     {:competitor/name &quot;Tom Matei&quot;, :competitor/number 61, :competitor/club &quot;SDC&quot;}
          ;;     {:competitor/name &quot;Jacob Olsson&quot;, :competitor/number 62, :competitor/club &quot;DTLH/DV&quot;}]}]}
-         :competition
-         {:competition/name &quot;TurboMegatävling&quot;
-          :competition/date #inst &quot;2014-11-22T00:00:00.000-00:00&quot;
-          :competition/location &quot;THUNDERDOME&quot;
-          :competition/events
-          [{:event/position 0
-            :event/class-number 0
-            :event/number -1
-            :event/time 
-            :event/comment 
-            :event/adjudicator-panel 0
-            :event/heats 1
-            :event/round :unknown-round-value
-            :event/status 0
-            :event/start-order 0
-            :event/recall 0
-            :event/dances
-            []}
-           {:event/position 1
-            :event/class-number 1
-            :event/number 1
-            :event/time &quot;10:00&quot;
-            :event/comment &quot;A comment&quot;
-            :event/adjudicator-panel 4
-            :event/heats 2
-            :event/round :normal-x
-            :event/status 1
-            :event/start-order 0
-            :event/recall 0
-            :event/dances
-            [{:dance/name &quot;Medium&quot;}
-             {:dance/name &quot;Waltz&quot;}]}
-           {:event/position 2
-           :event/class-number 0
-           :event/number 1
-           :event/time &quot;10:05&quot;
-           :event/comment &quot;A comment&quot;
-           :event/adjudicator-panel 4
-           :event/heats 2
-           :event/round :normal-x
-           :event/status 0
-           :event/start-order 0
-           :event/recall 6
-           :event/dances
-           [{:dance/name &quot;Medium&quot;}]}]
-          :competition/classes
-          [{:class/name &quot;Hiphop Singel Star B&quot;
-            :class/position 1
-            :class/adjudicator-panel 1
-            :class/dances
-            [{:dance/name &quot;Medium&quot;}
-             {:dance/name &quot;Tango&quot;}
-             {:dance/name &quot;VienWaltz&quot;}
-             {:dance/name &quot;Foxtrot&quot;}
-             {:dance/name &quot;Quickstep&quot;}
-             {:dance/name &quot;Samba&quot;}
-             {:dance/name &quot;Cha-Cha&quot;}
-             {:dance/name &quot;Rumba&quot;}
-             {:dance/name &quot;Paso-Doble&quot;}
-             {:dance/name &quot;Jive&quot;}]
-            :class/competitors
-            [{:competitor/name &quot;Rulle Trulle&quot;
-              :competitor/club &quot;Sinclairs&quot;
-              :competitor/number 30}
-             {:competitor/name &quot;Milan Lund&quot;
-              :competitor/club &quot;Wilson&quot;
-              :competitor/number 31}
-             {:competitor/name &quot;Douglas Junger&quot;
-              :competitor/club &quot;RGDT&quot;
-              :competitor/number 32}]
-            :class/results
-            [{:result/round &quot;S&quot;
-              :result/adjudicators
-              [{:adjudicator/number 3 :adjudicator/position 0}
-               {:adjudicator/number 4 :adjudicator/position 1}
-               {:adjudicator/number 5 :adjudicator/position 2}]
-              :result/dance {:dance/name &quot;X-Quick Forward&quot;}
-              :result/results
-              [{:competitor/number 30
-                :competitor/recalled 
-                :competitor/results
-                [{:result/adjudicator
-                  {:adjudicator/number 3, :adjudicator/position 0},
-                  :result/x-mark true}
-                 {:result/adjudicator
-                  {:adjudicator/number 4, :adjudicator/position 1},
-                  :result/x-mark false}
-                 {:result/adjudicator
-                  {:adjudicator/number 5, :adjudicator/position 2},
-                  :result/x-mark true}]}
-               {:competitor/number 31,
-                :competitor/recalled :r,
-                :competitor/results
-                [{:result/adjudicator
-                  {:adjudicator/number 3, :adjudicator/position 0},
-                  :result/x-mark false}
-                 {:result/adjudicator
-                  {:adjudicator/number 4, :adjudicator/position 1},
-                  :result/x-mark true}
-                 {:result/adjudicator
-                  {:adjudicator/number 5, :adjudicator/position 2},
-                  :result/x-mark false}]}
-               {:competitor/number 32,
-                :competitor/recalled :x,
-                :competitor/results
-                [{:result/adjudicator
-                  {:adjudicator/number 3, :adjudicator/position 0},
-                  :result/x-mark true}
-                 {:result/adjudicator
-                  {:adjudicator/number 4, :adjudicator/position 1},
-                  :result/x-mark false}
-                 {:result/adjudicator
-                  {:adjudicator/number 5, :adjudicator/position 2},
-                  :result/x-mark false}]}]
-              }]}
-           {:class/name &quot;Hiphop Singel Star J Fl&quot;
-            :class/position 0
-            :class/adjudicator-panel 0
-            :class/dances
-            []
-            :class/competitors
-            [{:competitor/name &quot;Ringo Stingo&quot;
-              :competitor/club &quot;Kapangg&quot;
-              :competitor/number 20}
-             {:competitor/name &quot;Greve Turbo&quot;
-              :competitor/club &quot;OOoost&quot;
-              :competitor/number 21}]
-            :class/results []}]}}))</pre></td></tr><tr><td class="docs">
+         :competition-new {}
+         :competition {}
+         ;; {:competition/name &quot;TurboMegatävling&quot;
+         ;;  :competition/date #inst &quot;2014-11-22T00:00:00.000-00:00&quot;
+         ;;  :competition/location &quot;THUNDERDOME&quot;
+         ;;  :competition/events
+         ;;  [{:event/position 0
+         ;;    :event/class-number 0
+         ;;    :event/number -1
+         ;;    :event/time 
+         ;;    :event/comment 
+         ;;    :event/adjudicator-panel 0
+         ;;    :event/heats 1
+         ;;    :event/round :unknown-round-value
+         ;;    :event/status 0
+         ;;    :event/start-order 0
+         ;;    :event/recall 0
+         ;;    :event/dances
+         ;;    []}
+         ;;   {:event/position 1
+         ;;    :event/class-number 1
+         ;;    :event/number 1
+         ;;    :event/time &quot;10:00&quot;
+         ;;    :event/comment &quot;A comment&quot;
+         ;;    :event/adjudicator-panel 4
+         ;;    :event/heats 2
+         ;;    :event/round :normal-x
+         ;;    :event/status 1
+         ;;    :event/start-order 0
+         ;;    :event/recall 0
+         ;;    :event/dances
+         ;;    [{:dance/name &quot;Medium&quot;}
+         ;;     {:dance/name &quot;Waltz&quot;}]}
+         ;;   {:event/position 2
+         ;;   :event/class-number 0
+         ;;   :event/number 1
+         ;;   :event/time &quot;10:05&quot;
+         ;;   :event/comment &quot;A comment&quot;
+         ;;   :event/adjudicator-panel 4
+         ;;   :event/heats 2
+         ;;   :event/round :normal-x
+         ;;   :event/status 0
+         ;;   :event/start-order 0
+         ;;   :event/recall 6
+         ;;   :event/dances
+         ;;   [{:dance/name &quot;Medium&quot;}]}]
+         ;;  :competition/classes
+         ;;  [{:class/name &quot;Hiphop Singel Star B&quot;
+         ;;    :class/position 1
+         ;;    :class/adjudicator-panel 1
+         ;;    :class/dances
+         ;;    [{:dance/name &quot;Medium&quot;}
+         ;;     {:dance/name &quot;Tango&quot;}
+         ;;     {:dance/name &quot;VienWaltz&quot;}
+         ;;     {:dance/name &quot;Foxtrot&quot;}
+         ;;     {:dance/name &quot;Quickstep&quot;}
+         ;;     {:dance/name &quot;Samba&quot;}
+         ;;     {:dance/name &quot;Cha-Cha&quot;}
+         ;;     {:dance/name &quot;Rumba&quot;}
+         ;;     {:dance/name &quot;Paso-Doble&quot;}
+         ;;     {:dance/name &quot;Jive&quot;}]
+         ;;    :class/competitors
+         ;;    [{:competitor/name &quot;Rulle Trulle&quot;
+         ;;      :competitor/club &quot;Sinclairs&quot;
+         ;;      :competitor/number 30}
+         ;;     {:competitor/name &quot;Milan Lund&quot;
+         ;;      :competitor/club &quot;Wilson&quot;
+         ;;      :competitor/number 31}
+         ;;     {:competitor/name &quot;Douglas Junger&quot;
+         ;;      :competitor/club &quot;RGDT&quot;
+         ;;      :competitor/number 32}]
+         ;;    :class/results
+         ;;    [{:result/round &quot;S&quot;
+         ;;      :result/adjudicators
+         ;;      [{:adjudicator/number 3 :adjudicator/position 0}
+         ;;       {:adjudicator/number 4 :adjudicator/position 1}
+         ;;       {:adjudicator/number 5 :adjudicator/position 2}]
+         ;;      :result/dance {:dance/name &quot;X-Quick Forward&quot;}
+         ;;      :result/results
+         ;;      [{:competitor/number 30
+         ;;        :competitor/recalled 
+         ;;        :competitor/results
+         ;;        [{:result/adjudicator
+         ;;          {:adjudicator/number 3, :adjudicator/position 0},
+         ;;          :result/x-mark true}
+         ;;         {:result/adjudicator
+         ;;          {:adjudicator/number 4, :adjudicator/position 1},
+         ;;          :result/x-mark false}
+         ;;         {:result/adjudicator
+         ;;          {:adjudicator/number 5, :adjudicator/position 2},
+         ;;          :result/x-mark true}]}
+         ;;       {:competitor/number 31,
+         ;;        :competitor/recalled :r,
+         ;;        :competitor/results
+         ;;        [{:result/adjudicator
+         ;;          {:adjudicator/number 3, :adjudicator/position 0},
+         ;;          :result/x-mark false}
+         ;;         {:result/adjudicator
+         ;;          {:adjudicator/number 4, :adjudicator/position 1},
+         ;;          :result/x-mark true}
+         ;;         {:result/adjudicator
+         ;;          {:adjudicator/number 5, :adjudicator/position 2},
+         ;;          :result/x-mark false}]}
+         ;;       {:competitor/number 32,
+         ;;        :competitor/recalled :x,
+         ;;        :competitor/results
+         ;;        [{:result/adjudicator
+         ;;          {:adjudicator/number 3, :adjudicator/position 0},
+         ;;          :result/x-mark true}
+         ;;         {:result/adjudicator
+         ;;          {:adjudicator/number 4, :adjudicator/position 1},
+         ;;          :result/x-mark false}
+         ;;         {:result/adjudicator
+         ;;          {:adjudicator/number 5, :adjudicator/position 2},
+         ;;          :result/x-mark false}]}]
+         ;;      }]}
+         ;;   {:class/name &quot;Hiphop Singel Star J Fl&quot;
+         ;;    :class/position 0
+         ;;    :class/adjudicator-panel 0
+         ;;    :class/dances
+         ;;    []
+         ;;    :class/competitors
+         ;;    [{:competitor/name &quot;Ringo Stingo&quot;
+         ;;      :competitor/club &quot;Kapangg&quot;
+         ;;      :competitor/number 20}
+         ;;     {:competitor/name &quot;Greve Turbo&quot;
+         ;;      :competitor/club &quot;OOoost&quot;
+         ;;      :competitor/number 21}]
+         ;;    :class/results []}]}}
+         }))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn on-file-read [e file-reader]
   (let [result (.-result file-reader)]
     (log &quot;On file read: send :file/import&quot;)
     (chsk-send! [:file/import {:content result}])))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn on-file-read-new [e file-reader]
+  (let [result (.-result file-reader)]
+    (log &quot;On file read new: send :file/import-new&quot;)
+    (chsk-send! [:file/import-new {:content result}])))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn on-click-import-file-new [e]
+  (log &quot;Import new clicked&quot;)
+  (let [file (.item (.. e -target -files) 0)
+        r (js/FileReader.)]
+    (set! (.-onload r) #(on-file-read-new % r))
+    (.readAsText r file)))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn on-click-import-file [e]
   (log &quot;Import clicked&quot;)
   (let [file (.item (.. e -target -files) 0)
@@ -3721,7 +3773,64 @@ Utils</p>
        ^{:key adjudicator-panel}
        [:tr
         [:td (:panel/id adjudicator-panel)]
-        [:td (clojure.string/join &quot;, &quot; (mapcat vals (:panel/adjudicators adjudicator-panel)))]])]]])</pre></td></tr><tr><td class="docs">
+        [:td (clojure.string/join &quot;, &quot; (mapcat vals (:panel/adjudicators adjudicator-panel)))]])]]])</pre></td></tr><tr><td class="docs"><p>:class/adjudicator-panel {:adjudicator-panel/adjudicators [{:adjudicator/name "Anders", :adjudicator/country "Sweden", :adjudicator/id #uuid "4938cfaa-3af6-40e0-ba9c-532efde47bdd"} {:adjudicator/name "Bertil", :adjudicator/country "", :adjudicator/id #uuid "2cbab2aa-9c42-42c1-8385-2e0ba2856afe"}], :adjudicator-panel/name "1"</p>
+</td><td class="codes"></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn make-round-presentation-new-2 [round-status round-count]
+;;  (log round-status)
+  (str
+   round-count &quot; - &quot;
+   (if round-status
+     (if (number-string? round-status)
+       (str &quot;Round &quot; round-status)
+       (condp = round-status
+         &quot;S&quot; (str &quot;Semifinal&quot; )
+         &quot;E&quot; &quot;2nd Try&quot;
+         &quot;F&quot; &quot;Final&quot;
+         &quot;O&quot; &quot;Retry&quot;
+         (str &quot;Unknown status : &quot; round-status)))
+     &quot;Not Started&quot;)))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn get-completed-rounds [rounds]
+  (filter #(and (= (:round/status %) :completed)
+                (not= (:round/type %) :presentation)) rounds))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn make-round-presentation-new [rounds]
+  ;; Only count rounds that are completed and that are not presentation rounds
+  (let [completed-rounds (get-completed-rounds rounds)]
+    (str
+     (count completed-rounds) &quot; - &quot;
+     (if (seq completed-rounds)
+       (let [round-type (:round/type (last completed-rounds))]
+         (if (= round-type :normal-x)
+           (str &quot;Round &quot; (count completed-rounds))
+           (get round-map round-type)))
+       &quot;Not Started&quot;))))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn new-classes-component []
+  [:div
+   [:h3 &quot;Klasser Ny&quot;]
+   [:table.table
+    [:thead
+     [:tr
+      [:th {:with &quot;20&quot;} &quot;#&quot;]
+      [:th {:with &quot;200&quot;} &quot;Dansdisciplin&quot;]
+      [:th {:with &quot;20&quot;} &quot;Panel&quot;]
+      [:th {:with &quot;20&quot;} &quot;Typ&quot;]
+      [:th {:with &quot;20&quot;} &quot;Startande&quot;]
+      [:th {:with &quot;20&quot;} &quot;Status&quot;]]]
+    [:tbody
+     (for [class (sort-by :class/position (:competition/classes (:competition-new @app-state)))]
+       ^{:key class}
+       [:tr
+        [:td (:class/position class)]
+        [:td (:class/name class)]
+        [:td (if-let [panel (:class/adjudicator-panel class)]
+               (:adjudicator-panel/name panel)
+               &quot;0&quot;)]
+        [:td (make-dance-type-presentation (:class/dances class))]
+        [:td (str (count (:class/remaining class)) &quot;/&quot; (count (:class/starting class)))]
+        ;; Present how far into the competition this class is.
+        ;; The round status is given by the last completed round, if there are none
+        ;;  the class is not started
+        [:td (make-round-presentation-new (:class/rounds class))
+         ]])]]])</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn dp-classes-component []
   [:div
    [:h3 &quot;Klasser&quot;]
@@ -3749,13 +3858,19 @@ Utils</p>
   [:div
    [:h2 &quot;Importera en ny tävling : &quot;]
    [:input.btn.btn-primary.btn-lg {:type &quot;file&quot; :value &quot;Import file&quot;
-                                   :onChange #(on-click-import-file %)}]])</pre></td></tr><tr><td class="docs">
+                                   :onChange #(on-click-import-file %)}]
+   [:input.btn.btn-primary.btn-lg {:type &quot;file&quot; :value &quot;Import file new&quot;
+                                   :onChange #(on-click-import-file-new %)}]])</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn navigation-component []
   [:div
    [:input.btn.btn-default {:type &quot;button&quot; :value &quot;Classes&quot;
                             :on-click #(dispatch [:select-page :classes])}]
+   [:input.btn.btn-default {:type &quot;button&quot; :value &quot;Classes New&quot;
+                            :on-click #(dispatch [:select-page :new-classes])}]
    [:input.btn.btn-default {:type &quot;button&quot; :value &quot;Time Schedule&quot;
                             :on-click #(dispatch [:select-page :events])}]
+   [:input.btn.btn-default {:type &quot;button&quot; :value &quot;Time Schedule New&quot;
+                            :on-click #(dispatch [:select-page :events-new])}]
    [:input.btn.btn-default {:type &quot;button&quot; :value &quot;NewAdjudicators&quot;
                             :on-click #(dispatch [:select-page :new-adjudicators])}]
    [:input.btn.btn-default {:type &quot;button&quot; :value &quot;NewAdjudicator panels&quot;
@@ -3765,6 +3880,107 @@ Utils</p>
    [:input.btn.btn-default {:type &quot;button&quot; :value &quot;Adjudicator panels&quot;
                             :on-click #(dispatch [:select-page :adjudicator-panels])}]
    ])</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn make-time [time]
+  (str time))</pre></td></tr><tr><td class="docs"><p>(log (.getTimezoneOffset (:activity/time activity)))
+(log (js/Date. (.setMinutes (:activity/time activity)
+                            ;(js/Date.)
+                            (- (.getTimezoneOffset (:activity/time activity))
+                               (.getMinutes (:activity/time activity))
+                               ))))
+(log (js/Date. (.setHours (:activity/time activity)
+                          (.getTimezoneOffset (:activity/time activity)))))</p>
+</td><td class="codes"></td></tr><tr><td class="docs"><p>(log (.getTimezoneOffset (js/Date.)))
+                   (log (.setMinutes (:activity/time activity) 20))
+(log (str "Time > " (time/local-date 2015 03 12 12 00)))
+(str
+ (+ (.getTime (:activity/time activity))
+    (/ (.getTimezoneOffset (:activity/time activity)) 60)))</p>
+</td><td class="codes"></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn time-schedule-activity-presenter [activity classes]
+  (let [round (:activity/source activity)
+        class (first (filter #(= (:class/id %) (:round/class-id round)) classes))
+        ;; Comments have no activity number or if they do the round will not belong to any class
+        comment? (or (not= (:activity/comment activity) ) (= (:activity/number activity) -1))
+        ;; When a class have only one round that round is a direct final.
+        ;; Note that a presentation round should not be considered and a
+        ;; presentation round is never a direct final.
+        direct-final? (and (= (count (filter #(not= (:round/type %) :presentation) (:class/rounds class))) 1)
+                           (not= (:round/type round) :presentation))
+        last-completed-round-index (:round/index (last (get-completed-rounds (:class/rounds class))))]
+    {:time (str (if (:activity/time activity)
+                  (let [t (tc/from-long (.getTime (:activity/time activity)))
+                        formatter (tf/formatter &quot;HH:mm&quot;)]
+                    ;(str (time/hour t) &quot;:&quot; (time/minute t))
+                    (tf/unparse formatter t)))
+                (if (= (:round/status round) :completed) &quot;*&quot; ))
+     :number (if (= (:activity/number activity) -1)  (:activity/number activity))
+     :name (if comment? (:activity/comment activity) (:activity/name activity))
+     ;; 'Qual' is when a greater number of participants where recalled than asked for,
+     ;; then a 'Qual' round will be done to eliminate down to the requested recall number
+     ;; If the class has not been started yet, than all rounds except the first will not have
+     ;; a list of starters since this is not decided yet, there fore those rounds will have an
+     ;; empty string in the starting field
+     :starting (if comment?
+                 (cond
+                  ;; First round will show the number of starters
+                  (zero? (:round/index round)) (str &quot;Start &quot; (count (:round/starting round)))
+                  ;; Direct finals will show starters
+                  direct-final? (str &quot;Start &quot; (count (:round/starting round)))
+                  ;; No starters yet
+                  (zero? (count (:round/starting round))) 
+                  ;; if the last completed round, was the round before this, this is 'Qual'
+                  (= (dec (:round/index round)) last-completed-round-index)
+                  (str &quot;Qual &quot; (count (:round/starting round)))
+                  :else ))
+     :round (if comment?
+              (if direct-final?
+                &quot;Direct Final&quot;
+                (make-event-round-presentation (:round/type round))))
+     :heats (if (or comment? direct-final? (= (:round/type round) :final-x))
+              (let [heats (:round/heats round)
+                    suffix (if (= 1 heats)  &quot;s&quot;)]
+                (str  heats &quot; heat&quot; suffix)))
+     :recall (if (or (zero? (:round/recall round)) comment?)
+               (str &quot;Recall &quot; (:round/recall round)))
+     :panel (if (or comment? (= (:round/type round) :presentation))
+              (let [panel (:adjudicator-panel/name (:round/panel round))]
+                (if (= panel &quot;0&quot;)
+                  &quot;All adj&quot;
+                  (str &quot;Panel &quot; panel))))
+     :type (if comment?
+              (make-dance-type-presentation (:round/dances round)))}))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn events-component-new []
+  [:div
+   [:h3 &quot;Time Schedule Ny&quot;]
+   [:table.table
+    [:thead
+     [:tr
+      [:th {:with &quot;20&quot;} &quot;Time&quot;]
+      [:th {:with &quot;20&quot;} &quot;#&quot;]
+      [:th {:with &quot;200&quot;} &quot;Dansdisciplin&quot;]
+      [:th {:with &quot;20&quot;} &quot;Startande&quot;]
+      [:th {:with &quot;20&quot;} &quot;Rond&quot;]
+      [:th {:with &quot;20&quot;} &quot;Heats&quot;]
+      [:th {:with &quot;20&quot;} &quot;Recall&quot;]
+      [:th {:with &quot;20&quot;} &quot;Panel&quot;]
+      [:th {:with &quot;20&quot;} &quot;Type&quot;]]]
+    [:tbody
+     (doall
+      (for [activity (sort-by :activity/position (:competition/activities (:competition-new @app-state)))]
+        (let [{:keys [time number name starting round heats recall panel type]}
+              (time-schedule-activity-presenter activity (:competition/classes
+                                                          (:competition-new @app-state)))]
+        ^{:key activity}
+        [:tr
+           [:td time]
+           [:td number]
+           [:td name]
+           [:td starting]
+           [:td round]
+           [:td heats]
+           [:td recall]
+           [:td panel]
+           [:td type]])))]]])</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn events-component []
   [:div
    [:h3 &quot;Time Schedule&quot;]
@@ -3791,7 +4007,8 @@ Utils</p>
               completed? (= (:event/status event) 1)]
         ^{:key event}
           [:tr
-           [:td (make-event-time-presentation (:event/time event) (:event/status event))]
+           [:td (make-event-time-presentation (:event/time event) (:event/status event))
+            ]
            [:td (if (or  (= (:event/number event) -1))  (:event/number event))]
            ;; use comment if class number is zero
            [:td
@@ -3847,7 +4064,9 @@ Utils</p>
      [navigation-component]
      (condp = (:selected-page @app-state)
        :classes [dp-classes-component]
+       :new-classes [new-classes-component]
        :events [events-component]
+       :events-new [events-component-new]
        :adjudicators [adjudictors-component]
        :new-adjudicators [new-adjudictors-component]
        :new-adjudicator-panels [new-adjudictor-panels-component]
@@ -3868,6 +4087,10 @@ Utils</p>
            (swap! app-state #(merge % {:selected-page :classes
                                        :competition (:file/content content)}))
            ;(swap! app-state #(hash-map :competitions (conj (:competitions %) content)))
+           (log (str @app-state)))
+         [:chsk/recv [:file/imported-new content]]
+         (do
+           (swap! app-state #(merge % {:competition-new content}))
            (log (str @app-state)))
          ;; [:chsk/recv [:file/export content]]
          ;; (handle-export)
@@ -3985,6 +4208,7 @@ href-content (str "data:application/octet-stream;base64," compressed-content)]
             [com.stuartsierra.component :as component]
             [taoensso.timbre :as log]
             [tango.import :as import]
+            [tango.import-new :as import2]
             [clojure.core.match :refer [match]]))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn start-message-handler [in-channel out-channel]
   (async/go-loop []
@@ -3999,6 +4223,9 @@ href-content (str "data:application/octet-stream;base64," compressed-content)]
                    [:file/import p]
                    (async/put! out-channel (merge message {:topic :file/imported
                                                            :payload (import/import-file-stream p)}))
+                   [:file/import-new p]
+                   (async/put! out-channel (merge message {:topic :file/imported-new
+                                                           :payload (import2/import-file-stream p)}))
                    :else (async/&gt;!! out-channel {:topic :files/unkown-topic :payload {:topic topic}})))
           (catch Exception e
             (log/error e &quot;Exception in Files message go loop&quot;)
@@ -4581,7 +4808,9 @@ components.</p>
   (testing &quot;Import competition name of Dance Perfect file&quot;
     (let [current-id (atom 0)]
       (is (= (imp/competition-xml-&gt;map competition-snippet #(swap! current-id inc))
-             expected-small-competition)))))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#tango.repetition-hunt" name="tango.repetition-hunt"><h1 class="project-name">tango.repetition-hunt</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
+             expected-small-competition)))))</pre></td></tr><tr><td class="docs"><p>(let [current-id (atom 0)]
+  (imp/competition-xml->map real-snippet #(swap! current-id inc)))</p>
+</td><td class="codes"></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#tango.repetition-hunt" name="tango.repetition-hunt"><h1 class="project-name">tango.repetition-hunt</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(ns tango.repetition-hunt
   (:require [clojure.test :refer :all]
             [repetition.hunter :as hunter]
