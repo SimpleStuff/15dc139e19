@@ -383,15 +383,15 @@
      classes)))
 
 ;; TODO : add generic exception handling
-(defn import-file [path]
-  {:pre [(string? path)]}
-  (let [file (clojure.java.io/file path)]
-    (if (.exists file)
-      (let [xml-src (zip/xml-zip (clojure.xml/parse file))
-            competition-data (competition-xml->map xml-src)]
-        competition-data)
-      [:file-not-found]         ;(create-import-info "" [] :failed [:file-not-found])
-      )))
+;; (defn import-file [path]
+;;   {:pre [(string? path)]}
+;;   (let [file (clojure.java.io/file path)]
+;;     (if (.exists file)
+;;       (let [xml-src (zip/xml-zip (clojure.xml/parse file))
+;;             competition-data (competition-xml->map xml-src)]
+;;         competition-data)
+;;       [:file-not-found]         ;(create-import-info "" [] :failed [:file-not-found])
+;;       )))
 
 ;; TODO - add test
 ;; TODO - add exception catch

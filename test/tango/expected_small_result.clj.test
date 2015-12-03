@@ -36,12 +36,14 @@
    :activity/comment "A comment",
    :activity/id 35,
    :activity/position 1,
+   :activity/time nil,
    :activity/source nil}
   {:activity/name "Hiphop Singel Star B",
    :activity/number 1,
    :activity/comment "",
    :activity/id 37,
    :activity/position 2,
+   :activity/time #inst "2014-11-22T10:00:00.000-00:00",
    :activity/source
    {:round/status :not-started,
     :round/panel
@@ -54,6 +56,7 @@
       {:adjudicator/id 3,
        :adjudicator/name "Cesar",
        :adjudicator/country ""}]},
+    :round/class-id 41,
     :round/id 36,
     :round/dances [{:dance/name "Medium"}],
     :round/results
@@ -95,9 +98,7 @@
     :round/start-time #inst "2014-11-22T10:00:00.000-00:00",
     :round/recall 6}}],
  :competition/classes
- ({:class/name "Hiphop Singel Star B",
-   :class/position 1,
-   :class/adjudicator-panel
+ ({:class/adjudicator-panel
    {:adjudicator-panel/name "1",
     :adjudicator-panel/id 4,
     :adjudicator-panel/adjudicators
@@ -137,6 +138,8 @@
      :participant/club "Zzzz",
      :participant/number 32,
      :participant/id 40}],
+   :class/position 1,
+   :class/name "Hiphop Singel Star B",
    :class/rounds
    [{:round/status :not-started,
      :round/panel
@@ -149,6 +152,7 @@
        {:adjudicator/id 3,
         :adjudicator/name "Cesar",
         :adjudicator/country ""}]},
+     :round/class-id 41,
      :round/id 36,
      :round/dances [{:dance/name "Medium"}],
      :round/results
@@ -188,53 +192,29 @@
      :round/type :normal-x,
      :round/number 1,
      :round/start-time #inst "2014-11-22T10:00:00.000-00:00",
-     :round/recall 6}]}
-  {:class/name "Hiphop Singel Star J Fl",
-   :class/position 2,
-   :class/adjudicator-panel nil,
+     :round/recall 6}],
+   :class/id 41}
+  {:class/adjudicator-panel nil,
    :class/starting
    [{:participant/name "Ringo Stingo",
      :participant/club "Kapangg",
      :participant/number 20,
-     :participant/id 41}
+     :participant/id 42}
     {:participant/name "Greve Turbo",
      :participant/club "OOoost",
      :participant/number 21,
-     :participant/id 42}],
+     :participant/id 43}],
    :class/dances [],
-   :class/remaining nil,
-   :class/rounds []})}
-{:competition/name "TurboMegatävling",
- :competition/date #inst "2014-11-22T00:00:00.000-00:00",
- :competition/location "THUNDERDOME",
- :competition/panels
- [{:adjudicator-panel/name "1",
-   :adjudicator-panel/adjudicators
-   [{:adjudicator/name "Anders",
-     :adjudicator/id 1,
-     :adjudicator/country "Sweden"}
-    {:adjudicator/name "Bertil",
-     :adjudicator/id 2,
-     :adjudicator/country ""}],
-   :adjudicator-panel/id 4}
-  {:adjudicator-panel/name "2",
-   :adjudicator-panel/adjudicators
-   [{:adjudicator/name "Bertil",
-     :adjudicator/id 2,
-     :adjudicator/country ""}
-    {:adjudicator/name "Cesar",
-     :adjudicator/id 3,
-     :adjudicator/country ""}],
-   :adjudicator-panel/id 5}],
- :competition/adjudicators
- [{:adjudicator/name "Anders",
-   :adjudicator/id 1,
-   :adjudicator/country "Sweden"}
-  {:adjudicator/name "Bertil",
-   :adjudicator/id 2,
-   :adjudicator/country ""}
-  {:adjudicator/name "Cesar",
-   :adjudicator/id 3,
-   :adjudicator/country ""}],
- :competitor/activities [],
- :competition/classes []}
+   :class/remaining
+   [{:participant/name "Ringo Stingo",
+     :participant/club "Kapangg",
+     :participant/number 20,
+     :participant/id 42}
+    {:participant/name "Greve Turbo",
+     :participant/club "OOoost",
+     :participant/number 21,
+     :participant/id 43}],
+   :class/position 2,
+   :class/name "Hiphop Singel Star J Fl",
+   :class/rounds [],
+   :class/id 44})}
