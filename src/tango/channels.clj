@@ -20,6 +20,9 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Component
+
+;; TODO - start-clients-handler and start-message-handler should be merged
+
 (defn start-clients-handler 
   "Receives messages on a core.async channel used by clients and
   puts those messages on this components out-channel."
