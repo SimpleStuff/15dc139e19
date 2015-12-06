@@ -1,6 +1,7 @@
 (ns tango.import
   (:require [clj-time.coerce :as tcr]
             [clj-time.format :as tf]
+            [clj-time.core :as t]
             [clojure.data.xml :as xml]
             [clojure.xml :as cxml]
             [clojure.zip :as zip]
@@ -17,32 +18,12 @@
           (Integer/parseInt (clojure.string/replace prepared-string #"\+" ""))
           :else s)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Utils
-(defn read-xml [file]
-  (xml/parse (java.io.FileReader. file)))
+(defn- start-time-to-date [time-str date]
+  (let [[hh mm] (map to-number (clojure.string/split time-str #":"))]
+    (when (and (number? hh) (number? mm))
+      (tcr/to-date (t/plus (tcr/to-date-time date) (t/hours hh) (t/minutes mm))))))
 
-(defn- str-count [seq]
-  (str (count seq)))
-
-(defn- get-name-attr [loc]
-  (zx/attr loc :Name))
-
-(defn- get-adj-number-attr [loc]
-  (to-number (zx/attr loc :AdjNumber)))
-
-(defn- get-number-attr [loc]
-  (to-number (zx/attr loc :Number)))
-
-(defn- get-seq-attr-no-inc [loc]
-  (to-number (zx/attr loc :Seq)))
-
-(defn- get-seq-attr
-  "Increased by one since it represent a user defined position"
-  [loc]
-  (inc (to-number (zx/attr loc :Seq))))
-
-(defn round-value->key [val]
+(defn- round-value->key [val]
   (get
    [:none
     :normal-x :semifinal-x :final-x :b-final-x :retry-x :second-try-x
@@ -54,266 +35,398 @@
    :unknown-round-value))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Zipper implementation
+;; Makers
 
-(defn couple->map [couples-loc]
+(defn make-competition
+  [name date location panels adjudicators activites classes]
+  {:competition/name name
+   :competition/date date ;(tcr/to-date (tc/date-time 2014 11 22))
+   :competition/location location
+   :competition/panels panels ;[]
+   :competition/adjudicators adjudicators ;[example-adjudicator-1]
+   :competition/activities activites ;[example-round-1]
+   :competition/classes classes ;[example-class-1]
+   })
+
+(defn make-competition-data
+  [name date location]
+  {:competition/name name
+   :competition/date date ;(tcr/to-date (tc/date-time 2014 11 22))
+   :competition/location location})
+
+(defn make-adjudicator
+  [id name country]
+  {:adjudicator/id id
+   :adjudicator/name name
+   :adjudicator/country country})
+
+(defn- make-activity [name number comment id position source-id time]
+  {:activity/name name
+   :activity/number number
+   :activity/comment comment
+   :activity/id id
+   :activity/position position
+   :activity/source-id source-id
+   :activity/time time})
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Attribute Utils
+
+(defn- get-name-attr [loc]
+  (zx/attr loc :Name))
+
+(defn- get-time-attr [loc]
+  (zx/attr loc :Time))
+
+(defn- get-seq-attr [loc]
+  (zx/attr loc :Seq))
+
+(defn- get-seq-attr-as-number
+  [loc]
+  (to-number (get-seq-attr loc)))
+
+(defn- increased-seq-attr [loc]
+  (inc (get-seq-attr-as-number loc)))
+
+(defn- get-adj-number-attr [loc]
+  (to-number (zx/attr loc :AdjNumber)))
+
+(defn- get-number-attr [loc]
+  (to-number (zx/attr loc :Number)))
+
+(defn- class-number-attr-as-number [loc]
+  (to-number (zx/attr loc :ClassNumber)))
+
+(defn- event-number-attr [loc]
+  (zx/attr loc :EventNumber))
+
+(defn- event-number-attr-as-number [loc]
+  (to-number (event-number-attr loc)))
+
+(defn- event-number-attr-empty? [loc]
+  (= "" (event-number-attr loc)))
+
+(defn- time-attr-to-date [loc base-date]
+  (start-time-to-date (get-time-attr loc) base-date))
+
+(defn- make-event-number [loc]
+  (if (event-number-attr-empty? loc)
+    -1
+    (event-number-attr-as-number loc)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Xml import
+
+(defn- adjudicators->map [adjudicator-loc id-generator-fn]
+  (assoc
+      (make-adjudicator
+       (id-generator-fn)
+       (get-name-attr adjudicator-loc)
+       (zx/attr adjudicator-loc :Country))
+    :dp/temp-id (get-seq-attr-as-number adjudicator-loc)))
+
+(defn- competition-data->map [xml-loc]
+  (make-competition-data
+   (get-name-attr xml-loc)
+   (tcr/to-date
+    (tf/parse (tf/formatter "yyyy-MM-dd")
+              (zx/attr xml-loc :Date)))
+   (zx/attr xml-loc :Place)))
+
+(defn- panel->map [panel-loc id-generator-fn adjudicators]
+  (for [panel panel-loc]
+    (dissoc
+     (first (filter #(= (get-adj-number-attr panel) (:dp/temp-id %))
+                    adjudicators))
+     :dp/temp-id)))
+
+(defn- adjudicator-panel-list->map
+  [xml-loc id-generator-fn adjudicators]
+  (filter
+   ;; Adjudicators can be empty and if so its an empty panel and should not
+   ;; be used
+   (fn [adjudicators] (seq (:adjudicator-panel/adjudicators adjudicators)))
+   (for [panel xml-loc]
+     {:dp/panel-id (get-seq-attr-as-number panel)
+      :adjudicator-panel/name (str (increased-seq-attr panel))
+      :adjudicator-panel/id (id-generator-fn)          ;(get-seq-attr-no-inc panel)
+      :adjudicator-panel/adjudicators
+      (into [] (panel->map (zx/xml-> panel :PanelAdj) id-generator-fn adjudicators))})))
+
+(defn- couple->map [couples-loc id-generator-fn]
   (for [couple couples-loc]
-    {:competitor/name (get-name-attr couple)
-     :competitor/club (zx/attr couple :Club)
-     :competitor/number (get-number-attr couple)
-     :competitor/position (get-seq-attr couple)}))
+    {:participant/name (get-name-attr couple)
+     :participant/club (zx/attr couple :Club)
+     :participant/number (get-number-attr couple)
+     :participant/id (id-generator-fn)}))
 
-(defn dance-list->map [dances-loc]
+(defn- dance-list->map [dances-loc]
   (for [dance dances-loc]
     {:dance/name (get-name-attr dance)}))
 
-(defn adjudicator-list->map [adjudicator-loc]
-  (for [adjudicator adjudicator-loc]
-    {:adjudicator/number (get-number-attr adjudicator)
-     :adjudicator/position (get-seq-attr adjudicator)}))
-
-(defn marks->map [marks-loc adjudicators]
+(defn- marks->map [marks-loc adjudicators]
   (for [mark marks-loc]
-    {:result/adjudicator
-     (first (filter
-             #(= (:adjudicator/position %)
-                 (get-seq-attr mark))
-             adjudicators))
-     :result/x-mark (= (zx/attr mark :X) "X")}))
+    {:dp/temp-local-adjudicator (get-seq-attr-as-number mark)
+     :judging/adjudicator :todo
+     :juding/marks [{:mark/x (= (zx/attr mark :X) "X")}]}))
 
-(defn mark-list->map [result-couple-loc adjudicators]
+(defn- mark-list->map [result-couple-loc adjudicators]
   (for [couple result-couple-loc]
-    {:competitor/number (get-number-attr couple)
-     :competitor/recalled
+    {:result/participant-number (get-number-attr couple)
+     :result/recalled
      (condp = (zx/attr couple :Recalled)
        "X" :x
        "R" :r
        " " ""
        (str "unexpected recalled value"))
-     :competitor/results (into [] (marks->map (zx/xml-> couple :MarkList :Mark) adjudicators))}))
+     :result/judgings (into [] (marks->map (zx/xml-> couple :MarkList :Mark) adjudicators))}))
 
-(defn result-list->map [result-loc]
+(defn- result-adjudicator [adjudicator-panels-loc]
+  (filter
+   :dp/temp-id
+   (for [panel adjudicator-panels-loc]
+     {:dp/result-local-panel-id (get-seq-attr-as-number panel)
+      :dp/temp-id (get-number-attr panel)})))
+
+(defn- result-list->map [result-loc]
   (for [result result-loc]
-    (let [adjudicators (adjudicator-list->map (zx/xml-> result :AdjList :Adjudicator))]
-      {:result/round (zx/attr result :Round)
-       :result/dance (first (dance-list->map (zx/xml-> result :DanceList :Dance)))
-       :result/adjudicators (into [] adjudicators)
+    (let [adjudicators (result-adjudicator (zx/xml-> result :AdjList :Adjudicator))]
+      {:result/adjudicators (into [] adjudicators)
        :result/results (into [] (mark-list->map (zx/xml-> result :ResultArray :Couple) adjudicators))})))
 
-(defn class-list->map [classes-loc]
+(defn- class-list->map [classes-loc id-generator-fn]
   (for [class classes-loc]
     {:class/name (zx/attr class :Name)
-     :class/position (get-seq-attr class)
-     :class/adjudicator-panel (to-number (zx/attr class :AdjPanel))
-     :class/competitors (into [] (couple->map (zx/xml-> class :StartList :Couple)))
+     :class/position (inc (get-seq-attr-as-number class))
+     :class/adjudicator-panel {:dp/temp-id (dec (to-number (zx/attr class :AdjPanel)))}
+     :class/starting (into [] (couple->map (zx/xml-> class :StartList :Couple) id-generator-fn))
      :class/dances (into [] (dance-list->map (zx/xml-> class :DanceList :Dance)))
-     :class/results (into [] (result-list->map (zx/xml-> class :Results :Result)))}))
+     :class/remaining []
+     :class/rounds []
+     :class/results (into [] (result-list->map (zx/xml-> class :Results :Result)))
+     :class/id (id-generator-fn)}))
 
-(defn adjudicator-list2->map [adjudicators-loc]
-  (for [adj adjudicators-loc]
-    {:adjudicator/id (get-seq-attr-no-inc adj)
-     :adjudicator/name (zx/attr adj :Name)
-     :adjudicator/country (zx/attr adj :Country)}))
+(defn- round-list->map [rounds-loc id-generator-fn base-time]
+  (for [round rounds-loc]
+    (let [round-id (id-generator-fn)
+          start-date-time (time-attr-to-date round base-time)
+          event-number (make-event-number round)]
+      {:dp/temp-class-id (class-number-attr-as-number round)
+       
+       :round/id round-id
+       
+       :temp/activity (assoc (make-activity
+                              ;; Post processed
+                              ""
+                              ;; Events that represent comments do not have an EventNumber and do now get -1
+                              event-number
+                              (zx/attr round :Comment)
+                              (id-generator-fn)
+                              (increased-seq-attr round)
+                              ;; Put real source here, needs to be done in pp
+                              round-id
+                              start-date-time)
+                        :dp/temp-class-id (class-number-attr-as-number round))
 
-(defn panel->map [panel-loc]
-  (for [panel panel-loc]
-    {:adjudicator-id (get-adj-number-attr panel)}))
+       :round/number event-number
 
-(defn adjudicator-panel-list->map [adjudicator-panels-loc]
-  (filter
-   (fn [rec] (seq (rec :panel/adjudicators)))
-   (for [panel adjudicator-panels-loc]
-     {:panel/id (get-seq-attr-no-inc panel)
-      :panel/adjudicators
-      (into [] (panel->map (zx/xml-> panel :PanelAdj)))})))
+       ;; Post process, need to get this from the previous round
+       :round/starting []
 
-;; TODO - each event need to get a class position i.e. witch number of event it is
-;; for the specific class.
-;; TODO - events with class number 0 is used as comments in DP, would be better to have a comment entity
-(defn event-list->map [events-loc]
-  (for [event events-loc]
-    {:event/position (get-seq-attr event)
-     :event/class-number (to-number (zx/attr event :ClassNumber))
-     :event/number (if (= "" (zx/attr event :EventNumber)) -1 (to-number (zx/attr event :EventNumber)))
-     :event/time (zx/attr event :Time)
-     :event/comment (zx/attr event :Comment)
-     :event/adjudicator-panel (to-number (zx/attr event :AdjPanel))
-     :event/heats (to-number (zx/attr event :Heats))
-     :event/round (round-value->key (to-number (zx/attr event :Round)))
-     :event/status (to-number (zx/attr event :Status))
-     :event/start-order (to-number (zx/attr event :Startorder))
-     :event/recall (to-number (zx/attr (first (zx/xml-> event :RecallList :Recall)) :Recall))
-     :event/dances (vec (dance-list->map (zx/xml-> event :DanceList :Dance)))}))
+       ;; Post process, parse time and plus with compdate
+       :round/start-time start-date-time
+       
+       ;; Save the id of the adjudicator panel to be able to look it up in post processing.
+       ;; Subtract 3 since the 'index' in the file refer to a UI index witch is 3 of from
+       ;; the Adjudicator index in this file beeing parsed.
+       :round/panel {:dp/panel-id (- (to-number (zx/attr round :AdjPanel)) 3)}
+
+       ;; Post process
+       :round/results []
+       :round/recall (to-number (zx/attr (first (zx/xml-> round :RecallList :Recall)) :Recall))
+       
+       ;; Index is set in Post Process
+       :round/index -1 ;; the rounds number in its class
+
+       ;; Class id is set in Post Process
+       :round/class-id -1 
+
+       :round/heats (to-number (zx/attr round :Heats))
+       :round/status (if (= 1 (to-number (zx/attr round :Status))) :completed :not-started)
+       :round/dances (vec (dance-list->map (zx/xml-> round :DanceList :Dance))) ;[example-dance-1]
+       
+       ;; CONSIDER - maybe this should be left as a number for DB and then up to any presenter to parse?
+       :round/type (round-value->key (to-number (zx/attr round :Round)))})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Utils
-;TODO consolidate with UI
-(defn count-result-recalled [class-result]
-  (reduce
-   (fn [x y]
-     (if (contains?
-          #{:r :x}
-          (:competitor/recalled y))
-       (inc x)
-       x))
-   0
-   class-result))
+;; Post process
 
-;; NOTE: class number refers to a classes position, fix this with proper ID
-;; TODO : normalize this stuff
-;; TODO - events should be accessibale from its class
-(defn event-list-post-process [events classes]
+(defn- prep-class-result [results result-panel adjudicators]
+  (for [result (:result/results results)]
+    (merge
+     result
+     {:result/judgings
+      (for [judging (:result/judgings result)]
+        (dissoc
+         (merge judging
+                {:judging/adjudicator
+                 (let [temp-id (:dp/temp-id
+                                (first
+                                 (filter #(= (:dp/temp-local-adjudicator judging)
+                                             (:dp/result-local-panel-id %))
+                                         result-panel)))]
+                   (:adjudicator/id (first (filter #(= temp-id (:dp/temp-id %)) adjudicators))))})
+         :dp/temp-local-adjudicator))})))
+
+(defn- round-recalled [results participants]
   (vec
-   (sort-by
-    :event/position
-    (flatten
-     (for [[ref-number grp] (group-by :event/class-number events)]
-       (let [ref-class (first (filter #(= ref-number (:class/position %)) classes))]
-         (reduce-kv
-          (fn [acc k v]
-            (conj acc (merge v {:event/nrof-events-in-class
-                                (count
-                                 (filter #(not= (:event/round %) :presentation) grp))
-                                :event/class-index k
-                                :event/starting
-                                (let [result (nth (:class/results ref-class) (dec k) :none)]
-                                  (if (= :none result)
-                                    (count (:class/competitors ref-class))
-                                    (count-result-recalled
-                                     (:result/results result))))})))
-          [] grp)))))))
+   (remove
+    nil?
+    (for [result results]
+      (if (contains? #{:r :x} (:result/recalled result))
+        (first (filter
+                #(= (:result/participant-number result)
+                    (:participant/number %))
+                participants)))))))
 
-(defn competition->map [loc]
-  (let [competition-data (first (zx/xml-> loc :CompData))
-        classes (vec (class-list->map (zx/xml-> loc :ClassList :Class)))]
-    {:competition/name (get-name-attr competition-data)
-     :competition/date (tcr/to-date
-                        (tf/parse (tf/formatter "yyyy-MM-dd")
-                                  (zx/attr competition-data :Date)))
-     :competition/location (zx/attr competition-data :Place)
-     :competition/classes classes
-     :competition/events (event-list-post-process
-                          (vec (event-list->map (zx/xml-> loc :EventList :Event)))
-                          classes)
-     :competition/adjudicators
-     (if-let [adjudicator-list-loc (zx/xml-> loc :AdjPanelList :AdjList :Adjudicator)]
-       (into [] (adjudicator-list2->map adjudicator-list-loc))
-       [])
-    :competition/adjudicator-panels
-     (into [] (adjudicator-panel-list->map (zx/xml-> loc :AdjPanelList :PanelList :Panel)))
-     }))
 
-(defn read-number-attr [data attr-key]
-  (if-let [attr-value (zx/attr data attr-key)]
-    (to-number attr-value)
-    0))
+(defn- last-result [rounds]
+  (:round/results (last rounds)))
 
-(defn get-metadata [loc]
-  (let [competition-data (first (zx/xml-> loc :CompData))]
-    {:dance-perfect/flags {:adj-order-final (read-number-attr competition-data :AdjOrderFinal)
-                           :adj-order-other (read-number-attr competition-data :AdjOrderOther)
-                           :same-heat-all-dances (read-number-attr competition-data :SameHeatAllDances)
-                           :preview (read-number-attr competition-data :PreView)
-                           :heat-text (read-number-attr competition-data :HeatText)
-                           :name-on-number-sign (read-number-attr competition-data :NameOnNumberSign)
-                           :club-on-number-sign (read-number-attr competition-data :ClubOnNumberSign)
-                           :skip-adj-letter (read-number-attr competition-data :SkipAdjLetter)
-                           :printer-select-paper (read-number-attr competition-data :PrinterSelectPaper)
-                           :chinese-fonts (read-number-attr competition-data :ChineseFonts)
-                           }
-     :dance-perfect/fonts {:arial-font "SimSun"
-                           :courier-font "NSimSun"}}))
+(defn- last-round-starting [class rounds]
+  (round-recalled (last-result rounds) (:class/starting class)))
 
-(defn- create-import-info [version content status errors]
-  {:file/version version
-   :file/content content
-   :file/import-status status
-   :file/import-errors errors})
+;; TODO - list of starting should be refactored
+(defn- class-list-post-process [classes rounds adjudicators panels competition-date]
+  (for [class classes]
+    (let [last-round-starting-for-class (partial last-round-starting class)
+          processed-rounds
+          (reduce
+           (fn [res round]
+             (conj
+              res
+              (dissoc
+               (merge
+                round
+                {:round/class-id (:class/id class)
+                 :round/index (count res)
+                 :round/results (vec (prep-class-result
+                                      (get (:class/results class) (count res))
+                                      (:result/adjudicators
+                                       (first (:class/results class)))
+                                      adjudicators))
+                 :round/panel (dissoc
+                               (first (filter
+                                       #(= (:dp/panel-id (:round/panel round)) (:dp/panel-id %))
+                                       panels))
+                               :dp/panel-id)
+                 ;; Starters in this rounds is based on the result on the previous round.
+                 ;; If the previous round is a presentation round it will not have a result
+                 ;; and should be dissregarded
+                 :round/starting (if (= (count (filter #(not= (:round/type %) :presentation) res)) 0)
+                                   (:class/starting class)
+                                   (last-round-starting-for-class res))
+                 :round/start-time  (:round/start-time round)})
+               :dp/temp-class-id
+               :temp/activity)))
+           []
+           (filter #(= (:class/position class) (:dp/temp-class-id %)) rounds))]
+      (dissoc
+       (merge class
+              {:class/rounds processed-rounds
+               
+               :class/adjudicator-panel (dissoc
+                                         (first (filter #(= (:dp/temp-id (:class/adjudicator-panel class))
+                                                            (:dp/panel-id %))
+                                                        panels))
+                                         :dp/panel-id)
+               
+               ;; There can be many pre-configured rounds, the remaining participants are
+               ;; calculated from the result of the last completed round.
+               ;; If there are no rounds completed, than all participants are still remaining.
+               :class/remaining (if-let [completed-rounds
+                                         (seq 
+                                          (filter #(= (:round/status %) :completed) processed-rounds))]
+                                  (last-round-starting-for-class completed-rounds)
+                                  (:class/starting class))})
+       :class/results))))
 
-(defn dance-perfect->map [loc status errors]
-  {:file/version (zx/attr loc :Version)
-   :file/content (competition->map loc)
-   :file/metadata (get-metadata loc)
-   :file/import-status status
-   :file/import-errors errors})
+(defn- adjudicators-xml->map [xml id-generator-fn]
+  (mapv
+   #(adjudicators->map % id-generator-fn)
+   (zx/xml-> xml :AdjPanelList :AdjList :Adjudicator)))
 
-(defn dance-perfect-xml->data [xml-src]
-  (competition->map (zip/xml-zip xml-src)))
+(defn- adjudicator-panels-xml->map [xml id-generator-fn adjudicators]
+  (adjudicator-panel-list->map (zx/xml-> xml :AdjPanelList :PanelList :Panel) id-generator-fn adjudicators))
+
+(defn- rounds-xml->map [xml id-generator-fn base-time]
+  (round-list->map (zx/xml-> xml :EventList :Event) id-generator-fn base-time))
+
+(defn- classes-xml->map [xml id-generator-fn]
+  (class-list->map (zx/xml-> xml :ClassList :Class) id-generator-fn))
+
+(defn- competition-data-xml->map [xml]
+  (competition-data->map (first (zx/xml-> xml :CompData))))
+
+(defn- make-activities [raw-activities classes rounds]
+  (reduce
+   (fn [result activity]
+     (conj
+      result
+      (dissoc
+       (merge activity
+              {:activity/name
+               (if-let [name (:class/name
+                              (first
+                               (filter #(= (:class/position %) (:dp/temp-class-id activity)) classes)))]
+                 name
+                 "")
+
+               :activity/source (first
+                                 (filter #(= (:activity/source-id activity) (:round/id %)) rounds))})
+       :dp/temp-class-id
+       :activity/source-id)))
+   []
+   raw-activities))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Import API
+
+(defn competition-xml->map [xml id-generator-fn]
+  (let [comp-data (competition-data-xml->map xml)
+        dp-adjudicators (adjudicators-xml->map xml id-generator-fn)
+        dp-classes (classes-xml->map xml id-generator-fn)
+        dp-rounds (rounds-xml->map xml id-generator-fn (:competition/date comp-data))
+        dp-panels (adjudicator-panels-xml->map xml id-generator-fn dp-adjudicators)
+        classes (class-list-post-process
+                 dp-classes
+                 dp-rounds
+                 dp-adjudicators
+                 dp-panels
+                 (:competition/date comp-data))]
+    (make-competition
+     (:competition/name comp-data)
+     (:competition/date comp-data)
+     (:competition/location comp-data)
+     (mapv #(dissoc % :dp/panel-id) dp-panels) ;(adjudicator-panels-xml->map xml id-generator-fn dp-adjudicators)
+     (mapv #(dissoc % :dp/temp-id) dp-adjudicators)
+     (make-activities (mapv :temp/activity dp-rounds) classes (mapcat :class/rounds classes))
+     classes)))
 
 ;; TODO : add generic exception handling
-(defn import-file [path]
-  {:pre [(string? path)]}
-  (let [file (clojure.java.io/file path)]
-    (if (.exists file)
-      (let [xml-src (zip/xml-zip (clojure.xml/parse file))
-            dance-perfect-data (dance-perfect->map xml-src :success [])]
-        dance-perfect-data)
-      (create-import-info "" [] :failed [:file-not-found]))))
+;; (defn import-file [path]
+;;   {:pre [(string? path)]}
+;;   (let [file (clojure.java.io/file path)]
+;;     (if (.exists file)
+;;       (let [xml-src (zip/xml-zip (clojure.xml/parse file))
+;;             competition-data (competition-xml->map xml-src)]
+;;         competition-data)
+;;       [:file-not-found]         ;(create-import-info "" [] :failed [:file-not-found])
+;;       )))
 
 ;; TODO - add test
 ;; TODO - add exception catch
 (defn import-file-stream [{:keys [content]}]
-  (dance-perfect->map (zip/xml-zip (clojure.xml/parse (java.io.ByteArrayInputStream. (.getBytes content))))
-                      :success
-                      []))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Export - this implementation is stale, look at is as experimental!
-
-(defn- competitor->xml [competitor seq-nr]
-  [:Couple {:Name (:competitor/name competitor)
-            :Seq (str seq-nr)
-            :License ""
-            :Club (:competitor/club competitor)
-            :Number (str (:competitor/number competitor))}])
-
-(defn- competitors->dance-perfect-xml-start-list [competitiors]
-  (into [:StartList {:Qty (str-count competitiors)}]
-        (reduce (fn [start-list-xml competitor]
-                    (conj start-list-xml (competitor->xml competitor (count start-list-xml))))
-                  []
-                  competitiors)))
-
-(defn- classes->dance-perfect-xml-classes [classes]
-  (reduce (fn [classes-xml class]
-            (conj classes-xml [:Class
-                               {:Name (:class/name class)
-                                :Seq (str-count classes-xml)}
-                               (competitors->dance-perfect-xml-start-list (:class/competitors class))
-                               ]))
-          []
-          classes))
-
-(defn- date->dance-perfect-format [date]
-  (.format (java.text.SimpleDateFormat. "yyyy-MM-dd") date))
-
-(defn data->dance-perfect-xml-data [version dance-perfect-data]
-  (xml/sexp-as-element
-   [:DancePerfect {:Version version}
-    [:CompData {:Name (:competition/name dance-perfect-data)
-                :Date (date->dance-perfect-format (:competition/date dance-perfect-data))
-                :Place (:competition/location dance-perfect-data)}]
-    [:AdjPanelList [:AdjList]]
-    (into [:ClassList] (classes->dance-perfect-xml-classes (:competition/classes dance-perfect-data)))]))
-
-(defn data->dance-perfect-xml [version dance-perfect-data]
-  (xml/emit-str (data->dance-perfect-xml-data version dance-perfect-data)))
-
-;; (defn data->dance-perfect-xml [version dance-perfect-data]
-;;   (with-out-str (xml/emit (data->dance-perfect-xml-data version dance-perfect-data))))
-
-
-;; (with-open [out-file (java.io.FileWriter. "foo.xml")]
-;;   (xml/emit (data->dance-perfect-xml-data "4.1" (:file/content small-exampel-data)) out-file))
-
-;; (xml/emit-str (xml/sexp-as-element [:foo {:foo-attr "M&M"}]))
-
-;; (with-open [out-file (java.io.FileWriter. "foo.xml")]
-;;   (xml/emit (xml/sexp-as-element [:foo {:foo-attr "M&M"}]) out-file))
-
-;; (with-open [out-file (java.io.FileWriter. "foo.xml")]
-;;   (xml/emit (xml/sexp-as-element (data->dance-perfect-xml-data "4.1" (:file/content small-exampel-data))) out-file))
-
-;(spit "export.xml" (with-out-str (export-file 4.1 (:file/content small-exampel-data))))
-;http://blog.fogus.me/2011/09/08/10-technical-papers-every-programmer-should-read-at-least-twice/
-
+  (competition-xml->map
+   (zip/xml-zip (clojure.xml/parse (java.io.ByteArrayInputStream. (.getBytes content))))
+   #(java.util.UUID/randomUUID)))
