@@ -40,18 +40,17 @@
 (defn make-competition
   [name date location panels adjudicators activites classes]
   {:competition/name name
-   :competition/date date ;(tcr/to-date (tc/date-time 2014 11 22))
+   :competition/date date
    :competition/location location
-   :competition/panels panels ;[]
-   :competition/adjudicators adjudicators ;[example-adjudicator-1]
-   :competition/activities activites ;[example-round-1]
-   :competition/classes classes ;[example-class-1]
-   })
+   :competition/panels panels
+   :competition/adjudicators adjudicators
+   :competition/activities activites
+   :competition/classes classes})
 
 (defn make-competition-data
   [name date location]
   {:competition/name name
-   :competition/date date ;(tcr/to-date (tc/date-time 2014 11 22))
+   :competition/date date
    :competition/location location})
 
 (defn make-adjudicator

@@ -5,7 +5,6 @@
             [clj-time.core :as tc]
             [clj-time.coerce :as tcr]
             [clojure.xml :as xml]
-            [tango.test-data :as data]
             [clojure.zip :as zip]
             [clojure.data.zip.xml :as zx]))
 
@@ -13,7 +12,7 @@
 ;; Setup
 
 (def competition-snippet
-  (zip/xml-zip (xml/parse (clojure.java.io/file "./test/tango/test-snippets.xml"))))
+  (zip/xml-zip (xml/parse (clojure.java.io/file "./test/tango/small-example.xml"))))
 
 (def expected-small-competition
   (read-string (slurp "./test/tango/expected_small_result.clj.test")))
