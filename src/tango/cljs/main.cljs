@@ -74,27 +74,18 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; UI utils
 
-(defn- to-number [s]
-  {:pre [(string? s)]}
-  (let [prepared-string (clojure.string/replace s #" " "")]
-    (cond (re-seq #"^[-+]?\d*[\.,]\d*$" prepared-string)
-          (js/parseDouble (clojure.string/replace prepared-string #"," "."))
-          (re-seq #"^[-+]?\d+$" prepared-string)
-          (js/parseInt (clojure.string/replace prepared-string #"\+" ""))
-          :else s)))
-
-(defn number-string? [s]
-  (if s
-    (re-seq #"\d+" s)))
+;; (defn- to-number [s]
+;;   {:pre [(string? s)]}
+;;   (let [prepared-string (clojure.string/replace s #" " "")]
+;;     (cond (re-seq #"^[-+]?\d*[\.,]\d*$" prepared-string)
+;;           (js/parseDouble (clojure.string/replace prepared-string #"," "."))
+;;           (re-seq #"^[-+]?\d+$" prepared-string)
+;;           (js/parseInt (clojure.string/replace prepared-string #"\+" ""))
+;;           :else s)))
 
 (defn make-dance-type-presentation [dances]
   ;; Dances are presented as a list of the first letters of each dance
   (clojure.string/join (map #(first (:dance/name %)) dances)))
-
-(defn make-event-time-presentation [time status]
-  (str time
-       (when (= status 1)
-         "*")))
 
 (def round-map
   {:none ""
@@ -113,157 +104,11 @@
 (defn make-event-round-presentation [event-round]
   (get round-map event-round))
 
-(defn make-round-presentation [round-status round-count]
-  (str
-   round-count " - "
-   (if round-status
-     (if (number-string? round-status)
-       (str "Round " round-status)
-       (condp = round-status
-         "S" (str "Semifinal" )
-         "E" "2nd Try"
-         "F" "Final"
-         "O" "Retry"
-         (str "Unknown status : " round-status)))
-     "Not Started")))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Components
-
-(defn count-class-recalled [class]
-  (let [results (:result/results (last (:class/results class)))
-        started (count (:class/competitors class))]
-    (if (empty? results)
-      started
-      (reduce
-       (fn [x y]
-         (if (contains?
-              #{:r :x}
-              (:competitor/recalled y))
-           (inc x)
-           x))
-       0
-       results))))
-
-(defn count-result-recalled [class-result]
-  (reduce
-   (fn [x y]
-     (if (contains?
-          #{:r :x}
-          (:competitor/recalled y))
-       (inc x)
-       x))
-   0
-   class-result))
-
-;; (def new-adj-data
-;;   {:competition/name "TurboMegatävling"
-;;    :competition/date "2014 11 22"
-;;    :competition/location "THUNDERDOME"
-;;    :competition/panels
-;;    [{:adjudicator-panel/name "1"
-;;      :adjudicator-panel/adjudicators
-;;      [{:adjudicator/name "Anders"
-;;        :adjudicator/id 1
-;;        :adjudicator/country "Sweden"}
-;;       {:adjudicator/name "Bertil"
-;;        :adjudicator/id 2
-;;        :adjudicator/country ""}]
-;;      :adjudicator-panel/id 4}
-;;     {:adjudicator-panel/name "2"
-;;      :adjudicator-panel/adjudicators
-;;      [{:adjudicator/name "Bertil"
-;;        :adjudicator/id 2
-;;        :adjudicator/country ""}
-;;       {:adjudicator/name "Cesar"
-;;        :adjudicator/id 3
-;;        :adjudicator/country ""}]
-;;      :adjudicator-panel/id 5}]
-;;    :competition/adjudicators
-;;    [{:adjudicator/name "Anders"
-;;      :adjudicator/id 1
-;;      :adjudicator/country "Sweden"}
-;;     {:adjudicator/name "Bertil"
-;;      :adjudicator/id 2
-;;      :adjudicator/country "Uganda"}
-;;     {:adjudicator/name "Cesar"
-;;      :adjudicator/id 3
-;;      :adjudicator/country "Tibet"}]
-;;    :competitor/activities []
-;;    :competition/classes []})
-
-(defn adjudictors-component []
-  [:div
-   [:h3 "Domare"]
-   [:table.table
-    [:thead
-     [:tr
-      ;[:th {:with "20"} "#"]
-      [:th {:with "200"} "Name"]
-      [:th {:with "20"} "Country"]]]
-    [:tbody
-     (for [adjudicator
-           (sort-by :adjudicator/name (:competition/adjudicators (:competition @app-state)))
-                                        ;(sort-by :adjudicator/id (:competition/adjudicators (:competition @app-state)))
-           ]
-       ^{:key adjudicator}
-       [:tr
-        ;[:td (:adjudicator/id adjudicator)]
-        [:td (:adjudicator/name adjudicator)]
-        [:td (:adjudicator/country adjudicator)]])]]])
-
-;; (defn adjudictors-component []
-;;   [:div
-;;    [:h3 "Domare"]
-;;    [:table.table
-;;     [:thead
-;;      [:tr
-;;       ;[:th {:with "20"} "#"]
-;;       [:th {:with "200"} "Name"]
-;;       [:th {:with "20"} "Country"]]]
-;;     [:tbody
-;;      (for [adjudicator (sort-by :adjudicator/id (:competition/adjudicators (:competition @app-state)))]
-;;        ^{:key adjudicator}
-;;        [:tr
-;;         ;[:td (:adjudicator/id adjudicator)]
-;;         [:td (:adjudicator/name adjudicator)]
-;;         [:td (:adjudicator/country adjudicator)]])]]])
-
-(defn new-adjudictor-panels-component []
-  [:div
-   [:h3 "Domarpaneler"]
-   [:table.table
-    [:thead
-     [:tr
-      [:th {:with "20"} "#"]
-      [:th {:with "200"} "Domare"]]]
-    [:tbody
-     (for [adjudicator-panel (sort-by :adjudicator-panel/id (:competition/panels (:competition @app-state)))]
-       ^{:key adjudicator-panel}
-       [:tr
-        [:td (:adjudicator-panel/id adjudicator-panel)]
-        [:td (clojure.string/join ", " (map :adjudicator/name (:adjudicator-panel/adjudicators adjudicator-panel)))]])]]])
-
-(defn adjudictor-panels-component []
-  [:div
-   [:h3 "Domarpaneler"]
-   [:table.table
-    [:thead
-     [:tr
-      [:th {:with "20"} "#"]
-      [:th {:with "200"} "Domare"]]]
-    [:tbody
-     (for [adjudicator-panel (sort-by :panel/id (:competition/adjudicator-panels (:competition @app-state)))]
-       ^{:key adjudicator-panel}
-       [:tr
-        [:td (:panel/id adjudicator-panel)]
-        [:td (clojure.string/join ", " (mapcat vals (:panel/adjudicators adjudicator-panel)))]])]]])
-
 (defn get-completed-rounds [rounds]
   (filter #(and (= (:round/status %) :completed)
                 (not= (:round/type %) :presentation)) rounds))
 
-(defn make-round-presentation-new [rounds]
+(defn make-round-presentation [rounds]
   ;; Only count rounds that are completed and that are not presentation rounds
   (let [completed-rounds (get-completed-rounds rounds)]
     (str
@@ -275,9 +120,49 @@
            (get round-map round-type)))
        "Not Started"))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Components
+
+;; TODO - id is used as entity id and not as presentation, is name enough or should we keep
+;; a adj/number or adj/position ?
+(defn adjudictors-component []
+  [:div
+   [:h3 "Domare"]
+   [:table.table
+    [:thead
+     [:tr
+      ;[:th {:with "20"} "#"]
+      [:th {:with "200"} "Name"]
+      [:th {:with "20"} "Country"]]]
+    [:tbody
+     (for [adjudicator
+           (sort-by :adjudicator/name (:competition/adjudicators (:competition @app-state)))]
+       ^{:key adjudicator}
+       [:tr
+        ;[:td (:adjudicator/id adjudicator)]
+        [:td (:adjudicator/name adjudicator)]
+        [:td (:adjudicator/country adjudicator)]])]]])
+
+(defn adjudictor-panels-component []
+  [:div
+   [:h3 "Domarpaneler"]
+   [:table.table
+    [:thead
+     [:tr
+      [:th {:with "20"} "#"]
+      [:th {:with "200"} "Domare"]]]
+    [:tbody
+     (for [adjudicator-panel (sort-by :adjudicator-panel/name (:competition/panels (:competition @app-state)))]
+       ^{:key adjudicator-panel}
+       [:tr
+        [:td (:adjudicator-panel/name adjudicator-panel)]
+        [:td (clojure.string/join
+              ", "
+              (map :adjudicator/name (:adjudicator-panel/adjudicators adjudicator-panel)))]])]]])
+
 (defn classes-component []
   [:div
-   [:h3 "Klasser Nyyy"]
+   [:h3 "Klasser"]
    [:table.table
     [:thead
      [:tr
@@ -303,8 +188,7 @@
         ;; Present how far into the competition this class is.
         ;; The round status is given by the last completed round, if there are none
         ;;  the class is not started
-        [:td (make-round-presentation-new (:class/rounds class))
-         ]])]]])
+        [:td (make-round-presentation (:class/rounds class))]])]]])
 
 ;; TODO - make the on-click event run thoughe dispatch
 (defn import-component []
@@ -319,15 +203,10 @@
                             :on-click #(dispatch [:select-page :classes])}]
    [:input.btn.btn-default {:type "button" :value "Time Schedule"
                             :on-click #(dispatch [:select-page :events])}]
-   ;; [:input.btn.btn-default {:type "button" :value "NewAdjudicators"
-   ;;                          :on-click #(dispatch [:select-page :new-adjudicators])}]
-   [:input.btn.btn-default {:type "button" :value "NewAdjudicator panels"
-                            :on-click #(dispatch [:select-page :new-adjudicator-panels])}]
    [:input.btn.btn-default {:type "button" :value "Adjudicators"
                             :on-click #(dispatch [:select-page :adjudicators])}]
    [:input.btn.btn-default {:type "button" :value "Adjudicator panels"
-                            :on-click #(dispatch [:select-page :adjudicator-panels])}]
-   ])
+                            :on-click #(dispatch [:select-page :adjudicator-panels])}]])
 
 (defn time-schedule-activity-presenter [activity classes]
   (let [round (:activity/source activity)
@@ -404,12 +283,11 @@
 
      :type (if comment?
               ""
-              (make-dance-type-presentation (:round/dances round)))})
-  )
+              (make-dance-type-presentation (:round/dances round)))}))
 
 (defn events-component []
   [:div
-   [:h3 "Time Schedule Ny"]
+   [:h3 "Time Schedule"]
    [:table.table
     [:thead
      [:tr
@@ -448,9 +326,7 @@
      (condp = (:selected-page @app-state)
        :classes [classes-component]
        :events [events-component]
-       ;:adjudicators [adjudictors-component]
        :adjudicators [adjudictors-component]
-       :new-adjudicator-panels [new-adjudictor-panels-component]
        :adjudicator-panels [adjudictor-panels-component])]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -459,35 +335,24 @@
 (defn ^:export run []
   (reagent/render-component [menu-component] (.-body js/document)))
 
-;; (defn handle-export []
-;;   (let [export-link (. js/document (getElementById "export-download-link"))]
-;;     (log "Exporting competition")
-;;     (.click export-link)))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Socket handling
+
 (defn- event-handler [[id data :as ev] _]
   (log (str "Event: " id))
   (match [id data]
-    ;; TODO Match your events here <...>
-         ;; [:chsk/recv [:file/imported content]]
-         ;; (do
-         ;;   (swap! app-state #(merge % {:selected-page :classes
-         ;;                               :competition (:file/content content)}))
-         ;;   ;(swap! app-state #(hash-map :competitions (conj (:competitions %) content)))
-         ;;   (log (str @app-state))
-         ;;   )
+         ;; TODO Match your events here <...>
          [:chsk/recv [:file/imported content]]
          (do
            (swap! app-state #(merge % {:competition content}))
            (log (str @app-state)))
          ;; [:chsk/recv [:file/export content]]
          ;; (handle-export)
-    [:chsk/state [:first-open _]] (log "Channel socket successfully established!")
-    ;[:chsk/state new-state] (log (str "Chsk state change: " new-state))
-    ;[:chsk/recv payload] (log (str "Push event from server: " payload))
-    :else (log (str "Unmatched event: " ev)))
-  )
+         [:chsk/state [:first-open _]]
+         (log "Channel socket successfully established!")
+                                        ;[:chsk/state new-state] (log (str "Chsk state change: " new-state))
+                                        ;[:chsk/recv payload] (log (str "Push event from server: " payload))
+         :else (log (str "Unmatched event: " ev))))
 
 (defonce chsk-router
   (sente/start-chsk-router-loop! event-handler ch-chsk))
@@ -496,6 +361,12 @@
 ;; Purgatory
 
 ;; Exempel till "Export"
+
+;; (defn handle-export []
+;;   (let [export-link (. js/document (getElementById "export-download-link"))]
+;;     (log "Exporting competition")
+;;     (.click export-link)))
+
 ;; <a id="document-download-link" download="project.goy" href=""></a>
 
 ;; (defn save-document []
@@ -507,104 +378,3 @@
 ;; (set! (.-href download-link) href-content)
 ;; (.click download-link)))
 
-
-;; TODO - Let the server return dancers in a UI-normalized way
-;; (defn get-dancers [competitions]
-;;   (into #{}
-;;         (map #(dissoc % :competitor/number) 
-;;              (for [competition competitions
-;;                    classes (:competition/classes competition)
-;;                    competitors (:class/competitors classes)]
-;;                competitors))))
-
-;; (defonce component-state
-;;   (atom {:competitions-visible false}))
-
-;; (defn competitor-component [competitors include-number?]
-;;   [:div ""
-;;    [:ul
-;;     (for [competitor competitors]
-;;       ^{:key competitor}
-;;       [:li 
-;;        (str (if include-number?
-;;               (str "Tävlande nummer : " (:competitor/number competitor) " - "))
-;;             (str (:competitor/name competitor)
-;;                  " från "
-;;                  (:competitor/club competitor)))])]])
-
-;; (defn class-component [classes]
-;;   [:h3 "Classes"]
-;;   [:div
-;;    (for [cls classes]
-;;      ^{:key cls}
-;;      [:div
-;;       (:class/name cls)
-;;       [competitor-component (:class/competitors cls) true]])])
-
-;; (defn competition-item []
-;;   (let [open (atom false)]
-;;     (fn [competition]
-;;       [:li 
-;;        [:div.view
-;;         [:label {:on-click #(log "Klickz")} (str (:competition/name competition) " i "
-;;                       (:competition/location competition) " den "
-;;                       (:competition/date competition))
-;;          ]
-;;         [:input.btn.btn-default
-;;          {:type "button"
-;;           :value (if @open "Stäng" "Öppna")
-;;           :on-click #(swap! open not)}]]
-;;        (if @open
-;;          [:div
-;;           [:input.btn.btn-default
-;;            {:type "button"
-;;             :value "Exportera"
-;;             ;; TODO - send competition id when we got back-end storage
-;;             :on-click #(on-export-click % competition)}]
-;;           [:a {:id "export-download-link"
-;;                :href (str "/exported-files/" (:competition/name competition) ".xml")
-;;                :download (str (:competition/name competition) ".xml")}]
-;;           [:h4 "Klasser :"]
-;;           [class-component (:competition/classes competition)]])])))
-
-;; (defn competitors-component []
-;;   [:div
-;;    [:h2 "Tillgängliga dansare"]
-;;    [competitor-component (get-dancers (:competitions @app-state))]])
-
-;; (defn import-component []
-;;   [:div
-   
-;;    [:h2 "Tillgängliga tävlingar"]
-;;    [:ul
-;;     (for [competition (:competitions @app-state)]
-;;       ^{:key competition} [competition-item competition])]
-;;    [:h2 "Importera en ny tävling : "]
-;;    [:input.btn.btn-default {:type "file" :value "Import file"
-;;                             :onChange ;#(dispatch [:file/import (.item (.. % -target -files) 0)])
-;;                             #(on-click-import-file %)
-;;                             }]])
-
-;; (defn menu-component []
-;;   (let [visible-component (atom :none)]
-;;     (fn []
-;;       [:div.container
-;;        [:div.header
-;;         [:h2 "Välkommen till Tango!"]
-;;         [:input.btn.btn-primary.btn-lg.navbar-btn
-;;          {:type "button" :value "Tävlingar" :on-click #(reset! visible-component :competitions)}]
-;;         [:input.btn.btn-primary.btn-lg
-;;          {:type "button" :value "Dansare" :on-click #(reset! visible-component :competitors)}]
-;;         [:input.btn.btn-primary.btn-lg
-;;          {:type "button" :value "Domare" :on-click #(reset! visible-component :adjudicators)}]
-
-;;         [:input.btn.btn-default
-;;          {:type "button" :value "Debug Button" :on-click #(chsk-send! [:debug/test {:test "Test"}])}]
-;;         ;[:h2 (str "visible-component " @visible-component)]
-;;         ]
-;;        (condp = @visible-component
-;;          :competitions [import-component]
-;;          :competitors [competitors-component]
-;;          :adjudicators [:div]
-;;          :none [:div])
-;;        ])))
