@@ -21,30 +21,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Component
 
-;; TODO - start-clients-handler and start-message-handler should be merged
-
-(defn start-clients-handler 
-  "Receives messages on a core.async channel used by clients and
-  puts those messages on this components out-channel."
-  [out-channel clients-in-channel]
-  (async/go-loop []
-    (when-let [message (async/<! clients-in-channel)]
-      (log-raw-message message)
-      (when message
-        (try
-          (let [topic (:topic message)
-                payload (:payload message)]
-            (log/trace (str "Client ChannelConnection received: " message))
-            (async/put! out-channel message))
-          (catch Exception e
-            (log/error e "Exception in Client ChannelConnection message go loop")
-            (async/>! out-channel (create-exception-message e))))
-        (recur)))))
-
 (defn start-message-handler
-  "Receives system messages to be sent to clients, any messages on
-  the components in-channel are put on the clients out-channel."
-  [in-channel out-channel clients-out-channel]
+  [name in-channel out-channel error-channel]
   (async/go-loop []
     (when-let [message (async/<! in-channel)]
       (log-raw-message message)
@@ -52,11 +30,11 @@
         (try
           (let [topic (:topic message)
                 payload (:payload message)]
-            (log/trace (str "ChannelConnection received: " message))
-            (async/put! clients-out-channel message))
+            (log/trace (str name " received: " message))
+            (async/put! out-channel message))
           (catch Exception e
-            (log/error e "Exception in ChannelConnection message go loop")
-            (async/>! out-channel (create-exception-message e))))
+            (log/error e (str "Exception in " name " message go loop"))
+            (async/>! error-channel (create-exception-message e))))
         (recur)))))
 
 (defrecord ChannelConnection [channel-connection-channels in-channel out-channel message-handler]
@@ -67,11 +45,16 @@
       component
       (let [clients-in-channel (async/chan)
             clients-out-channel (async/chan)
-            message-handler (start-message-handler (:in-channel channel-connection-channels)
-                                                   (:out-channel channel-connection-channels)
-                                                   clients-out-channel)
-            clients-handler (start-clients-handler (:out-channel channel-connection-channels)
-                                                   clients-in-channel)]
+            message-handler (start-message-handler
+                             "ChannelConnection"
+                             (:in-channel channel-connection-channels)
+                             clients-out-channel
+                             (:out-channel channel-connection-channels))
+            clients-handler (start-message-handler
+                             "Client ChannelConnection"
+                             (:out-channel channel-connection-channels)
+                             clients-in-channel
+                             clients-in-channel)]
         (assoc component
           :message-handler message-handler
           :in-channel clients-in-channel
