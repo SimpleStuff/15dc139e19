@@ -18,6 +18,22 @@
           (Integer/parseInt (clojure.string/replace prepared-string #"\+" ""))
           :else s)))
 
+(defn- start-time-to-date [time-str date]
+  (let [[hh mm] (map to-number (clojure.string/split time-str #":"))]
+    (when (and (number? hh) (number? mm))
+      (tcr/to-date (t/plus (tcr/to-date-time date) (t/hours hh) (t/minutes mm))))))
+
+(defn- round-value->key [val]
+  (get
+   [:none
+    :normal-x :semifinal-x :final-x :b-final-x :retry-x :second-try-x
+    :normal-1-5 :semifinal-1-5 :retry-1-5 :second-try-1-5
+    :normal-3d :semifinal-3d :retry-3d :second-try-3d
+    :normal-a+b :semifinal-a+b :final-a+b :b-final-a+b :retry-a+b :second-try-a+b
+    :presentation]
+   val
+   :unknown-round-value))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Makers
 
@@ -44,6 +60,14 @@
    :adjudicator/name name
    :adjudicator/country country})
 
+(defn- make-activity [name number comment id position source-id time]
+  {:activity/name name
+   :activity/number number
+   :activity/comment comment
+   :activity/id id
+   :activity/position position
+   :activity/source-id source-id
+   :activity/time time})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Attribute Utils
@@ -81,6 +105,14 @@
 
 (defn- event-number-attr-empty? [loc]
   (= "" (event-number-attr loc)))
+
+(defn- time-attr-to-date [loc base-date]
+  (start-time-to-date (get-time-attr loc) base-date))
+
+(defn- make-event-number [loc]
+  (if (event-number-attr-empty? loc)
+    -1
+    (event-number-attr-as-number loc)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Xml import
@@ -174,42 +206,6 @@
      :class/results (into [] (result-list->map (zx/xml-> class :Results :Result)))
      :class/id (id-generator-fn)}))
 
-(defn- round-value->key [val]
-  (get
-   [:none
-    :normal-x :semifinal-x :final-x :b-final-x :retry-x :second-try-x
-    :normal-1-5 :semifinal-1-5 :retry-1-5 :second-try-1-5
-    :normal-3d :semifinal-3d :retry-3d :second-try-3d
-    :normal-a+b :semifinal-a+b :final-a+b :b-final-a+b :retry-a+b :second-try-a+b
-    :presentation]
-   val
-   :unknown-round-value))
-
-(defn- make-activity [name number comment id position source-id time]
-  {:activity/name name ;"Round 1"
-   :activity/number number ;"1A"
-   :activity/comment comment ;"Comment"
-   :activity/id id ;"1"
-   :activity/position position ;"1"
-   :activity/source-id source-id
-   :activity/time time})
-
-;; comment:
- ;; <Event Seq="0" ClassNumber="0" DanceQty="0" EventNumber="" Time="" 
-;; Comment="FREESTYLE" AdjPanel="0" Heats="1" Round="0" Status="0" Startorder="0">
-(defn- start-time-to-date [time-str date]
-  (let [[hh mm] (map to-number (clojure.string/split time-str #":"))]
-    (when (and (number? hh) (number? mm))
-      (tcr/to-date (t/plus (tcr/to-date-time date) (t/hours hh) (t/minutes mm))))))
-
-(defn- time-attr-to-date [loc base-date]
-  (start-time-to-date (get-time-attr loc) base-date))
-
-(defn- make-event-number [loc]
-  (if (event-number-attr-empty? loc)
-    -1
-    (event-number-attr-as-number loc)))
-
 (defn- round-list->map [rounds-loc id-generator-fn base-time]
   (for [round rounds-loc]
     (let [round-id (id-generator-fn)
@@ -229,8 +225,7 @@
                               (increased-seq-attr round)
                               ;; Put real source here, needs to be done in pp
                               round-id
-                              start-date-time
-                              )
+                              start-date-time)
                         :dp/temp-class-id (class-number-attr-as-number round))
 
        :round/number event-number
@@ -261,8 +256,7 @@
        :round/dances (vec (dance-list->map (zx/xml-> round :DanceList :Dance))) ;[example-dance-1]
        
        ;; CONSIDER - maybe this should be left as a number for DB and then up to any presenter to parse?
-       :round/type (round-value->key (to-number (zx/attr round :Round)))
-       })))
+       :round/type (round-value->key (to-number (zx/attr round :Round)))})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Post process
@@ -296,7 +290,7 @@
                 participants)))))))
 
 
-(defn last-result [rounds]
+(defn- last-result [rounds]
   (:round/results (last rounds)))
 
 (defn- last-round-starting [class rounds]
