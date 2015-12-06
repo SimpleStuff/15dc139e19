@@ -18,6 +18,22 @@
           (Integer/parseInt (clojure.string/replace prepared-string #"\+" ""))
           :else s)))
 
+(defn- start-time-to-date [time-str date]
+  (let [[hh mm] (map to-number (clojure.string/split time-str #":"))]
+    (when (and (number? hh) (number? mm))
+      (tcr/to-date (t/plus (tcr/to-date-time date) (t/hours hh) (t/minutes mm))))))
+
+(defn- round-value->key [val]
+  (get
+   [:none
+    :normal-x :semifinal-x :final-x :b-final-x :retry-x :second-try-x
+    :normal-1-5 :semifinal-1-5 :retry-1-5 :second-try-1-5
+    :normal-3d :semifinal-3d :retry-3d :second-try-3d
+    :normal-a+b :semifinal-a+b :final-a+b :b-final-a+b :retry-a+b :second-try-a+b
+    :presentation]
+   val
+   :unknown-round-value))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Makers
 
@@ -44,19 +60,70 @@
    :adjudicator/name name
    :adjudicator/country country})
 
+(defn- make-activity [name number comment id position source-id time]
+  {:activity/name name
+   :activity/number number
+   :activity/comment comment
+   :activity/id id
+   :activity/position position
+   :activity/source-id source-id
+   :activity/time time})
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Xml import
+;; Attribute Utils
 
 (defn- get-name-attr [loc]
   (zx/attr loc :Name))
+
+(defn- get-time-attr [loc]
+  (zx/attr loc :Time))
+
+(defn- get-seq-attr [loc]
+  (zx/attr loc :Seq))
+
+(defn- get-seq-attr-as-number
+  [loc]
+  (to-number (get-seq-attr loc)))
+
+(defn- increased-seq-attr [loc]
+  (inc (get-seq-attr-as-number loc)))
+
+(defn- get-adj-number-attr [loc]
+  (to-number (zx/attr loc :AdjNumber)))
+
+(defn- get-number-attr [loc]
+  (to-number (zx/attr loc :Number)))
+
+(defn- class-number-attr-as-number [loc]
+  (to-number (zx/attr loc :ClassNumber)))
+
+(defn- event-number-attr [loc]
+  (zx/attr loc :EventNumber))
+
+(defn- event-number-attr-as-number [loc]
+  (to-number (event-number-attr loc)))
+
+(defn- event-number-attr-empty? [loc]
+  (= "" (event-number-attr loc)))
+
+(defn- time-attr-to-date [loc base-date]
+  (start-time-to-date (get-time-attr loc) base-date))
+
+(defn- make-event-number [loc]
+  (if (event-number-attr-empty? loc)
+    -1
+    (event-number-attr-as-number loc)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Xml import
 
 (defn- adjudicators->map [adjudicator-loc id-generator-fn]
   (assoc
       (make-adjudicator
        (id-generator-fn)
-       (zx/attr adjudicator-loc :Name)
+       (get-name-attr adjudicator-loc)
        (zx/attr adjudicator-loc :Country))
-    :dp/temp-id (to-number (zx/attr adjudicator-loc :Seq))))
+    :dp/temp-id (get-seq-attr-as-number adjudicator-loc)))
 
 (defn- competition-data->map [xml-loc]
   (make-competition-data
@@ -66,22 +133,12 @@
               (zx/attr xml-loc :Date)))
    (zx/attr xml-loc :Place)))
 
-(defn- get-adj-number-attr [loc]
-  (to-number (zx/attr loc :AdjNumber)))
-
 (defn- panel->map [panel-loc id-generator-fn adjudicators]
   (for [panel panel-loc]
     (dissoc
      (first (filter #(= (get-adj-number-attr panel) (:dp/temp-id %))
                     adjudicators))
      :dp/temp-id)))
-
-(defn- get-seq-attr
-  [loc]
-  (to-number (zx/attr loc :Seq)))
-
-(defn- get-number-attr [loc]
-  (to-number (zx/attr loc :Number)))
 
 (defn- adjudicator-panel-list->map
   [xml-loc id-generator-fn adjudicators]
@@ -90,8 +147,8 @@
    ;; be used
    (fn [adjudicators] (seq (:adjudicator-panel/adjudicators adjudicators)))
    (for [panel xml-loc]
-     {:dp/panel-id (get-seq-attr panel)
-      :adjudicator-panel/name (str (inc (get-seq-attr panel)))
+     {:dp/panel-id (get-seq-attr-as-number panel)
+      :adjudicator-panel/name (str (increased-seq-attr panel))
       :adjudicator-panel/id (id-generator-fn)          ;(get-seq-attr-no-inc panel)
       :adjudicator-panel/adjudicators
       (into [] (panel->map (zx/xml-> panel :PanelAdj) id-generator-fn adjudicators))})))
@@ -109,7 +166,7 @@
 
 (defn- marks->map [marks-loc adjudicators]
   (for [mark marks-loc]
-    {:dp/temp-local-adjudicator (get-seq-attr mark)
+    {:dp/temp-local-adjudicator (get-seq-attr-as-number mark)
      :judging/adjudicator :todo
      :juding/marks [{:mark/x (= (zx/attr mark :X) "X")}]}))
 
@@ -128,7 +185,7 @@
   (filter
    :dp/temp-id
    (for [panel adjudicator-panels-loc]
-     {:dp/result-local-panel-id (get-seq-attr panel)
+     {:dp/result-local-panel-id (get-seq-attr-as-number panel)
       :dp/temp-id (get-number-attr panel)})))
 
 (defn- result-list->map [result-loc]
@@ -140,7 +197,7 @@
 (defn- class-list->map [classes-loc id-generator-fn]
   (for [class classes-loc]
     {:class/name (zx/attr class :Name)
-     :class/position (inc (get-seq-attr class))
+     :class/position (inc (get-seq-attr-as-number class))
      :class/adjudicator-panel {:dp/temp-id (dec (to-number (zx/attr class :AdjPanel)))}
      :class/starting (into [] (couple->map (zx/xml-> class :StartList :Couple) id-generator-fn))
      :class/dances (into [] (dance-list->map (zx/xml-> class :DanceList :Dance)))
@@ -149,38 +206,12 @@
      :class/results (into [] (result-list->map (zx/xml-> class :Results :Result)))
      :class/id (id-generator-fn)}))
 
-(defn- round-value->key [val]
-  (get
-   [:none
-    :normal-x :semifinal-x :final-x :b-final-x :retry-x :second-try-x
-    :normal-1-5 :semifinal-1-5 :retry-1-5 :second-try-1-5
-    :normal-3d :semifinal-3d :retry-3d :second-try-3d
-    :normal-a+b :semifinal-a+b :final-a+b :b-final-a+b :retry-a+b :second-try-a+b
-    :presentation]
-   val
-   :unknown-round-value))
-
-(defn- make-activity [name number comment id position source-id time]
-  {:activity/name name ;"Round 1"
-   :activity/number number ;"1A"
-   :activity/comment comment ;"Comment"
-   :activity/id id ;"1"
-   :activity/position position ;"1"
-   :activity/source-id source-id
-   :activity/time time})
-
-;; comment:
- ;; <Event Seq="0" ClassNumber="0" DanceQty="0" EventNumber="" Time="" 
-;; Comment="FREESTYLE" AdjPanel="0" Heats="1" Round="0" Status="0" Startorder="0">
-(defn- start-time-to-date [time-str date]
-  (let [[hh mm] (map to-number (clojure.string/split time-str #":"))]
-    (when (and (number? hh) (number? mm))
-      (tcr/to-date (t/plus (tcr/to-date-time date) (t/hours hh) (t/minutes mm))))))
-
 (defn- round-list->map [rounds-loc id-generator-fn base-time]
   (for [round rounds-loc]
-    (let [round-id (id-generator-fn)]
-      {:dp/temp-class-id (to-number (zx/attr round :ClassNumber))
+    (let [round-id (id-generator-fn)
+          start-date-time (time-attr-to-date round base-time)
+          event-number (make-event-number round)]
+      {:dp/temp-class-id (class-number-attr-as-number round)
        
        :round/id round-id
        
@@ -188,23 +219,22 @@
                               ;; Post processed
                               ""
                               ;; Events that represent comments do not have an EventNumber and do now get -1
-                              (if (= "" (zx/attr round :EventNumber)) -1 (to-number (zx/attr round :EventNumber)))
+                              event-number
                               (zx/attr round :Comment)
                               (id-generator-fn)
-                              (inc (get-seq-attr round))
+                              (increased-seq-attr round)
                               ;; Put real source here, needs to be done in pp
                               round-id
-                              (start-time-to-date (zx/attr round :Time) base-time)
-                              )
-                        :dp/temp-class-id (to-number (zx/attr round :ClassNumber)))
+                              start-date-time)
+                        :dp/temp-class-id (class-number-attr-as-number round))
 
-       :round/number (if (= "" (zx/attr round :EventNumber)) -1 (to-number (zx/attr round :EventNumber)))
+       :round/number event-number
 
        ;; Post process, need to get this from the previous round
        :round/starting []
 
        ;; Post process, parse time and plus with compdate
-       :round/start-time (start-time-to-date (zx/attr round :Time) base-time)
+       :round/start-time start-date-time
        
        ;; Save the id of the adjudicator panel to be able to look it up in post processing.
        ;; Subtract 3 since the 'index' in the file refer to a UI index witch is 3 of from
@@ -226,8 +256,7 @@
        :round/dances (vec (dance-list->map (zx/xml-> round :DanceList :Dance))) ;[example-dance-1]
        
        ;; CONSIDER - maybe this should be left as a number for DB and then up to any presenter to parse?
-       :round/type (round-value->key (to-number (zx/attr round :Round)))
-       })))
+       :round/type (round-value->key (to-number (zx/attr round :Round)))})))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Post process
@@ -249,22 +278,29 @@
                    (:adjudicator/id (first (filter #(= temp-id (:dp/temp-id %)) adjudicators))))})
          :dp/temp-local-adjudicator))})))
 
-(defn- prep-round-starting [prev-results participants]
+(defn- round-recalled [results participants]
   (vec
    (remove
     nil?
-    (for [prev-result prev-results]
-      (if (contains? #{:r :x} (:result/recalled prev-result))
+    (for [result results]
+      (if (contains? #{:r :x} (:result/recalled result))
         (first (filter
-                #(= (:result/participant-number prev-result)
+                #(= (:result/participant-number result)
                     (:participant/number %))
                 participants)))))))
 
 
+(defn- last-result [rounds]
+  (:round/results (last rounds)))
 
+(defn- last-round-starting [class rounds]
+  (round-recalled (last-result rounds) (:class/starting class)))
+
+;; TODO - list of starting should be refactored
 (defn- class-list-post-process [classes rounds adjudicators panels competition-date]
   (for [class classes]
-    (let [processed-rounds
+    (let [last-round-starting-for-class (partial last-round-starting class)
+          processed-rounds
           (reduce
            (fn [res round]
              (conj
@@ -289,11 +325,8 @@
                  ;; and should be dissregarded
                  :round/starting (if (= (count (filter #(not= (:round/type %) :presentation) res)) 0)
                                    (:class/starting class)
-                                   (prep-round-starting
-                                    (:round/results (last res))
-                                    (:class/starting class)))
-                 :round/start-time  (:round/start-time round);;(start-time-to-date (:round/start-time round) competition-date)
-                 })
+                                   (last-round-starting-for-class res))
+                 :round/start-time  (:round/start-time round)})
                :dp/temp-class-id
                :temp/activity)))
            []
@@ -314,9 +347,7 @@
                :class/remaining (if-let [completed-rounds
                                          (seq 
                                           (filter #(= (:round/status %) :completed) processed-rounds))]
-                                  (prep-round-starting
-                                   (:round/results (last completed-rounds))
-                                   (:class/starting class))
+                                  (last-round-starting-for-class completed-rounds)
                                   (:class/starting class))})
        :class/results))))
 
