@@ -205,10 +205,16 @@
 (defn- time-attr-to-date [loc base-date]
   (start-time-to-date (get-time-attr loc) base-date))
 
+(defn- make-event-number [loc]
+  (if (event-number-attr-empty? loc)
+    -1
+    (event-number-attr-as-number loc)))
+
 (defn- round-list->map [rounds-loc id-generator-fn base-time]
   (for [round rounds-loc]
     (let [round-id (id-generator-fn)
-          start-date-time (time-attr-to-date round base-time)]
+          start-date-time (time-attr-to-date round base-time)
+          event-number (make-event-number round)]
       {:dp/temp-class-id (class-number-attr-as-number round)
        
        :round/id round-id
@@ -217,7 +223,7 @@
                               ;; Post processed
                               ""
                               ;; Events that represent comments do not have an EventNumber and do now get -1
-                              (if (event-number-attr-empty? round) -1 (event-number-attr-as-number round))
+                              event-number
                               (zx/attr round :Comment)
                               (id-generator-fn)
                               (increased-seq-attr round)
@@ -227,7 +233,7 @@
                               )
                         :dp/temp-class-id (class-number-attr-as-number round))
 
-       :round/number (if (event-number-attr-empty? round) -1 (event-number-attr-as-number round))
+       :round/number event-number
 
        ;; Post process, need to get this from the previous round
        :round/starting []
