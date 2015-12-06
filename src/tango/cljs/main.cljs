@@ -156,58 +156,41 @@
    0
    class-result))
 
-(def new-adj-data
-  {:competition/name "TurboMegatävling"
-   :competition/date "2014 11 22"
-   :competition/location "THUNDERDOME"
-   :competition/panels
-   [{:adjudicator-panel/name "1"
-     :adjudicator-panel/adjudicators
-     [{:adjudicator/name "Anders"
-       :adjudicator/id 1
-       :adjudicator/country "Sweden"}
-      {:adjudicator/name "Bertil"
-       :adjudicator/id 2
-       :adjudicator/country ""}]
-     :adjudicator-panel/id 4}
-    {:adjudicator-panel/name "2"
-     :adjudicator-panel/adjudicators
-     [{:adjudicator/name "Bertil"
-       :adjudicator/id 2
-       :adjudicator/country ""}
-      {:adjudicator/name "Cesar"
-       :adjudicator/id 3
-       :adjudicator/country ""}]
-     :adjudicator-panel/id 5}]
-   :competition/adjudicators
-   [{:adjudicator/name "Anders"
-     :adjudicator/id 1
-     :adjudicator/country "Sweden"}
-    {:adjudicator/name "Bertil"
-     :adjudicator/id 2
-     :adjudicator/country "Uganda"}
-    {:adjudicator/name "Cesar"
-     :adjudicator/id 3
-     :adjudicator/country "Tibet"}]
-   :competitor/activities []
-   :competition/classes []})
-
-(defn new-adjudictors-component []
-  [:div
-   [:h3 "Domare"]
-   [:table.table
-    [:thead
-     [:tr
-      [:th {:with "20"} "#"]
-      [:th {:with "200"} "Name"]
-      [:th {:with "20"} "Country"]]]
-    [:tbody
-     (for [adjudicator (sort-by :adjudicator/id (:competition/adjudicators new-adj-data))]
-       ^{:key adjudicator}
-       [:tr
-        [:td (:adjudicator/id adjudicator)]
-        [:td (:adjudicator/name adjudicator)]
-        [:td (:adjudicator/country adjudicator)]])]]])
+;; (def new-adj-data
+;;   {:competition/name "TurboMegatävling"
+;;    :competition/date "2014 11 22"
+;;    :competition/location "THUNDERDOME"
+;;    :competition/panels
+;;    [{:adjudicator-panel/name "1"
+;;      :adjudicator-panel/adjudicators
+;;      [{:adjudicator/name "Anders"
+;;        :adjudicator/id 1
+;;        :adjudicator/country "Sweden"}
+;;       {:adjudicator/name "Bertil"
+;;        :adjudicator/id 2
+;;        :adjudicator/country ""}]
+;;      :adjudicator-panel/id 4}
+;;     {:adjudicator-panel/name "2"
+;;      :adjudicator-panel/adjudicators
+;;      [{:adjudicator/name "Bertil"
+;;        :adjudicator/id 2
+;;        :adjudicator/country ""}
+;;       {:adjudicator/name "Cesar"
+;;        :adjudicator/id 3
+;;        :adjudicator/country ""}]
+;;      :adjudicator-panel/id 5}]
+;;    :competition/adjudicators
+;;    [{:adjudicator/name "Anders"
+;;      :adjudicator/id 1
+;;      :adjudicator/country "Sweden"}
+;;     {:adjudicator/name "Bertil"
+;;      :adjudicator/id 2
+;;      :adjudicator/country "Uganda"}
+;;     {:adjudicator/name "Cesar"
+;;      :adjudicator/id 3
+;;      :adjudicator/country "Tibet"}]
+;;    :competitor/activities []
+;;    :competition/classes []})
 
 (defn adjudictors-component []
   [:div
@@ -215,16 +198,36 @@
    [:table.table
     [:thead
      [:tr
-      [:th {:with "20"} "#"]
+      ;[:th {:with "20"} "#"]
       [:th {:with "200"} "Name"]
       [:th {:with "20"} "Country"]]]
     [:tbody
-     (for [adjudicator (sort-by :adjudicator/id (:competition/adjudicators (:competition @app-state)))]
+     (for [adjudicator
+           (sort-by :adjudicator/name (:competition/adjudicators (:competition @app-state)))
+                                        ;(sort-by :adjudicator/id (:competition/adjudicators (:competition @app-state)))
+           ]
        ^{:key adjudicator}
        [:tr
-        [:td (:adjudicator/id adjudicator)]
+        ;[:td (:adjudicator/id adjudicator)]
         [:td (:adjudicator/name adjudicator)]
         [:td (:adjudicator/country adjudicator)]])]]])
+
+;; (defn adjudictors-component []
+;;   [:div
+;;    [:h3 "Domare"]
+;;    [:table.table
+;;     [:thead
+;;      [:tr
+;;       ;[:th {:with "20"} "#"]
+;;       [:th {:with "200"} "Name"]
+;;       [:th {:with "20"} "Country"]]]
+;;     [:tbody
+;;      (for [adjudicator (sort-by :adjudicator/id (:competition/adjudicators (:competition @app-state)))]
+;;        ^{:key adjudicator}
+;;        [:tr
+;;         ;[:td (:adjudicator/id adjudicator)]
+;;         [:td (:adjudicator/name adjudicator)]
+;;         [:td (:adjudicator/country adjudicator)]])]]])
 
 (defn new-adjudictor-panels-component []
   [:div
@@ -235,7 +238,7 @@
       [:th {:with "20"} "#"]
       [:th {:with "200"} "Domare"]]]
     [:tbody
-     (for [adjudicator-panel (sort-by :adjudicator-panel/id (:competition/panels new-adj-data))]
+     (for [adjudicator-panel (sort-by :adjudicator-panel/id (:competition/panels (:competition @app-state)))]
        ^{:key adjudicator-panel}
        [:tr
         [:td (:adjudicator-panel/id adjudicator-panel)]
@@ -316,8 +319,8 @@
                             :on-click #(dispatch [:select-page :classes])}]
    [:input.btn.btn-default {:type "button" :value "Time Schedule"
                             :on-click #(dispatch [:select-page :events])}]
-   [:input.btn.btn-default {:type "button" :value "NewAdjudicators"
-                            :on-click #(dispatch [:select-page :new-adjudicators])}]
+   ;; [:input.btn.btn-default {:type "button" :value "NewAdjudicators"
+   ;;                          :on-click #(dispatch [:select-page :new-adjudicators])}]
    [:input.btn.btn-default {:type "button" :value "NewAdjudicator panels"
                             :on-click #(dispatch [:select-page :new-adjudicator-panels])}]
    [:input.btn.btn-default {:type "button" :value "Adjudicators"
@@ -445,8 +448,8 @@
      (condp = (:selected-page @app-state)
        :classes [classes-component]
        :events [events-component]
+       ;:adjudicators [adjudictors-component]
        :adjudicators [adjudictors-component]
-       :new-adjudicators [new-adjudictors-component]
        :new-adjudicator-panels [new-adjudictor-panels-component]
        :adjudicator-panels [adjudictor-panels-component])]))
 
