@@ -1,0 +1,415 @@
+<?xml version = "1.0" encoding = "UTF-8"?>
+<DancePerfect Version="4.1">
+  <CompData Name="Regionst&#228;vling region Sthlm" Place="BOTKYRKA" Date="2015-04-25" Org="" AdjOrderFinal="1" AdjOrderOther="0" SameHeatAllDances="0" RadomHeats="0" PreView="1" HeatText="1" NameOnNumberSign="0" ClubOnNumberSign="0" SkipAdjLetter="0" PrinterSelectPaper="0" ChineseFonts="0" ArialFont="Arial" CourierFont="Courier New"/>
+  <AdjPanelList>
+    <AdjList Qty="3">
+      <Adjudicator Seq="0" Name="Thomas" Country=""/>
+      <Adjudicator Seq="1" Name="M&#229;rten" Country=""/>
+      <Adjudicator Seq="2" Name="Daniel" Country=""/>
+    </AdjList>
+    <PanelList Qty="30">
+      <Panel Seq="0" Qty="3">
+        <PanelAdj Seq="0" AdjNumber="0"/>
+        <PanelAdj Seq="1" AdjNumber="1"/>
+        <PanelAdj Seq="2" AdjNumber="2"/>
+      </Panel>
+      <Panel Seq="1" Qty="0"/>
+      <Panel Seq="2" Qty="0"/>
+      <Panel Seq="3" Qty="0"/>
+      <Panel Seq="4" Qty="0"/>
+      <Panel Seq="5" Qty="0"/>
+      <Panel Seq="6" Qty="0"/>
+      <Panel Seq="7" Qty="0"/>
+      <Panel Seq="8" Qty="0"/>
+      <Panel Seq="9" Qty="0"/>
+      <Panel Seq="10" Qty="0"/>
+      <Panel Seq="11" Qty="0"/>
+      <Panel Seq="12" Qty="0"/>
+      <Panel Seq="13" Qty="0"/>
+      <Panel Seq="14" Qty="0"/>
+      <Panel Seq="15" Qty="0"/>
+      <Panel Seq="16" Qty="0"/>
+      <Panel Seq="17" Qty="0"/>
+      <Panel Seq="18" Qty="0"/>
+      <Panel Seq="19" Qty="0"/>
+      <Panel Seq="20" Qty="0"/>
+      <Panel Seq="21" Qty="0"/>
+      <Panel Seq="22" Qty="0"/>
+      <Panel Seq="23" Qty="0"/>
+      <Panel Seq="24" Qty="0"/>
+      <Panel Seq="25" Qty="0"/>
+      <Panel Seq="26" Qty="0"/>
+      <Panel Seq="27" Qty="0"/>
+      <Panel Seq="28" Qty="0"/>
+      <Panel Seq="29" Qty="0"/>
+    </PanelList>
+  </AdjPanelList>
+  <ClassList>
+    <Class Seq="0" Name="Hiphop Singel Brons J1" AdjPanel="2">
+      <DanceList Qty="1">
+        <Dance Seq="0" Name="Medium"/>
+      </DanceList>
+      <StartList Qty="21">
+        <Couple Seq="0" Number="10" Name="Thea Dahlin" Club="FLEX" License=""/>
+        <Couple Seq="1" Number="11" Name="Mathias Balan" Club="SDC" License=""/>
+        <Couple Seq="2" Number="12" Name="Beatrice Albinsson" Club="KD" License=""/>
+        <Couple Seq="3" Number="13" Name="Joel Persson" Club="FLEX" License=""/>
+        <Couple Seq="4" Number="14" Name="Tyra Hermansson" Club="FLEX" License=""/>
+        <Couple Seq="5" Number="15" Name="Miranda Nordheden" Club="Kindahls" License=""/>
+        <Couple Seq="6" Number="20" Name="Liv Henriksson" Club="Kindahls" License=""/>
+        <Couple Seq="7" Number="21" Name="Sofija Laurencikaite" Club="KD" License=""/>
+        <Couple Seq="8" Number="22" Name="Hanna H&#228;rneman" Club="Kindahls" License=""/>
+        <Couple Seq="9" Number="23" Name="Sebastian Ljungdahl" Club="DCL" License=""/>
+        <Couple Seq="10" Number="24" Name="Louise L&#246;&#246;f" Club="Edge Uppsala" License=""/>
+        <Couple Seq="11" Number="25" Name="Melina Axner Ellgren" Club="Kindahls" License=""/>
+        <Couple Seq="12" Number="26" Name="Isabelle Uddenberg" Club="Kindahls" License=""/>
+        <Couple Seq="13" Number="27" Name="Amanda Karolak" Club="KD" License=""/>
+        <Couple Seq="14" Number="30" Name="Filippa Uddenberg" Club="Kindahls" License=""/>
+        <Couple Seq="15" Number="31" Name="Lisa Trange" Club="Kindahls" License=""/>
+        <Couple Seq="16" Number="32" Name="Ellinor Zetterstr&#246;m" Club="Kindahls" License=""/>
+        <Couple Seq="17" Number="33" Name="Sara Engerdahl" Club="SDC" License=""/>
+        <Couple Seq="18" Number="34" Name="Maria Vidic" Club="SDC" License=""/>
+        <Couple Seq="19" Number="35" Name="Smilla Sk&#228;rbo" Club="Laising" License=""/>
+        <Couple Seq="20" Number="36" Name="Agnes Nidsj&#246;" Club="Kindahls" License=""/>
+      </StartList>
+      <Results Qty="1">
+        <Result Seq="0" Round="1" AdjQty="3" D3="0">
+          <AdjList>
+            <Adjudicator Seq="0" Number="0"/>
+            <Adjudicator Seq="1" Number="1"/>
+            <Adjudicator Seq="2" Number="2"/>
+          </AdjList>
+          <DanceList>
+            <Dance Seq="0" Name="Medium"/>
+          </DanceList>
+          <ResultArray>
+            <Couple Seq="0" DanceQty="1" AdjQty="3" Number="10" Recalled="X">
+              <MarkList>
+                <Mark Seq="0" X="X" D3="" A="" B=""/>
+                <Mark Seq="1" X=" " D3="" A="" B=""/>
+                <Mark Seq="2" X="X" D3="" A="" B=""/>
+              </MarkList>
+            </Couple>
+            <Couple Seq="1" DanceQty="1" AdjQty="3" Number="11" Recalled=" ">
+              <MarkList>
+                <Mark Seq="0" X=" " D3="" A="" B=""/>
+                <Mark Seq="1" X="X" D3="" A="" B=""/>
+                <Mark Seq="2" X=" " D3="" A="" B=""/>
+              </MarkList>
+            </Couple>
+            <Couple Seq="2" DanceQty="1" AdjQty="3" Number="12" Recalled=" ">
+              <MarkList>
+                <Mark Seq="0" X="X" D3="" A="" B=""/>
+                <Mark Seq="1" X=" " D3="" A="" B=""/>
+                <Mark Seq="2" X=" " D3="" A="" B=""/>
+              </MarkList>
+            </Couple>
+            <Couple Seq="3" DanceQty="1" AdjQty="3" Number="13" Recalled=" ">
+              <MarkList>
+                <Mark Seq="0" X=" " D3="" A="" B=""/>
+                <Mark Seq="1" X="X" D3="" A="" B=""/>
+                <Mark Seq="2" X=" " D3="" A="" B=""/>
+              </MarkList>
+            </Couple>
+            <Couple Seq="4" DanceQty="1" AdjQty="3" Number="14" Recalled="X">
+              <MarkList>
+                <Mark Seq="0" X="X" D3="" A="" B=""/>
+                <Mark Seq="1" X=" " D3="" A="" B=""/>
+                <Mark Seq="2" X="X" D3="" A="" B=""/>
+              </MarkList>
+            </Couple>
+            <Couple Seq="5" DanceQty="1" AdjQty="3" Number="15" Recalled=" ">
+              <MarkList>
+                <Mark Seq="0" X=" " D3="" A="" B=""/>
+                <Mark Seq="1" X="X" D3="" A="" B=""/>
+                <Mark Seq="2" X=" " D3="" A="" B=""/>
+              </MarkList>
+            </Couple>
+            <Couple Seq="6" DanceQty="1" AdjQty="3" Number="20" Recalled=" ">
+              <MarkList>
+                <Mark Seq="0" X=" " D3="" A="" B=""/>
+                <Mark Seq="1" X=" " D3="" A="" B=""/>
+                <Mark Seq="2" X=" " D3="" A="" B=""/>
+              </MarkList>
+            </Couple>
+            <Couple Seq="7" DanceQty="1" AdjQty="3" Number="21" Recalled="X">
+              <MarkList>
+                <Mark Seq="0" X="X" D3="" A="" B=""/>
+                <Mark Seq="1" X="X" D3="" A="" B=""/>
+                <Mark Seq="2" X="X" D3="" A="" B=""/>
+              </MarkList>
+            </Couple>
+            <Couple Seq="8" DanceQty="1" AdjQty="3" Number="22" Recalled=" ">
+              <MarkList>
+                <Mark Seq="0" X=" " D3="" A="" B=""/>
+                <Mark Seq="1" X=" " D3="" A="" B=""/>
+                <Mark Seq="2" X=" " D3="" A="" B=""/>
+              </MarkList>
+            </Couple>
+            <Couple Seq="9" DanceQty="1" AdjQty="3" Number="23" Recalled="X">
+              <MarkList>
+                <Mark Seq="0" X="X" D3="" A="" B=""/>
+                <Mark Seq="1" X="X" D3="" A="" B=""/>
+                <Mark Seq="2" X=" " D3="" A="" B=""/>
+              </MarkList>
+            </Couple>
+            <Couple Seq="10" DanceQty="1" AdjQty="3" Number="24" Recalled=" ">
+              <MarkList>
+                <Mark Seq="0" X=" " D3="" A="" B=""/>
+                <Mark Seq="1" X=" " D3="" A="" B=""/>
+                <Mark Seq="2" X="X" D3="" A="" B=""/>
+              </MarkList>
+            </Couple>
+            <Couple Seq="11" DanceQty="1" AdjQty="3" Number="25" Recalled="X">
+              <MarkList>
+                <Mark Seq="0" X="X" D3="" A="" B=""/>
+                <Mark Seq="1" X="X" D3="" A="" B=""/>
+                <Mark Seq="2" X=" " D3="" A="" B=""/>
+              </MarkList>
+            </Couple>
+            <Couple Seq="12" DanceQty="1" AdjQty="3" Number="26" Recalled=" ">
+              <MarkList>
+                <Mark Seq="0" X=" " D3="" A="" B=""/>
+                <Mark Seq="1" X=" " D3="" A="" B=""/>
+                <Mark Seq="2" X=" " D3="" A="" B=""/>
+              </MarkList>
+            </Couple>
+            <Couple Seq="13" DanceQty="1" AdjQty="3" Number="27" Recalled=" ">
+              <MarkList>
+                <Mark Seq="0" X=" " D3="" A="" B=""/>
+                <Mark Seq="1" X=" " D3="" A="" B=""/>
+                <Mark Seq="2" X=" " D3="" A="" B=""/>
+              </MarkList>
+            </Couple>
+            <Couple Seq="14" DanceQty="1" AdjQty="3" Number="30" Recalled=" ">
+              <MarkList>
+                <Mark Seq="0" X=" " D3="" A="" B=""/>
+                <Mark Seq="1" X=" " D3="" A="" B=""/>
+                <Mark Seq="2" X="X" D3="" A="" B=""/>
+              </MarkList>
+            </Couple>
+            <Couple Seq="15" DanceQty="1" AdjQty="3" Number="31" Recalled=" ">
+              <MarkList>
+                <Mark Seq="0" X=" " D3="" A="" B=""/>
+                <Mark Seq="1" X=" " D3="" A="" B=""/>
+                <Mark Seq="2" X=" " D3="" A="" B=""/>
+              </MarkList>
+            </Couple>
+            <Couple Seq="16" DanceQty="1" AdjQty="3" Number="32" Recalled=" ">
+              <MarkList>
+                <Mark Seq="0" X=" " D3="" A="" B=""/>
+                <Mark Seq="1" X=" " D3="" A="" B=""/>
+                <Mark Seq="2" X=" " D3="" A="" B=""/>
+              </MarkList>
+            </Couple>
+            <Couple Seq="17" DanceQty="1" AdjQty="3" Number="33" Recalled=" ">
+              <MarkList>
+                <Mark Seq="0" X=" " D3="" A="" B=""/>
+                <Mark Seq="1" X=" " D3="" A="" B=""/>
+                <Mark Seq="2" X=" " D3="" A="" B=""/>
+              </MarkList>
+            </Couple>
+            <Couple Seq="18" DanceQty="1" AdjQty="3" Number="34" Recalled=" ">
+              <MarkList>
+                <Mark Seq="0" X=" " D3="" A="" B=""/>
+                <Mark Seq="1" X=" " D3="" A="" B=""/>
+                <Mark Seq="2" X="X" D3="" A="" B=""/>
+              </MarkList>
+            </Couple>
+            <Couple Seq="19" DanceQty="1" AdjQty="3" Number="35" Recalled=" ">
+              <MarkList>
+                <Mark Seq="0" X=" " D3="" A="" B=""/>
+                <Mark Seq="1" X=" " D3="" A="" B=""/>
+                <Mark Seq="2" X=" " D3="" A="" B=""/>
+              </MarkList>
+            </Couple>
+            <Couple Seq="20" DanceQty="1" AdjQty="3" Number="36" Recalled=" ">
+              <MarkList>
+                <Mark Seq="0" X=" " D3="" A="" B=""/>
+                <Mark Seq="1" X=" " D3="" A="" B=""/>
+                <Mark Seq="2" X=" " D3="" A="" B=""/>
+              </MarkList>
+            </Couple>
+          </ResultArray>
+        </Result>
+      </Results>
+      <StartOrderList Qty="0"/>
+    </Class>
+    <Class Seq="1" Name="Unused Couples" AdjPanel="0">
+      <DanceList Qty="0"/>
+      <StartList Qty="0"/>
+      <Results Qty="0"/>
+      <StartOrderList Qty="0"/>
+    </Class>
+  </ClassList>
+  <EventList>
+    <Event Seq="0" ClassNumber="0" DanceQty="0" EventNumber="" Time="" Comment="" AdjPanel="0" Heats="1" Round="32" Status="0" Startorder="0">
+      <DanceList Qty="0"/>
+      <Panel Qty="0"/>
+      <RecallList Qty="10">
+        <Recall Seq="0" Recall="0"/>
+        <Recall Seq="1" Recall="0"/>
+        <Recall Seq="2" Recall="0"/>
+        <Recall Seq="3" Recall="0"/>
+        <Recall Seq="4" Recall="0"/>
+        <Recall Seq="5" Recall="0"/>
+        <Recall Seq="6" Recall="0"/>
+        <Recall Seq="7" Recall="0"/>
+        <Recall Seq="8" Recall="0"/>
+        <Recall Seq="9" Recall="0"/>
+      </RecallList>
+    </Event>
+    <Event Seq="1" ClassNumber="0" DanceQty="0" EventNumber="" Time="" Comment="HIPHOP SINGEL MED 2:ND TRY" AdjPanel="0" Heats="1" Round="0" Status="0" Startorder="0">
+      <DanceList Qty="0"/>
+      <Panel Qty="0"/>
+      <RecallList Qty="10">
+        <Recall Seq="0" Recall="0"/>
+        <Recall Seq="1" Recall="0"/>
+        <Recall Seq="2" Recall="0"/>
+        <Recall Seq="3" Recall="0"/>
+        <Recall Seq="4" Recall="0"/>
+        <Recall Seq="5" Recall="0"/>
+        <Recall Seq="6" Recall="0"/>
+        <Recall Seq="7" Recall="0"/>
+        <Recall Seq="8" Recall="0"/>
+        <Recall Seq="9" Recall="0"/>
+      </RecallList>
+    </Event>
+    <Event Seq="2" ClassNumber="0" DanceQty="0" EventNumber="" Time="" Comment="" AdjPanel="0" Heats="1" Round="0" Status="0" Startorder="0">
+      <DanceList Qty="0"/>
+      <Panel Qty="0"/>
+      <RecallList Qty="10">
+        <Recall Seq="0" Recall="0"/>
+        <Recall Seq="1" Recall="0"/>
+        <Recall Seq="2" Recall="0"/>
+        <Recall Seq="3" Recall="0"/>
+        <Recall Seq="4" Recall="0"/>
+        <Recall Seq="5" Recall="0"/>
+        <Recall Seq="6" Recall="0"/>
+        <Recall Seq="7" Recall="0"/>
+        <Recall Seq="8" Recall="0"/>
+        <Recall Seq="9" Recall="0"/>
+      </RecallList>
+    </Event>
+    <Event Seq="3" ClassNumber="1" DanceQty="1" EventNumber="1" Time="10:00" Comment="" AdjPanel="3" Heats="2" Round="1" Status="1" Startorder="0">
+      <DanceList Qty="1">
+        <Dance Seq="0" Name="Medium"/>
+      </DanceList>
+      <Panel Qty="0"/>
+      <RecallList Qty="10">
+        <Recall Seq="0" Recall="6"/>
+        <Recall Seq="1" Recall="0"/>
+        <Recall Seq="2" Recall="0"/>
+        <Recall Seq="3" Recall="0"/>
+        <Recall Seq="4" Recall="0"/>
+        <Recall Seq="5" Recall="0"/>
+        <Recall Seq="6" Recall="0"/>
+        <Recall Seq="7" Recall="0"/>
+        <Recall Seq="8" Recall="0"/>
+        <Recall Seq="9" Recall="0"/>
+      </RecallList>
+    </Event>
+    <Event Seq="4" ClassNumber="1" DanceQty="1" EventNumber="2" Time="10:05" Comment="" AdjPanel="3" Heats="2" Round="6" Status="0" Startorder="0">
+      <DanceList Qty="1">
+        <Dance Seq="0" Name="Medium"/>
+      </DanceList>
+      <Panel Qty="0"/>
+      <RecallList Qty="10">
+        <Recall Seq="0" Recall="6"/>
+        <Recall Seq="1" Recall="0"/>
+        <Recall Seq="2" Recall="0"/>
+        <Recall Seq="3" Recall="0"/>
+        <Recall Seq="4" Recall="0"/>
+        <Recall Seq="5" Recall="0"/>
+        <Recall Seq="6" Recall="0"/>
+        <Recall Seq="7" Recall="0"/>
+        <Recall Seq="8" Recall="0"/>
+        <Recall Seq="9" Recall="0"/>
+      </RecallList>
+    </Event>
+    <Event Seq="5" ClassNumber="1" DanceQty="1" EventNumber="3" Time="10:11" Comment="" AdjPanel="3" Heats="1" Round="2" Status="0" Startorder="0">
+      <DanceList Qty="1">
+        <Dance Seq="0" Name="Medium"/>
+      </DanceList>
+      <Panel Qty="0"/>
+      <RecallList Qty="10">
+        <Recall Seq="0" Recall="6"/>
+        <Recall Seq="1" Recall="0"/>
+        <Recall Seq="2" Recall="0"/>
+        <Recall Seq="3" Recall="0"/>
+        <Recall Seq="4" Recall="0"/>
+        <Recall Seq="5" Recall="0"/>
+        <Recall Seq="6" Recall="0"/>
+        <Recall Seq="7" Recall="0"/>
+        <Recall Seq="8" Recall="0"/>
+        <Recall Seq="9" Recall="0"/>
+      </RecallList>
+    </Event>
+    <Event Seq="6" ClassNumber="1" DanceQty="1" EventNumber="4" Time="10:15" Comment="" AdjPanel="3" Heats="1" Round="3" Status="0" Startorder="0">
+      <DanceList Qty="1">
+        <Dance Seq="0" Name="Medium"/>
+      </DanceList>
+      <Panel Qty="0"/>
+      <RecallList Qty="10">
+        <Recall Seq="0" Recall="0"/>
+        <Recall Seq="1" Recall="0"/>
+        <Recall Seq="2" Recall="0"/>
+        <Recall Seq="3" Recall="0"/>
+        <Recall Seq="4" Recall="0"/>
+        <Recall Seq="5" Recall="0"/>
+        <Recall Seq="6" Recall="0"/>
+        <Recall Seq="7" Recall="0"/>
+        <Recall Seq="8" Recall="0"/>
+        <Recall Seq="9" Recall="0"/>
+      </RecallList>
+    </Event>
+    <Event Seq="7" ClassNumber="0" DanceQty="0" EventNumber="" Time="" Comment="" AdjPanel="0" Heats="1" Round="0" Status="0" Startorder="0">
+      <DanceList Qty="0"/>
+      <Panel Qty="0"/>
+      <RecallList Qty="10">
+        <Recall Seq="0" Recall="0"/>
+        <Recall Seq="1" Recall="0"/>
+        <Recall Seq="2" Recall="0"/>
+        <Recall Seq="3" Recall="0"/>
+        <Recall Seq="4" Recall="0"/>
+        <Recall Seq="5" Recall="0"/>
+        <Recall Seq="6" Recall="0"/>
+        <Recall Seq="7" Recall="0"/>
+        <Recall Seq="8" Recall="0"/>
+        <Recall Seq="9" Recall="0"/>
+      </RecallList>
+    </Event>
+    <Event Seq="8" ClassNumber="0" DanceQty="0" EventNumber="" Time="" Comment="HIPHOP SINGEL PRISUTDELNING" AdjPanel="0" Heats="1" Round="0" Status="0" Startorder="0">
+      <DanceList Qty="0"/>
+      <Panel Qty="0"/>
+      <RecallList Qty="10">
+        <Recall Seq="0" Recall="0"/>
+        <Recall Seq="1" Recall="0"/>
+        <Recall Seq="2" Recall="0"/>
+        <Recall Seq="3" Recall="0"/>
+        <Recall Seq="4" Recall="0"/>
+        <Recall Seq="5" Recall="0"/>
+        <Recall Seq="6" Recall="0"/>
+        <Recall Seq="7" Recall="0"/>
+        <Recall Seq="8" Recall="0"/>
+        <Recall Seq="9" Recall="0"/>
+      </RecallList>
+    </Event>
+    <Event Seq="9" ClassNumber="0" DanceQty="0" EventNumber="" Time="" Comment="" AdjPanel="0" Heats="1" Round="0" Status="0" Startorder="0">
+      <DanceList Qty="0"/>
+      <Panel Qty="0"/>
+      <RecallList Qty="10">
+        <Recall Seq="0" Recall="0"/>
+        <Recall Seq="1" Recall="0"/>
+        <Recall Seq="2" Recall="0"/>
+        <Recall Seq="3" Recall="0"/>
+        <Recall Seq="4" Recall="0"/>
+        <Recall Seq="5" Recall="0"/>
+        <Recall Seq="6" Recall="0"/>
+        <Recall Seq="7" Recall="0"/>
+        <Recall Seq="8" Recall="0"/>
+        <Recall Seq="9" Recall="0"/>
+      </RecallList>
+    </Event>
+  </EventList>
+</DancePerfect>
