@@ -39,200 +39,13 @@
 ;;   (atom {:competitions []}))
 
 (defonce app-state
-  (atom {:selected-page :events ;:classes
-
-         ;; :competition
-         ;; {:competition/date #inst "2014-11-22T00:00:00.000-00:00",
-         ;;  :competition/name "Elittävling",
-         ;;  :dance-perfect/version "4.1",
-         ;;  :competition/location "VÄSTERÅS",
-         ;;  :competition/classes
-         ;;  [{:class/name "Hiphop Singel Star B",
-         ;;    :class/adjudicator-panel 1
-         ;;    :class/dances
-         ;;    [{:dance/name "Medium"} {:dance/name "Waltz"}]
-         ;;    :class/competitors
-         ;;    [{:competitor/name "Saga Boström-Fors", :competitor/number 10, :competitor/club "M&M"}
-         ;;       {:competitor/name "Tyra Hedin", :competitor/number 11, :competitor/club "Uddans"}
-         ;;       {:competitor/name "Elina Ahlberg", :competitor/number 12, :competitor/club "SDC"}
-         ;;       {:competitor/name "Thyra Söderström", :competitor/number 13, :competitor/club "Uddans"}
-         ;;       {:competitor/name "Wilma Lindström Åslund", :competitor/number 14, :competitor/club "MD"}]}
-           
-         ;;   {:class/name "Hiphop Singel Star J Fl",
-         ;;    :class/adjudicator-panel 0
-         ;;    :class/dances [{:dance/name "Quick"}]
-         ;;    :class/competitors
-         ;;    [{:competitor/name "Tilda Strandberg", :competitor/number 30, :competitor/club "Uddans"}
-         ;;     {:competitor/name "Tove Gärdin", :competitor/number 31, :competitor/club "BF"}
-         ;;     {:competitor/name "Esther Wallmo", :competitor/number 32, :competitor/club "Uddans"}
-         ;;     {:competitor/name "Felicia Dackell", :competitor/number 33, :competitor/club "Uddans"}
-         ;;     {:competitor/name "Emma Fredriksson", :competitor/number 34, :competitor/club "DVT"}]}
-           
-         ;;   {:class/name "Hiphop Singel Star J Po",
-         ;;    :class/adjudicator-panel 2
-         ;;    :class/dances []
-         ;;    :class/competitors
-         ;;    [{:competitor/name "Axel Carlsson", :competitor/number 60, :competitor/club "DTLH/DV"}
-         ;;     {:competitor/name "Tom Matei", :competitor/number 61, :competitor/club "SDC"}
-         ;;     {:competitor/name "Jacob Olsson", :competitor/number 62, :competitor/club "DTLH/DV"}]}]}
-
-         :competition-new {}
-
-
-         :competition {}
-         ;; {:competition/name "TurboMegatävling"
-         ;;  :competition/date #inst "2014-11-22T00:00:00.000-00:00"
-         ;;  :competition/location "THUNDERDOME"
-         ;;  :competition/events
-         ;;  [{:event/position 0
-         ;;    :event/class-number 0
-         ;;    :event/number -1
-         ;;    :event/time ""
-         ;;    :event/comment ""
-         ;;    :event/adjudicator-panel 0
-         ;;    :event/heats 1
-         ;;    :event/round :unknown-round-value
-         ;;    :event/status 0
-         ;;    :event/start-order 0
-         ;;    :event/recall 0
-         ;;    :event/dances
-         ;;    []}
-           
-         ;;   {:event/position 1
-         ;;    :event/class-number 1
-         ;;    :event/number 1
-         ;;    :event/time "10:00"
-         ;;    :event/comment "A comment"
-         ;;    :event/adjudicator-panel 4
-         ;;    :event/heats 2
-         ;;    :event/round :normal-x
-         ;;    :event/status 1
-         ;;    :event/start-order 0
-         ;;    :event/recall 0
-         ;;    :event/dances
-         ;;    [{:dance/name "Medium"}
-         ;;     {:dance/name "Waltz"}]}
-
-         ;;   {:event/position 2
-         ;;   :event/class-number 0
-         ;;   :event/number 1
-         ;;   :event/time "10:05"
-         ;;   :event/comment "A comment"
-         ;;   :event/adjudicator-panel 4
-         ;;   :event/heats 2
-         ;;   :event/round :normal-x
-         ;;   :event/status 0
-         ;;   :event/start-order 0
-         ;;   :event/recall 6
-         ;;   :event/dances
-         ;;   [{:dance/name "Medium"}]}]
-
-         ;;  :competition/classes
-         ;;  [{:class/name "Hiphop Singel Star B"
-         ;;    :class/position 1
-         ;;    :class/adjudicator-panel 1
-         ;;    :class/dances
-         ;;    [{:dance/name "Medium"}
-         ;;     {:dance/name "Tango"}
-         ;;     {:dance/name "VienWaltz"}
-         ;;     {:dance/name "Foxtrot"}
-         ;;     {:dance/name "Quickstep"}
-         ;;     {:dance/name "Samba"}
-         ;;     {:dance/name "Cha-Cha"}
-         ;;     {:dance/name "Rumba"}
-         ;;     {:dance/name "Paso-Doble"}
-         ;;     {:dance/name "Jive"}]
-         ;;    :class/competitors
-         ;;    [{:competitor/name "Rulle Trulle"
-         ;;      :competitor/club "Sinclairs"
-         ;;      :competitor/number 30}
-         ;;     {:competitor/name "Milan Lund"
-         ;;      :competitor/club "Wilson"
-         ;;      :competitor/number 31}
-         ;;     {:competitor/name "Douglas Junger"
-         ;;      :competitor/club "RGDT"
-         ;;      :competitor/number 32}]
-         ;;    :class/results
-         ;;    [{:result/round "S"
-         ;;      :result/adjudicators
-         ;;      [{:adjudicator/number 3 :adjudicator/position 0}
-         ;;       {:adjudicator/number 4 :adjudicator/position 1}
-         ;;       {:adjudicator/number 5 :adjudicator/position 2}]
-         ;;      :result/dance {:dance/name "X-Quick Forward"}
-         ;;      :result/results
-         ;;      [{:competitor/number 30
-         ;;        :competitor/recalled ""
-         ;;        :competitor/results
-         ;;        [{:result/adjudicator
-         ;;          {:adjudicator/number 3, :adjudicator/position 0},
-         ;;          :result/x-mark true}
-         ;;         {:result/adjudicator
-         ;;          {:adjudicator/number 4, :adjudicator/position 1},
-         ;;          :result/x-mark false}
-         ;;         {:result/adjudicator
-         ;;          {:adjudicator/number 5, :adjudicator/position 2},
-         ;;          :result/x-mark true}]}
-         ;;       {:competitor/number 31,
-         ;;        :competitor/recalled :r,
-         ;;        :competitor/results
-         ;;        [{:result/adjudicator
-         ;;          {:adjudicator/number 3, :adjudicator/position 0},
-         ;;          :result/x-mark false}
-         ;;         {:result/adjudicator
-         ;;          {:adjudicator/number 4, :adjudicator/position 1},
-         ;;          :result/x-mark true}
-         ;;         {:result/adjudicator
-         ;;          {:adjudicator/number 5, :adjudicator/position 2},
-         ;;          :result/x-mark false}]}
-         ;;       {:competitor/number 32,
-         ;;        :competitor/recalled :x,
-         ;;        :competitor/results
-         ;;        [{:result/adjudicator
-         ;;          {:adjudicator/number 3, :adjudicator/position 0},
-         ;;          :result/x-mark true}
-         ;;         {:result/adjudicator
-         ;;          {:adjudicator/number 4, :adjudicator/position 1},
-         ;;          :result/x-mark false}
-         ;;         {:result/adjudicator
-         ;;          {:adjudicator/number 5, :adjudicator/position 2},
-         ;;          :result/x-mark false}]}]
-         ;;      }]}
-           
-           
-         ;;   {:class/name "Hiphop Singel Star J Fl"
-         ;;    :class/position 0
-         ;;    :class/adjudicator-panel 0
-         ;;    :class/dances
-         ;;    []
-         ;;    :class/competitors
-         ;;    [{:competitor/name "Ringo Stingo"
-         ;;      :competitor/club "Kapangg"
-         ;;      :competitor/number 20}
-         ;;     {:competitor/name "Greve Turbo"
-         ;;      :competitor/club "OOoost"
-         ;;      :competitor/number 21}]
-         ;;    :class/results []}]}}
-         }))
-
-
-
+  (atom {:selected-page :classes
+         :competition {}}))
 
 (defn on-file-read [e file-reader]
   (let [result (.-result file-reader)]
-    (log "On file read: send :file/import")
+    (log "On file read : send :file/import")
     (chsk-send! [:file/import {:content result}])))
-
-(defn on-file-read-new [e file-reader]
-  (let [result (.-result file-reader)]
-    (log "On file read new: send :file/import-new")
-    (chsk-send! [:file/import-new {:content result}])))
-
-(defn on-click-import-file-new [e]
-  (log "Import new clicked")
-  (let [file (.item (.. e -target -files) 0)
-        r (js/FileReader.)]
-    (set! (.-onload r) #(on-file-read-new % r))
-    (.readAsText r file)))
 
 (defn on-click-import-file [e]
   (log "Import clicked")
@@ -299,8 +112,6 @@
 
 (defn make-event-round-presentation [event-round]
   (get round-map event-round))
-
-
 
 (defn make-round-presentation [round-status round-count]
   (str
@@ -445,24 +256,6 @@
         [:td (:panel/id adjudicator-panel)]
         [:td (clojure.string/join ", " (mapcat vals (:panel/adjudicators adjudicator-panel)))]])]]])
 
-;; :class/adjudicator-panel {:adjudicator-panel/adjudicators [{:adjudicator/name "Anders", :adjudicator/country "Sweden", :adjudicator/id #uuid "4938cfaa-3af6-40e0-ba9c-532efde47bdd"} {:adjudicator/name "Bertil", :adjudicator/country "", :adjudicator/id #uuid "2cbab2aa-9c42-42c1-8385-2e0ba2856afe"}], :adjudicator-panel/name "1"
-
-(defn make-round-presentation-new-2 [round-status round-count]
-;;  (log round-status)
-  (str
-   round-count " - "
-   (if round-status
-     (if (number-string? round-status)
-       (str "Round " round-status)
-       (condp = round-status
-         "S" (str "Semifinal" )
-         "E" "2nd Try"
-         "F" "Final"
-         "O" "Retry"
-         (str "Unknown status : " round-status)))
-     "Not Started"))
-  )
-
 (defn get-completed-rounds [rounds]
   (filter #(and (= (:round/status %) :completed)
                 (not= (:round/type %) :presentation)) rounds))
@@ -479,9 +272,9 @@
            (get round-map round-type)))
        "Not Started"))))
 
-(defn new-classes-component []
+(defn classes-component []
   [:div
-   [:h3 "Klasser Ny"]
+   [:h3 "Klasser Nyyy"]
    [:table.table
     [:thead
      [:tr
@@ -492,7 +285,7 @@
       [:th {:with "20"} "Startande"]
       [:th {:with "20"} "Status"]]]
     [:tbody
-     (for [class (sort-by :class/position (:competition/classes (:competition-new @app-state)))]
+     (for [class (sort-by :class/position (:competition/classes (:competition @app-state)))]
        ^{:key class}
        [:tr
         [:td (:class/position class)]
@@ -510,51 +303,19 @@
         [:td (make-round-presentation-new (:class/rounds class))
          ]])]]])
 
-(defn dp-classes-component []
-  [:div
-   [:h3 "Klasser"]
-   [:table.table
-    [:thead
-     [:tr
-      [:th {:with "20"} "#"]
-      [:th {:with "200"} "Dansdisciplin"]
-      [:th {:with "20"} "Panel"]
-      [:th {:with "20"} "Typ"]
-      [:th {:with "20"} "Startande"]
-      [:th {:with "20"} "Status"]]]
-    [:tbody
-     (for [class (sort-by :class/position (:competition/classes (:competition @app-state)))]
-       ^{:key class}
-       [:tr
-        [:td (:class/position class)]
-        [:td (:class/name class)]
-        [:td (:class/adjudicator-panel class)]
-        [:td (make-dance-type-presentation (:class/dances class))]
-        
-        [:td (str (count-class-recalled class) "/" (count (:class/competitors class)))]
-
-        [:td (make-round-presentation (:result/round (last (:class/results class)))
-                                      (count (:class/results class)))]])]]])
-
 ;; TODO - make the on-click event run thoughe dispatch
 (defn import-component []
   [:div
    [:h2 "Importera en ny tävling : "]
    [:input.btn.btn-primary.btn-lg {:type "file" :value "Import file"
-                                   :onChange #(on-click-import-file %)}]
-   [:input.btn.btn-primary.btn-lg {:type "file" :value "Import file new"
-                                   :onChange #(on-click-import-file-new %)}]])
+                                   :onChange #(on-click-import-file %)}]])
 
 (defn navigation-component []
   [:div
    [:input.btn.btn-default {:type "button" :value "Classes"
                             :on-click #(dispatch [:select-page :classes])}]
-   [:input.btn.btn-default {:type "button" :value "Classes New"
-                            :on-click #(dispatch [:select-page :new-classes])}]
    [:input.btn.btn-default {:type "button" :value "Time Schedule"
                             :on-click #(dispatch [:select-page :events])}]
-   [:input.btn.btn-default {:type "button" :value "Time Schedule New"
-                            :on-click #(dispatch [:select-page :events-new])}]
    [:input.btn.btn-default {:type "button" :value "NewAdjudicators"
                             :on-click #(dispatch [:select-page :new-adjudicators])}]
    [:input.btn.btn-default {:type "button" :value "NewAdjudicator panels"
@@ -564,26 +325,6 @@
    [:input.btn.btn-default {:type "button" :value "Adjudicator panels"
                             :on-click #(dispatch [:select-page :adjudicator-panels])}]
    ])
-
-(defn make-time [time]
-  (str time))
-
-   ;(log (.getTimezoneOffset (:activity/time activity)))
-                    ;; (log (js/Date. (.setMinutes (:activity/time activity)
-                    ;;                             ;(js/Date.)
-                    ;;                             (- (.getTimezoneOffset (:activity/time activity))
-                    ;;                                (.getMinutes (:activity/time activity))
-                    ;;                                ))))
-                    ;; (log (js/Date. (.setHours (:activity/time activity)
-                    ;;                           (.getTimezoneOffset (:activity/time activity)))))
-
-            
-                    ;(log (.getTimezoneOffset (js/Date.)))
-;                    (log (.setMinutes (:activity/time activity) 20))
-                    ;(log (str "Time > " (time/local-date 2015 03 12 12 00)))
-                    ;; (str
-                    ;;  (+ (.getTime (:activity/time activity))
-                    ;;     (/ (.getTimezoneOffset (:activity/time activity)) 60)))
 
 (defn time-schedule-activity-presenter [activity classes]
   (let [round (:activity/source activity)
@@ -663,7 +404,7 @@
               (make-dance-type-presentation (:round/dances round)))})
   )
 
-(defn events-component-new []
+(defn events-component []
   [:div
    [:h3 "Time Schedule Ny"]
    [:table.table
@@ -680,10 +421,10 @@
       [:th {:with "20"} "Type"]]]
     [:tbody
      (doall
-      (for [activity (sort-by :activity/position (:competition/activities (:competition-new @app-state)))]
+      (for [activity (sort-by :activity/position (:competition/activities (:competition @app-state)))]
         (let [{:keys [time number name starting round heats recall panel type]}
               (time-schedule-activity-presenter activity (:competition/classes
-                                                          (:competition-new @app-state)))]
+                                                          (:competition @app-state)))]
         ^{:key activity}
         [:tr
            [:td time]
@@ -696,113 +437,18 @@
            [:td panel]
            [:td type]])))]]])
 
-(defn events-component []
-  [:div
-   [:h3 "Time Schedule"]
-   [:table.table
-    [:thead
-     [:tr
-      [:th {:with "20"} "Time"]
-      [:th {:with "20"} "#"]
-      [:th {:with "200"} "Dansdisciplin"]
-      [:th {:with "20"} "Startande"]
-      [:th {:with "20"} "Rond"]
-      [:th {:with "20"} "Heats"]
-      [:th {:with "20"} "Recall"]
-      [:th {:with "20"} "Panel"]
-      [:th {:with "20"} "Type"]]]
-    [:tbody
-     (doall
-      (for [event (sort-by :event/position (:competition/events (:competition @app-state)))]
-        (let [referenced-class (first (filter #(= (:class/position %) (:event/class-number event))
-                                              (:competition/classes (:competition @app-state))))
-              comment-row? (zero? (:event/class-number event))
-              direct-final? (and (= (:event/nrof-events-in-class event) 1)
-                                 (not= (:event/round event) :presentation))
-              completed? (= (:event/status event) 1)]
-        ^{:key event}
-        
-          [:tr
-           [:td (make-event-time-presentation (:event/time event) (:event/status event))
-            ]
-           [:td (if (or  (= (:event/number event) -1)) "" (:event/number event))]
-           ;; use comment if class number is zero
-           [:td
-            (let [t (vec (:competition/classes (:competition @app-state)))]
-              (if (zero? (:event/class-number event))
-                (:event/comment event)
-                (:class/name referenced-class)))]
-
-           ;; Startande
-           ;; TODO - get ppl left from refed class
-           ;; kan hända att vid importen så behöver jag lägga till någon typ av koppling
-           ;; så att ett vist event kan kopplas ihop till rätt resultat
-
-           ;; Started ska presentera hur manga som startade i det eventet och det baseras pa
-           ;; resultatet pa det tidigare eventet
-           [:td         
-            (if (or comment-row?)
-              ""
-              (cond
-               (zero? (:event/class-index event))
-               (str "Start " (:event/starting event))
-               direct-final?
-               (str "Start " (count (:class/competitors referenced-class)))
-               (= (:event/class-index event) (count (:class/results referenced-class)))
-               (str "Qual " (:event/starting event))))]
-
-           ;; Round
-           [:td
-            (if comment-row?
-              ""
-              (if direct-final?
-                "Direct Final"
-                (make-event-round-presentation (:event/round event))))]
-
-           ;; Heats
-           [:td
-            (if (or comment-row? direct-final? (= (:event/round event) :final-x))
-              ""
-              (let [heats (:event/heats event)
-                    suffix (if (= 1 heats) "" "s")]
-                (str  heats " heat" suffix)))]
-
-           [:td
-            (if (or (zero? (:event/recall event)) comment-row?)
-              ""
-              (str "Recall " (:event/recall event)))]
-
-           ;; TODO - adjust adj panel in back-end
-           [:td
-            (if (or comment-row? (= (:event/round event) :presentation))
-              ""
-              (let [panel (- (:event/adjudicator-panel event) 2)]
-                (if (zero? panel)
-                  "All adj"
-                  (str "Panel " panel))))]
-
-           [:td
-            (if comment-row?
-              ""
-              (make-dance-type-presentation (:event/dances event)))]])))]]])
-
-; :selected-page :import
 (defn menu-component []
- ;[:div]
   (fn []
     [:div
      [import-component]
      [navigation-component]
      (condp = (:selected-page @app-state)
-       :classes [dp-classes-component]
-       :new-classes [new-classes-component]
+       :classes [classes-component]
        :events [events-component]
-       :events-new [events-component-new]
        :adjudicators [adjudictors-component]
        :new-adjudicators [new-adjudictors-component]
        :new-adjudicator-panels [new-adjudictor-panels-component]
-       :adjudicator-panels [adjudictor-panels-component]
-       )]))
+       :adjudicator-panels [adjudictor-panels-component])]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Application
@@ -821,16 +467,16 @@
   (log (str "Event: " id))
   (match [id data]
     ;; TODO Match your events here <...>
+         ;; [:chsk/recv [:file/imported content]]
+         ;; (do
+         ;;   (swap! app-state #(merge % {:selected-page :classes
+         ;;                               :competition (:file/content content)}))
+         ;;   ;(swap! app-state #(hash-map :competitions (conj (:competitions %) content)))
+         ;;   (log (str @app-state))
+         ;;   )
          [:chsk/recv [:file/imported content]]
          (do
-           (swap! app-state #(merge % {:selected-page :classes
-                                       :competition (:file/content content)}))
-           ;(swap! app-state #(hash-map :competitions (conj (:competitions %) content)))
-           (log (str @app-state))
-           )
-         [:chsk/recv [:file/imported-new content]]
-         (do
-           (swap! app-state #(merge % {:competition-new content}))
+           (swap! app-state #(merge % {:competition content}))
            (log (str @app-state)))
          ;; [:chsk/recv [:file/export content]]
          ;; (handle-export)
