@@ -43,6 +43,7 @@
             [jonase/eastwood "0.2.1"]
             [michaelblume/lein-marginalia "0.9.0"]]
 
+  :source-paths ["src"]
   :hiera {:path "specs/tango-hierarchy.png"
           :vertical true
           :show-external false
@@ -51,7 +52,7 @@
           :ignore-ns #{}}
 
   :cljsbuild {:builds [{:id "dev"
-                        :source-paths ["src/tango/cljs"]
+                        :source-paths ["src/tango/cljs" "src"]
                         :compiler {:output-to     "resources/public/js/app.js"
                                    :output-dir    "resources/public/js/out"
                                    :source-map    "resources/public/js/out.js.map"

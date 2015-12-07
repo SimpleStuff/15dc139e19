@@ -9,7 +9,11 @@
 ; (clojure.test/run-tests 'tango.repetition-hunt)
 
 ;; Find all namespaces in src
-(def all-src-ns (clojure.tools.namespace.find/find-namespaces-in-dir (clojure.java.io/file "./src")))
+(def all-src-ns
+  (into '() (disj
+             (into #{}
+                   (clojure.tools.namespace.find/find-namespaces-in-dir (clojure.java.io/file "./src")))
+             'tango.presentation)))
 
 (:require all-src-ns)
 
