@@ -121,22 +121,17 @@
       [:th {:with "20"} "Startande"]
       [:th {:with "20"} "Status"]]]
     [:tbody
-     (for [class (sort-by :class/position (:competition/classes (:competition @app-state)))]
-       ^{:key class}
-       [:tr
-        [:td (:class/position class)]
-        [:td (:class/name class)]
-        [:td (if-let [panel (:class/adjudicator-panel class)]
-               (:adjudicator-panel/name panel)
-               "0")]
-        [:td (presentation/make-dance-type-presentation (:class/dances class))]
-        
-        [:td (str (count (:class/remaining class)) "/" (count (:class/starting class)))]
-
-        ;; Present how far into the competition this class is.
-        ;; The round status is given by the last completed round, if there are none
-        ;;  the class is not started
-        [:td (presentation/make-round-presentation (:class/rounds class))]])]]])
+     (for [class (map presentation/make-class-presenter
+                      (sort-by :class/position (:competition/classes (:competition @app-state))))]
+       (let [{:keys [position name panel type starting status]} class]
+         ^{:key class}
+         [:tr
+          [:td position]
+          [:td name]
+          [:td panel]
+          [:td type]
+          [:td starting]       
+          [:td status]]))]]])
 
 ;; TODO - make the on-click event run thoughe dispatch
 (defn import-component []
@@ -156,9 +151,7 @@
    [:input.btn.btn-default {:type "button" :value "Adjudicator panels"
                             :on-click #(dispatch [:select-page :adjudicator-panels])}]])
 
-
-
-(defn events-component []
+(defn time-schedule-component []
   [:div
    [:h3 "Time Schedule"]
    [:table.table
@@ -177,8 +170,10 @@
      (doall
       (for [activity (sort-by :activity/position (:competition/activities (:competition @app-state)))]
         (let [{:keys [time number name starting round heats recall panel type]}
-              (presentation/time-schedule-activity-presenter activity (:competition/classes
-                                                                       (:competition @app-state)))]
+              (presentation/make-time-schedule-activity-presenter
+               activity
+               (:competition/classes
+                (:competition @app-state)))]
         ^{:key activity}
         [:tr
            [:td time]
@@ -198,7 +193,7 @@
      [navigation-component]
      (condp = (:selected-page @app-state)
        :classes [classes-component]
-       :events [events-component]
+       :events [time-schedule-component]
        :adjudicators [adjudictors-component]
        :adjudicator-panels [adjudictor-panels-component])]))
 

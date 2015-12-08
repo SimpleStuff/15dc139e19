@@ -4,15 +4,6 @@
                       :clj  [[clj-time.coerce :as tc]
                              [clj-time.format :as tf]])))
 
-;; (defn to-number [s]
-;;   {:pre [(string? s)]}
-;;   (let [prepared-string (clojure.string/replace s #" " "")]
-;;     (cond (re-seq #"^[-+]?\d*[\.,]\d*$" prepared-string)
-;;           (js/parseDouble (clojure.string/replace prepared-string #"," "."))
-;;           (re-seq #"^[-+]?\d+$" prepared-string)
-;;           (js/parseInt (clojure.string/replace prepared-string #"\+" ""))
-;;           :else s)))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Move to utils
 
@@ -29,7 +20,7 @@
           :else s)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Presenters
+;; Presenter utils
 
 (def round-map
   {:none ""
@@ -48,8 +39,7 @@
 (defn- make-event-round-presentation [event-round]
   (get round-map event-round))
 
-;; TODO move class to presenters
-(defn make-dance-type-presentation [dances]
+(defn- make-dance-type-presentation [dances]
   ;; Dances are presented as a list of the first letters of each dance
   (clojure.string/join (map #(first (:dance/name %)) dances)))
 
@@ -57,8 +47,7 @@
   (filter #(and (= (:round/status %) :completed)
                 (not= (:round/type %) :presentation)) rounds))
 
-;; TODO move class to presenters
-(defn make-round-presentation [rounds]
+(defn- make-round-presentation [rounds]
   ;; Only count rounds that are completed and that are not presentation rounds
   (let [completed-rounds (get-completed-rounds rounds)]
     (str
@@ -70,7 +59,28 @@
            (get round-map round-type)))
        "Not Started"))))
 
-(defn time-schedule-activity-presenter [activity classes]
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Presenters
+
+(defn make-class-presenter [class]
+  {:position (:class/position class)
+   
+   :name (:class/name class)
+   
+   :panel (if-let [panel (:class/adjudicator-panel class)]
+            (:adjudicator-panel/name panel)
+            "0")
+   
+   :type (make-dance-type-presentation (:class/dances class))
+   
+   :starting (str (count (:class/remaining class)) "/" (count (:class/starting class)))
+   
+   ;; Present how far into the competition this class is.
+   ;; The round status is given by the last completed round, if there are none
+   ;;  the class is not started
+   :status (make-round-presentation (:class/rounds class))})
+
+(defn make-time-schedule-activity-presenter [activity classes]
   (let [round (:activity/source activity)
 
         class (first (filter #(= (:class/id %) (:round/class-id round)) classes))

@@ -3138,20 +3138,17 @@ a adj/number or adj/position ?</p>
       [:th {:with &quot;20&quot;} &quot;Startande&quot;]
       [:th {:with &quot;20&quot;} &quot;Status&quot;]]]
     [:tbody
-     (for [class (sort-by :class/position (:competition/classes (:competition @app-state)))]
-       ^{:key class}
-       [:tr
-        [:td (:class/position class)]
-        [:td (:class/name class)]
-        [:td (if-let [panel (:class/adjudicator-panel class)]
-               (:adjudicator-panel/name panel)
-               &quot;0&quot;)]
-        [:td (presentation/make-dance-type-presentation (:class/dances class))]
-        [:td (str (count (:class/remaining class)) &quot;/&quot; (count (:class/starting class)))]
-        ;; Present how far into the competition this class is.
-        ;; The round status is given by the last completed round, if there are none
-        ;;  the class is not started
-        [:td (presentation/make-round-presentation (:class/rounds class))]])]]])</pre></td></tr><tr><td class="docs"><p>TODO - make the on-click event run thoughe dispatch</p>
+     (for [class (map presentation/make-class-presenter
+                      (sort-by :class/position (:competition/classes (:competition @app-state))))]
+       (let [{:keys [position name panel type starting status]} class]
+         ^{:key class}
+         [:tr
+          [:td position]
+          [:td name]
+          [:td panel]
+          [:td type]
+          [:td starting]       
+          [:td status]]))]]])</pre></td></tr><tr><td class="docs"><p>TODO - make the on-click event run thoughe dispatch</p>
 </td><td class="codes"><pre class="brush: clojure">(defn import-component []
   [:div
    [:h2 &quot;Importera en ny tävling : &quot;]
@@ -3167,7 +3164,7 @@ a adj/number or adj/position ?</p>
                             :on-click #(dispatch [:select-page :adjudicators])}]
    [:input.btn.btn-default {:type &quot;button&quot; :value &quot;Adjudicator panels&quot;
                             :on-click #(dispatch [:select-page :adjudicator-panels])}]])</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn events-component []
+</td><td class="codes"><pre class="brush: clojure">(defn time-schedule-component []
   [:div
    [:h3 &quot;Time Schedule&quot;]
    [:table.table
@@ -3186,8 +3183,10 @@ a adj/number or adj/position ?</p>
      (doall
       (for [activity (sort-by :activity/position (:competition/activities (:competition @app-state)))]
         (let [{:keys [time number name starting round heats recall panel type]}
-              (presentation/time-schedule-activity-presenter activity (:competition/classes
-                                                                       (:competition @app-state)))]
+              (presentation/make-time-schedule-activity-presenter
+               activity
+               (:competition/classes
+                (:competition @app-state)))]
         ^{:key activity}
         [:tr
            [:td time]
@@ -3206,7 +3205,7 @@ a adj/number or adj/position ?</p>
      [navigation-component]
      (condp = (:selected-page @app-state)
        :classes [classes-component]
-       :events [events-component]
+       :events [time-schedule-component]
        :adjudicators [adjudictors-component]
        :adjudicator-panels [adjudictor-panels-component])]))</pre></td></tr><tr><td class="docs"><p>Application</p>
 </td><td class="codes"></td></tr><tr><td class="docs">
@@ -3974,27 +3973,43 @@ make a nicer filtering if needed.
 </td><td class="codes"><pre class="brush: clojure">(ns tango.presentation-tests
   (:require [clojure.test :refer :all]
             [tango.presentation :as p]
-            [tango.test-utils :as u]))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn- make-presentations [competition]
-  (mapv #(p/time-schedule-activity-presenter
+            [tango.test-utils :as u]))</pre></td></tr><tr><td class="docs"><p>Utils</p>
+</td><td class="codes"></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn- make-time-schedule-presentations [competition]
+  (mapv #(p/make-time-schedule-activity-presenter
          %
          (:competition/classes competition))
        (:competition/activities competition)))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(deftest time-schedule-presentation
+</td><td class="codes"><pre class="brush: clojure">(defn- make-class-presentations [example]
+  (mapv p/make-class-presenter (:competition/classes example)))</pre></td></tr><tr><td class="docs"><p>Time schedule presentation</p>
+</td><td class="codes"></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(deftest make-time-schedule-presentation
   (testing &quot;Presentation of time schedule activites&quot;
-    (is (= (make-presentations u/expected-real-example)
-           u/expected-real-example-presentation))
-    (is (= (make-presentations u/expected-real-example-kungsor)
-           u/expected-real-example-kungsor-presentation))
-    (is (= (make-presentations u/expected-real-example-uppsala)
-           u/expected-real-example-uppsala-presentation))))</pre></td></tr><tr><td class="docs"><p>Utils</p>
-</td><td class="codes"></td></tr><tr><td class="docs"><p>Prep expected result</p>
+    (is (= (make-time-schedule-presentations u/expected-real-example)
+           u/expected-real-example-activity-presentation))
+    (is (= (make-time-schedule-presentations u/expected-real-example-kungsor)
+           u/expected-real-example-kungsor-activity-presentation))
+    (is (= (make-time-schedule-presentations u/expected-real-example-uppsala)
+           u/expected-real-example-uppsala-activity-presentation))))</pre></td></tr><tr><td class="docs"><p>Class presentation</p>
+</td><td class="codes"></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(deftest make-class-presentation
+  (testing &quot;Presentation of classes&quot;
+    (is (= (make-class-presentations u/expected-real-example)
+           u/expected-real-example-classes-presentation))
+    (is (= (make-class-presentations u/expected-real-example-kungsor)
+           u/expected-real-example-kungsor-classes-presentation))
+    (is (= (make-class-presentations u/expected-real-example-uppsala)
+           u/expected-real-example-uppsala-classes-presentation))))</pre></td></tr><tr><td class="docs"><p>Test data utils</p>
+</td><td class="codes"></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn prep-result [example]
   (clojure.pprint/pprint
-   (mapv #(p/time-schedule-activity-presenter
+   (mapv #(p/make-time-schedule-activity-presenter
            %
            (:competition/classes example))
-         (:competition/activities example))))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#tango.test-utils" name="tango.test-utils"><h1 class="project-name">tango.test-utils</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
+         (:competition/activities example))))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(defn prep-class-result [example]
+  (clojure.pprint/pprint
+   (mapv p/make-class-presenter (:competition/classes example))))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#tango.test-utils" name="tango.test-utils"><h1 class="project-name">tango.test-utils</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(ns tango.test-utils
   (:require [clojure.xml :as xml]
             [clojure.zip :as zip]))</pre></td></tr><tr><td class="docs">
@@ -4003,29 +4018,39 @@ make a nicer filtering if needed.
 </td><td class="codes"><pre class="brush: clojure">(defn- slurp-expected [file-name]
   (read-string (slurp (str expected-folder file-name))))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn- parse-examples [file-name]
-  (zip/xml-zip (xml/parse (clojure.java.io/file (str examples-folder file-name)))))</pre></td></tr><tr><td class="docs">
+  (zip/xml-zip (xml/parse (clojure.java.io/file (str examples-folder file-name)))))</pre></td></tr><tr><td class="docs"><p>Small example</p>
+</td><td class="codes"></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(def small-example
   (parse-examples &quot;small-example.xml&quot;))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(def expected-small-example
-  (slurp-expected &quot;expected_small_result.clj.test&quot;))</pre></td></tr><tr><td class="docs">
+  (slurp-expected &quot;expected_small_result.clj.test&quot;))</pre></td></tr><tr><td class="docs"><p>Real example</p>
+</td><td class="codes"></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(def real-example
   (parse-examples &quot;real-example.xml&quot;))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(def expected-real-example
   (slurp-expected &quot;expected_real_example_result.clj.test&quot;))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(def expected-real-example-presentation
+</td><td class="codes"><pre class="brush: clojure">(def expected-real-example-activity-presentation
   (slurp-expected &quot;expected_real_example_presentation.clj.test&quot;))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(def expected-real-example-classes-presentation
+  (slurp-expected &quot;expected_real_example_classes_presentation.clj.test&quot;))</pre></td></tr><tr><td class="docs"><p>Kungsör example</p>
+</td><td class="codes"></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(def real-example-kungsor
   (parse-examples &quot;real-example-kungsor.xml&quot;))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(def expected-real-example-kungsor
   (slurp-expected &quot;expected_real_example_kungsor_result.clj.test&quot;))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(def expected-real-example-kungsor-presentation
+</td><td class="codes"><pre class="brush: clojure">(def expected-real-example-kungsor-activity-presentation
   (slurp-expected &quot;expected_real_example_kungsor_presentation.clj.test&quot;))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(def expected-real-example-kungsor-classes-presentation
+  (slurp-expected &quot;expected_real_example_kungsor_classes_presentation.clj.test&quot;))</pre></td></tr><tr><td class="docs"><p>Uppsala example</p>
+</td><td class="codes"></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(def real-example-uppsala
   (parse-examples &quot;real-example-uppsala.xml&quot;))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(def expected-real-example-uppsala
   (slurp-expected &quot;expected_real_example_uppsala_result.clj.test&quot;))</pre></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(def expected-real-example-uppsala-presentation
-  (slurp-expected &quot;expected_real_example_uppsala_presentation.clj.test&quot;))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#tango.core-test" name="tango.core-test"><h1 class="project-name">tango.core-test</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(def expected-real-example-uppsala-activity-presentation
+  (slurp-expected &quot;expected_real_example_uppsala_presentation.clj.test&quot;))</pre></td></tr><tr><td class="docs">
+</td><td class="codes"><pre class="brush: clojure">(def expected-real-example-uppsala-classes-presentation
+  (slurp-expected &quot;expected_real_example_uppsala_classes_presentation.clj.test&quot;))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#tango.core-test" name="tango.core-test"><h1 class="project-name">tango.core-test</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(ns tango.core-test
   (:require [clojure.test :refer :all]
             [tango.core :refer :all]
