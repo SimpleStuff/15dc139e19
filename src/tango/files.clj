@@ -14,6 +14,7 @@
           (let [topic (:topic message)
                 payload (:payload message)]
             (log/trace (str "Files received: " message))
+            (log/info (str "Received Topic: [" topic "]"))
             (match [topic payload]
                    [:file/import p]
                    (async/put! out-channel (merge message {:topic :file/imported

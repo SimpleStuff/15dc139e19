@@ -18,7 +18,7 @@
 ;; Tests of complete competitions
 
 (deftest import-dance-perfect-competition
-  (testing "Import competition name of Dance Perfect file"  
+  (testing "Import competition from a Dance Perfect file"  
     (is (let [current-id (atom 0)]
           (= (imp/competition-xml->map u/small-example #(swap! current-id inc))
              u/expected-small-example)))

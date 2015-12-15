@@ -14,15 +14,12 @@
 
 (defn message-dispatch [{:keys [topic payload sender] :as message} components]
   (let [client-in-channel (:in-channel (:channels components))]
+    (log/info (str "Dispatching Topic [" topic "], Sender [" sender "]"))
     (match [topic payload]
            [:file/import _]
            (async/>!! (:in-channel (:file-handler components)) message)
            [:file/imported _]
            (async/>!! client-in-channel message)
-           ;; [:file/imported-new _]
-           ;; (async/>!! client-in-channel message)
-           ;; [:file/import-new _]
-           ;; (async/>!! (:in-channel (:file-handler components)) message)
            :else (async/>!!
                   client-in-channel
                   {:sender sender :topic :broker/unkown-topic :payload {:topic topic}}))))
@@ -37,8 +34,10 @@
       (when-let [[message _] (async/alts! out-chans) ]
         (log/debug (str "Broker raw message : " message))
         (when message
-          (log/info (str "Broker received : " message))
+          (log/info "Received message")
           (try
+            ;; TODO - think about if this should be in a thread or not
+            ;; might be better on main thread since else it can hide problems
             (async/thread (dispatch-fn message components-m))
             (catch Exception e
               (log/error e "Exception in MessageBroker router loop")))
