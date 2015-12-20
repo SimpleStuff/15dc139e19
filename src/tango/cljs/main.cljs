@@ -36,7 +36,8 @@
 ;;   (atom {:competitions []}))
 
 (defonce app-state
-  (atom {:selected-page :classes
+  (atom {:selected-page :start-page
+         :import-status :import-not-started
          :competition {}}))
 
 (defn on-file-read [e file-reader]
@@ -49,7 +50,8 @@
   (let [file (.item (.. e -target -files) 0)
         r (js/FileReader.)]
     (set! (.-onload r) #(on-file-read % r))
-    (.readAsText r file)))
+    (.readAsText r file)
+    (swap! app-state merge {:import-status :import-started})))
 
 (defn dispatch [props]
   (let [id (first props)
@@ -133,15 +135,10 @@
           [:td starting]       
           [:td status]]))]]])
 
-;; TODO - make the on-click event run thoughe dispatch
-(defn import-component []
-  [:div
-   [:h2 "Importera en ny tävling : "]
-   [:input.btn.btn-primary.btn-lg {:type "file" :value "Import file"
-                                   :onChange #(on-click-import-file %)}]])
-
 (defn navigation-component []
   [:div
+   [:input.btn.btn-default {:type "button" :value "Tävlingar"
+                            :on-click #(dispatch [:select-page :start-page])}]
    [:input.btn.btn-default {:type "button" :value "Classes"
                             :on-click #(dispatch [:select-page :classes])}]
    [:input.btn.btn-default {:type "button" :value "Time Schedule"
@@ -186,16 +183,70 @@
            [:td panel]
            [:td type]])))]]])
 
-(defn menu-component []
+(defn start-page-component []
+  (fn []
+    [:div
+     [:div
+      [:h2 "Mina tävlingar"]
+      [:table.table
+       [:thead
+        [:tr
+         [:th "Namn"]
+         [:th "Plats"]]]
+       [:tbody
+        [:tr
+         [:td (:competition/name (:competition @app-state))]
+         [:td (:competition/location (:competition @app-state))]]]]]
+     [:div
+      [:input.btn.btn-default {:type "button" :value "Ny tävling"
+                               :on-click #(dispatch [:select-page :new-competition])}]
+      [:span.btn.btn-default.btn-file
+       "Importera.."
+       [:input {:type "file" :onChange #(on-click-import-file %)}]]
+      (condp = (:import-status @app-state)
+        :import-not-started ""
+        :import-started [:h4 "Importerar.."]
+        :import-done [:h4 "Import färdig!"])]]))
+
+;; TODO - make the on-click event run thoughe dispatch
+;; http://www.abeautifulsite.net/whipping-file-inputs-into-shape-with-bootstrap-3/
+(defn import-component []
+  [:div
+   ;[:h2 "Importera en ny tävling : "]
+   [:span.btn.btn-default.btn-file
+    "Importera"
+    [:input {:type "file" :onChange #(on-click-import-file %)}]]
+   (condp = (:import-status @app-state)
+     :import-not-started ""
+     :import-started [:h4 "Importerar.."]
+     :import-done [:h4 "Import färdig!"])])
+
+;; (defn import-component []
+;;   [:div
+;;    ;[:h2 "Importera en ny tävling : "]
+;;    [:input.btn.btn-default {:type "file" :value "Importera"
+;;                             :onChange #(on-click-import-file %)}]])
+
+(defn new-competition []
   (fn []
     [:div
      [import-component]
+     [:input.btn.btn-default {:type "button" :value "Ny tävling"
+                              :on-click #(dispatch [:select-page :new-competition])}]]))
+
+(defn menu-component []
+  (fn []
+    [:div
      [navigation-component]
      (condp = (:selected-page @app-state)
+       :start-page [start-page-component]
+       :new-competition [new-competition]
        :classes [classes-component]
        :events [time-schedule-component]
        :adjudicators [adjudictors-component]
        :adjudicator-panels [adjudictor-panels-component])]))
+
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Application
@@ -212,7 +263,8 @@
          ;; TODO Match your events here <...>
          [:chsk/recv [:file/imported content]]
          (do
-           (swap! app-state #(merge % {:competition content}))
+           (swap! app-state #(merge % {:competition content
+                                       :import-status :import-done}))
            (log (str @app-state)))
          ;; [:chsk/recv [:file/export content]]
          ;; (handle-export)

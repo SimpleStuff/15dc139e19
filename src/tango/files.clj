@@ -19,6 +19,8 @@
                    [:file/import p]
                    (async/put! out-channel (merge message {:topic :file/imported
                                                            :payload (import/import-file-stream p)}))
+                   [:file/ping p]
+                   (async/put! out-channel (merge message {:topic :file/pong}))
                    :else (async/>!! out-channel {:topic :files/unkown-topic :payload {:topic topic}})))
           (catch Exception e
             (log/error e "Exception in Files message go loop")
@@ -36,7 +38,7 @@
         (assoc component :message-handler message-handler))))
   (stop [component]
     (log/report "Stopping FileHandler")
-    (assoc component :message-handler nil)))
+    (assoc component :message-handler nil :file-handler-channels nil)))
 
 (defn create-file-handler []
   (map->FileHandler {}))
