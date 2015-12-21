@@ -392,6 +392,8 @@
 ;; Import API
 
 (defn competition-xml->map [xml id-generator-fn]
+  {:pre [(not (nil? xml))
+         (not (nil? id-generator-fn))]}
   (let [comp-data (competition-data-xml->map xml)
         dp-adjudicators (adjudicators-xml->map xml id-generator-fn)
         dp-classes (classes-xml->map xml id-generator-fn)
@@ -412,20 +414,11 @@
      (make-activities (mapv :temp/activity dp-rounds) classes (mapcat :class/rounds classes))
      classes)))
 
-;; TODO : add generic exception handling
-;; (defn import-file [path]
-;;   {:pre [(string? path)]}
-;;   (let [file (clojure.java.io/file path)]
-;;     (if (.exists file)
-;;       (let [xml-src (zip/xml-zip (clojure.xml/parse file))
-;;             competition-data (competition-xml->map xml-src)]
-;;         competition-data)
-;;       [:file-not-found]         ;(create-import-info "" [] :failed [:file-not-found])
-;;       )))
-
-;; TODO - add test
-;; TODO - add exception catch
-(defn import-file-stream [{:keys [content]}]
+(defn import-file-stream
+  [file-stream id-generator-fn]
+  {:pre [(not (nil? file-stream))
+         (not (nil? id-generator-fn))]}
   (competition-xml->map
-   (zip/xml-zip (clojure.xml/parse (java.io.ByteArrayInputStream. (.getBytes content))))
-   #(java.util.UUID/randomUUID)))
+   (zip/xml-zip
+    (clojure.xml/parse (java.io.ByteArrayInputStream. (.getBytes file-stream))))
+   id-generator-fn))
