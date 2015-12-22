@@ -1,4 +1,4 @@
-(ns tango.file-resource
+(ns tango.file-storage
   (:require [clojure.edn :as edn]))
 
 (defn save [competition path]

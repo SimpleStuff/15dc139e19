@@ -1,7 +1,7 @@
-(ns tango.file-resource-tests
+(ns tango.file-storage-tests
   (:require [clojure.test :refer :all]
             [tango.test-utils :as u]
-            [tango.file-resource :as fp]))
+            [tango.file-storage :as storage]))
 
 (def imported-competition u/expected-real-example)
 (def file-path "./test-file.dat")
@@ -16,5 +16,5 @@
 ;; http://www.compoundtheory.com/clojure-edn-walkthrough/
 (deftest save-competition-to-file
   (testing "Save a competition model to file"
-    (is (= nil (fp/save imported-competition file-path)))
-    (is (= imported-competition (fp/read-file file-path)))))
+    (is (= nil (storage/save imported-competition file-path)))
+    (is (= imported-competition (storage/read-file file-path)))))
