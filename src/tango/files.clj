@@ -21,9 +21,10 @@
             (log/info (str "Received Topic: [" topic "]"))
             (match [topic payload]
                    [:file/import p]
+                   ;; TODO - verify all indata i.e. p needs a :content here
                    (async/put! out-channel (merge message {:topic :file/imported
                                                            :payload (import/import-file-stream
-                                                                     p
+                                                                     (:content p)
                                                                      id-generator-fn)}))
                    [:file/ping p]
                    (async/put! out-channel (merge message {:topic :file/pong}))

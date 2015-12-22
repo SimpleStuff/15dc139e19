@@ -27,16 +27,12 @@
       (is (= tango.files.FileHandler (class import-engine)))
       (is (= tango.files.FileHandlerChannels (class import-channels))))))
 
-;; https://www.youtube.com/watch?v=oar-T2KovwE
-
-;; Robert C. Martin - The Land that Scrum Forgot 
-;; https://www.youtube.com/watch?v=hG4LH6P8Syk
 (deftest file-import-message
   (testing "Processing of a file import message"
     (let [current-id (atom 0)
           import-engine (component/start (create-test-service #(swap! current-id inc)))]
       (async/>!! (:in-channel (:file-handler-channels import-engine))
-                 {:topic :file/import :payload (slurp (str u/examples-folder "small-example.xml"))})
+                 {:topic :file/import :payload {:content (slurp (str u/examples-folder "small-example.xml"))}})
       (is (= {:topic :file/imported
               :payload u/expected-small-example}
              (async/<!! (:out-channel (:file-handler-channels import-engine))))))))

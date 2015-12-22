@@ -56,7 +56,8 @@
   [configuration]
   (log/report "Creating system")
   (let [{:keys [port log-file log-level id-generator-fn client-connection]} configuration
-        id-gen-fn (or id-generator-fn (fn [] (str (java.util.UUID/randomUUID))))]
+        id-gen-fn (or id-generator-fn #(java.util.UUID/randomUUID);(fn [] (str (java.util.UUID/randomUUID)))
+                      )]
     (when log-file
       ;; - everything should always be logged to file
       ;; - Production console only logg report
@@ -72,7 +73,7 @@
 
      ;; Import handling
      :file-handler-channels (files/create-file-handler-channels)
-     :file-handler (component/using (files/create-file-handler) [:file-handler-channels])
+     :file-handler (component/using (files/create-file-handler id-gen-fn) [:file-handler-channels])
 
      ;; Client channels
      :channel-connection-channels (channels/create-channel-connection-channels)
