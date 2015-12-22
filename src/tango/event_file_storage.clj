@@ -2,7 +2,8 @@
   (:require [clojure.core.async :as async]
             [com.stuartsierra.component :as component]
             [taoensso.timbre :as log]
-            [clojure.core.match :refer [match]]))
+            [clojure.core.match :refer [match]]
+            [tango.file-storage :as fs]))
 
 (defn- start-message-handler [in-channel out-channel]
   {:pre [(some? in-channel)
@@ -17,12 +18,15 @@
             (log/trace (str "Received: " message))
             (log/info (str "Received Topic: [" topic "]"))
             (match [topic payload]
-                   ;; [:file/import p]
-                   ;; ;; TODO - verify all indata i.e. p needs a :content here
-                   ;; (async/put! out-channel (merge message {:topic :file/imported
-                   ;;                                         :payload (import/import-file-stream
-                   ;;                                                   (:content p)
-                   ;;                                                   id-generator-fn)}))
+                   [:event-file-storage/add p]
+                   (async/put! out-channel (merge message {:topic :event-file-storage/added
+                                                           :payload (fs/save p "./file-storage/file-store.dat")}))
+                   [:event-file-storage/query p]
+                   (let [raw-data (fs/read-file "./file-storage/file-store.dat")
+                         q-result (:competition/name raw-data)]
+                     (async/put! out-channel (merge message {:topic :event-file-storage/result
+                                                             :payload q-result})))
+                   
                    [:event-file-storage/ping p]
                    (async/put! out-channel (merge message {:topic :event-file-storage/pong}))
                    :else (async/>!!

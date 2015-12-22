@@ -22,12 +22,24 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Tests of event file storage
 
+
+
 (deftest access-stored-event
   (testing "Access a file stored event"
-    (let [event-access (component/start (create-test-service))]
-      (send-to event-access {:topic :event-access/query :payload [:competition/name]})
-      (is (= {:topic :event-access/events :payload [{:competition/name "TurboMega Tävling"}]}
-             (receive-from event-access))))))
+    (let [event-storage (component/start (create-test-service))]
+      (send-to event-storage {:topic :event-file-storage/add :payload u/expected-small-example})
+      (is (= {:topic :event-file-storage/added :payload nil}
+             (receive-from event-storage)))
+
+      (send-to event-storage {:topic :event-file-storage/add :payload u/expected-real-example})
+      (is (= {:topic :event-file-storage/added :payload nil}
+             (receive-from event-storage)))
+
+      (send-to event-storage {:topic :event-file-storage/query :payload [:competition/name]})
+      (is (= {:topic :event-file-storage/result :payload [{:competition/name "TurboMegatävling"}
+                                                          {:competition/name "Rikstävling disco"}]}
+             (receive-from event-storage)))
+      )))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Service tests
