@@ -12,7 +12,7 @@
             [tango.web-socket :as ws]
             [tango.http-server :as http]
             [tango.channels :as channels]
-            [tango.files :as files]))
+            [tango.import-engine :as import]))
 
 ;; Provides useful Timbre aliases in this ns
 (log/refer-timbre)
@@ -72,8 +72,8 @@
     (component/system-map
 
      ;; Import handling
-     :file-handler-channels (files/create-file-handler-channels)
-     :file-handler (component/using (files/create-file-handler id-gen-fn) [:file-handler-channels])
+     :file-handler-channels (import/create-file-handler-channels)
+     :file-handler (component/using (import/create-file-handler id-gen-fn) [:file-handler-channels])
 
      ;; Client channels
      :channel-connection-channels (channels/create-channel-connection-channels)

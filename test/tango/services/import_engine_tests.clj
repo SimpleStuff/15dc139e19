@@ -1,7 +1,7 @@
 (ns tango.services.import-engine-tests
   (:require [clojure.test :refer :all]
             [tango.test-utils :as u]
-            [tango.files :as files]
+            [tango.import-engine :as import]
             [clojure.core.async :as async]
             [com.stuartsierra.component :as component]))
 
@@ -9,9 +9,9 @@
 ;; Utils
 (defn create-test-service [id-generator-fn]
   (assoc
-      (files/create-file-handler id-generator-fn)
+      (import/create-file-handler id-generator-fn)
     :file-handler-channels
-    (component/start (files/create-file-handler-channels))))
+    (component/start (import/create-file-handler-channels))))
 
 (defn create-started-engine [id-generator-fn]
   (component/start (create-test-service id-generator-fn)))
@@ -22,10 +22,11 @@
 (deftest instantiate-import-engine
   (testing "Instansiate import engine service"
     (let [current-id (atom 0)
-          import-engine (files/create-file-handler #(swap! current-id inc))
-          import-channels (files/create-file-handler-channels)]
-      (is (= tango.files.FileHandler (class import-engine)))
-      (is (= tango.files.FileHandlerChannels (class import-channels))))))
+          import-engine (import/create-file-handler #(swap! current-id inc))
+          import-channels (import/create-file-handler-channels)]
+      (is (= tango.import_engine.FileHandler (class import-engine)))
+      (is (= tango.import_engine.FileHandlerChannels (class import-channels)))
+      )))
 
 (deftest file-import-message
   (testing "Processing of a file import message"
