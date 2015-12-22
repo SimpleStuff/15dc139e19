@@ -1,0 +1,73 @@
+(ns tango.event-file-storage
+  (:require [clojure.core.async :as async]
+            [com.stuartsierra.component :as component]
+            [taoensso.timbre :as log]
+            [clojure.core.match :refer [match]]))
+
+(defn- start-message-handler [in-channel out-channel]
+  {:pre [(some? in-channel)
+         (some? out-channel)]}
+  (async/go-loop []
+    (when-let [message (async/<! in-channel)]
+      (log/debug (str "Raw message : " message))
+      (when message
+        (try
+          (let [topic (:topic message)
+                payload (:payload message)]
+            (log/trace (str "Received: " message))
+            (log/info (str "Received Topic: [" topic "]"))
+            (match [topic payload]
+                   ;; [:file/import p]
+                   ;; ;; TODO - verify all indata i.e. p needs a :content here
+                   ;; (async/put! out-channel (merge message {:topic :file/imported
+                   ;;                                         :payload (import/import-file-stream
+                   ;;                                                   (:content p)
+                   ;;                                                   id-generator-fn)}))
+                   [:event-file-storage/ping p]
+                   (async/put! out-channel (merge message {:topic :event-file-storage/pong}))
+                   :else (async/>!!
+                          out-channel
+                          {:topic :event-file-storage/unkown-topic :payload {:topic topic}})))
+          (catch Exception e
+            (log/error e "Exception in message go loop")
+            (async/>! out-channel (str "Exception message: " (.getMessage e)))))
+        (recur)))))
+
+(defrecord EventFileStorage [event-file-storage-channels message-handler]
+  component/Lifecycle
+  (start [component]
+    (log/report "Starting EventFileStorage")
+    (if (and event-file-storage-channels message-handler)
+      component
+      (assoc component :message-handler (start-message-handler
+                                         (:in-channel event-file-storage-channels)
+                                         (:out-channel event-file-storage-channels)))))
+  (stop [component]
+    (log/report "Stopping EventFileStorage")
+    (assoc component :message-handler nil :event-file-storage-channels nil)))
+
+(defn create-event-file-storage []
+  (map->EventFileStorage {}))
+
+(defrecord EventFileStorageChannels [in-channel out-channel]
+   component/Lifecycle
+  (start [component]
+    (if (and in-channel out-channel)
+      component
+      (do
+        (log/info "Starting EventFileStorage Channels")
+        (assoc component
+          :in-channel (async/chan)
+          :out-channel (async/chan)))))
+  (stop [component]
+    (log/info "Closing EventFileStorage Channels")
+    (if-let [in-chan (:in-channel component)]
+      (async/close! in-chan))
+    (if-let [out-chan (:out-channel component)]
+      (async/close! out-chan))
+    (assoc component
+      :in-channel nil
+      :out-channel nil)))
+
+(defn create-event-file-storage-channels []
+  (map->EventFileStorageChannels {}))

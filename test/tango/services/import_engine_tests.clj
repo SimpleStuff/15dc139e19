@@ -25,8 +25,7 @@
           import-engine (import/create-file-handler #(swap! current-id inc))
           import-channels (import/create-file-handler-channels)]
       (is (= tango.import_engine.FileHandler (class import-engine)))
-      (is (= tango.import_engine.FileHandlerChannels (class import-channels)))
-      )))
+      (is (= tango.import_engine.FileHandlerChannels (class import-channels))))))
 
 (deftest file-import-message
   (testing "Processing of a file import message"
