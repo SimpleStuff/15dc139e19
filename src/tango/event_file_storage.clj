@@ -5,6 +5,10 @@
             [clojure.core.match :refer [match]]
             [tango.file-storage :as fs]))
 
+(defn create-message [topic payload]
+  {:topic topic
+   :payload payload})
+
 (defn- start-message-handler [in-channel out-channel]
   {:pre [(some? in-channel)
          (some? out-channel)]}
@@ -18,12 +22,18 @@
             (log/trace (str "Received: " message))
             (log/info (str "Received Topic: [" topic "]"))
             (match [topic payload]
+                   [:event-file-storage/create p]
+                   (async/put! out-channel (create-message :event-file-storage/created (fs/save [] p)))
                    [:event-file-storage/add p]
-                   (async/put! out-channel (merge message {:topic :event-file-storage/added
-                                                           :payload (fs/save p "./file-storage/file-store.dat")}))
+                   (let [current (fs/read-file "./file-storage/file-store.dat")
+                         new-content (conj current p)]
+                     (async/put! out-channel (merge message
+                                                    {:topic :event-file-storage/added
+                                                     :payload (fs/save new-content
+                                                                       "./file-storage/file-store.dat")})))
                    [:event-file-storage/query p]
                    (let [raw-data (fs/read-file "./file-storage/file-store.dat")
-                         q-result (:competition/name raw-data)]
+                         q-result (select-keys raw-data p)]
                      (async/put! out-channel (merge message {:topic :event-file-storage/result
                                                              :payload q-result})))
                    
