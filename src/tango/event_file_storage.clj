@@ -9,7 +9,7 @@
   {:topic topic
    :payload payload})
 
-(defn- start-message-handler [in-channel out-channel]
+(defn- start-message-handler [in-channel out-channel storage-path]
   {:pre [(some? in-channel)
          (some? out-channel)]}
   (async/go-loop []
@@ -24,16 +24,16 @@
             (match [topic payload]
                    [:event-file-storage/create p]
                    (async/put! out-channel (create-message :event-file-storage/created (fs/save [] p)))
-                   [:event-file-storage/add p]
-                   (let [current (fs/read-file "./file-storage/file-store.dat")
+                   [:event-file-storage/transact p]
+                   (let [current (fs/read-file storage-path)
                          new-content (conj current p)]
                      (async/put! out-channel (merge message
                                                     {:topic :event-file-storage/added
                                                      :payload (fs/save new-content
-                                                                       "./file-storage/file-store.dat")})))
+                                                                       storage-path)})))
                    [:event-file-storage/query p]
-                   (let [raw-data (fs/read-file "./file-storage/file-store.dat")
-                         q-result (select-keys raw-data p)]
+                   (let [raw-data (fs/read-file storage-path)
+                         q-result (mapv #(select-keys % p) raw-data)]
                      (async/put! out-channel (merge message {:topic :event-file-storage/result
                                                              :payload q-result})))
                    
@@ -47,7 +47,7 @@
             (async/>! out-channel (str "Exception message: " (.getMessage e)))))
         (recur)))))
 
-(defrecord EventFileStorage [event-file-storage-channels message-handler]
+(defrecord EventFileStorage [event-file-storage-channels message-handler storage-path]
   component/Lifecycle
   (start [component]
     (log/report "Starting EventFileStorage")
@@ -55,13 +55,14 @@
       component
       (assoc component :message-handler (start-message-handler
                                          (:in-channel event-file-storage-channels)
-                                         (:out-channel event-file-storage-channels)))))
+                                         (:out-channel event-file-storage-channels)
+                                         storage-path))))
   (stop [component]
     (log/report "Stopping EventFileStorage")
-    (assoc component :message-handler nil :event-file-storage-channels nil)))
+    (assoc component :message-handler nil :event-file-storage-channels nil :storage-path nil)))
 
-(defn create-event-file-storage []
-  (map->EventFileStorage {}))
+(defn create-event-file-storage [storage-path]
+  (map->EventFileStorage {:storage-path storage-path}))
 
 (defrecord EventFileStorageChannels [in-channel out-channel]
    component/Lifecycle
