@@ -26,7 +26,7 @@
   (testing "Eliminate repetitions"
     (with-open [out-file (java.io.FileWriter. "./test/repetitions.txt")]
       (binding [*out* out-file]
-        (dorun (map #(hunter/hunt %1) all-src-ns))))
+        (dorun (map #(hunter/hunt %1 :filter {:remove-flat true}) all-src-ns))))
     (let [repetitions-found (slurp "./test/repetitions.txt")]
       (is (= true (empty? repetitions-found)) "See ./test/repetitions.txt for details"))))
 

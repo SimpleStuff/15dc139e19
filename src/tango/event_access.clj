@@ -52,7 +52,7 @@
   component/Lifecycle
   (start [component]
     (log/report "Starting EventAccess")
-    (if (and event-access-channels message-handler)
+    (if (and event-access-channels message-handler storage-channels)
       component
       (assoc component :message-handler (start-message-handler
                                          (:in-channel event-access-channels)
