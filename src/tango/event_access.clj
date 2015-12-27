@@ -4,7 +4,7 @@
             [taoensso.timbre :as log]
             [clojure.core.match :refer [match]]))
 
-(defn- start-message-handler [in-channel out-channel]
+(defn- start-message-handler [in-channel out-channel storage-channels]
   {:pre [(some? in-channel)
          (some? out-channel)]}
   (async/go-loop []
@@ -17,12 +17,27 @@
             (log/trace (str "Received: " message))
             (log/info (str "Received Topic: [" topic "]"))
             (match [topic payload]
-                   ;; [:file/import p]
-                   ;; ;; TODO - verify all indata i.e. p needs a :content here
-                   ;; (async/put! out-channel (merge message {:topic :file/imported
-                   ;;                                         :payload (import/import-file-stream
-                   ;;                                                   (:content p)
-                   ;;                                                   id-generator-fn)}))
+                   [:event-access/query q]
+                   (do
+                     ;; send query to storage or timeout
+                     (let [[v c] (async/alts! [[(:in-channel storage-channels)
+                                                {:topic :event-file-storage/query
+                                                 :payload q}]
+                                               (async/timeout 500)])]
+                       ;; if the query was picked up, wait for the result, else timeout
+                          (if v
+                            (let [[result ch] (async/alts! [(:out-channel storage-channels) (async/timeout 500)])]
+                              (if result
+                                (async/put! out-channel (merge message
+                                                               {:topic :event-access/query-result
+                                                                :payload (:payload result)}))
+                                (async/put! out-channel (merge message
+                                                           {:topic :event-file-storage/query-result
+                                                            :payload :time-out}))))
+                            (async/put! out-channel (merge message
+                                                           {:topic :event-file-storage/query
+                                                            :payload :time-out})))))
+                 
                    [:event-access/ping p]
                    (async/put! out-channel (merge message {:topic :event-access/pong}))
                    :else (async/>!!
@@ -33,7 +48,7 @@
             (async/>! out-channel (str "Exception message: " (.getMessage e)))))
         (recur)))))
 
-(defrecord EventAccess [event-access-channels message-handler]
+(defrecord EventAccess [event-access-channels message-handler storage-channels]
   component/Lifecycle
   (start [component]
     (log/report "Starting EventAccess")
@@ -41,10 +56,11 @@
       component
       (assoc component :message-handler (start-message-handler
                                          (:in-channel event-access-channels)
-                                         (:out-channel event-access-channels)))))
+                                         (:out-channel event-access-channels)
+                                         storage-channels))))
   (stop [component]
     (log/report "Stopping EventAccess")
-    (assoc component :message-handler nil :event-access-channels nil)))
+    (assoc component :message-handler nil :event-access-channels nil :storage-channels nil)))
 
 (defn create-event-access []
   (map->EventAccess {}))

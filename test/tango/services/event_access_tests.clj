@@ -11,7 +11,10 @@
   (assoc
       (ea/create-event-access)
     :event-access-channels
-    (component/start (ea/create-event-access-channels))))
+    (component/start (ea/create-event-access-channels))
+    :storage-channels
+    {:in-channel (async/timeout 1000)
+     :out-channel (async/timeout 1000)}))
 
 (defn- send-to [service message]
   (async/>!! (:in-channel (:event-access-channels service)) message))
@@ -19,14 +22,20 @@
 (defn- receive-from [service]
   (async/<!! (:out-channel (:event-access-channels service))))
 
+(defn- start-test-storage [service]
+  (async/go
+    (async/>! (:out-channel (:storage-channels service))
+              (async/<! (:in-channel (:storage-channels service))))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Tests of event access
 
-(deftest access-stored-event
-  (testing "Access a stored event"
+(deftest query-should-be-run-on-storage
+  (testing "A query should be run on storage"
     (let [event-access (component/start (create-test-service))]
+      (start-test-storage event-access)
       (send-to event-access {:topic :event-access/query :payload [:competition/name]})
-      (is (= {:topic :event-access/events :payload [{:competition/name "TurboMega Tävling"}]}
+      (is (= {:topic :event-access/query-result :payload [:competition/name]}
              (receive-from event-access))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -43,13 +52,16 @@
   (testing "Service life cycle"
     (let [event-access (component/start (create-test-service))
           stopped-event-access (component/stop event-access)]
-      (is (= 2 (count (keys event-access))))
+      (is (= 3 (count (keys event-access))))
 
       (is (not= nil (:event-access-channels event-access)))
       (is (not= nil (:message-handler event-access)))
+      (is (not= nil (:storage-channels event-access)))
 
       (is (= nil (:event-access-channels stopped-event-access)))
-      (is (= nil (:message-handler stopped-event-access))))))
+      (is (= nil (:message-handler stopped-event-access)))
+      (is (= nil (:storage-channels stopped-event-access))))))
+
 
 (deftest system-component-properties
   (testing "Service is a well behavied system service"
