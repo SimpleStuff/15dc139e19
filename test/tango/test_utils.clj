@@ -1,6 +1,7 @@
 (ns tango.test-utils
   (:require [clojure.xml :as xml]
-            [clojure.zip :as zip]))
+            [clojure.zip :as zip]
+            [clojure.core.async :as async]))
 
 (def expected-folder "./test/tango/expected/")
 
@@ -66,4 +67,24 @@
 (def expected-real-example-uppsala-classes-presentation
   (slurp-expected "expected_real_example_uppsala_classes_presentation.clj.test"))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Communication utils
 
+(defn send-to [service-channels message]
+  (async/>!! (:in-channel service-channels) message))
+
+(defn receive-from [service-channels]
+  (async/<!! (:out-channel service-channels)))
+
+(defn create-message [topic payload]
+  {:topic topic
+   :payload payload})
+
+(defn create-test-channels [timeout]
+  {:in-channel (async/timeout timeout)
+   :out-channel (async/timeout timeout)})
+
+(defn start-channel-loop-back [service-channel]
+  (async/go
+    (async/>! (:out-channel service-channel)
+              (async/<! (:in-channel service-channel)))))

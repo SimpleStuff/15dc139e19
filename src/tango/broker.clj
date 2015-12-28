@@ -7,19 +7,33 @@
 ;; Provides useful Timbre aliases in this ns
 (log/refer-timbre)
 
-(defn create-dispatch-components [channels-connection-channels
-                                  file-handler-channels]
-  {:channels channels-connection-channels
-   :file-handler file-handler-channels})
-
-(defn message-dispatch [{:keys [topic payload sender] :as message} components]
-  (let [client-in-channel (:in-channel (:channels components))]
+(defn message-dispatch [{:keys [topic payload sender] :as message}
+                        {:keys [channel-connection-channels
+                                file-handler-channels
+                                event-access-channels] :as components}]
+  (let [client-in-channel (:in-channel channel-connection-channels)]
     (log/info (str "Dispatching Topic [" topic "], Sender [" sender "]"))
     (match [topic payload]
            [:file/import _]
-           (async/>!! (:in-channel (:file-handler components)) message)
+           (let [[import import-ch] (async/alts!!
+                                     [[(:in-channel file-handler-channels)
+                                       message]
+                                      (async/timeout 500)])]
+             (when (= nil import)
+               (async/put! client-in-channel (merge message
+                                              {:topic :file/import
+                                               :payload :time-out}))))
            [:file/imported _]
-           (async/>!! client-in-channel message)
+           (let [[tx tx-ch] (async/alts!!
+                             [[(:in-channel event-access-channels)
+                               (merge message
+                                      {:topic :event-access/transact})]
+                              (async/timeout 500)])]
+             (when (= nil tx)
+               (async/put! client-in-channel (merge message
+                                              {:topic :event-access/transact
+                                               :payload :time-out}))))
+           ;(async/>!! client-in-channel message)
            :else (async/>!!
                   client-in-channel
                   {:sender sender :topic :broker/unkown-topic :payload {:topic topic}}))))
@@ -49,9 +63,9 @@
   (start [component]
     (log/report "Starting MessageBroker")
     (let [broker-process (start-message-process
-                          message-dispatch
-                          (create-dispatch-components channel-connection-channels
-                                                      file-handler-channels))]
+                          message-dispatch 
+                          {:channel-connection-channels channel-connection-channels
+                           :file-handler-channels file-handler-channels})]
       (assoc component :broker-process broker-process)))
   (stop [component]
     (log/report "Stopping MessageBroker")

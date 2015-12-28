@@ -32,10 +32,10 @@
       storage-channels)))
 
 (defn- send-to [service message]
-  (async/>!! (:in-channel (:event-access-channels service)) message))
+  (u/send-to (:event-access-channels service) message))
 
 (defn- receive-from [service]
-  (async/<!! (:out-channel (:event-access-channels service))))
+  (u/receive-from (:event-access-channels service)))
 
 (defn- start-test-storage [service]
   (async/go
