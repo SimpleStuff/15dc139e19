@@ -22,8 +22,8 @@
             (log/trace (str "Received: " message))
             (log/info (str "Received Topic: [" topic "]"))
             (match [topic payload]
-                   [:event-file-storage/create p]
-                   (async/put! out-channel (create-message :event-file-storage/created (fs/save [] p)))
+                   ;; [:event-file-storage/create p]
+                   ;; (async/put! out-channel (create-message :event-file-storage/created (fs/save [] p)))
                    [:event-file-storage/transact p]
                    (let [current (fs/read-file storage-path)
                          new-content (conj current p)]
@@ -53,10 +53,14 @@
     (log/report "Starting EventFileStorage")
     (if (and event-file-storage-channels message-handler)
       component
-      (assoc component :message-handler (start-message-handler
-                                         (:in-channel event-file-storage-channels)
-                                         (:out-channel event-file-storage-channels)
-                                         storage-path))))
+      (do
+        ;; Init storage
+        ;; Check if DB file already exists, otherwise create a new
+        (fs/save [] storage-path)
+        (assoc component :message-handler (start-message-handler
+                                           (:in-channel event-file-storage-channels)
+                                           (:out-channel event-file-storage-channels)
+                                           storage-path)))))
   (stop [component]
     (log/report "Stopping EventFileStorage")
     (assoc component :message-handler nil :event-file-storage-channels nil :storage-path nil)))

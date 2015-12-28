@@ -17,6 +17,20 @@
             (log/trace (str "Received: " message))
             (log/info (str "Received Topic: [" topic "]"))
             (match [topic payload]
+                   [:event-access/transact t]
+                   (let [[tx c] (async/alts! [[(:in-channel storage-channels)
+                                                {:topic :event-file-storage/transact
+                                                 :payload t}]
+                                               (async/timeout 500)])]
+                     (if tx
+                       (let [[tx-result ch] (async/alts! [(:out-channel storage-channels) (async/timeout 500)])]
+                         (if tx-result
+                           (async/put! out-channel (merge message
+                                                          {:topic :event-access/transaction-result
+                                                           :payload (:payload tx-result)}))
+                           (async/put! out-channel (merge message
+                                                           {:topic :event-access/transaction-result
+                                                            :payload :time-out}))))))
                    [:event-access/query q]
                    (do
                      ;; send query to storage or timeout

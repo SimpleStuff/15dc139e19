@@ -46,9 +46,9 @@
 (deftest access-stored-event
   (testing "Access a file stored event"
     (let [event-storage (component/start (create-test-service))]
-      (send-to event-storage {:topic :event-file-storage/create :payload storage-path})
-      (is (= {:topic :event-file-storage/created :payload nil}
-             (receive-from event-storage)))
+      ;; (send-to event-storage {:topic :event-file-storage/create :payload storage-path})
+      ;; (is (= {:topic :event-file-storage/created :payload nil}
+      ;;        (receive-from event-storage)))
 
       (send-to event-storage {:topic :event-file-storage/transact :payload u/expected-small-example})
       (is (= {:topic :event-file-storage/added :payload nil}
