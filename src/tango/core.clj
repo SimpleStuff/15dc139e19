@@ -12,7 +12,9 @@
             [tango.web-socket :as ws]
             [tango.http-server :as http]
             [tango.channels :as channels]
-            [tango.import-engine :as import]))
+            [tango.import-engine :as import]
+            [tango.event-access :as access]
+            [tango.event-file-storage :as file-storage]))
 
 ;; Provides useful Timbre aliases in this ns
 (log/refer-timbre)
@@ -83,11 +85,23 @@
      :ws-connection-channels (ws/create-ws-channels)
      :ws-connection (component/using (ws/create-ws-connection) [:ws-connection-channels])
      :http-server (component/using (http/create-http-server port) [:ws-connection])
-     
+
+     ;; Event Storage
+     :event-file-storage-channels (file-storage/create-event-file-storage-channels)
+     :event-file-storage (component/using (file-storage/create-event-file-storage "./file-storage.dat")
+                                     [:event-file-storage-channels])
+
+     ;; Event Access
+     :event-access-channels (access/create-event-access-channels)
+     :event-access (component/using (access/create-event-access)
+                                    {:event-access-channels :event-access-channels
+                                     :storage-channels :event-file-storage-channels})
+
      ;; Message broker
      :message-broker (component/using (broker/create-message-broker)
                                       {:channel-connection-channels client-connection
-                                       :file-handler-channels :file-handler-channels}))))
+                                       :file-handler-channels :file-handler-channels
+                                       :event-access-channels :event-access-channels}))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Defines a pointer to the current system.

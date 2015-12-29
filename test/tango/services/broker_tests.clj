@@ -24,36 +24,71 @@
 (deftest import-data-should-be-sent-to-import-engine
   (testing "Import use case"
     (let [client-channels (u/create-test-channels 1000)
-          file-handler-channels (u/create-test-channels 1000)]
+          file-handler-channels (u/create-test-channels 1000)
+          event-access-channels (u/create-test-channels 1000)]
       (u/start-channel-loop-back file-handler-channels)
       
       ;; dispatch an import should send the import data to the import engine
       (manager/message-dispatch (u/create-message :file/import "import-data")
                                 {:channel-connection-channels client-channels
-                                 :file-handler-channels file-handler-channels})
+                                 :file-handler-channels file-handler-channels
+                                 :event-access-channels event-access-channels})
       (is (= {:topic :file/import :payload "import-data"}
              (u/receive-from file-handler-channels))))))
 
 (deftest imported-data-should-be-persisted
   (testing "Imported data from the import engine should be sent to event access"
-    (let [event-access-channels (u/create-test-channels 1000)
-          client-channels (u/create-test-channels 1000)]
+    (let [client-channels (u/create-test-channels 1000)
+          file-handler-channels (u/create-test-channels 1000)
+          event-access-channels (u/create-test-channels 1000)]
       (u/start-channel-loop-back event-access-channels)
 
       ;; imported data should be sent to the event access for persisting
       (manager/message-dispatch (u/create-message :file/imported "imported-data-to-persist")
                                 {:channel-connection-channels client-channels
+                                 :file-handler-channels file-handler-channels
                                  :event-access-channels event-access-channels})
       (is (= {:topic :event-access/transact :payload "imported-data-to-persist"}
              (u/receive-from event-access-channels))))))
 
-;; TODO - add timeout to unknown topic
 (deftest persisted-data-should-be-reported-to-client
   (testing "Persisted events should be reported to the client"
-    (let [client-channels (u/create-test-channels 1000)]
+    (let [client-channels (u/create-test-channels 1000)
+          file-handler-channels (u/create-test-channels 1000)
+          event-access-channels (u/create-test-channels 1000)]
+      (u/start-channel-loop-back client-channels)
       (manager/message-dispatch (u/create-message :event-access/transaction-result "tx-result")
-                                {:channel-connection-channels client-channels})
-      (is (= {:topic :event-manager/imported :payload "tx-result"}
+                                {:channel-connection-channels client-channels
+                                 :file-handler-channels file-handler-channels
+                                 :event-access-channels event-access-channels})
+      
+      (is (= {:topic :event-manager/transaction-result :payload "tx-result"}
+             (u/receive-from client-channels))))))
+
+(deftest client-query-should-be-sent-to-access
+  (testing "Query from the client should be sent to Event Access service"
+    (let [client-channels (u/create-test-channels 1000)
+          file-handler-channels (u/create-test-channels 1000)
+          event-access-channels (u/create-test-channels 1000)]
+      (u/start-channel-loop-back event-access-channels)
+      (manager/message-dispatch (u/create-message :event-manager/query "awsome query")
+                                {:channel-connection-channels client-channels
+                                 :file-handler-channels file-handler-channels
+                                 :event-access-channels event-access-channels})
+      (is (= {:topic :event-access/query :payload "awsome query"}
+             (u/receive-from event-access-channels))))))
+
+(deftest query-result-should-be-sent-to-client
+  (testing "Query result should be sent to the client"
+    (let [client-channels (u/create-test-channels 1000)
+          file-handler-channels (u/create-test-channels 1000)
+          event-access-channels (u/create-test-channels 1000)]
+      (u/start-channel-loop-back client-channels)
+      (manager/message-dispatch (u/create-message :event-access/query-result "awsome query result")
+                                {:channel-connection-channels client-channels
+                                 :file-handler-channels file-handler-channels
+                                 :event-access-channels event-access-channels})
+      (is (= {:topic :event-manager/query-result :payload "awsome query result"}
              (u/receive-from client-channels))))))
 
 ;; (deftest import-of-a-file-should-yield-a-persisted-competition

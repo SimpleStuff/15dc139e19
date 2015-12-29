@@ -38,6 +38,8 @@
 (defonce app-state
   (atom {:selected-page :start-page
          :import-status :import-not-started
+         :competitions []
+         ;; TODO - rename, this represents the current selected competition
          :competition {}}))
 
 (defn on-file-read [e file-reader]
@@ -194,9 +196,11 @@
          [:th "Namn"]
          [:th "Plats"]]]
        [:tbody
-        [:tr
-         [:td (:competition/name (:competition @app-state))]
-         [:td (:competition/location (:competition @app-state))]]]]]
+        (for [competition (:competitions @app-state)]
+          ^{:key competition}
+          [:tr
+           [:td (:competition/name competition)]
+           [:td (:competition/location competition)]])]]]
      [:div
       [:input.btn.btn-default {:type "button" :value "Ny tävling"
                                :on-click #(dispatch [:select-page :new-competition])}]
@@ -266,6 +270,15 @@
            (swap! app-state #(merge % {:competition content
                                        :import-status :import-done}))
            (log (str @app-state)))
+         [:chsk/recv [:event-manager/transaction-result _]]
+         (do
+           (log "Server transacted - refresh to get latest")
+           (swap! app-state #(merge % {:import-status :import-done}))
+           (chsk-send! [:event-manager/query [:competition/name]]))
+         [:chsk/recv [:event-manager/query-result payload]]
+         (do
+           (swap! app-state #(merge % {:competitions payload})))
+;[{:competition/name "Rikstävling disco"} {:competition/name "Rikstävling disco"}]
          ;; [:chsk/recv [:file/export content]]
          ;; (handle-export)
          [:chsk/state [:first-open _]]

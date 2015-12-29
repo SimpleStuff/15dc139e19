@@ -6,7 +6,8 @@
 
 (defn- start-message-handler [in-channel out-channel storage-channels]
   {:pre [(some? in-channel)
-         (some? out-channel)]}
+         (some? out-channel)
+         (some? storage-channels)]}
   (async/go-loop []
     (when-let [message (async/<! in-channel)]
       (log/debug (str "Raw message : " message))
