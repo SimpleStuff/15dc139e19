@@ -60,6 +60,9 @@
         data (vec (rest props))]
     (log (str "Dispatch of " id " with data " data))
     (match [id data]
+           ;[:query ['[*] [:competition/name (:competition/name competition)]]]
+           [:query [q]]
+           (log (str "Query for " q))
            [:file/import [file]]
            (inc 1)
            [:select-page [new-page]]
@@ -198,7 +201,7 @@
        [:tbody
         (for [competition (:competitions @app-state)]
           ^{:key competition}
-          [:tr
+          [:tr {:on-click #(dispatch [:query ['[*] [:competition/name (:competition/name competition)]]])}
            [:td (:competition/name competition)]
            [:td (:competition/location competition)]])]]]
      [:div
@@ -274,15 +277,17 @@
          (do
            (log "Server transacted - refresh to get latest")
            (swap! app-state #(merge % {:import-status :import-done}))
-           (chsk-send! [:event-manager/query [:competition/name]]))
+           (chsk-send! [:event-manager/query [:competition/name :competition/location]]))
          [:chsk/recv [:event-manager/query-result payload]]
          (do
+           (log (str "Query result " data))
            (swap! app-state #(merge % {:competitions payload})))
-;[{:competition/name "Rikstävling disco"} {:competition/name "Rikstävling disco"}]
-         ;; [:chsk/recv [:file/export content]]
-         ;; (handle-export)
-         [:chsk/state [:first-open _]]
-         (log "Channel socket successfully established!")
+         [:chsk/state d]
+         (if (:first-open? d)
+           (do
+             (log "Channel socket successfully established!")
+             (chsk-send! [:event-manager/query [:competition/name :competition/location]]))
+           (log (str "Channel socket state changed: " d)))
                                         ;[:chsk/state new-state] (log (str "Chsk state change: " new-state))
                                         ;[:chsk/recv payload] (log (str "Push event from server: " payload))
          :else (log (str "Unmatched event: " ev))))

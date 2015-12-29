@@ -22,15 +22,15 @@
                    (let [[tx c] (async/alts! [[(:in-channel storage-channels)
                                                 {:topic :event-file-storage/transact
                                                  :payload t}]
-                                               (async/timeout 500)])]
+                                               (async/timeout 2000)])]
                      (if tx
-                       (let [[tx-result ch] (async/alts! [(:out-channel storage-channels) (async/timeout 500)])]
+                       (let [[tx-result ch] (async/alts! [(:out-channel storage-channels) (async/timeout 2000)])]
                          (if tx-result
                            (async/put! out-channel (merge message
                                                           {:topic :event-access/transaction-result
                                                            :payload (:payload tx-result)}))
                            (async/put! out-channel (merge message
-                                                           {:topic :event-access/transaction-result
+                                                           {:topic :event-access/transaction-result-timeout
                                                             :payload :time-out}))))))
                    [:event-access/query q]
                    (do
@@ -38,19 +38,19 @@
                      (let [[v c] (async/alts! [[(:in-channel storage-channels)
                                                 {:topic :event-file-storage/query
                                                  :payload q}]
-                                               (async/timeout 500)])]
+                                               (async/timeout 2000)])]
                        ;; if the query was picked up, wait for the result, else timeout
                           (if v
-                            (let [[result ch] (async/alts! [(:out-channel storage-channels) (async/timeout 500)])]
+                            (let [[result ch] (async/alts! [(:out-channel storage-channels) (async/timeout 2000)])]
                               (if result
                                 (async/put! out-channel (merge message
                                                                {:topic :event-access/query-result
                                                                 :payload (:payload result)}))
                                 (async/put! out-channel (merge message
-                                                           {:topic :event-file-storage/query-result
+                                                           {:topic :event-file-storage/query-result-timeout
                                                             :payload :time-out}))))
                             (async/put! out-channel (merge message
-                                                           {:topic :event-file-storage/query
+                                                           {:topic :event-file-storage/query-timeout
                                                             :payload :time-out})))))
                  
                    [:event-access/ping p]

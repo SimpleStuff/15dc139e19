@@ -68,6 +68,9 @@
              (receive-from event-storage)))
       )))
 
+;; TODO - difference between query and pull
+;; TODO - must be able to answer query like [:query ['[*] [:competition/name "Rikstävling disco"]]]
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Service tests
 
