@@ -62,14 +62,32 @@
       (is (= {:topic :event-file-storage/added :payload nil}
              (receive-from event-storage)))
 
-      (send-to event-storage {:topic :event-file-storage/query :payload [:competition/name]})
+      (send-to event-storage {:topic :event-file-storage/query :payload [[:competition/name]]})
       (is (= {:topic :event-file-storage/result :payload [{:competition/name "TurboMegatävling"}
                                                           {:competition/name "Rikstävling disco"}]}
              (receive-from event-storage)))
-      )))
 
-;; TODO - difference between query and pull
-;; TODO - must be able to answer query like [:query ['[*] [:competition/name "Rikstävling disco"]]]
+      (send-to event-storage {:topic :event-file-storage/query
+                              :payload ['[*] [:competition/name "Rikstävling disco"]]})
+      (is (= {:topic :event-file-storage/result :payload u/expected-real-example}
+             (receive-from event-storage)))
+
+      (send-to event-storage {:topic :event-file-storage/query
+                              :payload [[:competition/location :competition/name]
+                                        [:competition/name "Rikstävling disco"]]})
+      (is (= {:topic :event-file-storage/result :payload {:competition/location "VÄSTERÅS"
+                                                          :competition/name "Rikstävling disco"}}
+             (receive-from event-storage)))
+
+      (send-to event-storage {:topic :event-file-storage/query
+                              :payload [[:competition/location :competition/name]]})
+      (is (= {:topic :event-file-storage/result :payload [{:competition/location "THUNDERDOME",
+                                                           :competition/name "TurboMegatävling"}
+                                                          {:competition/location "VÄSTERÅS",
+                                                           :competition/name "Rikstävling disco"}]}
+             (receive-from event-storage))))))
+
+;[:competition/name :competition/location]
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Service tests

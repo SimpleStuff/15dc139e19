@@ -60,7 +60,7 @@
       (is (= {:topic :event-access/transaction-result :payload nil}
              (receive-from event-access)))
 
-      (send-to event-access {:topic :event-access/query :payload [:competition/name]})
+      (send-to event-access {:topic :event-access/query :payload [[:competition/name]]})
       (is (= {:topic :event-access/query-result :payload [{:competition/name "TurboMegatävling"}]}
              (receive-from event-access))))))
 

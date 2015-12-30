@@ -62,7 +62,9 @@
     (match [id data]
            ;[:query ['[*] [:competition/name (:competition/name competition)]]]
            [:query [q]]
-           (log (str "Query for " q))
+           (do
+             (log (str "Query for " q))
+             (chsk-send! [:event-manager/query q]))
            [:file/import [file]]
            (inc 1)
            [:select-page [new-page]]
@@ -277,7 +279,7 @@
          (do
            (log "Server transacted - refresh to get latest")
            (swap! app-state #(merge % {:import-status :import-done}))
-           (chsk-send! [:event-manager/query [:competition/name :competition/location]]))
+           (chsk-send! [:event-manager/query [[:competition/name :competition/location]]]))
          [:chsk/recv [:event-manager/query-result payload]]
          (do
            (log (str "Query result " data))
@@ -286,7 +288,7 @@
          (if (:first-open? d)
            (do
              (log "Channel socket successfully established!")
-             (chsk-send! [:event-manager/query [:competition/name :competition/location]]))
+             (chsk-send! [:event-manager/query [[:competition/name :competition/location]]]))
            (log (str "Channel socket state changed: " d)))
                                         ;[:chsk/state new-state] (log (str "Chsk state change: " new-state))
                                         ;[:chsk/recv payload] (log (str "Push event from server: " payload))

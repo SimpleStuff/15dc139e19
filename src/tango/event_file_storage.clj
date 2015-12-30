@@ -32,10 +32,29 @@
                                                      :payload (fs/save new-content
                                                                        storage-path)})))
                    [:event-file-storage/query p]
-                   (let [raw-data (fs/read-file storage-path)
-                         q-result (mapv #(select-keys % p) raw-data)]
-                     (async/put! out-channel (merge message {:topic :event-file-storage/result
-                                                             :payload q-result})))
+                   (let [raw-data (fs/read-file storage-path)]
+                     (if (= 2 (count p))
+                       ;; pull
+                       (let [[pull-q [entity-k entity-v]] p
+                             entity (first (filterv #(= (get % entity-k) entity-v) raw-data))
+                             result (if (= pull-q '[*])
+                                      ;; full-pull, return the complete entity
+                                      entity
+                                      ;; partial pull
+                                      (select-keys entity pull-q))]
+                         (async/put! out-channel (merge message {:topic :event-file-storage/result
+                                                                 :payload result})))
+                       ;; query
+                       (let [[q-keys] p 
+                             q-result (mapv #(select-keys % q-keys) raw-data)]
+                         (async/put! out-channel (merge message {:topic :event-file-storage/result
+                                                                 :payload q-result})))
+                       )
+                     )
+                   ;; (let [raw-data (fs/read-file storage-path)
+                   ;;       q-result (mapv #(select-keys % p) raw-data)]
+                   ;;   (async/put! out-channel (merge message {:topic :event-file-storage/result
+                   ;;                                           :payload q-result})))
                    
                    [:event-file-storage/ping p]
                    (async/put! out-channel (merge message {:topic :event-file-storage/pong}))
