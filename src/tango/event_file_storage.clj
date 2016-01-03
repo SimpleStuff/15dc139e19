@@ -11,7 +11,8 @@
 
 (defn- start-message-handler [in-channel out-channel storage-path]
   {:pre [(some? in-channel)
-         (some? out-channel)]}
+         (some? out-channel)
+         (some? storage-path)]}
   (async/go-loop []
     (when-let [message (async/<! in-channel)]
       (log/debug (str "Raw message : " message))
@@ -75,14 +76,15 @@
       (do
         ;; Init storage
         ;; Check if DB file already exists, otherwise create a new
-        (fs/save [] storage-path)
+        (when-not (.exists (clojure.java.io/file storage-path))
+          (fs/save [] storage-path))
         (assoc component :message-handler (start-message-handler
                                            (:in-channel event-file-storage-channels)
                                            (:out-channel event-file-storage-channels)
                                            storage-path)))))
   (stop [component]
     (log/report "Stopping EventFileStorage")
-    (assoc component :message-handler nil :event-file-storage-channels nil :storage-path nil)))
+    (assoc component :message-handler nil :event-file-storage-channels nil)))
 
 (defn create-event-file-storage [storage-path]
   (map->EventFileStorage {:storage-path storage-path}))

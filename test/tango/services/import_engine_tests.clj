@@ -49,8 +49,7 @@
       (is (not= nil (:id-generator-fn import-engine)))
 
       (is (= nil (:file-handler-channels stopped-engine)))
-      (is (= nil (:message-handler stopped-engine)))
-      (is (= nil (:id-generator-fn stopped-engine))))))
+      (is (= nil (:message-handler stopped-engine))))))
 
 (deftest system-component-properties
   (testing "Service is a well behavied system service"

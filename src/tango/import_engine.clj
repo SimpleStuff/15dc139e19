@@ -49,7 +49,7 @@
         (assoc component :message-handler message-handler))))
   (stop [component]
     (log/report "Stopping FileHandler")
-    (assoc component :message-handler nil :file-handler-channels nil :id-generator-fn nil)))
+    (assoc component :message-handler nil :file-handler-channels nil)))
 
 (defn create-file-handler [id-generator-fn]
   (map->FileHandler {:id-generator-fn id-generator-fn}))

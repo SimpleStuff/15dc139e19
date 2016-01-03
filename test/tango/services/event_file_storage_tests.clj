@@ -110,8 +110,7 @@
       (is (not= nil (:storage-path event-storage)))
 
       (is (= nil (:event-file-storage-channels stopped-event-storage)))
-      (is (= nil (:message-handler stopped-event-storage)))
-      (is (= nil (:storage-path stopped-event-storage))))))
+      (is (= nil (:message-handler stopped-event-storage))))))
 
 
 (deftest system-component-properties

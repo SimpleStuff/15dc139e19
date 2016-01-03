@@ -14,7 +14,8 @@
       (when message
         (try
           (let [topic (:topic message)
-                payload (:payload message)]
+                payload (:payload message)
+                storage-out (:out-channel storage-channels)]
             (log/trace (str "Received: " message))
             (log/info (str "Received Topic: [" topic "]"))
             (match [topic payload]
@@ -24,7 +25,7 @@
                                                  :payload t}]
                                                (async/timeout 2000)])]
                      (if tx
-                       (let [[tx-result ch] (async/alts! [(:out-channel storage-channels) (async/timeout 2000)])]
+                       (let [[tx-result ch] (async/alts! [storage-out (async/timeout 2000)])]
                          (if tx-result
                            (async/put! out-channel (merge message
                                                           {:topic :event-access/transaction-result
@@ -33,25 +34,24 @@
                                                            {:topic :event-access/transaction-result-timeout
                                                             :payload :time-out}))))))
                    [:event-access/query q]
-                   (do
-                     ;; send query to storage or timeout
-                     (let [[v c] (async/alts! [[(:in-channel storage-channels)
-                                                {:topic :event-file-storage/query
-                                                 :payload q}]
-                                               (async/timeout 2000)])]
-                       ;; if the query was picked up, wait for the result, else timeout
-                          (if v
-                            (let [[result ch] (async/alts! [(:out-channel storage-channels) (async/timeout 2000)])]
-                              (if result
-                                (async/put! out-channel (merge message
-                                                               {:topic :event-access/query-result
-                                                                :payload (:payload result)}))
-                                (async/put! out-channel (merge message
-                                                           {:topic :event-file-storage/query-result-timeout
-                                                            :payload :time-out}))))
-                            (async/put! out-channel (merge message
-                                                           {:topic :event-file-storage/query-timeout
-                                                            :payload :time-out})))))
+                   ;; send query to storage or timeout
+                   (let [[v c] (async/alts! [[(:in-channel storage-channels)
+                                              {:topic :event-file-storage/query
+                                               :payload q}]
+                                             (async/timeout 2000)])]
+                     ;; if the query was picked up, wait for the result, else timeout
+                     (if v
+                       (let [[result ch] (async/alts! [storage-out (async/timeout 2000)])]
+                         (if result
+                           (async/put! out-channel (merge message
+                                                          {:topic :event-access/query-result
+                                                           :payload (:payload result)}))
+                           (async/put! out-channel (merge message
+                                                          {:topic :event-file-storage/query-result-timeout
+                                                           :payload :time-out}))))
+                       (async/put! out-channel (merge message
+                                                      {:topic :event-file-storage/query-timeout
+                                                       :payload :time-out}))))
                  
                    [:event-access/ping p]
                    (async/put! out-channel (merge message {:topic :event-access/pong}))

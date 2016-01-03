@@ -146,14 +146,17 @@
   [:div
    [:input.btn.btn-default {:type "button" :value "Tävlingar"
                             :on-click #(dispatch [:select-page :start-page])}]
-   [:input.btn.btn-default {:type "button" :value "Classes"
-                            :on-click #(dispatch [:select-page :classes])}]
-   [:input.btn.btn-default {:type "button" :value "Time Schedule"
-                            :on-click #(dispatch [:select-page :events])}]
-   [:input.btn.btn-default {:type "button" :value "Adjudicators"
-                            :on-click #(dispatch [:select-page :adjudicators])}]
-   [:input.btn.btn-default {:type "button" :value "Adjudicator panels"
-                            :on-click #(dispatch [:select-page :adjudicator-panels])}]])
+   (when (not= (:competition @app-state) {})
+     [:div
+      [:h3 (:competition/name (:competition @app-state))]
+      [:input.btn.btn-default {:type "button" :value "Classes"
+                               :on-click #(dispatch [:select-page :classes])}]
+      [:input.btn.btn-default {:type "button" :value "Time Schedule"
+                               :on-click #(dispatch [:select-page :events])}]
+      [:input.btn.btn-default {:type "button" :value "Adjudicators"
+                               :on-click #(dispatch [:select-page :adjudicators])}]
+      [:input.btn.btn-default {:type "button" :value "Adjudicator panels"
+                               :on-click #(dispatch [:select-page :adjudicator-panels])}]])])
 
 (defn time-schedule-component []
   [:div
@@ -208,7 +211,8 @@
            [:td (:competition/location competition)]])]]]
      [:div
       [:input.btn.btn-default {:type "button" :value "Ny tävling"
-                               :on-click #(dispatch [:select-page :new-competition])}]
+                               :on-click #(log "TODO") ;#(dispatch [:select-page :new-competition])
+                               }]
       [:span.btn.btn-default.btn-file
        "Importera.."
        [:input {:type "file" :onChange #(on-click-import-file %)}]]
@@ -283,7 +287,16 @@
          [:chsk/recv [:event-manager/query-result payload]]
          (do
            (log (str "Query result " data))
-           (swap! app-state #(merge % {:competitions payload})))
+           ;; VERY TEMPORARY (KILL ME IF I DO NOT FIX IT)
+           ;; Need to make difference between query for all comps. vs query for details for a comp.
+           (if (vector? payload)
+             (do
+               (log "Init Q-res ")
+               (swap! app-state #(merge % {:competitions payload})))
+             (do
+               (log "Details Q-res")
+               (swap! app-state #(merge % {:competition payload
+                                           :selected-page :classes})))))
          [:chsk/state d]
          (if (:first-open? d)
            (do

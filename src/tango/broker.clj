@@ -22,7 +22,7 @@
                                      [[(:in-channel file-handler-channels)
                                        message]
                                       (async/timeout 500)])]
-             (when (= nil import)
+             (when (nil? import)
                (async/put! client-in-channel (merge message
                                               {:topic :file/import
                                                :payload :time-out}))))
@@ -32,7 +32,7 @@
                                (merge message
                                       {:topic :event-access/transact})]
                               (async/timeout 500)])]
-             (when (= nil tx)
+             (when (nil? tx)
                (async/put! client-in-channel (merge message
                                               {:topic :event-access/transact
                                                :payload :time-out}))))
@@ -43,15 +43,16 @@
                                       {:topic :event-manager/transaction-result
                                        :payload payload})]
                               (async/timeout 500)])]
-             (when (= nil tx)
-               {:topic :broker/unknown-topic :payload {:topic topic}}))
+             (when (nil? tx)
+               (merge message
+                      {:topic :event-access/transaction-result :payload :time-out})))
            [:event-manager/query q]
            (let [[query query-ch] (async/alts!!
                                    [[(:in-channel event-access-channels)
                                      (merge message
                                             {:topic :event-access/query})]
                               (async/timeout 500)])]
-             (when (= nil query)
+             (when (nil? query)
                (async/put! client-in-channel (merge message
                                               {:topic :event-access/query
                                                :payload :time-out}))))
@@ -62,14 +63,15 @@
                                       {:topic :event-manager/query-result
                                        :payload payload})]
                               (async/timeout 500)])]
-             (when (= nil tx)
-               {:topic :broker/unknown-topic :payload {:topic topic}}))
+             (when (nil? tx)
+               (merge message
+                      {:topic :event-manager/query-result :payload :time-out})))
            :else
            (let [[unknown ch] (async/alts!!
                                [[client-in-channel
                                  {:sender sender :topic :broker/unknown-topic :payload {:topic topic}}]
                                 (async/timeout 500)])]
-             (when (= nil unknown)
+             (when (nil? unknown)
                {:topic :broker/unknown-topic :payload {:topic topic}})))))
 
 ;; TODO - mapping :out-channels is not a greate idea, if we get a nil all msg procs
