@@ -17,8 +17,17 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Tests of complete competitions
 
+(deftest import-dance-perfect-competition-file-stream
+  (testing "Import from file stream"
+    (let [current-id (atom 0)
+          file-stream (slurp (str u/examples-folder "small-example.xml"))]
+      (is (= (imp/import-file-stream
+              file-stream
+              #(swap! current-id inc))
+             u/expected-small-example)))))
+
 (deftest import-dance-perfect-competition
-  (testing "Import competition name of Dance Perfect file"  
+  (testing "Import competition from a Dance Perfect file"  
     (is (let [current-id (atom 0)]
           (= (imp/competition-xml->map u/small-example #(swap! current-id inc))
              u/expected-small-example)))
@@ -80,4 +89,30 @@
              {:competition/name "TurboMegatävling"
               :competition/date (tcr/to-date (tc/date-time 2014 11 22))
               :competition/location "THUNDERDOME"})))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Edge tests
+(deftest import-file-stream-edges
+  (testing "Input should be validated"
+    (let [file-stream (slurp (str u/examples-folder "small-example.xml"))]
+      (is (thrown? java.lang.AssertionError
+                   (imp/import-file-stream nil nil)))
+
+      (is (thrown? java.lang.AssertionError
+                   (imp/import-file-stream file-stream nil)))
+
+      (is (thrown? java.lang.AssertionError
+                   (imp/import-file-stream nil #(inc 1)))))))
+
+(deftest import-competition-edges
+  (testing "Input should be validated"
+    (is (thrown? java.lang.AssertionError
+                 (imp/competition-xml->map nil nil)))
+
+    (is (thrown? java.lang.AssertionError
+                 (imp/competition-xml->map u/small-example nil)))
+
+    (is (thrown? java.lang.AssertionError
+                 (imp/competition-xml->map nil #(inc 1))))))
+
 

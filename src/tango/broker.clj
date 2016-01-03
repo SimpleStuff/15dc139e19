@@ -7,25 +7,72 @@
 ;; Provides useful Timbre aliases in this ns
 (log/refer-timbre)
 
-(defn create-dispatch-components [channels-connection-channels
-                                  file-handler-channels]
-  {:channels channels-connection-channels
-   :file-handler file-handler-channels})
-
-(defn message-dispatch [{:keys [topic payload sender] :as message} components]
-  (let [client-in-channel (:in-channel (:channels components))]
+(defn message-dispatch [{:keys [topic payload sender] :as message}
+                        {:keys [channel-connection-channels
+                                file-handler-channels
+                                event-access-channels] :as components}]
+  {:pre [(some? channel-connection-channels)
+         (some? file-handler-channels)
+         (some? event-access-channels)]}
+  (let [client-in-channel (:in-channel channel-connection-channels)]
+    (log/info (str "Dispatching Topic [" topic "], Sender [" sender "]"))
     (match [topic payload]
            [:file/import _]
-           (async/>!! (:in-channel (:file-handler components)) message)
+           (let [[import import-ch] (async/alts!!
+                                     [[(:in-channel file-handler-channels)
+                                       message]
+                                      (async/timeout 500)])]
+             (when (nil? import)
+               (async/put! client-in-channel (merge message
+                                              {:topic :file/import
+                                               :payload :time-out}))))
            [:file/imported _]
-           (async/>!! client-in-channel message)
-           ;; [:file/imported-new _]
-           ;; (async/>!! client-in-channel message)
-           ;; [:file/import-new _]
-           ;; (async/>!! (:in-channel (:file-handler components)) message)
-           :else (async/>!!
-                  client-in-channel
-                  {:sender sender :topic :broker/unkown-topic :payload {:topic topic}}))))
+           (let [[tx tx-ch] (async/alts!!
+                             [[(:in-channel event-access-channels)
+                               (merge message
+                                      {:topic :event-access/transact})]
+                              (async/timeout 500)])]
+             (when (nil? tx)
+               (async/put! client-in-channel (merge message
+                                              {:topic :event-access/transact
+                                               :payload :time-out}))))
+           [:event-access/transaction-result _]
+           (let [[tx tx-ch] (async/alts!!
+                             [[client-in-channel
+                               (merge message
+                                      {:topic :event-manager/transaction-result
+                                       :payload payload})]
+                              (async/timeout 500)])]
+             (when (nil? tx)
+               (merge message
+                      {:topic :event-access/transaction-result :payload :time-out})))
+           [:event-manager/query q]
+           (let [[query query-ch] (async/alts!!
+                                   [[(:in-channel event-access-channels)
+                                     (merge message
+                                            {:topic :event-access/query})]
+                              (async/timeout 500)])]
+             (when (nil? query)
+               (async/put! client-in-channel (merge message
+                                              {:topic :event-access/query
+                                               :payload :time-out}))))
+           [:event-access/query-result q]
+           (let [[tx tx-ch] (async/alts!!
+                             [[client-in-channel
+                               (merge message
+                                      {:topic :event-manager/query-result
+                                       :payload payload})]
+                              (async/timeout 500)])]
+             (when (nil? tx)
+               (merge message
+                      {:topic :event-manager/query-result :payload :time-out})))
+           :else
+           (let [[unknown ch] (async/alts!!
+                               [[client-in-channel
+                                 {:sender sender :topic :broker/unknown-topic :payload {:topic topic}}]
+                                (async/timeout 500)])]
+             (when (nil? unknown)
+               {:topic :broker/unknown-topic :payload {:topic topic}})))))
 
 ;; TODO - mapping :out-channels is not a greate idea, if we get a nil all msg procs
 ;; dies, fixit damn it!
@@ -37,26 +84,29 @@
       (when-let [[message _] (async/alts! out-chans) ]
         (log/debug (str "Broker raw message : " message))
         (when message
-          (log/info (str "Broker received : " message))
+          (log/info "Received message")
           (try
+            ;; TODO - think about if this should be in a thread or not
+            ;; might be better on main thread since else it can hide problems
             (async/thread (dispatch-fn message components-m))
             (catch Exception e
               (log/error e "Exception in MessageBroker router loop")))
           (recur))))))
 
 ;; TODO - need to fix som pub/sub pattern
-(defrecord MessageBroker [channel-connection-channels file-handler-channels]
+(defrecord MessageBroker [channel-connection-channels file-handler-channels event-access-channels]
   component/Lifecycle
   (start [component]
     (log/report "Starting MessageBroker")
     (let [broker-process (start-message-process
-                          message-dispatch
-                          (create-dispatch-components channel-connection-channels
-                                                      file-handler-channels))]
+                          message-dispatch 
+                          {:channel-connection-channels channel-connection-channels
+                           :file-handler-channels file-handler-channels
+                           :event-access-channels event-access-channels})]
       (assoc component :broker-process broker-process)))
   (stop [component]
     (log/report "Stopping MessageBroker")
-    (assoc component :broker-process nil)))
+    (assoc component :broker-process nil :file-handler-channels nil :event-access-channels nil)))
 
 (defn create-message-broker []
   (map->MessageBroker {})) 

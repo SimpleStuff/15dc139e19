@@ -45,7 +45,8 @@
   (let [adapted (sente-ws-bus-adapter-in ev-msg)]
     (log/trace "Web Socket receive: " ev-msg)
     (log/trace (str "Receive Adapted: " adapted))
-    (log/info (str "Web Socket received message from client : [" id " " event "]"))
+    (log/debug (str "Web Socket received message from client : [" id " " event "]"))
+    (log/info (str "Received Topic: [" (:topic adapted) "], Sender [" (:sender adapted) "]"))
     (async/>!! out-channel adapted)
     (log/trace (str "Web Socket sent message to out channel: " adapted))))
 
@@ -62,6 +63,7 @@
           (let [adapted (out-adapter-fn msg)]
             (log/debug (str "Sending: " msg))
             (log/debug (str "Adapted: " adapted))
+            (log/info (str "Sending Topic [" (:topic msg) "], Sender [" (:sender msg) "]"))
             (send-fn adapted))
           (catch Exception e
             (log/error e "Exception in Web-socket message send go loop")

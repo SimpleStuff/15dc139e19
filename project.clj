@@ -44,6 +44,8 @@
             [michaelblume/lein-marginalia "0.9.0"]]
 
   :source-paths ["src"]
+  :test-paths ["test" "test/services"]
+
   :hiera {:path "specs/tango-hierarchy.png"
           :vertical true
           :show-external false

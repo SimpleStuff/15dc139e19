@@ -12,7 +12,9 @@
             [tango.web-socket :as ws]
             [tango.http-server :as http]
             [tango.channels :as channels]
-            [tango.files :as files]))
+            [tango.import-engine :as import]
+            [tango.event-access :as access]
+            [tango.event-file-storage :as file-storage]))
 
 ;; Provides useful Timbre aliases in this ns
 (log/refer-timbre)
@@ -56,7 +58,8 @@
   [configuration]
   (log/report "Creating system")
   (let [{:keys [port log-file log-level id-generator-fn client-connection]} configuration
-        id-gen-fn (or id-generator-fn (fn [] (str (java.util.UUID/randomUUID))))]
+        id-gen-fn (or id-generator-fn #(java.util.UUID/randomUUID);(fn [] (str (java.util.UUID/randomUUID)))
+                      )]
     (when log-file
       ;; - everything should always be logged to file
       ;; - Production console only logg report
@@ -71,8 +74,8 @@
     (component/system-map
 
      ;; Import handling
-     :file-handler-channels (files/create-file-handler-channels)
-     :file-handler (component/using (files/create-file-handler) [:file-handler-channels])
+     :file-handler-channels (import/create-file-handler-channels)
+     :file-handler (component/using (import/create-file-handler id-gen-fn) [:file-handler-channels])
 
      ;; Client channels
      :channel-connection-channels (channels/create-channel-connection-channels)
@@ -82,11 +85,23 @@
      :ws-connection-channels (ws/create-ws-channels)
      :ws-connection (component/using (ws/create-ws-connection) [:ws-connection-channels])
      :http-server (component/using (http/create-http-server port) [:ws-connection])
-     
+
+     ;; Event Storage
+     :event-file-storage-channels (file-storage/create-event-file-storage-channels)
+     :event-file-storage (component/using (file-storage/create-event-file-storage "./file-storage.dat")
+                                     [:event-file-storage-channels])
+
+     ;; Event Access
+     :event-access-channels (access/create-event-access-channels)
+     :event-access (component/using (access/create-event-access)
+                                    {:event-access-channels :event-access-channels
+                                     :storage-channels :event-file-storage-channels})
+
      ;; Message broker
      :message-broker (component/using (broker/create-message-broker)
                                       {:channel-connection-channels client-connection
-                                       :file-handler-channels :file-handler-channels}))))
+                                       :file-handler-channels :file-handler-channels
+                                       :event-access-channels :event-access-channels}))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Defines a pointer to the current system.

@@ -36,7 +36,10 @@
 ;;   (atom {:competitions []}))
 
 (defonce app-state
-  (atom {:selected-page :classes
+  (atom {:selected-page :start-page
+         :import-status :import-not-started
+         :competitions []
+         ;; TODO - rename, this represents the current selected competition
          :competition {}}))
 
 (defn on-file-read [e file-reader]
@@ -49,13 +52,19 @@
   (let [file (.item (.. e -target -files) 0)
         r (js/FileReader.)]
     (set! (.-onload r) #(on-file-read % r))
-    (.readAsText r file)))
+    (.readAsText r file)
+    (swap! app-state merge {:import-status :import-started})))
 
 (defn dispatch [props]
   (let [id (first props)
         data (vec (rest props))]
     (log (str "Dispatch of " id " with data " data))
     (match [id data]
+           ;[:query ['[*] [:competition/name (:competition/name competition)]]]
+           [:query [q]]
+           (do
+             (log (str "Query for " q))
+             (chsk-send! [:event-manager/query q]))
            [:file/import [file]]
            (inc 1)
            [:select-page [new-page]]
@@ -133,23 +142,21 @@
           [:td starting]       
           [:td status]]))]]])
 
-;; TODO - make the on-click event run thoughe dispatch
-(defn import-component []
-  [:div
-   [:h2 "Importera en ny tävling : "]
-   [:input.btn.btn-primary.btn-lg {:type "file" :value "Import file"
-                                   :onChange #(on-click-import-file %)}]])
-
 (defn navigation-component []
   [:div
-   [:input.btn.btn-default {:type "button" :value "Classes"
-                            :on-click #(dispatch [:select-page :classes])}]
-   [:input.btn.btn-default {:type "button" :value "Time Schedule"
-                            :on-click #(dispatch [:select-page :events])}]
-   [:input.btn.btn-default {:type "button" :value "Adjudicators"
-                            :on-click #(dispatch [:select-page :adjudicators])}]
-   [:input.btn.btn-default {:type "button" :value "Adjudicator panels"
-                            :on-click #(dispatch [:select-page :adjudicator-panels])}]])
+   [:input.btn.btn-default {:type "button" :value "Tävlingar"
+                            :on-click #(dispatch [:select-page :start-page])}]
+   (when (not= (:competition @app-state) {})
+     [:div
+      [:h3 (:competition/name (:competition @app-state))]
+      [:input.btn.btn-default {:type "button" :value "Classes"
+                               :on-click #(dispatch [:select-page :classes])}]
+      [:input.btn.btn-default {:type "button" :value "Time Schedule"
+                               :on-click #(dispatch [:select-page :events])}]
+      [:input.btn.btn-default {:type "button" :value "Adjudicators"
+                               :on-click #(dispatch [:select-page :adjudicators])}]
+      [:input.btn.btn-default {:type "button" :value "Adjudicator panels"
+                               :on-click #(dispatch [:select-page :adjudicator-panels])}]])])
 
 (defn time-schedule-component []
   [:div
@@ -186,16 +193,73 @@
            [:td panel]
            [:td type]])))]]])
 
-(defn menu-component []
+(defn start-page-component []
+  (fn []
+    [:div
+     [:div
+      [:h2 "Mina tävlingar"]
+      [:table.table
+       [:thead
+        [:tr
+         [:th "Namn"]
+         [:th "Plats"]]]
+       [:tbody
+        (for [competition (:competitions @app-state)]
+          ^{:key competition}
+          [:tr {:on-click #(dispatch [:query ['[*] [:competition/name (:competition/name competition)]]])}
+           [:td (:competition/name competition)]
+           [:td (:competition/location competition)]])]]]
+     [:div
+      [:input.btn.btn-default {:type "button" :value "Ny tävling"
+                               :on-click #(log "TODO") ;#(dispatch [:select-page :new-competition])
+                               }]
+      [:span.btn.btn-default.btn-file
+       "Importera.."
+       [:input {:type "file" :onChange #(on-click-import-file %)}]]
+      (condp = (:import-status @app-state)
+        :import-not-started ""
+        :import-started [:h4 "Importerar.."]
+        :import-done [:h4 "Import färdig!"])]]))
+
+;; TODO - make the on-click event run thoughe dispatch
+;; http://www.abeautifulsite.net/whipping-file-inputs-into-shape-with-bootstrap-3/
+(defn import-component []
+  [:div
+   ;[:h2 "Importera en ny tävling : "]
+   [:span.btn.btn-default.btn-file
+    "Importera"
+    [:input {:type "file" :onChange #(on-click-import-file %)}]]
+   (condp = (:import-status @app-state)
+     :import-not-started ""
+     :import-started [:h4 "Importerar.."]
+     :import-done [:h4 "Import färdig!"])])
+
+;; (defn import-component []
+;;   [:div
+;;    ;[:h2 "Importera en ny tävling : "]
+;;    [:input.btn.btn-default {:type "file" :value "Importera"
+;;                             :onChange #(on-click-import-file %)}]])
+
+(defn new-competition []
   (fn []
     [:div
      [import-component]
+     [:input.btn.btn-default {:type "button" :value "Ny tävling"
+                              :on-click #(dispatch [:select-page :new-competition])}]]))
+
+(defn menu-component []
+  (fn []
+    [:div
      [navigation-component]
      (condp = (:selected-page @app-state)
+       :start-page [start-page-component]
+       :new-competition [new-competition]
        :classes [classes-component]
        :events [time-schedule-component]
        :adjudicators [adjudictors-component]
        :adjudicator-panels [adjudictor-panels-component])]))
+
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Application
@@ -212,12 +276,33 @@
          ;; TODO Match your events here <...>
          [:chsk/recv [:file/imported content]]
          (do
-           (swap! app-state #(merge % {:competition content}))
+           (swap! app-state #(merge % {:competition content
+                                       :import-status :import-done}))
            (log (str @app-state)))
-         ;; [:chsk/recv [:file/export content]]
-         ;; (handle-export)
-         [:chsk/state [:first-open _]]
-         (log "Channel socket successfully established!")
+         [:chsk/recv [:event-manager/transaction-result _]]
+         (do
+           (log "Server transacted - refresh to get latest")
+           (swap! app-state #(merge % {:import-status :import-done}))
+           (chsk-send! [:event-manager/query [[:competition/name :competition/location]]]))
+         [:chsk/recv [:event-manager/query-result payload]]
+         (do
+           (log (str "Query result " data))
+           ;; VERY TEMPORARY (KILL ME IF I DO NOT FIX IT)
+           ;; Need to make difference between query for all comps. vs query for details for a comp.
+           (if (vector? payload)
+             (do
+               (log "Init Q-res ")
+               (swap! app-state #(merge % {:competitions payload})))
+             (do
+               (log "Details Q-res")
+               (swap! app-state #(merge % {:competition payload
+                                           :selected-page :classes})))))
+         [:chsk/state d]
+         (if (:first-open? d)
+           (do
+             (log "Channel socket successfully established!")
+             (chsk-send! [:event-manager/query [[:competition/name :competition/location]]]))
+           (log (str "Channel socket state changed: " d)))
                                         ;[:chsk/state new-state] (log (str "Chsk state change: " new-state))
                                         ;[:chsk/recv payload] (log (str "Push event from server: " payload))
          :else (log (str "Unmatched event: " ev))))
