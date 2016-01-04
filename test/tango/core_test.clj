@@ -13,7 +13,9 @@
                      alts! alts!! timeout go-loop]]))
 
 ;; Turn off logging while testing
-(log/set-config! [:appenders :standard-out :enabled?] false)
+;;(log/set-config! [:appenders :standard-out :enabled?] false)
+(log/set-config! {:appenders {:standard-out {:enabled? false}}})
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Import

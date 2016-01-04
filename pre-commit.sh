@@ -2,6 +2,8 @@
 
 echo "Generating graph of namespaces (lein hiera)"
 lein hiera 
+echo "Checking dependencies versions"
+lein ancient
 echo "Running code analysis (lein kibit)"
 lein kibit
 echo "Running linter (lein eastwood)"
