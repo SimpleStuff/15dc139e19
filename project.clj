@@ -5,29 +5,32 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [;; Core
                  [org.clojure/clojure "1.7.0"]
-                 [org.clojure/core.async "0.1.346.0-17112a-alpha"]                 
+                 [org.clojure/core.async "0.2.374"]                 
                  [org.clojure/tools.namespace "0.2.10"]
                  [org.clojure/clojurescript "1.7.48"]
                  [org.clojure/core.match "0.3.0-alpha4"]
 
                  ;; Utils
-                 [com.stuartsierra/component "0.2.3"]
+                 [com.stuartsierra/component "0.3.1"]
                  [org.clojure/data.xml "0.0.8"]
                  [org.clojure/data.zip "0.1.1"]
-                 [clj-time "0.8.0"]
+                 [clj-time "0.11.0"]
+                 
+                 ;; Logging
+                 [com.taoensso/timbre "4.2.0"]
 
                  ;; Web UI
-                 [com.taoensso/sente "1.5.0"]
-                 [com.taoensso/timbre "3.4.0"]
+                 [com.taoensso/sente "1.7.0"]
+                 
 
                  [http-kit "2.1.19"]
 
-                 [ring                      "1.3.2"]
+                 [ring                      "1.4.0"]
                  [ring/ring-defaults        "0.1.5"]
 
-                 [compojure "1.3.4"]
+                 [compojure "1.4.0"]
                                           
-                 [reagent "0.5.0"]
+                 [reagent "0.5.1"]
                                   
                  ; Code cleaness tools
                  [repetition-hunter "1.0.0"]
@@ -38,6 +41,7 @@
 
   
   :plugins [[lein-cljsbuild "1.0.6"]
+            [lein-ancient "0.6.8"]
             [lein-hiera "0.9.0"]
             [lein-kibit "0.1.2"]
             [jonase/eastwood "0.2.1"]

@@ -7,6 +7,7 @@
   (:require [com.stuartsierra.component :as component]
             [clojure.tools.namespace.repl :refer [refresh]]
             [taoensso.timbre :as log]
+            [taoensso.timbre.appenders.core :as appenders]
 
             [tango.broker :as broker]
             [tango.web-socket :as ws]
@@ -58,19 +59,14 @@
   [configuration]
   (log/report "Creating system")
   (let [{:keys [port log-file log-level id-generator-fn client-connection]} configuration
-        id-gen-fn (or id-generator-fn #(java.util.UUID/randomUUID);(fn [] (str (java.util.UUID/randomUUID)))
-                      )]
-    (when log-file
-      ;; - everything should always be logged to file
-      ;; - Production console only logg report
-      ;; - Dev console can be set
-      (log/set-config! [:appenders :standard-out :enabled?] true)
-      (log/set-config! [:appenders :standard-out :min-level] :error)
-      (log/report "Enable file logging to " log-file)
-      (log/set-config! [:appenders :spit :enabled?] true)
-      (log/set-config! [:shared-appender-config :spit-filename] log-file))
-    (if log-level
-      (log/set-level! log-level))
+        id-gen-fn (or id-generator-fn #(java.util.UUID/randomUUID))]
+   
+    (log/merge-config! {:level log-level
+
+                        :appenders {:println {:min-level :error}
+
+                                    :spit (appenders/spit-appender {:fname log-file})}})
+
     (component/system-map
 
      ;; Import handling
