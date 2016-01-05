@@ -11,4 +11,6 @@ pom.xml.asc
 *~
 /resources/public/js
 /test/repetitions.txt
+figwheel_server.log
+file-storage.dat
 
