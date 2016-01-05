@@ -1,4 +1,4 @@
-(ns tango.client
+(ns tango.cljs.client
   (:require-macros
    [cljs.core.async.macros :as asyncm :refer (go go-loop)])
   (:require [reagent.core :as reagent :refer [atom]]
@@ -13,6 +13,7 @@
 ;http://getbootstrap.com/components/
 ;;; Utils
 (enable-console-print!)
+
 
 (defn log [m]
   (.log js/console m))
@@ -264,8 +265,18 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Application
 
-(defn ^:export run []
-  (reagent/render-component [menu-component] (.-body js/document)))
+(reagent/render-component [menu-component]
+                          (. js/document (getElementById "app")))
+
+;; (defn ^:export run []
+;;   (reagent/render-component [menu-component] (.-body js/document)))
+
+(defn on-js-reload []
+  ;; optionally touch your app-state to force rerendering depending on
+  ;; your application
+  ;; (swap! app-state update-in [:__figwheel_counter] inc)
+)
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Socket handling

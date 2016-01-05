@@ -3,6 +3,7 @@
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
+
   :dependencies [;; Core
                  [org.clojure/clojure "1.7.0"]
                  [org.clojure/core.async "0.2.374"]                 
@@ -36,11 +37,10 @@
                  [repetition-hunter "1.0.0"]
 
                  ;; Cljs
-                 [com.andrewmcveigh/cljs-time "0.3.14"]
-                 ]
+                 [com.andrewmcveigh/cljs-time "0.3.14"]]
 
-  
-  :plugins [[lein-cljsbuild "1.0.6"]
+  :plugins [[lein-figwheel "0.5.0-2"]
+            [lein-cljsbuild "1.0.6"]
             [lein-ancient "0.6.8"]
             [lein-hiera "0.9.0"]
             [lein-kibit "0.1.2"]
@@ -48,6 +48,9 @@
             [michaelblume/lein-marginalia "0.9.0"]]
 
   :source-paths ["src"]
+
+  :clean-targets ^{:protect false} ["resources/public/js/out" "target"]
+
   :test-paths ["test" "test/services"]
 
   :hiera {:path "specs/tango-hierarchy.png"
@@ -57,14 +60,29 @@
           :trim-ns-prefix true
           :ignore-ns #{}}
 
-  :cljsbuild {:builds [{:id "dev"
-                        :source-paths ["src/tango/cljs" "src"]
-                        :compiler {:output-to     "resources/public/js/app.js"
-                                   :output-dir    "resources/public/js/out"
-                                   :source-map    "resources/public/js/out.js.map"
-                                   :externs       ["react/externs/react.js"]
-                                   :optimizations :none
-                                   :pretty-print  true}}]}
+  :cljsbuild {:builds
+              [{:id "dev"
+                :source-paths ["src/tango/cljs" "src"]
+
+                :figwheel {:on-jsload "tango.cljs.client/on-js-reload"}
+
+                :compiler {:main tango.cljs.client
+                           :asset-path "js/out"
+                           :output-to     "resources/public/js/app.js"
+                           :output-dir    "resources/public/js/out"
+                           :source-map    "resources/public/js/out.js.map"
+                           :optimizations :none
+                           :pretty-print  true}}
+
+               ;; This next build is an compressed minified build for
+               ;; production. You can build this with:
+               ;; lein cljsbuild once min
+               {:id "min"
+                :source-paths ["src"]
+                :compiler {:output-to "resources/public/js/app.js"
+                           :main tango.cljs.client
+                           :optimizations :advanced
+                           :pretty-print false}}]}
   
   :main ^:skip-aot tango.core
   :target-path "target/%s"
