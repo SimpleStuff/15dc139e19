@@ -266,7 +266,7 @@
 ;; Application
 
 (reagent/render-component [menu-component]
-                          (. js/document (getElementById "app")))
+                          (.getElementById js/document "app"))
 
 ;; (defn ^:export run []
 ;;   (reagent/render-component [menu-component] (.-body js/document)))

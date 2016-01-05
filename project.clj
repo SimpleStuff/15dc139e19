@@ -86,7 +86,21 @@
   
   :main ^:skip-aot tango.core
   :target-path "target/%s"
-  :profiles {:uberjar {:aot :all}})
+  :profiles {:uberjar {:aot :all}}
+
+  :aliases {"quality" ["do"
+                       ;; excluding constant test due to not working well with logging
+                       ["eastwood" "{:exclude-linters [:constant-test]}"]
+                       ["kibit"]
+                       ["ancient"]]
+
+            "doc" ["do"
+                   ["hiera"]
+                   ["marg" "src" "test" "specs" "--dir" "./doc"]]
+
+            "pre-commit" ["do"
+                          ["test"]
+                          ["quality"]]})
 
 ;; fixa simple check
 ;; https://github.com/jakemcc/lein-test-refresh
