@@ -235,71 +235,126 @@
      :import-started [:h4 "Importerar.."]
      :import-done [:h4 "Import färdig!"])])
 
-;; (defn import-component []
-;;   [:div
-;;    ;[:h2 "Importera en ny tävling : "]
-;;    [:input.btn.btn-default {:type "file" :value "Importera"
-;;                             :onChange #(on-click-import-file %)}]])
 
 (defn new-competition []
-  [:div.panel.panel-primary
-   {:on-click #(log "TODO")
-    :class "panel-primary" } 
-   
-   [:div.panel-heading
-    [:div.panel-title "Skapa ny tävling"]]
-   
-   [:div.panel-body
-    [:form
-     [:div.row
-      [:div.col-sm-4
-       [:div.form-group
-        [:label.control-label {:for "inputName"} "Namn"]
-        [:input.form-control
-         {:id "inputName"
-          :type "text"
-          :placeholder "Tävlingens namn"
-          :value "TODO"
-          :on-change #(dispatch [:new-competition-name-changed (-> % .-target .-value)])}]]]
+  [:div
+   [:h3 "Skapa ny tävling"]
 
-      [:div.col-sm-3
-       [:div.form-group
-        [:label.control-label {:for "inputPlace"} "Plats"]
-        [:input.form-control
-         {:id "inputPlace"
-          :type "text"
-          :placeholder "Plats"
-          :value "TODO"
-          :on-change #(dispatch [:new-competition-place-changed (-> % .-target .-value)])}]]]
+   [:form
+    [:div.row
+     [:div.col-sm-4
+      [:div.form-group
+       [:label.control-label {:for "inputName"} "Namn"]
+       [:input.form-control
+        {:id "inputName"
+         :type "text"
+         :placeholder "Tävlingens namn"
+         :value "TODO"
+         :on-change #(dispatch [:new-competition-name-changed (-> % .-target .-value)])}]]]]
 
-      ;; Date
-      [:div.col-sm-2
-       [:div.form-group
-        [:label.control-label {:for "inputDate"} "Datum"]
-        [:input.form-control
-         {:id "inputDate"
-          :type "text"
-          :placeholder "Datum"
-          :value "TODO"
-          :on-change #(dispatch [:new-competition-date-changed (-> % .-target .-value)])}]]]
+    [:div.row
+     [:div.col-sm-4
+      [:div.form-group
+       [:label.control-label {:for "inputPlace"} "Plats"]
+       [:input.form-control
+        {:id "inputPlace"
+         :type "text"
+         :placeholder "Plats"
+         :value "TODO"
+         :on-change #(dispatch [:new-competition-place-changed (-> % .-target .-value)])}]]]]
 
-      ;; Organized by
-      [:div.col-sm-3
-       [:div.form-group
-        [:label.control-label {:for "inputOrg"} "Organisatör"]
-        [:input.form-control
-         {:id "inputOrg"
-          :type "text"
-          :placeholder "Organistation"
-          :value "TODO"
-          :on-change #(dispatch [:new-competition-organisation-changed (-> % .-target .-value)])}]]]]]]
+    [:div.row
+     [:div.col-sm-4
+      [:div.form-group
+       [:label.control-label {:for "inputDate"} "Datum"]
+       [:input.form-control
+        {:id "inputDate"
+         :type "text"
+         :placeholder "Datum"
+         :value "TODO"
+         :on-change #(dispatch [:new-competition-date-changed (-> % .-target .-value)])}]]]]
 
-   [:div.panel-footer.clearfix
-    [:div.pull-right
-     [:button.btn.btn-primary
-      {:type "button" 
-       :value "Spara"
-       :on-click #(dispatch [:selected-competition-commit])} "Spara"]]]])
+    [:div.row
+     [:div.col-sm-4
+      [:div.form-group
+       [:label.control-label {:for "inputOrg"} "Organisatör"]
+       [:input.form-control
+        {:id "inputOrg"
+         :type "text"
+         :placeholder "Organistation"
+         :value "TODO"
+         :on-change #(dispatch [:new-competition-organisation-changed (-> % .-target .-value)])}]]]
+     ]
+
+    ;; Options checkboxes
+    [:div.row
+     [:div.col-sm-12
+      [:div.form-group
+       [:label {:for "Options"} "Inställningar"]
+       [:div.checkbox
+        [:label
+         [:input
+          {:type "checkbox" :checked true}]  "Same heat in all dances"]
+        ]
+
+       [:div.checkbox
+        [:label
+         [:input
+          {:type "checkbox"}]  "Random order in heats"]]
+
+       [:div.checkbox
+        [:label
+         [:input
+          {:type "checkbox"}]  "Heat text on Adjudicator sheets"]]
+
+       [:div.checkbox
+        [:label
+         [:input
+          {:type "checkbox"}]  "Names on Number signs"]]
+
+       [:div.checkbox
+        [:label
+         [:input
+          {:type "checkbox"}]  "Clubs on Number signs"]]
+
+       [:div.checkbox
+        [:label
+         [:input
+          {:type "checkbox"}]  "Enter marks by Adjudicators, Qual/Semi"]]
+
+       [:div.checkbox
+        [:label
+         [:input
+          {:type "checkbox"}]  "Enter marks by Adjudicators, Final"]]
+
+       [:div.checkbox
+        [:label
+         [:input
+          {:type "checkbox"}]  "Reversed Final entry (NZ)"]]
+
+        [:div.checkbox
+        [:label
+         [:input
+          {:type "checkbox"}]  "Preview Printouts"]]
+
+       [:div.checkbox
+        [:label
+         [:input
+          {:type "checkbox"}]  "Select paper size before each printout"]]
+
+       [:div.checkbox
+        [:label
+         [:input
+          {:type "checkbox"}]  "Do not print Adjudicators letters (A-ZZ)"]]
+
+       [:div.checkbox
+        [:label
+         [:input
+          {:type "checkbox"}]  "Print with Chinese character set"]]
+       ]]]
+
+    [:button.btn.btn-primary {:type "button"} "Spara"]]
+   ])
 
 (defn menu-component []
   (fn []
