@@ -85,10 +85,26 @@
   (testing "Import competition data of Dance Perfect file"
     (let [current-id (atom 0)]
       (is (= (select-keys (imp/competition-xml->map u/small-example #(swap! current-id inc))
-                          [:competition/name :competition/date :competition/location])
+                          [:competition/name :competition/date :competition/location :competition/options])
              {:competition/name "TurboMegatävling"
               :competition/date (tcr/to-date (tc/date-time 2014 11 22))
-              :competition/location "THUNDERDOME"})))))
+              :competition/location "THUNDERDOME"
+              :competition/options
+              {:dance-competition/adjudicator-order-final true
+               :dance-competition/adjudicator-order-other true
+               :dance-competition/heat-text-on-adjudicator-sheet true
+               :dance-competition/same-heat-all-dances true
+               :dance-competition/skip-adjudicator-letter true
+               :dance-competition/name-on-number-sign true,
+               :dance-competition/club-on-number-sign true,
+               :dance-competition/random-order-in-heats true
+                              
+               :presentation/arial-font "SimSun"
+               :presentation/courier-font "NSimSun"
+               :presentation/chinese-fonts true
+               
+               :printer/preview true
+               :printer/printer-select-paper true}})))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Edge tests

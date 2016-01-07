@@ -1,6 +1,20 @@
 {:competition/name "TurboMegatävling",
  :competition/date #inst "2014-11-22T00:00:00.000-00:00",
  :competition/location "THUNDERDOME",
+ :competition/options
+ {:dance-competition/same-heat-all-dances true,
+  :presentation/chinese-fonts true,
+  :dance-competition/heat-text-on-adjudicator-sheet true,
+  :dance-competition/name-on-number-sign true,
+  :dance-competition/skip-adjudicator-letter true,
+  :presentation/courier-font "NSimSun",
+  :dance-competition/adjudicator-order-final true,
+  :dance-competition/random-order-in-heats true,
+  :dance-competition/club-on-number-sign true,
+  :dance-competition/adjudicator-order-other true,
+  :presentation/arial-font "SimSun",
+  :printer/preview true,
+  :printer/printer-select-paper true}
  :competition/panels
  [{:adjudicator-panel/name "1",
    :adjudicator-panel/id 4,

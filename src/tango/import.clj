@@ -18,6 +18,12 @@
           (Integer/parseInt (clojure.string/replace prepared-string #"\+" ""))
           :else s)))
 
+(defn- to-boolean [s]
+  {:pre [(string? s)]}
+  (if (= "1" s)
+    true
+    false))
+
 (defn- start-time-to-date [time-str date]
   (let [[hh mm] (map to-number (clojure.string/split time-str #":"))]
     (when (and (number? hh) (number? mm))
@@ -38,20 +44,22 @@
 ;; Makers
 
 (defn make-competition
-  [name date location panels adjudicators activites classes]
+  [name date location options panels adjudicators activites classes]
   {:competition/name name
    :competition/date date
    :competition/location location
+   :competition/options options
    :competition/panels panels
    :competition/adjudicators adjudicators
    :competition/activities activites
    :competition/classes classes})
 
 (defn make-competition-data
-  [name date location]
+  [name date location options]
   {:competition/name name
    :competition/date date
-   :competition/location location})
+   :competition/location location
+   :competition/options options})
 
 (defn make-adjudicator
   [id name country]
@@ -113,22 +121,62 @@
     -1
     (event-number-attr-as-number loc)))
 
+(defn- get-boolean-attr [loc attr]
+  (to-boolean (zx/attr loc attr)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Xml import
-(defn- get-metadata [loc]
-  (let [competition-data (first (zx/xml-> loc :CompData))]
-    {:dance-perfect/flags {:adj-order-final (to-number (zx/attr competition-data :AdjOrderFinal))
-                           :adj-order-other (to-number (zx/attr competition-data :AdjOrderOther))
-                           :same-heat-all-dances (to-number (zx/attr competition-data :SameHeatAllDances))
-                           :preview (to-number (zx/attr competition-data :PreView))
-                           :heat-text (to-number (zx/attr competition-data :HeatText))
-                           :name-on-number-sign (to-number (zx/attr competition-data :NameOnNumberSign))
-                           :club-on-number-sign (to-number (zx/attr competition-data :ClubOnNumberSign))
-                           :skip-adj-letter (to-number (zx/attr competition-data :SkipAdjLetter))
-                           :printer-select-paper (to-number (zx/attr competition-data :PrinterSelectPaper))
-                           :chinese-fonts (to-number (zx/attr competition-data :ChineseFonts))}
-     :dance-perfect/fonts {:arial-font "SimSun"
-                           :courier-font "NSimSun"}}))
+
+(defn- get-options [competition-data]
+  (let [get-flag (partial get-boolean-attr competition-data)
+        dance-mappings [[:same-heat-all-dances :SameHeatAllDances]
+                        [:random-order-in-heats :RadomHeats]
+                        [:heat-text-on-adjudicator-sheet :HeatText]
+                        [:name-on-number-sign :NameOnNumberSign]
+                        [:club-on-number-sign :ClubOnNumberSign]
+                        [:adjudicator-order-other :AdjOrderOther]
+                        [:adjudicator-order-final :AdjOrderFinal]
+                        [:skip-adjudicator-letter :SkipAdjLetter]]
+        dance-nsp "dance-competition"
+        dance-flags (mapv (fn [[k attr]]
+                            (hash-map (keyword dance-nsp (name k)) (get-flag attr)))
+                          dance-mappings)
+
+        presentation-mappings [[:arial-font ]]]
+    (merge
+     (apply merge dance-flags)
+     {:presentation/arial-font (zx/attr competition-data :ArialFont)
+      :presentation/courier-font (zx/attr competition-data :CourierFont)
+      :presentation/chinese-fonts (get-flag :ChineseFonts)
+
+      :printer/preview (get-flag :PreView)
+      :printer/printer-select-paper (get-flag :PrinterSelectPaper)})
+    ))
+    ;; {:dance-perfect/flags {;; Same heat in all dances
+    ;;                        :same-heat-all-dances (get-flag :SameHeatAllDances)
+    ;;                        ;; Random order in heats
+    ;;                        :random-order-in-heats (get-flag :RadomHeats)
+    ;;                        ;; Heat text on Adjudicator sheets
+    ;;                        :heat-text (get-flag :HeatText)
+    ;;                        ;; Names on Number signs
+    ;;                        :name-on-number-sign (get-flag :NameOnNumberSign)
+    ;;                        ;; Clubs on Number signs
+    ;;                        :club-on-number-sign (get-flag :ClubOnNumberSign)
+    ;;                        ;; Enter marks by Adjudicators, Qual/Semi
+    ;;                        :adj-order-other (get-flag :AdjOrderOther)
+    ;;                        ;; Enter marks by Adjudicators, Final
+    ;;                        :adj-order-final (get-flag :AdjOrderFinal)         
+    ;;                        ;; Preview Printouts
+    ;;                        :preview (get-flag :PreView)
+    ;;                        ;; Select paper size before each printout
+    ;;                        :printer-select-paper (get-flag :PrinterSelectPaper)
+    ;;                        ;; Do not print Adjudicators letters (A-ZZ)
+    ;;                        :skip-adj-letter (get-flag :SkipAdjLetter)
+    ;;                        ;; Print with Chinese character set
+    ;;                        :chinese-fonts (get-flag :ChineseFonts)}
+
+    ;;  :dance-perfect/fonts {:arial-font "SimSun"
+    ;;                        :courier-font "NSimSun"}}))
 
 (defn- adjudicators->map [adjudicator-loc id-generator-fn]
   (assoc
@@ -144,7 +192,8 @@
    (tcr/to-date
     (tf/parse (tf/formatter "yyyy-MM-dd")
               (zx/attr xml-loc :Date)))
-   (zx/attr xml-loc :Place)))
+   (zx/attr xml-loc :Place)
+   (get-options xml-loc)))
 
 (defn- panel->map [panel-loc id-generator-fn adjudicators]
   (for [panel panel-loc]
@@ -423,6 +472,7 @@
      (:competition/name comp-data)
      (:competition/date comp-data)
      (:competition/location comp-data)
+     (:competition/options comp-data)
      (mapv #(dissoc % :dp/panel-id) dp-panels) ;(adjudicator-panels-xml->map xml id-generator-fn dp-adjudicators)
      (mapv #(dissoc % :dp/temp-id) dp-adjudicators)
      (make-activities (mapv :temp/activity dp-rounds) classes (mapcat :class/rounds classes))
