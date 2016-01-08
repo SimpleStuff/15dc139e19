@@ -8,6 +8,12 @@
             [clojure.data.zip.xml :as zx]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Export demo
+;; (print (xml/indent-str (xml/sexp-as-element
+;;                                       [:AdjPanelList
+;;                                        [:AdjList {:Qty "3"}
+;;                                         [:Adjudicator {:Seq "0" :Name "Anders" :Countr ""}]]])))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Utils
 (defn- to-number [s]
   {:pre [(string? s)]}
