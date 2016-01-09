@@ -8,8 +8,10 @@
                  [org.clojure/clojure "1.7.0"]
                  [org.clojure/core.async "0.2.374"]                 
                  [org.clojure/tools.namespace "0.2.10"]
-                 [org.clojure/clojurescript "1.7.48"]
+                 [org.clojure/clojurescript "1.7.228"]
                  [org.clojure/core.match "0.3.0-alpha4"]
+
+                 [datascript "0.13.3"]
 
                  ;; Utils
                  [com.stuartsierra/component "0.3.1"]
@@ -22,7 +24,6 @@
 
                  ;; Web UI
                  [com.taoensso/sente "1.7.0"]
-                 
 
                  [http-kit "2.1.19"]
 
@@ -40,7 +41,7 @@
                  [com.andrewmcveigh/cljs-time "0.3.14"]]
 
   :plugins [[lein-figwheel "0.5.0-2"]
-            [lein-cljsbuild "1.0.6"]
+            [lein-cljsbuild "1.1.2"]
             [lein-ancient "0.6.8"]
             [lein-hiera "0.9.0"]
             [lein-kibit "0.1.2"]
@@ -70,7 +71,8 @@
                            :asset-path "js/out"
                            :output-to     "resources/public/js/app.js"
                            :output-dir    "resources/public/js/out"
-                           :source-map    "resources/public/js/out.js.map"
+                           ;:source-map    "resources/public/js/out.js.map"
+                           :source-map true
                            :optimizations :none
                            :pretty-print  true}}
 

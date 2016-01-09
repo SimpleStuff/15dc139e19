@@ -70,6 +70,11 @@
            (inc 1)
            [:select-page [new-page]]
            (swap! app-state merge {:selected-page new-page})
+
+           [:new-competition-name-changed [new-name]]
+           (swap! app-state (fn [current] (merge current
+                                                 {:competition
+                                                  (merge (:competition current) {:competition/name new-name})})))
            )))
 
 (defn on-export-click [e competition]
@@ -150,6 +155,8 @@
    (when (not= (:competition @app-state) {})
      [:div
       [:h3 (:competition/name (:competition @app-state))]
+      [:input.btn.btn-default {:type "button" :value "Properties"
+                               :on-click #(dispatch [:select-page :properties])}]
       [:input.btn.btn-default {:type "button" :value "Classes"
                                :on-click #(dispatch [:select-page :classes])}]
       [:input.btn.btn-default {:type "button" :value "Time Schedule"
@@ -212,7 +219,7 @@
            [:td (:competition/location competition)]])]]]
      [:div
       [:input.btn.btn-default {:type "button" :value "Ny tävling"
-                               :on-click #(log "TODO") ;#(dispatch [:select-page :new-competition])
+                               :on-click #(dispatch [:select-page :new-competition])
                                }]
       [:span.btn.btn-default.btn-file
        "Importera.."
@@ -235,18 +242,132 @@
      :import-started [:h4 "Importerar.."]
      :import-done [:h4 "Import färdig!"])])
 
-;; (defn import-component []
-;;   [:div
-;;    ;[:h2 "Importera en ny tävling : "]
-;;    [:input.btn.btn-default {:type "file" :value "Importera"
-;;                             :onChange #(on-click-import-file %)}]])
+(defn make-competition-properties-presenter [competition]
+  {:name (:competition/name competition)
+   :location (:competition/location competition)})
 
 (defn new-competition []
   (fn []
-    [:div
-     [import-component]
-     [:input.btn.btn-default {:type "button" :value "Ny tävling"
-                              :on-click #(dispatch [:select-page :new-competition])}]]))
+    (let [{:keys [name location]} (make-competition-properties-presenter (:competition @app-state))]
+      [:div
+       [:h3 "Skapa ny tävling"]
+
+       [:form
+        [:div.row
+         [:div.col-sm-4
+          [:div.form-group
+           [:label.control-label {:for "inputName"} "Namn"]
+           [:input.form-control
+            {:id "inputName"
+             :type "text"
+             :placeholder "Tävlingens namn"
+             :value name
+             :on-change #(dispatch [:new-competition-name-changed (-> % .-target .-value)])}]]]]
+
+        [:div.row
+         [:div.col-sm-4
+          [:div.form-group
+           [:label.control-label {:for "inputPlace"} "Plats"]
+           [:input.form-control
+            {:id "inputPlace"
+             :type "text"
+             :placeholder "Plats"
+             :value location
+             :on-change #(dispatch [:new-competition-place-changed (-> % .-target .-value)])}]]]]
+
+        [:div.row
+         [:div.col-sm-4
+          [:div.form-group
+           [:label.control-label {:for "inputDate"} "Datum"]
+           [:input.form-control
+            {:id "inputDate"
+             :type "text"
+             :placeholder "Datum"
+             :value "TODO"
+             :on-change #(dispatch [:new-competition-date-changed (-> % .-target .-value)])}]]]]
+
+        [:div.row
+         [:div.col-sm-4
+          [:div.form-group
+           [:label.control-label {:for "inputOrg"} "Organisatör"]
+           [:input.form-control
+            {:id "inputOrg"
+             :type "text"
+             :placeholder "Organistation"
+             :value "TODO"
+             :on-change #(dispatch [:new-competition-organisation-changed (-> % .-target .-value)])}]]]
+         ]
+
+        ;; Options checkboxes
+        [:div.row
+         [:div.col-sm-12
+          [:div.form-group
+           [:label {:for "Options"} "Inställningar"]
+           [:div.checkbox
+            [:label
+             [:input
+              {:type "checkbox" :checked true}]  "Same heat in all dances"]
+            ]
+
+           [:div.checkbox
+            [:label
+             [:input
+              {:type "checkbox"}]  "Random order in heats"]]
+
+           [:div.checkbox
+            [:label
+             [:input
+              {:type "checkbox"}]  "Heat text on Adjudicator sheets"]]
+
+           [:div.checkbox
+            [:label
+             [:input
+              {:type "checkbox"}]  "Names on Number signs"]]
+
+           [:div.checkbox
+            [:label
+             [:input
+              {:type "checkbox"}]  "Clubs on Number signs"]]
+
+           [:div.checkbox
+            [:label
+             [:input
+              {:type "checkbox"}]  "Enter marks by Adjudicators, Qual/Semi"]]
+
+           [:div.checkbox
+            [:label
+             [:input
+              {:type "checkbox"}]  "Enter marks by Adjudicators, Final"]]
+
+           ;; NON EXISTING IN DP?
+           [:div.checkbox
+            [:label
+             [:input
+              {:type "checkbox"}]  "Reversed Final entry (NZ)"]]
+
+           [:div.checkbox
+            [:label
+             [:input
+              {:type "checkbox"}]  "Preview Printouts"]]
+
+           [:div.checkbox
+            [:label
+             [:input
+              {:type "checkbox"}]  "Select paper size before each printout"]]
+
+           [:div.checkbox
+            [:label
+             [:input
+              {:type "checkbox"}]  "Do not print Adjudicators letters (A-ZZ)"]]
+
+           [:div.checkbox
+            [:label
+             [:input
+              {:type "checkbox"}]  "Print with Chinese character set"]]
+           ]]]
+
+        [:button.btn.btn-primary {:type "button"} "Spara"]]
+       ])))
 
 (defn menu-component []
   (fn []
@@ -255,6 +376,7 @@
      (condp = (:selected-page @app-state)
        :start-page [start-page-component]
        :new-competition [new-competition]
+       :properties [new-competition]
        :classes [classes-component]
        :events [time-schedule-component]
        :adjudicators [adjudictors-component]
