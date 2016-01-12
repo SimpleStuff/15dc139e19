@@ -23,6 +23,7 @@
                  [com.taoensso/timbre "4.2.0"]
 
                  ;; Web UI
+                 [org.omcljs/om "1.0.0-alpha22"]
                  [com.taoensso/sente "1.7.0"]
 
                  [http-kit "2.1.19"]
@@ -32,7 +33,7 @@
 
                  [compojure "1.4.0"]
                                           
-                 [reagent "0.5.1"]
+                 ;[reagent "0.5.1"]
                                   
                  ; Code cleaness tools
                  [repetition-hunter "1.0.0"]
