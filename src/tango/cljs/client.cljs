@@ -94,6 +94,7 @@
   (do
     (log (apply str (map :competition/name d)))
     ;(d/transact! (d/db conn) )
+    (d/transact! conn [{:db/id 1 :competition/name (apply str (map :competition/name d))}])
     ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -117,9 +118,10 @@
 
 (defmethod event-msg-handler :chsk/recv
   [{:as ev-msg :keys [?data]}]
-  (do
-    (log (str "Push event from server: " ?data))
-    (handle-query-result (second ?data))))
+  (let [[topic payload] ?data]
+    (log (str "Push event from server: " ev-msg))
+    (when (= topic :event-manager/query-result)
+      (handle-query-result (second ?data)))))
 
 (defmethod event-msg-handler :chsk/handshake
   [{:as ev-msg :keys [?data]}]
@@ -154,6 +156,7 @@
   [{:keys [state query] :as env} key params]
   {:value (do
             ;(log (str "Env: " env " --- Key : " key " --- Params" params))
+            (log "Read app/competitions")
             (d/q '[:find [(pull ?e ?selector) ...]
                    :in $ ?selector
                    :where [?e :competition/name]]
@@ -176,10 +179,15 @@
 ;; read operations should follow a mutation. :tempids will be discussed later. 
 ;; Mutations can easily change multiple aspects of the application (think Facebook "Add Friend"). 
 ;; Adding :value with a :keys vector helps users identify stale keys which should be re-read.
+;; (defmethod mutate 'app/name
+;;   [{:keys [state]} _ _]
+;;   {:value {:keys [:competition/name]}
+;;    :action (fn [] (d/transact! state [{:db/id 1 :competition/name "B"}]))})
+
 (defmethod mutate 'app/name
   [{:keys [state]} _ _]
-  {:value {:keys [:competition/name]}
-   :action (fn [] (d/transact! state [{:db/id 1 :competition/name "B"}]))})
+  {:value {:keys [:app/competitions]}
+   :action (fn [] (chsk-send! [:event-manager/query [[:competition/name :competition/location]]]))})
 
 (defn test-query-click [t]
   (do
@@ -188,14 +196,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Components
-
-;; (defui Competition
-;;   Object
-;;   (render
-;;    [this]
-;;    (dom/div nil "Hi mom I'm a competition")))
-
-;; (def competition (om/factory Competition))
 
 (defui Competition
   Object
@@ -232,74 +232,27 @@
          (dom/th nil "Namn")
          (dom/th nil "Plats")))
        (apply dom/tbody nil (map competition competitions))
-       ;; (dom/tbody
-       ;;  nil
-       ;;  (apply dom/tr nil
-       ;;         (map competition competitions)))
-       ))
-     ;(dom/div nil (competition (first competitions)))
+      
+       )
+      (dom/button
+       #js {:onClick
+            (fn [e]
+              (test-query-click this)
+                                        ;(chsk-send! [:event-manager/query [[:competition/name :competition/location]]])
+               )}
+        "Query")
+      )
+    
      )))
 
-(defui Tester
-  static om/IQuery
-  (query [this]
-         [{:app/competitions [:competition/name :competition/location {:competition/classes [:class/name]}]}])
-  Object
-  (render
-   [this]
-   (let [{:keys [app/competitions]} (get-in (om/props this) [:app/competitions 0])
-         entity (first (:app/competitions (om/props this)))]
-     ;;(log "Props =>")
-     ;;(log (om/props this))
-     (dom/div
-      nil
-      (dom/div
-       nil
-       (str "Competition 1 " (:competition/name entity)))
-      (dom/div
-       nil
-       (str "Location " (:competition/location entity)))
-      (dom/div
-       nil
-       (str "# classes " (count (:competition/classes entity))))
-      (competition) ;;(dom/div nil "Hi mom I'm a competition")
-      ;; (for [x (:competition/classes (first (:app/competitions (om/props this))))]
-      ;;   (dom/div nil x))
-      (dom/div
-       nil
-       (dom/button
-        #js {:onClick
-             (fn [e]
-               (test-query-click this)
-               ;(chsk-send! [:event-manager/query [[:competition/name :competition/location]]])
-               )}
-        "Query"))))))
 
-;; (defui Counter
-;;   static om/IQuery
-;;   (query [this]
-;;     [{:app/counter [:db/id :app/title :app/count]}])
-;;   Object
-;;   (render [this]
-;;     (let [{:keys [app/title app/count] :as entity}
-;;           (get-in (om/props this) [:app/counter 0])]
-;;       (dom/div nil
-;;         (dom/h2 nil title)
-;;         (dom/span nil (str "Count: " count))
-;;         (dom/button
-;;           #js {:onClick
-;;                (fn [e]
-;;                  (om/transact! this
-;;                    `[(app/increment ~entity)]))}
-;;           "Click me!")))))
 
 (defn transit-post [url]
   (fn [{:keys [remote]} cb]
     (do
       (log "Post")
-      (log remote)
-      ;(cb [:a])
-      )
+      (log (str "Remote " remote))
+      (cb {}))
     ;; (.send XhrIo url
     ;;   (fn [e]
     ;;     (this-as this
@@ -308,12 +261,20 @@
     ;;   #js {"Content-Type" "application/transit+json"})
     ))
 
+(defn sente-post []
+  (fn [{:keys [remote] :as env} cb]
+    (do
+      (log "Env > ")
+      (log env)
+      (log (str "Sent to Tango Backend => " remote))
+      (chsk-send! [:event-manager/query [[:competition/name :competition/location]]]))))
+
 (def reconciler
   (om/reconciler
     {:state conn
-     ;:remotes [:remote]
+     :remotes [:remote]
      :parser (om/parser {:read read :mutate mutate})
-     ;:send (transit-post "x") ;(fn [x y] (log (str "Sending to server: x" x " y: " y)))
+     :send (sente-post) ;(fn [x y] (log (str "Sending to server: x" x " y: " y)))
      }))
 
 ;; (om/add-root! reconciler
@@ -321,3 +282,36 @@
 
 (om/add-root! reconciler
   CompetitionsView (gdom/getElement "app"))
+
+;; (defui Tester
+;;   static om/IQuery
+;;   (query [this]
+;;          [{:app/competitions [:competition/name :competition/location {:competition/classes [:class/name]}]}])
+;;   Object
+;;   (render
+;;    [this]
+;;    (let [{:keys [app/competitions]} (get-in (om/props this) [:app/competitions 0])
+;;          entity (first (:app/competitions (om/props this)))]
+;;      ;;(log "Props =>")
+;;      ;;(log (om/props this))
+;;      (dom/div
+;;       nil
+;;       (dom/div
+;;        nil
+;;        (str "Competition 1 " (:competition/name entity)))
+;;       (dom/div
+;;        nil
+;;        (str "Location " (:competition/location entity)))
+;;       (dom/div
+;;        nil
+;;        (str "# classes " (count (:competition/classes entity))))
+;;       (competition)
+;;       (dom/div
+;;        nil
+;;        (dom/button
+;;         #js {:onClick
+;;              (fn [e]
+;;                (test-query-click this)
+;;                ;(chsk-send! [:event-manager/query [[:competition/name :competition/location]]])
+;;                )}
+;;         "Query"))))))
