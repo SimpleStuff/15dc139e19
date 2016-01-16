@@ -11,7 +11,7 @@
                  [org.clojure/clojurescript "1.7.228"]
                  [org.clojure/core.match "0.3.0-alpha4"]
 
-                 [datascript "0.13.3"]
+                 [datascript "0.14.0"]
 
                  ;; Utils
                  [com.stuartsierra/component "0.3.1"]

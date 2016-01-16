@@ -49,9 +49,7 @@
    :activity/number -1,
    :activity/comment "A comment",
    :activity/id 35,
-   :activity/position 1,
-   :activity/time nil,
-   :activity/source nil}
+   :activity/position 1}
   {:activity/name "Hiphop Singel Star B",
    :activity/number 1,
    :activity/comment "",
@@ -208,8 +206,7 @@
      :round/start-time #inst "2014-11-22T10:00:00.000-00:00",
      :round/recall 6}],
    :class/id 41}
-  {:class/adjudicator-panel nil,
-   :class/starting
+  {:class/starting
    [{:participant/name "Ringo Stingo",
      :participant/club "Kapangg",
      :participant/number 20,
