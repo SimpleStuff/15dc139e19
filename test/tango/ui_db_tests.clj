@@ -3,105 +3,11 @@
             [tango.ui-db :as db]
             [tango.test-utils :as u]))
 
- ;; {:competition/classes {:db/cardinality :db.cardinality/many
- ;;                                                :db/valueType :db.type/ref}
-                         
 
-
-
-
-
- ;;                          :round/dances  {:db/cardinality :db.cardinality/many
- ;;                                                   :db/valueType :db.type/ref}
-
- ;;                          ;:class/name {:db/unique :db.unique/identity}
- ;;                          }
-
-(def schema {;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-             ;; Competition
-             :competition/name {:db/unique :db.unique/identity}
-             
-             :competition/adjudicators {:db/cardinality :db.cardinality/many
-                                        :db/valueType :db.type/ref}
-
-             :competition/panels {:db/cardinality :db.cardinality/many
-                                  :db/valueType :db.type/ref}
-
-             :competition/options {:db/isComponent true
-                                   :db/valueType :db.type/ref}
-
-             :competition/activities {:db/cardinality :db.cardinality/many
-                                      :db/valueType :db.type/ref}
-
-             :competition/classes {:db/cardinality :db.cardinality/many
-                                   :db/valueType :db.type/ref}
-
-             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-             ;; Adjudicator Panels
-             :adjudicator-panel/adjudicators {:db/cardinality :db.cardinality/many
-                                              :db/valueType :db.type/ref}
-
-             :adjudicator-panel/id {:db/unique :db.unique/identity}
-
-             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-             ;; Dance
-             :dance/name {:db/unique :db.unique/identity}
-
-             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-             ;; Adjudicator
-             :adjudicator/id {:db/unique :db.unique/identity}
-
-             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-             ;; Participant
-             :participant/id {:db/unique :db.unique/identity}
-             
-             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-             ;; Activity
-
-             :activity/id {:db/unique :db.unique/identity}
-
-             :activity/source {:db/cardinality :db.cardinality/one
-                               :db/valueType :db.type/ref}
-
-             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-             ;; Rounds
-             :round/id {:db/unique :db.unique/identity}
-             
-             :round/panel {:db/cardinality :db.cardinality/one
-                           :db/valueType :db.type/ref}
-
-             :round/dances {:db/cardinality :db.cardinality/many
-                            :db/valueType :db.type/ref}
-
-             :round/results {:db/cardinality :db.cardinality/many
-                             :db/valueType :db.type/ref}
-
-             :round/starting {:db/cardinality :db.cardinality/many
-                              :db/valueType :db.type/ref}
-
-             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-             ;; Class
-             :class/id {:db/unique :db.unique/identity}
-
-             :class/dances {:db/cardinality :db.cardinality/many
-                            :db/valueType :db.type/ref}
-
-             :class/rounds {:db/cardinality :db.cardinality/many
-                            :db/valueType :db.type/ref}
-
-             :class/adjudicator-panel {:db/cardinality :db.cardinality/one
-                                       :db/valueType :db.type/ref}
-
-             :class/remaining {:db/cardinality :db.cardinality/many
-                               :db/valueType :db.type/ref}
-
-             :class/starting {:db/cardinality :db.cardinality/many
-                              :db/valueType :db.type/ref}
-             })
 
 (defn- transact-small-example []
-  (let [conn (db/create-connection schema)]
-    (db/transform-competition conn (fn [] u/expected-small-example))
+  (let [conn (db/create-connection db/schema)]
+    (db/transform-competition conn (fn [] (db/sanitize u/expected-small-example)))
     conn))
 
 (deftest create-connection
@@ -218,27 +124,60 @@ Checks that those adjudicators are the same as in the competition."
                               "TurboMegatävling")))))
       
       ;; round can contain dances from its class
-      (is (= 0
-             (db/query conn '[:find ?r
-                              :in $ ?competition-name
-                              :where
-                              [?e :competition/name ?competition-name]
-                              [?e :competition/classes ?c]
-                              ;[?c :class/dances ?d]
-                              [?c :class/rounds ?r]
-                              ;[?r :round/dances ?d]
-                              ]
-                       "TurboMegatävling")))
+      (is (not (empty?
+                (db/query conn '[:find ?d
+                                 :in $ ?competition-name
+                                 :where
+                                 [?e :competition/name ?competition-name]
+                                 [?e :competition/classes ?c]
+                                 [?c :class/dances ?d]
+                                 [?c :class/rounds ?r]
+                                 [?r :round/dances ?d]]
+                          "TurboMegatävling"))))
 
       ;; round participants must be in the rounds class
       ;; and in the starting list
       ;; and have a result
+      (is (not (empty?
+                (db/query conn '[:find ?part
+                                 :in $ ?competition-name
+                                 :where
+                                 [?e :competition/name ?competition-name]
+                                 [?e :competition/classes ?c]
+                                 [?c :class/rounds ?r]
+                                 [?c :class/starting ?part]
+                                 [?r :round/starting ?part]
+                                 [?r :round/results ?res]
+                                 [?res :result/participant ?part]]
+                          "TurboMegatävling"))))
 
       ;; judging adjudicators must be in round panel
-
+      (is (not (empty?
+                (db/query conn '[:find ?adj
+                                 :in $ ?competition-name
+                                 :where
+                                 [?e :competition/name ?competition-name]
+                                 [?e :competition/classes ?c]
+                                 [?c :class/rounds ?r]
+                                 [?r :round/panel ?panel]
+                                 [?panel :adjudicator-panel/adjudicators ?adj]
+                                 [?r :round/results ?res]
+                                 [?res :result/judgings ?jud]
+                                 [?jud :judging/adjudicator ?adj]]
+                          "TurboMegatävling"))))
       
       )))
 
+(deftest query-for-round-judings
+  (testing "Query to get judgings"
+    (let [conn (transact-small-example)]
+      ;; X mark is either true or false
+      (is (= 2
+             (count (db/query conn '[:find ?m
+                                     :in $ ?competition-name
+                                     :where
+                                     [?e :juding/marks ?m]]
+                              "TurboMegatävling")))))))
 
 ;; :competition/classes
 (deftest query-for-competition-classes
