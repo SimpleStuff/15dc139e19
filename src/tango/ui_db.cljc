@@ -15,9 +15,44 @@
        el))
    nm))
 
+;http://stackoverflow.com/questions/11577601/clojure-nested-map-change-value#11578370
+;; round participants from number to real id
+;;  :round/results [{:result/participant-number 30 => :result/participant {:participant/id xx
+
+;; make index of participants?
+
+;; :result/judgings
+;; ({:judging/adjudicator is the actual adj id but must be in correct form {:adjudicator/id xx
+
+(defn participant-index [cmp]
+  "Return map of index number -> id"
+  (reduce
+   (fn [index participant]
+     (assoc index (:participant/number participant) (:participant/id participant)))
+   {}
+   (mapcat :class/starting (:competition/classes cmp))))
+
 (defn sanitize [cmp]
   (-> cmp
       (remove-nils)))
+
+(let [res [1]]
+  (clojure.walk/postwalk
+   (fn [form]
+     (if (:round/name form) (assoc form :round/name "Y") form))
+   {:competition/class [{:class/rounds [{:round/name "X"}]}]}))
+
+(defn normalize-participant [index cmp]
+  (clojure.walk/postwalk
+   (fn [form]
+     (if (:result/participant-number form)
+       (dissoc
+        (assoc form :result/participant {:participant/id (get index (:result/participant-number form))})
+        :result/participant-number)
+       form))
+   cmp))
+
+
 
 ;; get all stuff
 ;; transform stuff with fn
