@@ -2,30 +2,11 @@
   (:require [datascript.core :as d]
             ))
 
-(defn remove-nils
-  "remove pairs of key-value that has nil value from a (possibly nested) map. 
-  also transform map to nil if all of its value are nil" 
-  [nm]
-  (clojure.walk/postwalk 
-   (fn [el]
-     (if (map? el)
-       (let [m (into {} (remove (comp nil? second) el))]
-         (when (seq m)
-           m))
-       el))
-   nm))
 
-;http://stackoverflow.com/questions/11577601/clojure-nested-map-change-value#11578370
-;; round participants from number to real id
-;;  :round/results [{:result/participant-number 30 => :result/participant {:participant/id xx
 
-;; make index of participants?
-
-;; :result/judgings
-;; ({:judging/adjudicator is the actual adj id but must be in correct form {:adjudicator/id xx
-
-(defn participant-index [cmp]
+(defn participant-index 
   "Return map of index number -> id"
+  [cmp]
   (reduce
    (fn [index participant]
      (assoc index (:participant/number participant) (:participant/id participant)))
@@ -33,26 +14,29 @@
    (mapcat :class/starting (:competition/classes cmp))))
 
 (defn sanitize [cmp]
-  (-> cmp
-      (remove-nils)))
+  (let [index (participant-index cmp)]
+    (clojure.walk/postwalk
+     (fn [form]
+       (cond
+         ;; replace participant-number with participant id in results
+         (:result/participant-number form) (dissoc
+                                            (assoc form :result/participant
+                                                   {:participant/id
+                                                    (get index
+                                                         (:result/participant-number form))})
+                                            :result/participant-number)
 
-(let [res [1]]
-  (clojure.walk/postwalk
-   (fn [form]
-     (if (:round/name form) (assoc form :round/name "Y") form))
-   {:competition/class [{:class/rounds [{:round/name "X"}]}]}))
+         ;; adjudicator id should be in map form for lookup ref.
+         (:judging/adjudicator form) (assoc form :judging/adjudicator
+                                            {:adjudicator/id (:judging/adjudicator form)})
 
-(defn normalize-participant [index cmp]
-  (clojure.walk/postwalk
-   (fn [form]
-     (if (:result/participant-number form)
-       (dissoc
-        (assoc form :result/participant {:participant/id (get index (:result/participant-number form))})
-        :result/participant-number)
-       form))
-   cmp))
-
-
+         ;; remove nil values
+         (map? form) (let [m (into {} (remove (comp nil? second) form))]
+                       (when (seq m)
+                         m))
+         
+         :else form))
+     cmp)))
 
 ;; get all stuff
 ;; transform stuff with fn
@@ -173,3 +157,49 @@
              :class/starting {:db/cardinality :db.cardinality/many
                               :db/valueType :db.type/ref}
              })
+
+
+;; (defn remove-nils
+;;   "remove pairs of key-value that has nil value from a (possibly nested) map. 
+;;   also transform map to nil if all of its value are nil" 
+;;   [nm]
+;;   (clojure.walk/postwalk 
+;;    (fn [el]
+;;      (if (map? el)
+;;        (let [m (into {} (remove (comp nil? second) el))]
+;;          (when (seq m)
+;;            m))
+;;        el))
+;;    nm))
+
+
+
+;http://stackoverflow.com/questions/11577601/clojure-nested-map-change-value#11578370
+;; round participants from number to real id
+;;  :round/results [{:result/participant-number 30 => :result/participant {:participant/id xx
+;; DONE---------------
+
+;; :result/judgings
+;; ({:judging/adjudicator is the actual adj id but must be in correct form {:adjudicator/id xx
+
+;; (defn sanitize [cmp]
+;;   (-> cmp
+;;       (remove-nils)))
+
+;; (defn normalize-participant [index cmp]
+;;   (clojure.walk/postwalk
+;;    (fn [form]
+;;      (if (:result/participant-number form)
+;;        (dissoc
+;;         (assoc form :result/participant {:participant/id (get index (:result/participant-number form))})
+;;         :result/participant-number)
+;;        form))
+;;    cmp))
+
+;; (defn judging-adjudicator-id-to-map [cmp]
+;;   (clojure.walk/postwalk
+;;    (fn [form]
+;;      (if (:judging/adjudicator form)
+;;        (assoc form :judging/adjudicator {:adjudicator/id (:judging/adjudicator form)})
+;;        form))
+;;    cmp))
