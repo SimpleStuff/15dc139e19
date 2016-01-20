@@ -43,18 +43,24 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Server message handling
 
+(declare reconciler)
 (defn handle-query-result [d]
   (let [clean-data (uidb/sanitize d)]
+    (log "Handle Q R")
      ;(log clean-data)   
     ;(log (apply str (map :competition/name clean-data)))
                                         ;(d/transact! (d/db conn) )
-    (d/transact! conn [clean-data])
-    (log (d/q '[:find [(pull ?c [:class/name]) ...]
-                :where
-                [?e :competition/name "Rikstävling disco"]
-                [?e :competition/classes ?c]]
-              (d/db conn)))
+    ;;(d/transact! conn [clean-data])
+    ;; (log (d/q '[:find [(pull ?c [:class/name]) ...]
+    ;;             :where
+    ;;             [?e :competition/name "Rikstävling disco"]
+    ;;             [?e :competition/classes ?c]]
+    ;;           (d/db conn)))
     ;(d/transact! conn [{:db/id 1 :competition/name (apply str (map :competition/name clean-data))}])
+    ;(om/transact! reconciler `[(app/add-competition `{:X "X"}) :app/competitions])
+    ;(log clean-data)
+    (om/transact! reconciler `[(app/add-competition ~clean-data) :app/competitions
+                               ])
     ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -117,17 +123,30 @@
   [{:keys [state query] :as env} key params]
   {:value (do
             ;(log (str "Env: " env " --- Key : " key " --- Params" params))
-            (log "Read app/competitions")
-            (d/q '[:find [(pull ?e ?selector) ...]
-                   :in $ ?selector
-                   :where [?e :competition/name]]
-                 (d/db state) query)) ;(log (str "Read Comp, state " state " , query" query))
+            (log (str "Read app/competitions with query " query))
+            (log (str "Key " key))
+            (log (str "Env " env))
+            (if query
+              (d/q '[:find [(pull ?e ?selector) ...]
+                     :in $ ?selector
+                     :where [?e :competition/name]]
+                   (d/db state) query))
+            ) ;(log (str "Read Comp, state " state " , query" query))
    :remote true})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Mutate
 
 (defmulti mutate om/dispatch)
+
+(defmethod mutate 'app/add-competition
+  [{:keys [state]} key params]
+  (do
+    {:value {:keys [:app/competitions]}
+     :action (fn []
+               (do
+                 (log "Add Competition")
+                 (d/transact! state [params])))}))
 
 (defmethod mutate 'app/increment
   [{:keys [state]} _ entity]
@@ -206,8 +225,28 @@
   (render
    [this]
    (dom/div nil (dom/button #js {:onClick #(log "T'vlingar")} "Tävlingar")
-            (dom/div nil ((om/factory CompetitionsView))))))
+            (dom/div nil ((om/factory CompetitionsView)))
 
+            (dom/div
+             nil
+             (dom/h3 nil (:competition/name (om/props this)))
+             (dom/button #js {:onClick #(log "Properties")} "Properties")
+             (dom/button #js {:onClick #(log "Classes")} "Classes")
+             (dom/button #js {:onClick #(log "Time Schedule")} "Time Schedule")
+             (dom/button #js {:onClick #(log "Adjudicators")} "Adjudicators")
+             (dom/button #js {:onClick #(log "Adjudicator Panels")} "Adjudicator Panels")))))
+
+ ;; [:input.btn.btn-default {:type "button" :value "Classes"
+ ;;                               :on-click #(dispatch [:select-page :classes])}]
+ ;;      [:input.btn.btn-default {:type "button" :value "Time Schedule"
+ ;;                               :on-click #(dispatch [:select-page :events])}]
+ ;;      [:input.btn.btn-default {:type "button" :value "Adjudicators"
+ ;;                               :on-click #(dispatch [:select-page :adjudicators])}]
+ ;;      [:input.btn.btn-default {:type "button" :value "Adjudicator panels"
+ ;;                               :on-click #(dispatch [:select-page :adjudicator-panels])}]])])
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Posts
 
 (defn transit-post [url]
   (fn [{:keys [remote]} cb]
@@ -231,13 +270,16 @@
       (log (str "Sent to Tango Backend => " remote))
       (chsk-send! [:event-manager/query [[:competition/name :competition/location]]]))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Application
+
 ;; TODO - since conn is set the read query will be run twice at start up - delay read or something.. 
 (def reconciler
   (om/reconciler
     {:state conn
      :remotes [:remote]
      :parser (om/parser {:read read :mutate mutate})
-     :send (sente-post) ;(fn [x y] (log (str "Sending to server: x" x " y: " y)))
+     :send sente-post ;(fn [x y] (log (str "Sending to server: x" x " y: " y)))
      }))
 
 ;; (om/add-root! reconciler
