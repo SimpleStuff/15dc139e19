@@ -60,6 +60,10 @@
   (d/create-conn schema))
 
 (def schema {;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+             ;; UI Application
+             :app/id {:db/unique :db.unique/identity}
+             
+             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
              ;; Competition
              :competition/name {:db/unique :db.unique/identity}
              

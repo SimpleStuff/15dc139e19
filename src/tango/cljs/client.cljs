@@ -21,6 +21,10 @@
 ;; Init DB
 (defonce conn (d/create-conn uidb/schema))
 
+(d/transact! conn [{:db/id -1 :app/id 1}
+                   {:db/id -1 :selected-page :competitions}])
+
+(log conn)
 ;;  (d/q '[:find [(pull ?c [:class/name]) ...] 
 ;;         :where
 ;;         [?e :competition/name "A"]
@@ -45,7 +49,8 @@
 
 (declare reconciler)
 (defn handle-query-result [d]
-  (let [clean-data (uidb/sanitize d)]
+  (let [clean-data  (uidb/sanitize d)]
+    ;;{:competition/name "TestNamn" :competition/location "Location"}
     (log "Handle Q R")
      ;(log clean-data)   
     ;(log (apply str (map :competition/name clean-data)))
@@ -59,8 +64,9 @@
     ;(d/transact! conn [{:db/id 1 :competition/name (apply str (map :competition/name clean-data))}])
     ;(om/transact! reconciler `[(app/add-competition `{:X "X"}) :app/competitions])
     ;(log clean-data)
-    (om/transact! reconciler `[(app/add-competition ~clean-data) :app/competitions
-                               ])
+    ;; (om/transact! reconciler `[(app/add-competition ~clean-data) :app/competitions
+    ;;                            ])
+    (om/transact! reconciler `[(app/add-competition ~clean-data) :app/competitions])
     ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -125,7 +131,7 @@
             ;(log (str "Env: " env " --- Key : " key " --- Params" params))
             (log (str "Read app/competitions with query " query))
             (log (str "Key " key))
-            (log (str "Env " env))
+            ;(log (str "Env " env))
             (if query
               (d/q '[:find [(pull ?e ?selector) ...]
                      :in $ ?selector
@@ -133,6 +139,14 @@
                    (d/db state) query))
             ) ;(log (str "Read Comp, state " state " , query" query))
    :remote true})
+
+(defmethod read :app/selected-page
+  [{:keys [state query]} key params]
+  {:value (do
+            (log "Read Selected Page")
+            (let [q (d/q '[:find ?page . :where [[:app/id 1] :selected-page ?page]] (d/db state))]
+              (log q)
+              q))})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Mutate
@@ -146,13 +160,24 @@
      :action (fn []
                (do
                  (log "Add Competition")
-                 (d/transact! state [params])))}))
+                 (d/transact! state [params])
+                 (log conn)))}))
 
-(defmethod mutate 'app/increment
-  [{:keys [state]} _ entity]
-  {:value {:keys [:app/counter]}
-   :action (fn [] (d/transact! state
-                    [(update-in entity [:app/count] inc)]))})
+;; (defmethod mutate 'app/increment
+;;   [{:keys [state]} _ entity]
+;;   {:value {:keys [:app/counter]}
+;;    :action (fn [] (d/transact! state
+;;                     [(update-in entity [:app/count] inc)]))})
+
+(defmethod mutate 'app/select-page
+  [{:keys [state]} key {:keys [page] :as params}]
+  {:value {:keys [:app/selected-page]}
+   :action (fn []
+             (do (log (str "Select Page "))
+                 (log page)
+                 (d/transact! state [{:app/id 1 :selected-page page}])
+                 (log state)
+                 ))})
 
 ;; Mutations should return a map for :value. This map can contain two keys - 
 ;; :keys and/or :tempids. The :keys vector is a convenience that communicates what 
@@ -163,7 +188,6 @@
 ;;   [{:keys [state]} _ _]
 ;;   {:value {:keys [:competition/name]}
 ;;    :action (fn [] (d/transact! state [{:db/id 1 :competition/name "B"}]))})
-
 (defmethod mutate 'app/name
   [{:keys [state]} _ _]
   {:value {:keys [:app/competitions]}
@@ -179,7 +203,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Components
 
+;; TODO - add query for params?
 (defui Competition
+  static om/IQuery
+  (query [this]
+         [:competition/name :competition/location])
   Object
   (render
    [this]
@@ -192,14 +220,15 @@
 (def competition (om/factory Competition))
 
 (defui CompetitionsView
-  static om/IQuery
-  (query [this]
-         [{:app/competitions
-           [:competition/name :competition/location]}])
+  ;; static om/IQuery
+  ;; (query [this]
+  ;;        [:competition/name :competition/location])
   Object
   (render
    [this]
-   (let [competitions (:app/competitions (om/props this))]
+   (let [competitions (om/props this)]
+     (log "Render CompetitionView")
+     (log (om/props this))
      (dom/div
       nil
       (dom/h2
@@ -214,36 +243,134 @@
          (dom/th nil "Namn")
          (dom/th nil "Plats")))
        (apply dom/tbody nil (map competition competitions)))
-      (dom/button
-       #js {:onClick
-            (fn [e]
-              (test-query-click this))}
-       "Query")))))
+      ))))
 
-(defui MenuComponent
+(defui ClassRow
+  static om/IQuery
+  (query [this]
+         [:class/position
+          :class/name
+          {:class/adjudicator-panel [:adjudicator-panel/name]}
+          :class/dances
+          :class/remaining
+          :class/starting
+          :class/rounds])
   Object
   (render
    [this]
-   (dom/div nil (dom/button #js {:onClick #(log "T'vlingar")} "Tävlingar")
-            (dom/div nil ((om/factory CompetitionsView)))
+   (dom/tbody
+    nil
+    (dom/tr
+     nil
+     (dom/td nil "2")
+     (dom/td nil "1")
+     (dom/td nil "1")
+     (dom/td nil "1")
+     (dom/td nil "1")
+     (dom/td nil "1")))))
 
-            (dom/div
-             nil
-             (dom/h3 nil (:competition/name (om/props this)))
-             (dom/button #js {:onClick #(log "Properties")} "Properties")
-             (dom/button #js {:onClick #(log "Classes")} "Classes")
-             (dom/button #js {:onClick #(log "Time Schedule")} "Time Schedule")
-             (dom/button #js {:onClick #(log "Adjudicators")} "Adjudicators")
-             (dom/button #js {:onClick #(log "Adjudicator Panels")} "Adjudicator Panels")))))
+(defui ClassesView
+  static om/IQuery
+  (query [this]
+         [{:competition/classes (om/get-query ClassRow)}])
+  Object
+  (render
+   [this]
+   (let [classes (:competition/classes (om/props this))]
+     (dom/div
+      nil
+      (dom/h3 nil "Klasser")
+      (dom/table
+       #js {:className "table"}
+       (dom/thead
+        nil
+        (dom/tr
+         nil
+         (dom/th #js {:width "20"} "#")
+         (dom/th #js {:width "200"} "Dansdisciplin")
+         (dom/th #js {:width "20"} "Panel")
+         (dom/th #js {:width "20"} "Typ")
+         (dom/th #js {:width "20"} "Startande")
+         (dom/th #js {:width "20"} "Status")))
+       ((om/factory ClassRow))
+       )))))
 
- ;; [:input.btn.btn-default {:type "button" :value "Classes"
- ;;                               :on-click #(dispatch [:select-page :classes])}]
- ;;      [:input.btn.btn-default {:type "button" :value "Time Schedule"
- ;;                               :on-click #(dispatch [:select-page :events])}]
- ;;      [:input.btn.btn-default {:type "button" :value "Adjudicators"
- ;;                               :on-click #(dispatch [:select-page :adjudicators])}]
- ;;      [:input.btn.btn-default {:type "button" :value "Adjudicator panels"
- ;;                               :on-click #(dispatch [:select-page :adjudicator-panels])}]])])
+;; [:div
+
+;;     [:tbody
+;;      (for [class (map presentation/make-class-presenter
+;;                       (sort-by :class/position (:competition/classes (:competition @app-state))))]
+;;        (let [{:keys [position name panel type starting status]} class]
+;;          ^{:key class}
+;;          [:tr
+;;           [:td position]
+;;           [:td name]
+;;           [:td panel]
+;;           [:td type]
+;;           [:td starting]       
+;;           [:td status]]))]]
+
+;; TODO conjonja de andra sidornas query!!!!!!!!!!!!!!!!!!!!!!!!!!!1
+(defui MenuComponent
+  static om/IQuery
+  (query [this]
+         [{:app/competitions (om/get-query Competition)}
+          :app/selected-page])
+  Object
+  (render
+   [this]
+   (let [competitions (:app/competitions (om/props this))
+         spage (:app/selected-page (om/props this))]
+     (log "Render MenuComponent")
+     (log spage)
+     (when (not-empty competitions)
+       (log "Comp"))
+     (dom/div nil (dom/button
+                   #js {:onClick #(om/transact! this '[(app/select-page {:page :competitions})])}
+                   "Tävlingar")
+              (dom/button
+                  #js {:onClick
+                       (fn [e]
+                         (test-query-click this))}
+                  "Query")
+              (when (not-empty competitions)
+                (dom/div
+                 nil
+                 (dom/h3 nil (:competition/name (first competitions)))
+                 (dom/button #js {:className "btn btn-default"
+                                  :onClick #(log "Properties")} "Properties")
+                 (dom/button #js {:className "btn btn-primary"
+                                  :onClick #(om/transact! this '[(app/select-page {:page :classes})])} "Classes")
+                 (dom/button #js {:onClick #(log "Time Schedule")} "Time Schedule")
+                 (dom/button #js {:onClick #(log "Adjudicators")} "Adjudicators")
+                 (dom/button #js {:onClick #(log "Adjudicator Panels")} "Adjudicator Panels")
+
+                 (dom/button
+                  #js {:onClick
+                       (fn [e]
+                         (om/transact! this '[(app/add-competition
+                                               {:competition/name "TestNamn" :competition/location "Location"})
+                                              ]))}
+                  "Query Local")
+
+                 ))
+
+              (dom/div nil
+                       (condp = spage
+                         :classes ((om/factory ClassesView))
+                         :competitions ((om/factory CompetitionsView) competitions)))
+              ))))
+
+(defui DummyComponent
+  static om/IQuery
+  (query [this]
+         [:app/selected-page])
+  Object
+  (render
+   [this]
+   (let [page (:app/selected-page (om/props this))]
+     (dom/div nil (dom/h3 nil (str "Selected Page " page))))))
+ 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Posts
