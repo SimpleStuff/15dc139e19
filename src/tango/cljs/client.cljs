@@ -22,7 +22,9 @@
 (defonce conn (d/create-conn uidb/schema))
 
 (d/transact! conn [{:db/id -1 :app/id 1}
-                   {:db/id -1 :selected-page :competitions}])
+                   {:db/id -1 :selected-page :competitions}
+                   ;{:db/id -1 :selected-competition }
+                   ])
 
 (log conn)
 ;;  (d/q '[:find [(pull ?c [:class/name]) ...] 
@@ -148,6 +150,17 @@
               (log q)
               q))})
 
+(defmethod read :app/selected-competition
+  [{:keys [state query]} key params]
+  {:value (do
+            (log "Read Selected Comp.")
+            (let [q (d/q '[:find (pull ?comp ?selector) .
+                           :in $ ?selector
+                           :where [[:app/id 1] :app/selected-competition ?comp]]
+                         (d/db state) query)]
+              ;(log q)
+              q))})
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Mutate
 
@@ -178,6 +191,12 @@
                  (d/transact! state [{:app/id 1 :selected-page page}])
                  (log state)
                  ))})
+
+(defmethod mutate 'app/select-competition
+  [{:keys [state]} key {:keys [name]}]
+  {:value {:keys [:app/selected-competition]}
+   :action (fn []
+             (d/transact! state [{:app/id 1 :app/selected-competition {:competition/name name}}]))})
 
 ;; Mutations should return a map for :value. This map can contain two keys - 
 ;; :keys and/or :tempids. The :keys vector is a convenience that communicates what 
@@ -211,10 +230,11 @@
   Object
   (render
    [this]
-   (let [competition (om/props this)]
+   (let [competition (om/props this)
+         name (:competition/name competition)]
      (dom/tr
-      nil
-      (dom/td nil (:competition/name competition))
+      #js {:onClick #(om/transact! this `[(app/select-competition {:name ~name})])}
+      (dom/td nil name)
       (dom/td nil (:competition/location competition))))))
 
 (def competition (om/factory Competition))
@@ -258,16 +278,17 @@
   Object
   (render
    [this]
-   (dom/tbody
-    nil
-    (dom/tr
-     nil
-     (dom/td nil "2")
-     (dom/td nil "1")
-     (dom/td nil "1")
-     (dom/td nil "1")
-     (dom/td nil "1")
-     (dom/td nil "1")))))
+   (let [class-row (om/props this)]
+     (log "Class row")
+     (log class-row)
+     (dom/tr
+      nil
+      (dom/td nil (:class/name class-row))
+      (dom/td nil "1")
+      (dom/td nil "1")
+      (dom/td nil "1")
+      (dom/td nil "1")
+      (dom/td nil "1")))))
 
 (defui ClassesView
   static om/IQuery
@@ -292,7 +313,7 @@
          (dom/th #js {:width "20"} "Typ")
          (dom/th #js {:width "20"} "Startande")
          (dom/th #js {:width "20"} "Status")))
-       ((om/factory ClassRow))
+       (apply dom/tbody nil (map (om/factory ClassRow) classes))
        )))))
 
 ;; [:div
@@ -315,14 +336,16 @@
   static om/IQuery
   (query [this]
          [{:app/competitions (om/get-query Competition)}
-          :app/selected-page])
+          :app/selected-page
+          {:app/selected-competition (om/get-query ClassesView)} ])
   Object
   (render
    [this]
    (let [competitions (:app/competitions (om/props this))
-         spage (:app/selected-page (om/props this))]
+         spage (:app/selected-page (om/props this))
+         selected-competition (:app/selected-competition (om/props this))]
      (log "Render MenuComponent")
-     (log spage)
+     (log selected-competition)
      (when (not-empty competitions)
        (log "Comp"))
      (dom/div nil (dom/button
@@ -353,11 +376,17 @@
                                               ]))}
                   "Query Local")
 
+                 (dom/button
+                  #js {:onClick
+                       (fn [e]
+                         (log (om/get-query ClassesView)))}
+                  "Query Log")
+
                  ))
 
               (dom/div nil
                        (condp = spage
-                         :classes ((om/factory ClassesView))
+                         :classes ((om/factory ClassesView) selected-competition)
                          :competitions ((om/factory CompetitionsView) competitions)))
               ))))
 

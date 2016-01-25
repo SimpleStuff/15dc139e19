@@ -63,6 +63,8 @@
              ;; UI Application
              :app/id {:db/unique :db.unique/identity}
              
+             :app/selected-competition {:db/cardinality :db.cardinality/one
+                                        :db/valueType :db.type/ref}
              ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
              ;; Competition
              :competition/name {:db/unique :db.unique/identity}
