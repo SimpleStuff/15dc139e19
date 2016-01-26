@@ -7,7 +7,8 @@
             [cljs.core.async :as async :refer (<! >! put! chan)]
             [taoensso.sente :as sente :refer (cb-success?)]
             [datascript.core :as d]
-            [tango.ui-db :as uidb]))
+            [tango.ui-db :as uidb]
+            [tango.presentation :as presentation]))
 
 
 ;https://github.com/omcljs/om/wiki/Quick-Start-%28om.next%29
@@ -21,10 +22,18 @@
 ;; Init DB
 (defonce conn (d/create-conn uidb/schema))
 
-(d/transact! conn [{:db/id -1 :app/id 1}
-                   {:db/id -1 :selected-page :competitions}
-                   ;{:db/id -1 :selected-competition }
-                   ])
+(defn init-app []
+  (d/transact! conn [{:db/id -1 :app/id 1}
+                     {:db/id -1 :selected-page :competitions}
+                     
+                                        ;{:db/id -1 :selected-competition }
+                     ]))
+
+(defn app-started? [conn]
+  (not
+   (empty? (d/q '[:find ?e
+                  :where
+                  [?e :app/id 1]] (d/db conn)))))
 
 (log conn)
 ;;  (d/q '[:find [(pull ?c [:class/name]) ...] 
@@ -176,12 +185,6 @@
                  (d/transact! state [params])
                  (log conn)))}))
 
-;; (defmethod mutate 'app/increment
-;;   [{:keys [state]} _ entity]
-;;   {:value {:keys [:app/counter]}
-;;    :action (fn [] (d/transact! state
-;;                     [(update-in entity [:app/count] inc)]))})
-
 (defmethod mutate 'app/select-page
   [{:keys [state]} key {:keys [page] :as params}]
   {:value {:keys [:app/selected-page]}
@@ -222,7 +225,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Components
 
-;; TODO - add query for params?
+;;;;;;;;;;;;;;;;;;;;
+;; Competition
+
 (defui Competition
   static om/IQuery
   (query [this]
@@ -240,9 +245,6 @@
 (def competition (om/factory Competition))
 
 (defui CompetitionsView
-  ;; static om/IQuery
-  ;; (query [this]
-  ;;        [:competition/name :competition/location])
   Object
   (render
    [this]
@@ -262,33 +264,29 @@
          nil
          (dom/th nil "Namn")
          (dom/th nil "Plats")))
-       (apply dom/tbody nil (map competition competitions)))
-      ))))
+       (apply dom/tbody nil (map competition competitions)))))))
+
+;;;;;;;;;;;;;;;;;;;;
+;; Classes
 
 (defui ClassRow
   static om/IQuery
   (query [this]
-         [:class/position
-          :class/name
-          {:class/adjudicator-panel [:adjudicator-panel/name]}
-          :class/dances
-          :class/remaining
-          :class/starting
-          :class/rounds])
+         [:class/position :class/name {:class/adjudicator-panel [:adjudicator-panel/name]}
+          :class/dances :class/remaining :class/starting :class/rounds])
   Object
   (render
    [this]
-   (let [class-row (om/props this)]
-     (log "Class row")
-     (log class-row)
+   (let [{:keys [position name panel type starting status]} (presentation/make-class-presenter (om/props this))]
+     ;(log "ClassRowRender")
      (dom/tr
       nil
-      (dom/td nil (:class/name class-row))
-      (dom/td nil "1")
-      (dom/td nil "1")
-      (dom/td nil "1")
-      (dom/td nil "1")
-      (dom/td nil "1")))))
+      (dom/td nil position)
+      (dom/td nil name)
+      (dom/td nil panel)
+      (dom/td nil type)
+      (dom/td nil starting)
+      (dom/td nil status)))))
 
 (defui ClassesView
   static om/IQuery
@@ -316,28 +314,89 @@
        (apply dom/tbody nil (map (om/factory ClassRow) classes))
        )))))
 
-;; [:div
+;;;;;;;;;;;;;;;;;;;;
+;; Schedule
 
-;;     [:tbody
-;;      (for [class (map presentation/make-class-presenter
-;;                       (sort-by :class/position (:competition/classes (:competition @app-state))))]
-;;        (let [{:keys [position name panel type starting status]} class]
-;;          ^{:key class}
-;;          [:tr
-;;           [:td position]
-;;           [:td name]
-;;           [:td panel]
-;;           [:td type]
-;;           [:td starting]       
-;;           [:td status]]))]]
+;; TODO sortera p[ position ;aven klasser
+(defui ScheduleRow
+  static om/IQuery
+  (query [this]
+         [{:activity/source [:round/class-id :round/type :round/index :round/status :round/starting
+                             :round/heats :round/recall {:round/panel [:adjudicator-panel/name]}
+                             {:class/_rounds [:class/name]}]} 
+          :activity/comment :activity/number :activity/time :activity/name
+          :class/rounds :class/id])
+  Object
+  (render
+   [this]
+   (let [{:keys [time number name starting round heats recall panel type]}
+         (presentation/make-time-schedule-activity-presenter (om/props this) [])]
+     (log "ScheduleRowRender")
+     (log (om/props this))
+     (dom/tr
+      nil
+      (dom/td nil time)
+      (dom/td nil number)
+      (dom/td nil name)
+      (dom/td nil starting)
+      (dom/td nil round)
+      (dom/td nil heats)
+      (dom/td nil recall)
+      (dom/td nil panel)
+      (dom/td nil type)))))
 
-;; TODO conjonja de andra sidornas query!!!!!!!!!!!!!!!!!!!!!!!!!!!1
+;; (let [{:keys [time number name starting round heats recall panel type]}
+;;               (presentation/make-time-schedule-activity-presenter
+;;                activity
+;;                (:competition/classes
+;;                 (:competition @app-state)))]
+;;         ^{:key activity}
+;;         [:tr
+           
+;;]
+;;
+;;)
+
+(defui ScheduleView
+  static om/IQuery
+  (query [this]
+         [{:competition/activities (om/get-query ScheduleRow)}])
+  Object
+  (render
+   [this]
+   (let [activites (:competition/activities (om/props this))]
+     (log "ScheduleView Render")
+     (log activites)
+     (dom/div
+      nil
+      (dom/h3 nil "Time Schedule")
+      (dom/table
+       #js {:className "table"}
+       (dom/thead
+        nil
+        (dom/tr
+         nil
+         (dom/th #js {:with "20"} "Time")
+         (dom/th #js {:with "20"} "#")
+         (dom/th #js {:with "200"} "Dansdisciplin")
+         (dom/th #js {:with "20"} "Startande")
+         (dom/th #js {:with "20"} "Rond")
+         (dom/th #js {:with "20"} "Heats")
+         (dom/th #js {:with "20"} "Recall")
+         (dom/th #js {:with "20"} "Panel")
+         (dom/th #js {:with "20"} "Type")))
+       (apply dom/tbody nil (map (om/factory ScheduleRow) activites)))))))
+
+;;;;;;;;;;;;;;;;;;;;
+;; Menu
+
 (defui MenuComponent
   static om/IQuery
   (query [this]
          [{:app/competitions (om/get-query Competition)}
           :app/selected-page
-          {:app/selected-competition (om/get-query ClassesView)} ])
+          {:app/selected-competition (into (om/get-query ClassesView)
+                                           (om/get-query ScheduleView))} ])
   Object
   (render
    [this]
@@ -345,7 +404,7 @@
          spage (:app/selected-page (om/props this))
          selected-competition (:app/selected-competition (om/props this))]
      (log "Render MenuComponent")
-     (log selected-competition)
+     ;(log selected-competition)
      (when (not-empty competitions)
        (log "Comp"))
      (dom/div nil (dom/button
@@ -362,9 +421,15 @@
                  (dom/h3 nil (:competition/name (first competitions)))
                  (dom/button #js {:className "btn btn-default"
                                   :onClick #(log "Properties")} "Properties")
+                 
                  (dom/button #js {:className "btn btn-primary"
-                                  :onClick #(om/transact! this '[(app/select-page {:page :classes})])} "Classes")
-                 (dom/button #js {:onClick #(log "Time Schedule")} "Time Schedule")
+                                  :onClick #(om/transact! this '[(app/select-page {:page :classes})])}
+                             "Classes")
+
+                 (dom/button #js {:className "btn btn-primary"
+                                  :onClick #(om/transact! this '[(app/select-page {:page :schedule})])}
+                             "Time Schedule")
+
                  (dom/button #js {:onClick #(log "Adjudicators")} "Adjudicators")
                  (dom/button #js {:onClick #(log "Adjudicator Panels")} "Adjudicator Panels")
 
@@ -387,19 +452,9 @@
               (dom/div nil
                        (condp = spage
                          :classes ((om/factory ClassesView) selected-competition)
-                         :competitions ((om/factory CompetitionsView) competitions)))
+                         :competitions ((om/factory CompetitionsView) competitions)
+                         :schedule ((om/factory ScheduleView) selected-competition)))
               ))))
-
-(defui DummyComponent
-  static om/IQuery
-  (query [this]
-         [:app/selected-page])
-  Object
-  (render
-   [this]
-   (let [page (:app/selected-page (om/props this))]
-     (dom/div nil (dom/h3 nil (str "Selected Page " page))))))
- 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Posts
@@ -428,6 +483,10 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Application
+
+;; Init db etc if it has not been done
+(when (not (app-started? conn))
+  (init-app))
 
 ;; TODO - since conn is set the read query will be run twice at start up - delay read or something.. 
 (def reconciler
