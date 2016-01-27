@@ -10,6 +10,7 @@
             [tango.ui-db :as uidb]
             [tango.presentation :as presentation]))
 
+;; TODO - All Adjudicators 'r valbart i ui m[ste fixa, kolla hur de behandlas i importen
 
 ;https://github.com/omcljs/om/wiki/Quick-Start-%28om.next%29
 
@@ -24,10 +25,7 @@
 
 (defn init-app []
   (d/transact! conn [{:db/id -1 :app/id 1}
-                     {:db/id -1 :selected-page :competitions}
-                     
-                                        ;{:db/id -1 :selected-competition }
-                     ]))
+                     {:db/id -1 :selected-page :competitions}]))
 
 (defn app-started? [conn]
   (not
@@ -183,16 +181,17 @@
                (do
                  (log "Add Competition")
                  (d/transact! state [params])
-                 (log conn)))}))
+                 ;(log conn)
+                 ))}))
 
 (defmethod mutate 'app/select-page
   [{:keys [state]} key {:keys [page] :as params}]
   {:value {:keys [:app/selected-page]}
    :action (fn []
              (do (log (str "Select Page "))
-                 (log page)
+                 ;(log page)
                  (d/transact! state [{:app/id 1 :selected-page page}])
-                 (log state)
+                 ;(log state)
                  ))})
 
 (defmethod mutate 'app/select-competition
@@ -224,6 +223,56 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Components
+
+;;;;;;;;;;;;;;;;;;;;
+;; Adjudicators
+
+;; TODO - query
+(defui AdjudicatorPanelRow
+  Object
+  (render
+   [this]
+   (let [panel (om/props this)]
+     ;(log "ClassRowRender")
+     (dom/tr
+      nil
+      (dom/td nil (:adjudicator-panel/name panel))
+      (dom/td nil (clojure.string/join
+                   ", "
+                   (map :adjudicator/name (:adjudicator-panel/adjudicators panel))))))))
+
+(defui AdjudicatorsView
+  Object
+  (render
+   [this]
+   (let [classes (:competition/panels (om/props this))]
+     (dom/div
+      nil
+      (dom/h3 nil "Domarpaneler")
+      (dom/table
+       #js {:className "table"}
+       (dom/thead
+        nil
+        (dom/tr
+         nil
+         (dom/th #js {:width "20"} "#")
+         (dom/th #js {:width "200"} "Domare")))
+       (apply dom/tbody nil (map (om/factory AdjudicatorPanelRow) classes))
+       )))))
+
+ ;; [:table.table
+ ;;    [:thead
+ ;;     [:tr
+ ;;      [:th {:with "20"} "#"]
+ ;;      [:th {:with "200"} "Domare"]]]
+ ;;    [:tbody
+ ;;     (for [adjudicator-panel (sort-by :adjudicator-panel/name (:competition/panels (:competition @app-state)))]
+ ;;       ^{:key adjudicator-panel}
+ ;;       [:tr
+ ;;        [:td (:adjudicator-panel/name adjudicator-panel)]
+        ;; [:td (clojure.string/join
+        ;;       ", "
+        ;;       (map :adjudicator/name (:adjudicator-panel/adjudicators adjudicator-panel)))]])]]])
 
 ;;;;;;;;;;;;;;;;;;;;
 ;; Competition
@@ -272,8 +321,12 @@
 (defui ClassRow
   static om/IQuery
   (query [this]
-         [:class/position :class/name {:class/adjudicator-panel [:adjudicator-panel/name]}
-          :class/dances :class/remaining :class/starting :class/rounds])
+         [:class/position :class/name :class/remaining :class/starting
+          {:class/rounds [:round/status :round/type]}
+          {:class/adjudicator-panel
+           [:adjudicator-panel/name]}
+          {:class/dances
+           [:dance/name]}])
   Object
   (render
    [this]
@@ -322,17 +375,25 @@
   static om/IQuery
   (query [this]
          [{:activity/source [:round/class-id :round/type :round/index :round/status :round/starting
-                             :round/heats :round/recall {:round/panel [:adjudicator-panel/name]}
-                             {:class/_rounds [:class/name]}]} 
-          :activity/comment :activity/number :activity/time :activity/name
-          :class/rounds :class/id])
+                             :round/heats :round/recall
+                             {:round/dances [:dance/name]}
+                             {:round/panel
+                              [:adjudicator-panel/name]}
+                             {:class/_rounds
+                              [{:class/rounds
+                                [:round/type :round/index :round/status]}]}]}
+
+          :activity/comment :activity/number :activity/time :activity/name])
   Object
   (render
    [this]
    (let [{:keys [time number name starting round heats recall panel type]}
-         (presentation/make-time-schedule-activity-presenter (om/props this) [])]
+         (presentation/make-time-schedule-activity-presenter
+          (om/props this)
+          (first (:class/_rounds (:activity/source (om/props this)))))]
      (log "ScheduleRowRender")
-     (log (om/props this))
+     ;(log (first (:class/_rounds (:activity/source (om/props this)))))
+     ;(log (om/props this))
      (dom/tr
       nil
       (dom/td nil time)
@@ -345,18 +406,6 @@
       (dom/td nil panel)
       (dom/td nil type)))))
 
-;; (let [{:keys [time number name starting round heats recall panel type]}
-;;               (presentation/make-time-schedule-activity-presenter
-;;                activity
-;;                (:competition/classes
-;;                 (:competition @app-state)))]
-;;         ^{:key activity}
-;;         [:tr
-           
-;;]
-;;
-;;)
-
 (defui ScheduleView
   static om/IQuery
   (query [this]
@@ -365,8 +414,8 @@
   (render
    [this]
    (let [activites (:competition/activities (om/props this))]
-     (log "ScheduleView Render")
-     (log activites)
+     ;(log "ScheduleView Render")
+     ;(log activites)
      (dom/div
       nil
       (dom/h3 nil "Time Schedule")
@@ -430,7 +479,9 @@
                                   :onClick #(om/transact! this '[(app/select-page {:page :schedule})])}
                              "Time Schedule")
 
-                 (dom/button #js {:onClick #(log "Adjudicators")} "Adjudicators")
+                 (dom/button #js {:onClick #(om/transact! this '[(app/select-page {:page :adjudicators})])}
+                             "Adjudicators")
+
                  (dom/button #js {:onClick #(log "Adjudicator Panels")} "Adjudicator Panels")
 
                  (dom/button
@@ -453,7 +504,8 @@
                        (condp = spage
                          :classes ((om/factory ClassesView) selected-competition)
                          :competitions ((om/factory CompetitionsView) competitions)
-                         :schedule ((om/factory ScheduleView) selected-competition)))
+                         :schedule ((om/factory ScheduleView) selected-competition)
+                         :adjudicators ((om/factory AdjudicatorsView) selected-competition)))
               ))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

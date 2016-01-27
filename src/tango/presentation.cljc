@@ -80,11 +80,9 @@
    ;;  the class is not started
    :status (make-round-presentation (:class/rounds class))})
 
-(defn make-time-schedule-activity-presenter [activity classes]
+(defn make-time-schedule-activity-presenter [activity class]
   (let [round (:activity/source activity)
-
-        class (first (filter #(= (:class/id %) (:round/class-id round)) classes))
-
+        
         ;; Comments have no activity number or if they do the round will not belong to any class
         comment? (or (not= (:activity/comment activity) "") (= (:activity/number activity) -1))
             

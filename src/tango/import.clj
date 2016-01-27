@@ -383,6 +383,7 @@
                                       (:result/adjudicators
                                        (first (:class/results class)))
                                       adjudicators))
+                 ;; TODO - Fix that id of -1(?) refers to an "All Ajd" panel, create such a panel and ref it
                  :round/panel (dissoc
                                (first (filter
                                        #(= (:dp/panel-id (:round/panel round)) (:dp/panel-id %))
