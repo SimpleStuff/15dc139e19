@@ -87,6 +87,9 @@
                            :optimizations :advanced
                            :pretty-print false}}]}
   
+  :figwheel {
+             :css-dirs ["resources/public/css"]}
+
   :main ^:skip-aot tango.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}}

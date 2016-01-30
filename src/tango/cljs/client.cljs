@@ -11,6 +11,7 @@
             [tango.presentation :as presentation]))
 
 ;; TODO - All Adjudicators 'r valbart i ui m[ste fixa, kolla hur de behandlas i importen
+;; TODO sortera p[ position ;aven klasser
 
 ;https://github.com/omcljs/om/wiki/Quick-Start-%28om.next%29
 
@@ -25,7 +26,9 @@
 
 (defn init-app []
   (d/transact! conn [{:db/id -1 :app/id 1}
-                     {:db/id -1 :selected-page :competitions}]))
+                     {:db/id -1 :selected-page :competitions}
+                     ;{:db/id -1 :app/selected-competition {}}
+                     ]))
 
 (defn app-started? [conn]
   (not
@@ -225,10 +228,68 @@
 ;; Components
 
 ;;;;;;;;;;;;;;;;;;;;
+;; Properties
+
+(defui PropertiesView
+  static om/IQuery
+  (query [this]
+         [{:competition/options [:dance-competition/adjudicator-order-final]}
+          :competition/name])
+  Object
+  (render
+   [this]
+   (let [options (:competition/options (om/props this))]
+     (log "Properties")
+     (log options)
+     (dom/h3 nil "Properties")
+     (dom/h2 nil (:competition/name (om/props this))))))
+
+;;;;;;;;;;;;;;;;;;;;
 ;; Adjudicators
 
-;; TODO - query
+(defui AdjudicatorRow
+  static om/IQuery
+  (query [this]
+         [:adjudicator/name :adjudicator/country])
+  Object
+  (render
+   [this]
+   (let [adjudicator (om/props this)]
+     ;(log "ClassRowRender")
+     (dom/tr
+      nil
+      (dom/td nil (:adjudicator/name adjudicator))
+      (dom/td nil (:adjudicator/country adjudicator))))))
+
+(defui AdjudicatorsView
+  static om/IQuery
+  (query [this]
+         [{:competition/adjudicators (om/get-query AdjudicatorRow)}])
+  Object
+  (render
+   [this]
+   (let [adjudicators (:competition/adjudicators (om/props this))]
+     (log adjudicators)
+     (dom/div
+      nil
+      (dom/h3 nil "Domare")
+      (dom/table
+       #js {:className "table"}
+       (dom/thead
+        nil
+        (dom/tr
+         nil
+         (dom/th #js {:width "20"} "Name")
+         (dom/th #js {:width "200"} "Country")))
+       (apply dom/tbody nil (map (om/factory AdjudicatorRow) adjudicators)))))))
+
+;;;;;;;;;;;;;;;;;;;;
+;; Adjudicator Panels
+
 (defui AdjudicatorPanelRow
+  static om/IQuery
+  (query [this]
+         [:adjudicator-panel/name {:adjudicator-panel/adjudicators [:adjudicator/name]}])
   Object
   (render
    [this]
@@ -241,11 +302,15 @@
                    ", "
                    (map :adjudicator/name (:adjudicator-panel/adjudicators panel))))))))
 
-(defui AdjudicatorsView
+(defui AdjudicatorPanelsView
+  static om/IQuery
+  (query [this]
+         [{:competition/panels (om/get-query AdjudicatorPanelRow)}])
   Object
   (render
    [this]
-   (let [classes (:competition/panels (om/props this))]
+   (let [panels (:competition/panels (om/props this))]
+     (log panels)
      (dom/div
       nil
       (dom/h3 nil "Domarpaneler")
@@ -257,22 +322,8 @@
          nil
          (dom/th #js {:width "20"} "#")
          (dom/th #js {:width "200"} "Domare")))
-       (apply dom/tbody nil (map (om/factory AdjudicatorPanelRow) classes))
+       (apply dom/tbody nil (map (om/factory AdjudicatorPanelRow) panels))
        )))))
-
- ;; [:table.table
- ;;    [:thead
- ;;     [:tr
- ;;      [:th {:with "20"} "#"]
- ;;      [:th {:with "200"} "Domare"]]]
- ;;    [:tbody
- ;;     (for [adjudicator-panel (sort-by :adjudicator-panel/name (:competition/panels (:competition @app-state)))]
- ;;       ^{:key adjudicator-panel}
- ;;       [:tr
- ;;        [:td (:adjudicator-panel/name adjudicator-panel)]
-        ;; [:td (clojure.string/join
-        ;;       ", "
-        ;;       (map :adjudicator/name (:adjudicator-panel/adjudicators adjudicator-panel)))]])]]])
 
 ;;;;;;;;;;;;;;;;;;;;
 ;; Competition
@@ -364,26 +415,23 @@
          (dom/th #js {:width "20"} "Typ")
          (dom/th #js {:width "20"} "Startande")
          (dom/th #js {:width "20"} "Status")))
-       (apply dom/tbody nil (map (om/factory ClassRow) classes))
-       )))))
+       (apply dom/tbody nil (map (om/factory ClassRow) classes)))))))
 
 ;;;;;;;;;;;;;;;;;;;;
 ;; Schedule
 
-;; TODO sortera p[ position ;aven klasser
 (defui ScheduleRow
   static om/IQuery
   (query [this]
-         [{:activity/source [:round/class-id :round/type :round/index :round/status :round/starting
-                             :round/heats :round/recall
-                             {:round/dances [:dance/name]}
-                             {:round/panel
-                              [:adjudicator-panel/name]}
-                             {:class/_rounds
-                              [{:class/rounds
-                                [:round/type :round/index :round/status]}]}]}
-
-          :activity/comment :activity/number :activity/time :activity/name])
+         [:activity/comment :activity/number :activity/time :activity/name
+          {:activity/source
+           [:round/class-id :round/type :round/index :round/status
+            :round/starting :round/heats :round/recall
+            {:round/dances [:dance/name]}
+            {:round/panel [:adjudicator-panel/name]}
+            {:class/_rounds
+             [{:class/rounds
+               [:round/type :round/index :round/status]}]}]}])
   Object
   (render
    [this]
@@ -425,105 +473,112 @@
         nil
         (dom/tr
          nil
-         (dom/th #js {:with "20"} "Time")
-         (dom/th #js {:with "20"} "#")
-         (dom/th #js {:with "200"} "Dansdisciplin")
-         (dom/th #js {:with "20"} "Startande")
-         (dom/th #js {:with "20"} "Rond")
-         (dom/th #js {:with "20"} "Heats")
-         (dom/th #js {:with "20"} "Recall")
-         (dom/th #js {:with "20"} "Panel")
-         (dom/th #js {:with "20"} "Type")))
+         (dom/th #js {:width "20"} "Time")
+         (dom/th #js {:width "20"} "#")
+         (dom/th #js {:width "200"} "Dansdisciplin")
+         (dom/th #js {:width "20"} "Startande")
+         (dom/th #js {:width "20"} "Rond")
+         (dom/th #js {:width "20"} "Heats")
+         (dom/th #js {:width "20"} "Recall")
+         (dom/th #js {:width "20"} "Panel")
+         (dom/th #js {:width "20"} "Type")))
        (apply dom/tbody nil (map (om/factory ScheduleRow) activites)))))))
 
 ;;;;;;;;;;;;;;;;;;;;
 ;; Menu
 
+(defn make-menu-button
+  [component button-name page-key]
+  (dom/button
+   #js {:className "btn btn-default"
+        :onClick #(om/transact! component `[(app/select-page {:page ~page-key})])}
+   button-name))
+
 (defui MenuComponent
   static om/IQuery
   (query [this]
-         [{:app/competitions (om/get-query Competition)}
-          :app/selected-page
-          {:app/selected-competition (into (om/get-query ClassesView)
-                                           (om/get-query ScheduleView))} ])
+         [:app/selected-page
+          {:app/competitions (om/get-query Competition)}
+          {:app/selected-competition
+           (concat (om/get-query ClassesView)
+                   (om/get-query ScheduleView)
+                   (om/get-query AdjudicatorPanelsView)
+                   (om/get-query AdjudicatorsView)
+                   (om/get-query PropertiesView))}])
   Object
   (render
    [this]
    (let [competitions (:app/competitions (om/props this))
          spage (:app/selected-page (om/props this))
-         selected-competition (:app/selected-competition (om/props this))]
+         selected-competition (:app/selected-competition (om/props this))
+         make-button (partial make-menu-button this)]
      (log "Render MenuComponent")
-     ;(log selected-competition)
-     (when (not-empty competitions)
-       (log "Comp"))
-     (dom/div nil (dom/button
-                   #js {:onClick #(om/transact! this '[(app/select-page {:page :competitions})])}
-                   "Tävlingar")
-              (dom/button
-                  #js {:onClick
-                       (fn [e]
-                         (test-query-click this))}
-                  "Query")
-              (when (not-empty competitions)
-                (dom/div
-                 nil
-                 (dom/h3 nil (:competition/name (first competitions)))
-                 (dom/button #js {:className "btn btn-default"
-                                  :onClick #(log "Properties")} "Properties")
-                 
-                 (dom/button #js {:className "btn btn-primary"
-                                  :onClick #(om/transact! this '[(app/select-page {:page :classes})])}
-                             "Classes")
+;     (dom/div #js {:className "container"})
+     (dom/div
+      nil
+      (dom/nav #js {:className "navbar navbar-inverse navbar-fixed-top"}
+               (dom/div #js {:className "container-fluid"}
+                        (dom/div #js {:className "navbar-header"}
+                                 (dom/a #js {:className "navbar-brand" :href  "#"} "Tango!"))
+                        (dom/div #js {:id "navbar" :className "navbar-collapse collapse"}
+                                 (dom/ul #js {:className "nav navbar-nav navbar-right"}
+                                         (dom/li nil (dom/a #js {:href "#"} "Tävlingar")))
+                                 (dom/form #js {:className "navbar-form navbar-right"}
+                                           (dom/input #js {:type "text"
+                                                           :className "form-control"
+                                                           :placeholder "Search..."}))
+                                 ;; (dom/div nil (make-button "Tävlingar" :competitions)   
+                                 ;;          (dom/button
+                                 ;;           #js {:onClick
+                                 ;;                (fn [e]
+                                 ;;                  (test-query-click this))}
+                                 ;;           "Query")
+                                 ;;          (when selected-competition
+                                 ;;            (apply dom/div nil
+                                 ;;                   (map (fn [[name key]] (make-button name key))
+                                 ;;                        [["Properties" :properties]
+                                 ;;                         ["Classes" :classes]
+                                 ;;                         ["Time Schedule" :schedule]
+                                 ;;                         ["Adjudicators" :adjudicators]
+                                 ;;                         ["Adjudicator Panels" :adjudicator-panels]]))))
+                                 )))
 
-                 (dom/button #js {:className "btn btn-primary"
-                                  :onClick #(om/transact! this '[(app/select-page {:page :schedule})])}
-                             "Time Schedule")
+      (dom/div #js {:className "container-fluid"}
+               (dom/div #js {:className "row"}
+                        (dom/div #js {:className "col-sm-3 col-md-2 sidebar"}
+                                 (dom/ul #js {:className "nav nav-sidebar"}
+                                         (dom/li #js {:className "active"
+                                                      :onClick  #(log "click")}
+                                                 (dom/a {:href "#"} "Classer"))
+                                         (dom/li nil (dom/a {:href "#"} "Time Schedule"))
+                                         )
 
-                 (dom/button #js {:onClick #(om/transact! this '[(app/select-page {:page :adjudicators})])}
-                             "Adjudicators")
-
-                 (dom/button #js {:onClick #(log "Adjudicator Panels")} "Adjudicator Panels")
-
-                 (dom/button
-                  #js {:onClick
-                       (fn [e]
-                         (om/transact! this '[(app/add-competition
-                                               {:competition/name "TestNamn" :competition/location "Location"})
-                                              ]))}
-                  "Query Local")
-
-                 (dom/button
-                  #js {:onClick
-                       (fn [e]
-                         (log (om/get-query ClassesView)))}
-                  "Query Log")
-
-                 ))
-
-              (dom/div nil
-                       (condp = spage
-                         :classes ((om/factory ClassesView) selected-competition)
-                         :competitions ((om/factory CompetitionsView) competitions)
-                         :schedule ((om/factory ScheduleView) selected-competition)
-                         :adjudicators ((om/factory AdjudicatorsView) selected-competition)))
-              ))))
+                                 (apply dom/ul #js {:className "nav nav-sidebar"}
+                                        (map (fn [[name key]] (make-button name key))
+                                             [["Properties" :properties]
+                                              ["Classes" :classes]
+                                              ["Time Schedule" :schedule]
+                                              ["Adjudicators" :adjudicators]
+                                              ["Adjudicator Panels" :adjudicator-panels]]))
+                                         ;; (dom/li #js {:className "active"
+                                         ;;              :onClick  #(log "click")}
+                                         ;;         (dom/a {:href "#"} "Classer"))
+                                         ;; (dom/li nil (dom/a {:href "#"} "Time Schedule"))
+                                         )
+                        
+                        (dom/div #js {:className "col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main"}
+                                 (dom/h1 #js {:className "page-header"} "Rikstävling yada yada")
+                                 (dom/h2 #js {:className "sub-header"} "Klasser")
+                                 (condp = spage
+                                   :properties ((om/factory PropertiesView) selected-competition)
+                                   :classes ((om/factory ClassesView) selected-competition)
+                                   :competitions ((om/factory CompetitionsView) competitions)
+                                   :schedule ((om/factory ScheduleView) selected-competition)
+                                   :adjudicators ((om/factory AdjudicatorsView) selected-competition)
+                                   :adjudicator-panels ((om/factory AdjudicatorPanelsView) selected-competition)))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Posts
-
-(defn transit-post [url]
-  (fn [{:keys [remote]} cb]
-    (do
-      (log "Post")
-      (log (str "Remote " remote))
-      (cb {}))
-    ;; (.send XhrIo url
-    ;;   (fn [e]
-    ;;     (this-as this
-    ;;       (cb (transit/read (om/reader) (.getResponseText this)))))
-    ;;   "POST" (transit/write (om/writer) remote)
-    ;;   #js {"Content-Type" "application/transit+json"})
-    ))
+;; Remote Posts
 
 (defn sente-post []
   (fn [{:keys [remote] :as env} cb]
@@ -540,20 +595,12 @@
 (when (not (app-started? conn))
   (init-app))
 
-;; TODO - since conn is set the read query will be run twice at start up - delay read or something.. 
 (def reconciler
   (om/reconciler
     {:state conn
      :remotes [:remote]
      :parser (om/parser {:read read :mutate mutate})
-     :send sente-post ;(fn [x y] (log (str "Sending to server: x" x " y: " y)))
-     }))
-
-;; (om/add-root! reconciler
-;;   Tester (gdom/getElement "app"))
-
-;; (om/add-root! reconciler
-;;   CompetitionsView (gdom/getElement "app"))
+     :send sente-post}))
 
 (om/add-root! reconciler
   MenuComponent (gdom/getElement "app"))
