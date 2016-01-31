@@ -272,7 +272,7 @@
      (log adjudicators)
      (dom/div
       nil
-      (dom/h3 nil "Domare")
+      (dom/h2 {:className "sub-header"} "Domare")
       (dom/table
        #js {:className "table"}
        (dom/thead
@@ -313,7 +313,7 @@
      (log panels)
      (dom/div
       nil
-      (dom/h3 nil "Domarpaneler")
+      (dom/h2 {:className "sub-header"} "Domarpaneler")
       (dom/table
        #js {:className "table"}
        (dom/thead
@@ -402,7 +402,7 @@
    (let [classes (:competition/classes (om/props this))]
      (dom/div
       nil
-      (dom/h3 nil "Klasser")
+      (dom/h2 {:className "sub-header"} "Klasser")
       (dom/table
        #js {:className "table"}
        (dom/thead
@@ -466,7 +466,7 @@
      ;(log activites)
      (dom/div
       nil
-      (dom/h3 nil "Time Schedule")
+      (dom/h2 {:className "sub-header"} "Time Schedule")
       (dom/table
        #js {:className "table"}
        (dom/thead
@@ -487,12 +487,24 @@
 ;;;;;;;;;;;;;;;;;;;;
 ;; Menu
 
+;; (dom/li #js {:className "active"
+;;              :onClick  #(log "click")}
+;;         (dom/a {:href "#"} "Classer"))
+;; (dom/li nil (dom/a {:href "#"} "Time Schedule"))
+
 (defn make-menu-button
-  [component button-name page-key]
-  (dom/button
-   #js {:className "btn btn-default"
+  [component active-page-key button-name page-key ]
+  (dom/li
+   #js {:className (if (= active-page-key page-key) "active" "")
         :onClick #(om/transact! component `[(app/select-page {:page ~page-key})])}
-   button-name))
+   (dom/a nil button-name)))
+
+;; (defn make-menu-button
+;;   [component button-name page-key]
+;;   (dom/button
+;;    #js {:className "btn btn-default"
+;;         :onClick #(om/transact! component `[(app/select-page {:page ~page-key})])}
+;;    button-name))
 
 (defui MenuComponent
   static om/IQuery
@@ -511,7 +523,7 @@
    (let [competitions (:app/competitions (om/props this))
          spage (:app/selected-page (om/props this))
          selected-competition (:app/selected-competition (om/props this))
-         make-button (partial make-menu-button this)]
+         make-button (partial make-menu-button this spage)]
      (log "Render MenuComponent")
 ;     (dom/div #js {:className "container"})
      (dom/div
@@ -522,7 +534,14 @@
                                  (dom/a #js {:className "navbar-brand" :href  "#"} "Tango!"))
                         (dom/div #js {:id "navbar" :className "navbar-collapse collapse"}
                                  (dom/ul #js {:className "nav navbar-nav navbar-right"}
-                                         (dom/li nil (dom/a #js {:href "#"} "Tävlingar")))
+                                         (dom/li
+                                          #js {:onClick #(om/transact!
+                                                          this
+                                                          `[(app/select-page {:page :competitions})])}
+                                          (dom/a #js {:href "#"} "Tävlingar"))
+                                         (dom/li
+                                          #js {:onClick (fn [e] (test-query-click this))}
+                                          (dom/a #js {:href "#"} "Query")))
                                  (dom/form #js {:className "navbar-form navbar-right"}
                                            (dom/input #js {:type "text"
                                                            :className "form-control"
@@ -546,13 +565,6 @@
       (dom/div #js {:className "container-fluid"}
                (dom/div #js {:className "row"}
                         (dom/div #js {:className "col-sm-3 col-md-2 sidebar"}
-                                 (dom/ul #js {:className "nav nav-sidebar"}
-                                         (dom/li #js {:className "active"
-                                                      :onClick  #(log "click")}
-                                                 (dom/a {:href "#"} "Classer"))
-                                         (dom/li nil (dom/a {:href "#"} "Time Schedule"))
-                                         )
-
                                  (apply dom/ul #js {:className "nav nav-sidebar"}
                                         (map (fn [[name key]] (make-button name key))
                                              [["Properties" :properties]
@@ -568,7 +580,6 @@
                         
                         (dom/div #js {:className "col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main"}
                                  (dom/h1 #js {:className "page-header"} "Rikstävling yada yada")
-                                 (dom/h2 #js {:className "sub-header"} "Klasser")
                                  (condp = spage
                                    :properties ((om/factory PropertiesView) selected-competition)
                                    :classes ((om/factory ClassesView) selected-competition)
