@@ -20,6 +20,19 @@
 (defn log [m]
   (.log js/console m))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Sente Socket setup
+
+(let [{:keys [chsk ch-recv send-fn state]}
+      (sente/make-channel-socket! "/chsk" ; Note the same path as before
+       {:type :auto ; e/o #{:auto :ajax :ws}
+       })]
+  (def chsk       chsk)
+  (def ch-chsk    ch-recv) ; ChannelSocket's receive channel
+  (def chsk-send! send-fn) ; ChannelSocket's send API fn
+  (def chsk-state state)   ; Watchable, read-only atom
+  )
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Init DB
 (defonce conn (d/create-conn uidb/schema))
@@ -36,50 +49,26 @@
                   :where
                   [?e :app/id 1]] (d/db conn)))))
 
-(log conn)
-;;  (d/q '[:find [(pull ?c [:class/name]) ...] 
-;;         :where
-;;         [?e :competition/name "A"]
-;;         [?e :competition/classes ?c]]
-;;       (d/db conn)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Sente Socket setup
-
-(let [{:keys [chsk ch-recv send-fn state]}
-      (sente/make-channel-socket! "/chsk" ; Note the same path as before
-       {:type :auto ; e/o #{:auto :ajax :ws}
-       })]
-  (def chsk       chsk)
-  (def ch-chsk    ch-recv) ; ChannelSocket's receive channel
-  (def chsk-send! send-fn) ; ChannelSocket's send API fn
-  (def chsk-state state)   ; Watchable, read-only atom
-  )
+;(log conn)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Server message handling
 
 (declare reconciler)
 (defn handle-query-result [d]
-  (let [clean-data  (uidb/sanitize d)]
-    ;;{:competition/name "TestNamn" :competition/location "Location"}
-    (log "Handle Q R")
-     ;(log clean-data)   
-    ;(log (apply str (map :competition/name clean-data)))
-                                        ;(d/transact! (d/db conn) )
-    ;;(d/transact! conn [clean-data])
-    ;; (log (d/q '[:find [(pull ?c [:class/name]) ...]
-    ;;             :where
-    ;;             [?e :competition/name "Rikstävling disco"]
-    ;;             [?e :competition/classes ?c]]
-    ;;           (d/db conn)))
-    ;(d/transact! conn [{:db/id 1 :competition/name (apply str (map :competition/name clean-data))}])
-    ;(om/transact! reconciler `[(app/add-competition `{:X "X"}) :app/competitions])
-    ;(log clean-data)
-    ;; (om/transact! reconciler `[(app/add-competition ~clean-data) :app/competitions
-    ;;                            ])
-    (om/transact! reconciler `[(app/add-competition ~clean-data) :app/competitions])
-    ))
+  (log "Handle Q R")
+    ;; VERY TEMPORARY (KILL ME IF I DO NOT FIX IT)
+    ;; Need to make difference between query for all comps. vs query for details for a comp.
+
+  (if (vector? d)
+    (let [clean-data  {:competitions d}      ;(uidb/sanitize (first d))
+          ]
+      (log "Compsss")
+      (om/transact! reconciler `[(app/add-competition ~clean-data) :app/competitions])
+      )
+    (let [clean-data (uidb/sanitize d)]
+      (log "Crazzzy")
+      (om/transact! reconciler `[(app/add-competition ~clean-data) :app/competitions]))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Sente message handling
@@ -87,8 +76,11 @@
 (defmulti event-msg-handler :id) ; Dispatch on event-id
 ;; Wrap for logging, catching, etc.:
 (defn event-msg-handler* [{:keys [id ?data event] :as ev-msg}]
-  (event-msg-handler {:id (first ev-msg)
-                      :?data (second ev-msg)}))
+  (do
+    (log "Enter event-msg-handler*")
+    (event-msg-handler {:id (first ev-msg)
+                        :?data (second ev-msg)})
+    (log "Exit event-msg-handler*")))
 
 (defmethod event-msg-handler :default ; Fallback
   [{:keys [event] :as ev-msg}]
@@ -96,30 +88,49 @@
 
 (defmethod event-msg-handler :chsk/state
   [{:as ev-msg :keys [?data]}]
-  (if (= ?data {:first-open? true})
-    (log "Channel socket successfully established!")
+  (if (:first-open? ?data)
+    (do
+      (log "Channel socket successfully established!")
+      (log "Fetch initilize data from Tango server")
+      (chsk-send! [:event-manager/query [[:competition/name :competition/location]]]))
     (log (str "Channel socket state change: " ?data))))
 
 (defmethod event-msg-handler :chsk/recv
   [{:as ev-msg :keys [?data]}]
   (let [[topic payload] ?data]
-    ;(log (str "Push event from server: " ev-msg))
     (log (str "Push event from server: " topic))
     (when (= topic :event-manager/query-result)
-      (handle-query-result (second ?data)))))
+      (if (vector? payload)
+        (handle-query-result payload)
+        (handle-query-result (second ?data))))
+    (when (= topic :event-manager/transaction-result)
+      (chsk-send! [:event-manager/query [[:competition/name :competition/location]]]))
+    (log "Exit event-msg-handler")))
 
 (defmethod event-msg-handler :chsk/handshake
   [{:as ev-msg :keys [?data]}]
   (let [[?uid ?csrf-token ?handshake-data] ?data]
     (log (str "Handshake: " ?data))))
 
-(defmethod event-msg-handler :event-manager/query-result
-  [{:as ev-msg :keys [?data]}]
-  (log (str "Event Manager Query Result " ?data)))
-
 (defonce chsk-router
   (sente/start-chsk-router-loop! event-msg-handler* ch-chsk))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Import
+
+(defn on-file-read [e file-reader]
+  (let [result (.-result file-reader)]
+    (log "On file read : send :file/import")
+    (chsk-send! [:file/import {:content result}])))
+
+(defn on-click-import-file [e]
+  (log "Import clicked")
+  (let [file (.item (.. e -target -files) 0)
+        r (js/FileReader.)]
+    (set! (.-onload r) #(on-file-read % r))
+    (.readAsText r file)
+    ;(swap! app-state merge {:import-status :import-started})
+    ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Read
@@ -183,9 +194,12 @@
      :action (fn []
                (do
                  (log "Add Competition")
-                 (d/transact! state [params])
-                 ;(log conn)
-                 ))}))
+                 (if params
+                   (if (:competitions params)
+                     (do
+                       (log "Compsss")
+                       (d/transact! state (:competitions params)))
+                     (d/transact! state [params])))))}))
 
 (defmethod mutate 'app/select-page
   [{:keys [state]} key {:keys [page] :as params}]
@@ -338,7 +352,10 @@
    (let [competition (om/props this)
          name (:competition/name competition)]
      (dom/tr
-      #js {:onClick #(om/transact! this `[(app/select-competition {:name ~name})])}
+      ;; TODO - this should be handle be some remote mechanism
+      #js {:onClick #(do
+                       (chsk-send! [:event-manager/query ['[*] [:competition/name name]]])
+                       (om/transact! this `[(app/select-competition {:name ~name})]))}
       (dom/td nil name)
       (dom/td nil (:competition/location competition))))))
 
@@ -357,14 +374,20 @@
        nil
        "Mina tävlingar")
       (dom/table
-       nil
+       #js {:className "table table-hover"}
        (dom/thead
         nil
         (dom/tr
          nil
          (dom/th nil "Namn")
          (dom/th nil "Plats")))
-       (apply dom/tbody nil (map competition competitions)))))))
+       (apply dom/tbody nil (map competition competitions)))
+
+      
+      (dom/div
+       nil
+       (dom/span #js {:className "btn btn-default btn-file"} "Importera.."
+                 (dom/input #js {:type "file" :onChange #(on-click-import-file %)})))))))
 
 ;;;;;;;;;;;;;;;;;;;;
 ;; Classes
@@ -466,9 +489,9 @@
      ;(log activites)
      (dom/div
       nil
-      (dom/h2 {:className "sub-header"} "Time Schedule")
+      (dom/h2 nil "Time Schedule")
       (dom/table
-       #js {:className "table"}
+       #js {:className "table table-hover table-condensed"}
        (dom/thead
         nil
         (dom/tr
@@ -520,6 +543,7 @@
   Object
   (render
    [this]
+   (log "Renderz")
    (let [competitions (:app/competitions (om/props this))
          spage (:app/selected-page (om/props this))
          selected-competition (:app/selected-competition (om/props this))
@@ -564,22 +588,24 @@
 
       (dom/div #js {:className "container-fluid"}
                (dom/div #js {:className "row"}
-                        (dom/div #js {:className "col-sm-3 col-md-2 sidebar"}
-                                 (apply dom/ul #js {:className "nav nav-sidebar"}
-                                        (map (fn [[name key]] (make-button name key))
-                                             [["Properties" :properties]
-                                              ["Classes" :classes]
-                                              ["Time Schedule" :schedule]
-                                              ["Adjudicators" :adjudicators]
-                                              ["Adjudicator Panels" :adjudicator-panels]]))
-                                         ;; (dom/li #js {:className "active"
-                                         ;;              :onClick  #(log "click")}
-                                         ;;         (dom/a {:href "#"} "Classer"))
-                                         ;; (dom/li nil (dom/a {:href "#"} "Time Schedule"))
-                                         )
+                        (when selected-competition
+                          (dom/div #js {:className "col-sm-2 col-md-2 sidebar"}
+                                   (dom/div nil (dom/u nil (:competition/name selected-competition)) )
+                                   (apply dom/ul #js {:className "nav nav-sidebar"}
+                                          (map (fn [[name key]] (make-button name key))
+                                               [["Properties" :properties]
+                                                ["Classes" :classes]
+                                                ["Time Schedule" :schedule]
+                                                ["Adjudicators" :adjudicators]
+                                                ["Adjudicator Panels" :adjudicator-panels]]))
+                                   ;; (dom/li #js {:className "active"
+                                   ;;              :onClick  #(log "click")}
+                                   ;;         (dom/a {:href "#"} "Classer"))
+                                   ;; (dom/li nil (dom/a {:href "#"} "Time Schedule"))
+                                   ))
                         
-                        (dom/div #js {:className "col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main"}
-                                 (dom/h1 #js {:className "page-header"} "Rikstävling yada yada")
+                        (dom/div #js {:className "col-sm-10 col-sm-offset-2 col-md-10 col-md-offset-2 main"}
+                                 ;(dom/h1 #js {:className "page-header"} "Rikstävling yada yada")
                                  (condp = spage
                                    :properties ((om/factory PropertiesView) selected-competition)
                                    :classes ((om/factory ClassesView) selected-competition)
