@@ -40,7 +40,8 @@
 (defn init-app []
   (d/transact! conn [{:db/id -1 :app/id 1}
                      {:db/id -1 :selected-page :competitions}
-                     ;{:db/id -1 :app/selected-competition {}}
+                     {:db/id -1 :app/import-status :none}
+                     {:db/id -1 :app/selected-competition {}}
                      ]))
 
 (defn app-started? [conn]
@@ -56,19 +57,22 @@
 
 (declare reconciler)
 (defn handle-query-result [d]
-  (log "Handle Q R")
+  (do
+    (log "Handle Q R")
     ;; VERY TEMPORARY (KILL ME IF I DO NOT FIX IT)
     ;; Need to make difference between query for all comps. vs query for details for a comp.
-
-  (if (vector? d)
-    (let [clean-data  {:competitions d}      ;(uidb/sanitize (first d))
-          ]
-      (log "Compsss")
-      (om/transact! reconciler `[(app/add-competition ~clean-data) :app/competitions])
-      )
-    (let [clean-data (uidb/sanitize d)]
-      (log "Crazzzy")
-      (om/transact! reconciler `[(app/add-competition ~clean-data) :app/competitions]))))
+    
+    (if (vector? d)
+      (let [clean-data  {:competitions d}      ;(uidb/sanitize (first d))
+            ]
+        (log "Compsss")
+        (om/transact! reconciler `[(app/add-competition ~clean-data) :app/competitions])
+        )
+      (let [clean-data (uidb/sanitize d)]
+        (log "Crazzzy")
+        (om/transact! reconciler `[(app/add-competition ~clean-data) :app/competitions])))
+    (om/transact! reconciler `[(app/set-import-status {:status :none})]))
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Sente message handling
@@ -182,6 +186,16 @@
               ;(log q)
               q))})
 
+(defmethod read :app/import-status
+  [{:keys [state query]} key params]
+  {:value (do
+            (log "Read Import status")
+            (let [q (d/q '[:find ?status .
+                           :where [[:app/id 1] :app/import-status ?status]]
+                         (d/db state))]
+              (log q)
+              q))})
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Mutate
 
@@ -210,6 +224,12 @@
                  (d/transact! state [{:app/id 1 :selected-page page}])
                  ;(log state)
                  ))})
+
+(defmethod mutate 'app/set-import-status
+  [{:keys [state]} key {:keys [status] :as params}]
+  {:value {:keys [:app/import-status]}
+   :action (fn []
+             (d/transact! state [{:app/id 1 :app/import-status status}]))})
 
 (defmethod mutate 'app/select-competition
   [{:keys [state]} key {:keys [name]}]
@@ -353,9 +373,12 @@
          name (:competition/name competition)]
      (dom/tr
       ;; TODO - this should be handle be some remote mechanism
+      ;; TODO - set app status to remote query then reset at query done
       #js {:onClick #(do
                        (chsk-send! [:event-manager/query ['[*] [:competition/name name]]])
-                       (om/transact! this `[(app/select-competition {:name ~name})]))}
+                       (om/transact! this `[(app/select-competition {:name ~name})])
+                       ;(om/transact! this `[(app/select-competition {:name {}})])
+                       )}
       (dom/td nil name)
       (dom/td nil (:competition/location competition))))))
 
@@ -365,14 +388,18 @@
   Object
   (render
    [this]
-   (let [competitions (om/props this)]
+   (let [competitions (:competitions (om/props this))
+         status (:status (om/props this))]
      (log "Render CompetitionView")
      (log (om/props this))
+     (log "Import Status")
+      (log status)
      (dom/div
       nil
       (dom/h2
        nil
        "Mina tävlingar")
+      (dom/span nil "Välj en tävling att arbete med.")
       (dom/table
        #js {:className "table table-hover"}
        (dom/thead
@@ -382,12 +409,19 @@
          (dom/th nil "Namn")
          (dom/th nil "Plats")))
        (apply dom/tbody nil (map competition competitions)))
-
       
       (dom/div
        nil
-       (dom/span #js {:className "btn btn-default btn-file"} "Importera.."
-                 (dom/input #js {:type "file" :onChange #(on-click-import-file %)})))))))
+       (dom/span #js {:className (str "btn btn-default btn-file"
+                                      (when (= status :importing) " disabled"))} "Importera.."
+                 (dom/input #js {:type "file"
+                                 :onChange #(do
+                                              (om/transact! reconciler `[(app/set-import-status
+                                                                          {:status :importing})])
+                                              (on-click-import-file %))}))
+       (condp = status
+         :none (dom/h3 nil "")
+         :importing (dom/h3 nil "Importerar, vänligen vänta..")))))))
 
 ;;;;;;;;;;;;;;;;;;;;
 ;; Classes
@@ -533,6 +567,7 @@
   static om/IQuery
   (query [this]
          [:app/selected-page
+          :app/import-status
           {:app/competitions (om/get-query Competition)}
           {:app/selected-competition
            (concat (om/get-query ClassesView)
@@ -569,26 +604,11 @@
                                  (dom/form #js {:className "navbar-form navbar-right"}
                                            (dom/input #js {:type "text"
                                                            :className "form-control"
-                                                           :placeholder "Search..."}))
-                                 ;; (dom/div nil (make-button "Tävlingar" :competitions)   
-                                 ;;          (dom/button
-                                 ;;           #js {:onClick
-                                 ;;                (fn [e]
-                                 ;;                  (test-query-click this))}
-                                 ;;           "Query")
-                                 ;;          (when selected-competition
-                                 ;;            (apply dom/div nil
-                                 ;;                   (map (fn [[name key]] (make-button name key))
-                                 ;;                        [["Properties" :properties]
-                                 ;;                         ["Classes" :classes]
-                                 ;;                         ["Time Schedule" :schedule]
-                                 ;;                         ["Adjudicators" :adjudicators]
-                                 ;;                         ["Adjudicator Panels" :adjudicator-panels]]))))
-                                 )))
+                                                           :placeholder "Search..."})))))
 
       (dom/div #js {:className "container-fluid"}
                (dom/div #js {:className "row"}
-                        (when selected-competition
+                        (when (not (empty? selected-competition))
                           (dom/div #js {:className "col-sm-2 col-md-2 sidebar"}
                                    (dom/div nil (dom/u nil (:competition/name selected-competition)) )
                                    (apply dom/ul #js {:className "nav nav-sidebar"}
@@ -597,19 +617,17 @@
                                                 ["Classes" :classes]
                                                 ["Time Schedule" :schedule]
                                                 ["Adjudicators" :adjudicators]
-                                                ["Adjudicator Panels" :adjudicator-panels]]))
-                                   ;; (dom/li #js {:className "active"
-                                   ;;              :onClick  #(log "click")}
-                                   ;;         (dom/a {:href "#"} "Classer"))
-                                   ;; (dom/li nil (dom/a {:href "#"} "Time Schedule"))
-                                   ))
+                                                ["Adjudicator Panels" :adjudicator-panels]]))))
                         
                         (dom/div #js {:className "col-sm-10 col-sm-offset-2 col-md-10 col-md-offset-2 main"}
                                  ;(dom/h1 #js {:className "page-header"} "Rikstävling yada yada")
                                  (condp = spage
                                    :properties ((om/factory PropertiesView) selected-competition)
                                    :classes ((om/factory ClassesView) selected-competition)
-                                   :competitions ((om/factory CompetitionsView) competitions)
+                                   :competitions ((om/factory CompetitionsView)
+                                                  {:competitions competitions
+                                                   :status (:app/import-status (om/props this))
+                                                   })
                                    :schedule ((om/factory ScheduleView) selected-competition)
                                    :adjudicators ((om/factory AdjudicatorsView) selected-competition)
                                    :adjudicator-panels ((om/factory AdjudicatorPanelsView) selected-competition)))))))))
