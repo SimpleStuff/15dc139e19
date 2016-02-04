@@ -1,27 +1,28 @@
 (ns tango.cljs.client
   (:require-macros
    [cljs.core.async.macros :as asyncm :refer (go go-loop)])
-  (:require [reagent.core :as reagent :refer [atom]]
+  (:require [goog.dom :as gdom]
+            [om.next :as om :refer-macros [defui]]
+            [om.dom :as dom]
             [cljs.core.async :as async :refer (<! >! put! chan)]
-            [cljs.core.match :refer-macros [match]]
             [taoensso.sente :as sente :refer (cb-success?)]
-            [clojure.string]
+            [datascript.core :as d]
+            [tango.ui-db :as uidb]
             [tango.presentation :as presentation]))
 
-;; Sente: https://github.com/ptaoussanis/sente
-;http://markusslima.github.io/bootstrap-filestyle/
-;http://getbootstrap.com/components/
-;;; Utils
-(enable-console-print!)
+;; TODO - All Adjudicators 'r valbart i ui m[ste fixa, kolla hur de behandlas i importen
+;; TODO sortera p[ position ;aven klasser
 
+;https://github.com/omcljs/om/wiki/Quick-Start-%28om.next%29
+
+(enable-console-print!)
 
 (defn log [m]
   (.log js/console m))
 
-(log "ClojureScript appears to have loaded correctly.")
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Sente Socket setup
+
 (let [{:keys [chsk ch-recv send-fn state]}
       (sente/make-channel-socket! "/chsk" ; Note the same path as before
        {:type :auto ; e/o #{:auto :ajax :ws}
@@ -32,16 +33,96 @@
   (def chsk-state state)   ; Watchable, read-only atom
   )
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; (defonce app-state
-;;   (atom {:competitions []}))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Init DB
+(defonce conn (d/create-conn uidb/schema))
 
-(defonce app-state
-  (atom {:selected-page :start-page
-         :import-status :import-not-started
-         :competitions []
-         ;; TODO - rename, this represents the current selected competition
-         :competition {}}))
+(defn init-app []
+  (d/transact! conn [{:db/id -1 :app/id 1}
+                     {:db/id -1 :selected-page :competitions}
+                     {:db/id -1 :app/import-status :none}
+                     {:db/id -1 :app/status :running}
+                     {:db/id -1 :app/selected-competition {}}
+                     ]))
+
+(defn app-started? [conn]
+  (not
+   (empty? (d/q '[:find ?e
+                  :where
+                  [?e :app/id 1]] (d/db conn)))))
+
+;(log conn)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Server message handling
+
+(declare reconciler)
+(defn handle-query-result [d]
+  (do
+    (log "Handle Q R")
+    ;; VERY TEMPORARY (KILL ME IF I DO NOT FIX IT)
+    ;; Need to make difference between query for all comps. vs query for details for a comp.
+    
+    (if (vector? d)
+      (let [clean-data  {:competitions d}      ;(uidb/sanitize (first d))
+            ]
+        (log "Compsss")
+        (om/transact! reconciler `[(app/add-competition ~clean-data) :app/competitions])
+        )
+      (let [clean-data (uidb/sanitize d)]
+        (log "Crazzzy")
+        (om/transact! reconciler `[(app/add-competition ~clean-data) :app/competitions])))
+    (om/transact! reconciler `[(app/set-import-status {:status :none})])
+    (om/transact! reconciler `[(app/status {:status :running})]))
+  )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Sente message handling
+
+(defmulti event-msg-handler :id) ; Dispatch on event-id
+;; Wrap for logging, catching, etc.:
+(defn event-msg-handler* [{:keys [id ?data event] :as ev-msg}]
+  (do
+    (log "Enter event-msg-handler*")
+    (event-msg-handler {:id (first ev-msg)
+                        :?data (second ev-msg)})
+    (log "Exit event-msg-handler*")))
+
+(defmethod event-msg-handler :default ; Fallback
+  [{:keys [event] :as ev-msg}]
+  (log (str "Unhandled event: " ev-msg)))
+
+(defmethod event-msg-handler :chsk/state
+  [{:as ev-msg :keys [?data]}]
+  (if (:first-open? ?data)
+    (do
+      (log "Channel socket successfully established!")
+      (log "Fetch initilize data from Tango server")
+      (chsk-send! [:event-manager/query [[:competition/name :competition/location]]]))
+    (log (str "Channel socket state change: " ?data))))
+
+(defmethod event-msg-handler :chsk/recv
+  [{:as ev-msg :keys [?data]}]
+  (let [[topic payload] ?data]
+    (log (str "Push event from server: " topic))
+    (when (= topic :event-manager/query-result)
+      (if (vector? payload)
+        (handle-query-result payload)
+        (handle-query-result (second ?data))))
+    (when (= topic :event-manager/transaction-result)
+      (chsk-send! [:event-manager/query [[:competition/name :competition/location]]]))
+    (log "Exit event-msg-handler")))
+
+(defmethod event-msg-handler :chsk/handshake
+  [{:as ev-msg :keys [?data]}]
+  (let [[?uid ?csrf-token ?handshake-data] ?data]
+    (log (str "Handshake: " ?data))))
+
+(defonce chsk-router
+  (sente/start-chsk-router-loop! event-msg-handler* ch-chsk))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Import
 
 (defn on-file-read [e file-reader]
   (let [result (.-result file-reader)]
@@ -54,413 +135,553 @@
         r (js/FileReader.)]
     (set! (.-onload r) #(on-file-read % r))
     (.readAsText r file)
-    (swap! app-state merge {:import-status :import-started})))
+    ;(swap! app-state merge {:import-status :import-started})
+    ))
 
-(defn dispatch [props]
-  (let [id (first props)
-        data (vec (rest props))]
-    (log (str "Dispatch of " id " with data " data))
-    (match [id data]
-           ;[:query ['[*] [:competition/name (:competition/name competition)]]]
-           [:query [q]]
-           (do
-             (log (str "Query for " q))
-             (chsk-send! [:event-manager/query q]))
-           [:file/import [file]]
-           (inc 1)
-           [:select-page [new-page]]
-           (swap! app-state merge {:selected-page new-page})
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Read
 
-           [:new-competition-name-changed [new-name]]
-           (swap! app-state (fn [current] (merge current
-                                                 {:competition
-                                                  (merge (:competition current) {:competition/name new-name})})))
-           )))
+(defmulti read om/dispatch)
 
-(defn on-export-click [e competition]
-  (log "Export clicked")
-  (log (str competition))
-  (chsk-send! [:file/export {:file/format :dance-perfect
-                             :file/content competition}]))
+;; (defmethod read :app/counter
+;;   [{:keys [state query]} _ _]
+;;   {:value (d/q '[:find [(pull ?e ?selector) ...]
+;;                  :in $ ?selector
+;;                  :where [?e :app/title]]
+;;             (d/db state) query)})
+
+;; The signature of a read function is [env key params]. env is a hash map containing any context 
+;; necessary to accomplish reads. key is the key that is being requested to be read. 
+;; Finally params is a hash map of parameters that can be used to customize the read. 
+;; In many cases params will be empty.
+(defmethod read :app/competitions
+  [{:keys [state query] :as env} key params]
+  {:value (do
+            ;(log (str "Env: " env " --- Key : " key " --- Params" params))
+            (log (str "Read app/competitions with query " query))
+            (log (str "Key " key))
+            ;(log (str "Env " env))
+            (if query
+              (d/q '[:find [(pull ?e ?selector) ...]
+                     :in $ ?selector
+                     :where [?e :competition/name]]
+                   (d/db state) query))
+            ) ;(log (str "Read Comp, state " state " , query" query))
+   :remote true})
+
+(defmethod read :app/selected-page
+  [{:keys [state query]} key params]
+  {:value (do
+            (log "Read Selected Page")
+            (let [q (d/q '[:find ?page . :where [[:app/id 1] :selected-page ?page]] (d/db state))]
+              (log q)
+              q))})
+
+(defmethod read :app/selected-competition
+  [{:keys [state query]} key params]
+  {:value (do
+            (log "Read Selected Comp.")
+            (let [q (d/q '[:find (pull ?comp ?selector) .
+                           :in $ ?selector
+                           :where [[:app/id 1] :app/selected-competition ?comp]]
+                         (d/db state) query)]
+              ;(log q)
+              q))})
+
+(defmethod read :app/import-status
+  [{:keys [state query]} key params]
+  {:value (do
+            (log "Read Import status")
+            (let [q (d/q '[:find ?status .
+                           :where [[:app/id 1] :app/import-status ?status]]
+                         (d/db state))]
+              (log q)
+              q))})
+
+(defmethod read :app/status
+  [{:keys [state query]} key params]
+  {:value (do
+            (log "Read Status")
+            (let [q (d/q '[:find ?status .
+                           :where [[:app/id 1] :app/status ?status]]
+                         (d/db state))]
+              (log q)
+              q))})
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Mutate
+
+(defmulti mutate om/dispatch)
+
+(defmethod mutate 'app/add-competition
+  [{:keys [state]} key params]
+  (do
+    {:value {:keys [:app/competitions]}
+     :action (fn []
+               (do
+                 (log "Add Competition")
+                 (if params
+                   (if (:competitions params)
+                     (do
+                       (log "Compsss")
+                       (d/transact! state (:competitions params)))
+                     (d/transact! state [params])))))}))
+
+(defmethod mutate 'app/select-page
+  [{:keys [state]} key {:keys [page] :as params}]
+  {:value {:keys [:app/selected-page]}
+   :action (fn []
+             (do (log (str "Select Page "))
+                 ;(log page)
+                 (d/transact! state [{:app/id 1 :selected-page page}])
+                 ;(log state)
+                 ))})
+
+(defmethod mutate 'app/set-import-status
+  [{:keys [state]} key {:keys [status] :as params}]
+  {:value {:keys [:app/import-status]}
+   :action (fn []
+             (d/transact! state [{:app/id 1 :app/import-status status}]))})
+
+(defmethod mutate 'app/status
+  [{:keys [state]} key {:keys [status] :as params}]
+  {:value {:keys [:app/status]}
+   :action (fn []
+             (d/transact! state [{:app/id 1 :app/status status}]))})
+
+(defmethod mutate 'app/select-competition
+  [{:keys [state]} key {:keys [name]}]
+  {:value {:keys [:app/selected-competition]}
+   :action (fn []
+             (d/transact! state [{:app/id 1 :app/selected-competition {:competition/name name}}]))})
+
+;; Mutations should return a map for :value. This map can contain two keys - 
+;; :keys and/or :tempids. The :keys vector is a convenience that communicates what 
+;; read operations should follow a mutation. :tempids will be discussed later. 
+;; Mutations can easily change multiple aspects of the application (think Facebook "Add Friend"). 
+;; Adding :value with a :keys vector helps users identify stale keys which should be re-read.
+;; (defmethod mutate 'app/name
+;;   [{:keys [state]} _ _]
+;;   {:value {:keys [:competition/name]}
+;;    :action (fn [] (d/transact! state [{:db/id 1 :competition/name "B"}]))})
+(defmethod mutate 'app/name
+  [{:keys [state]} _ _]
+  {:value {:keys [:app/competitions]}
+   :action ;(fn [] (chsk-send! [:event-manager/query [[:competition/name :competition/location]]]))
+   (fn [] (chsk-send! [:event-manager/query ['[*] [:competition/name "Rikstävling disco"]]]))
+   })
+
+(defn test-query-click [t]
+  (do
+    (log "Test Click")
+    (om/transact! t '[(app/name)])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Components
 
-;; TODO - id is used as entity id and not as presentation, is name enough or should we keep
-;; a adj/number or adj/position ?
-(defn adjudictors-component []
-  [:div
-   [:h3 "Domare"]
-   [:table.table
-    [:thead
-     [:tr
-      ;[:th {:with "20"} "#"]
-      [:th {:with "200"} "Name"]
-      [:th {:with "20"} "Country"]]]
-    [:tbody
-     (for [adjudicator
-           (sort-by :adjudicator/name (:competition/adjudicators (:competition @app-state)))]
-       ^{:key adjudicator}
-       [:tr
-        ;[:td (:adjudicator/id adjudicator)]
-        [:td (:adjudicator/name adjudicator)]
-        [:td (:adjudicator/country adjudicator)]])]]])
+;;;;;;;;;;;;;;;;;;;;
+;; Properties
 
-(defn adjudictor-panels-component []
-  [:div
-   [:h3 "Domarpaneler"]
-   [:table.table
-    [:thead
-     [:tr
-      [:th {:with "20"} "#"]
-      [:th {:with "200"} "Domare"]]]
-    [:tbody
-     (for [adjudicator-panel (sort-by :adjudicator-panel/name (:competition/panels (:competition @app-state)))]
-       ^{:key adjudicator-panel}
-       [:tr
-        [:td (:adjudicator-panel/name adjudicator-panel)]
-        [:td (clojure.string/join
-              ", "
-              (map :adjudicator/name (:adjudicator-panel/adjudicators adjudicator-panel)))]])]]])
+(defui PropertiesView
+  static om/IQuery
+  (query [this]
+         [{:competition/options [:dance-competition/adjudicator-order-final]}
+          :competition/name])
+  Object
+  (render
+   [this]
+   (let [options (:competition/options (om/props this))]
+     (log "Properties")
+     (log options)
+     (dom/h3 nil "Properties")
+     (dom/h2 nil (:competition/name (om/props this))))))
 
-(defn classes-component []
-  [:div
-   [:h3 (str "Klasser")]
-   [:table.table
-    [:thead
-     [:tr
-      [:th {:with "20"} "#"]
-      [:th {:with "200"} "Dansdisciplin"]
-      [:th {:with "20"} "Panel"]
-      [:th {:with "20"} "Typ"]
-      [:th {:with "20"} "Startande"]
-      [:th {:with "20"} "Status"]]]
-    [:tbody
-     (for [class (map presentation/make-class-presenter
-                      (sort-by :class/position (:competition/classes (:competition @app-state))))]
-       (let [{:keys [position name panel type starting status]} class]
-         ^{:key class}
-         [:tr
-          [:td position]
-          [:td name]
-          [:td panel]
-          [:td type]
-          [:td starting]       
-          [:td status]]))]]])
+;;;;;;;;;;;;;;;;;;;;
+;; Adjudicators
 
-(defn navigation-component []
-  [:div
-   [:input.btn.btn-default {:type "button" :value "Tävlingar"
-                            :on-click #(dispatch [:select-page :start-page])}]
-   (when (not= (:competition @app-state) {})
-     [:div
-      [:h3 (:competition/name (:competition @app-state))]
-      [:input.btn.btn-default {:type "button" :value "Properties"
-                               :on-click #(dispatch [:select-page :properties])}]
-      [:input.btn.btn-default {:type "button" :value "Classes"
-                               :on-click #(dispatch [:select-page :classes])}]
-      [:input.btn.btn-default {:type "button" :value "Time Schedule"
-                               :on-click #(dispatch [:select-page :events])}]
-      [:input.btn.btn-default {:type "button" :value "Adjudicators"
-                               :on-click #(dispatch [:select-page :adjudicators])}]
-      [:input.btn.btn-default {:type "button" :value "Adjudicator panels"
-                               :on-click #(dispatch [:select-page :adjudicator-panels])}]])])
+(defui AdjudicatorRow
+  static om/IQuery
+  (query [this]
+         [:adjudicator/name :adjudicator/country])
+  Object
+  (render
+   [this]
+   (let [adjudicator (om/props this)]
+     ;(log "ClassRowRender")
+     (dom/tr
+      nil
+      (dom/td nil (:adjudicator/name adjudicator))
+      (dom/td nil (:adjudicator/country adjudicator))))))
 
-(defn time-schedule-component []
-  [:div
-   [:h3 "Time Schedule"]
-   [:table.table
-    [:thead
-     [:tr
-      [:th {:with "20"} "Time"]
-      [:th {:with "20"} "#"]
-      [:th {:with "200"} "Dansdisciplin"]
-      [:th {:with "20"} "Startande"]
-      [:th {:with "20"} "Rond"]
-      [:th {:with "20"} "Heats"]
-      [:th {:with "20"} "Recall"]
-      [:th {:with "20"} "Panel"]
-      [:th {:with "20"} "Type"]]]
-    [:tbody
-     (doall
-      (for [activity (sort-by :activity/position (:competition/activities (:competition @app-state)))]
-        (let [{:keys [time number name starting round heats recall panel type]}
-              (presentation/make-time-schedule-activity-presenter
-               activity
-               (:competition/classes
-                (:competition @app-state)))]
-        ^{:key activity}
-        [:tr
-           [:td time]
-           [:td number]
-           [:td name]
-           [:td starting]
-           [:td round]
-           [:td heats]
-           [:td recall]
-           [:td panel]
-           [:td type]])))]]])
+(defui AdjudicatorsView
+  static om/IQuery
+  (query [this]
+         [{:competition/adjudicators (om/get-query AdjudicatorRow)}])
+  Object
+  (render
+   [this]
+   (let [adjudicators (:competition/adjudicators (om/props this))]
+     (log adjudicators)
+     (dom/div
+      nil
+      (dom/h2 {:className "sub-header"} "Domare")
+      (dom/table
+       #js {:className "table"}
+       (dom/thead
+        nil
+        (dom/tr
+         nil
+         (dom/th #js {:width "20"} "Name")
+         (dom/th #js {:width "200"} "Country")))
+       (apply dom/tbody nil (map (om/factory AdjudicatorRow) adjudicators)))))))
 
-(defn start-page-component []
-  (fn []
-    [:div
-     [:div
-      [:h2 "Mina tävlingar"]
-      [:table.table
-       [:thead
-        [:tr
-         [:th "Namn"]
-         [:th "Plats"]]]
-       [:tbody
-        (for [competition (:competitions @app-state)]
-          ^{:key competition}
-          [:tr {:on-click #(dispatch [:query ['[*] [:competition/name (:competition/name competition)]]])}
-           [:td (:competition/name competition)]
-           [:td (:competition/location competition)]])]]]
-     [:div
-      [:input.btn.btn-default {:type "button" :value "Ny tävling"
-                               :on-click #(dispatch [:select-page :new-competition])
-                               }]
-      [:span.btn.btn-default.btn-file
-       "Importera.."
-       [:input {:type "file" :onChange #(on-click-import-file %)}]]
-      (condp = (:import-status @app-state)
-        :import-not-started ""
-        :import-started [:h4 "Importerar.."]
-        :import-done [:h4 "Import färdig!"])]]))
+;;;;;;;;;;;;;;;;;;;;
+;; Adjudicator Panels
 
-;; TODO - make the on-click event run thoughe dispatch
-;; http://www.abeautifulsite.net/whipping-file-inputs-into-shape-with-bootstrap-3/
-(defn import-component []
-  [:div
-   ;[:h2 "Importera en ny tävling : "]
-   [:span.btn.btn-default.btn-file
-    "Importera"
-    [:input {:type "file" :onChange #(on-click-import-file %)}]]
-   (condp = (:import-status @app-state)
-     :import-not-started ""
-     :import-started [:h4 "Importerar.."]
-     :import-done [:h4 "Import färdig!"])])
+(defui AdjudicatorPanelRow
+  static om/IQuery
+  (query [this]
+         [:adjudicator-panel/name {:adjudicator-panel/adjudicators [:adjudicator/name]}])
+  Object
+  (render
+   [this]
+   (let [panel (om/props this)]
+     ;(log "ClassRowRender")
+     (dom/tr
+      nil
+      (dom/td nil (:adjudicator-panel/name panel))
+      (dom/td nil (clojure.string/join
+                   ", "
+                   (map :adjudicator/name (:adjudicator-panel/adjudicators panel))))))))
 
-(defn make-competition-properties-presenter [competition]
-  {:name (:competition/name competition)
-   :location (:competition/location competition)})
+(defui AdjudicatorPanelsView
+  static om/IQuery
+  (query [this]
+         [{:competition/panels (om/get-query AdjudicatorPanelRow)}])
+  Object
+  (render
+   [this]
+   (let [panels (:competition/panels (om/props this))]
+     (log panels)
+     (dom/div
+      nil
+      (dom/h2 {:className "sub-header"} "Domarpaneler")
+      (dom/table
+       #js {:className "table"}
+       (dom/thead
+        nil
+        (dom/tr
+         nil
+         (dom/th #js {:width "20"} "#")
+         (dom/th #js {:width "200"} "Domare")))
+       (apply dom/tbody nil (map (om/factory AdjudicatorPanelRow) panels))
+       )))))
 
-(defn new-competition []
-  (fn []
-    (let [{:keys [name location]} (make-competition-properties-presenter (:competition @app-state))]
-      [:div
-       [:h3 "Skapa ny tävling"]
+;;;;;;;;;;;;;;;;;;;;
+;; Competition
 
-       [:form
-        [:div.row
-         [:div.col-sm-4
-          [:div.form-group
-           [:label.control-label {:for "inputName"} "Namn"]
-           [:input.form-control
-            {:id "inputName"
-             :type "text"
-             :placeholder "Tävlingens namn"
-             :value name
-             :on-change #(dispatch [:new-competition-name-changed (-> % .-target .-value)])}]]]]
+(defui Competition
+  static om/IQuery
+  (query [this]
+         [:competition/name :competition/location])
+  Object
+  (render
+   [this]
+   (let [competition (om/props this)
+         name (:competition/name competition)]
+     (dom/tr
+      ;; TODO - this should be handle by some remote mechanism
+      #js {:onClick #(do
+                       (chsk-send! [:event-manager/query ['[*] [:competition/name name]]])
+                       (om/transact! this `[(app/select-competition {:name ~name})])
+                       (om/transact! this `[(app/status {:status :querying})])
+                       )}
+      (dom/td nil name)
+      (dom/td nil (:competition/location competition))))))
 
-        [:div.row
-         [:div.col-sm-4
-          [:div.form-group
-           [:label.control-label {:for "inputPlace"} "Plats"]
-           [:input.form-control
-            {:id "inputPlace"
-             :type "text"
-             :placeholder "Plats"
-             :value location
-             :on-change #(dispatch [:new-competition-place-changed (-> % .-target .-value)])}]]]]
+(def competition (om/factory Competition))
 
-        [:div.row
-         [:div.col-sm-4
-          [:div.form-group
-           [:label.control-label {:for "inputDate"} "Datum"]
-           [:input.form-control
-            {:id "inputDate"
-             :type "text"
-             :placeholder "Datum"
-             :value "TODO"
-             :on-change #(dispatch [:new-competition-date-changed (-> % .-target .-value)])}]]]]
+(defui CompetitionsView
+  Object
+  (render
+   [this]
+   (let [competitions (:competitions (om/props this))
+         import-status (:import-status (om/props this))
+         status (:status (om/props this))]
+     (log "Render CompetitionView")
+     (log (om/props this))
+     (log "Status")
+     (log status)
+     (cond
+       (= status :querying) (dom/div nil (dom/h3 nil (str "Laddar tävlingen, vänligen vänta..")))
+       (= import-status :none) (dom/div
+                                nil
+                                (dom/h2
+                                 nil
+                                 "Mina tävlingar")
+                                (dom/span nil "Välj en tävling att arbete med.")
+                                
+                                (dom/table
+                                 #js {:className "table table-hover"}
+                                 (dom/thead
+                                  nil
+                                  (dom/tr
+                                   nil
+                                   (dom/th nil "Namn")
+                                   (dom/th nil "Plats")))
+                                 (apply dom/tbody nil (map competition competitions)))
+                                
+                                (dom/div
+                                 nil
+                                 (dom/span #js {:className (str "btn btn-default btn-file"
+                                                                (when (= import-status :importing) " disabled"))} "Importera.."
+                                           (dom/input #js {:type "file"
+                                                           :onChange #(do
+                                                                        (om/transact! reconciler `[(app/set-import-status
+                                                                                                    {:status :importing})])
+                                                                        (on-click-import-file %))}))))
+       (= import-status :importing) (dom/h3 nil "Importerar, vänligen vänta..")))))
 
-        [:div.row
-         [:div.col-sm-4
-          [:div.form-group
-           [:label.control-label {:for "inputOrg"} "Organisatör"]
-           [:input.form-control
-            {:id "inputOrg"
-             :type "text"
-             :placeholder "Organistation"
-             :value "TODO"
-             :on-change #(dispatch [:new-competition-organisation-changed (-> % .-target .-value)])}]]]
-         ]
+;;;;;;;;;;;;;;;;;;;;
+;; Classes
 
-        ;; Options checkboxes
-        [:div.row
-         [:div.col-sm-12
-          [:div.form-group
-           [:label {:for "Options"} "Inställningar"]
-           [:div.checkbox
-            [:label
-             [:input
-              {:type "checkbox" :checked true}]  "Same heat in all dances"]
-            ]
+(defui ClassRow
+  static om/IQuery
+  (query [this]
+         [:class/position :class/name :class/remaining :class/starting
+          {:class/rounds [:round/status :round/type]}
+          {:class/adjudicator-panel
+           [:adjudicator-panel/name]}
+          {:class/dances
+           [:dance/name]}])
+  Object
+  (render
+   [this]
+   (let [{:keys [position name panel type starting status]} (presentation/make-class-presenter (om/props this))]
+     ;(log "ClassRowRender")
+     (dom/tr
+      nil
+      (dom/td nil position)
+      (dom/td nil name)
+      (dom/td nil panel)
+      (dom/td nil type)
+      (dom/td nil starting)
+      (dom/td nil status)))))
 
-           [:div.checkbox
-            [:label
-             [:input
-              {:type "checkbox"}]  "Random order in heats"]]
+(defui ClassesView
+  static om/IQuery
+  (query [this]
+         [{:competition/classes (om/get-query ClassRow)}])
+  Object
+  (render
+   [this]
+   (let [classes (:competition/classes (om/props this))]
+     (dom/div
+      nil
+      (dom/h2 {:className "sub-header"} "Klasser")
+      (dom/table
+       #js {:className "table"}
+       (dom/thead
+        nil
+        (dom/tr
+         nil
+         (dom/th #js {:width "20"} "#")
+         (dom/th #js {:width "200"} "Dansdisciplin")
+         (dom/th #js {:width "20"} "Panel")
+         (dom/th #js {:width "20"} "Typ")
+         (dom/th #js {:width "20"} "Startande")
+         (dom/th #js {:width "20"} "Status")))
+       (apply dom/tbody nil (map (om/factory ClassRow) classes)))))))
 
-           [:div.checkbox
-            [:label
-             [:input
-              {:type "checkbox"}]  "Heat text on Adjudicator sheets"]]
+;;;;;;;;;;;;;;;;;;;;
+;; Schedule
 
-           [:div.checkbox
-            [:label
-             [:input
-              {:type "checkbox"}]  "Names on Number signs"]]
+(defui ScheduleRow
+  static om/IQuery
+  (query [this]
+         [:activity/comment :activity/number :activity/time :activity/name
+          {:activity/source
+           [:round/class-id :round/type :round/index :round/status
+            :round/starting :round/heats :round/recall
+            {:round/dances [:dance/name]}
+            {:round/panel [:adjudicator-panel/name]}
+            {:class/_rounds
+             [{:class/rounds
+               [:round/type :round/index :round/status]}]}]}])
+  Object
+  (render
+   [this]
+   (let [{:keys [time number name starting round heats recall panel type]}
+         (presentation/make-time-schedule-activity-presenter
+          (om/props this)
+          (first (:class/_rounds (:activity/source (om/props this)))))]
+     (log "ScheduleRowRender")
+     ;(log (first (:class/_rounds (:activity/source (om/props this)))))
+     ;(log (om/props this))
+     (dom/tr
+      nil
+      (dom/td nil time)
+      (dom/td nil number)
+      (dom/td nil name)
+      (dom/td nil starting)
+      (dom/td nil round)
+      (dom/td nil heats)
+      (dom/td nil recall)
+      (dom/td nil panel)
+      (dom/td nil type)))))
 
-           [:div.checkbox
-            [:label
-             [:input
-              {:type "checkbox"}]  "Clubs on Number signs"]]
+(defui ScheduleView
+  static om/IQuery
+  (query [this]
+         [{:competition/activities (om/get-query ScheduleRow)}])
+  Object
+  (render
+   [this]
+   (let [activites (:competition/activities (om/props this))]
+     ;(log "ScheduleView Render")
+     ;(log activites)
+     (dom/div
+      nil
+      (dom/h2 nil "Time Schedule")
+      (dom/table
+       #js {:className "table table-hover table-condensed"}
+       (dom/thead
+        nil
+        (dom/tr
+         nil
+         (dom/th #js {:width "20"} "Time")
+         (dom/th #js {:width "20"} "#")
+         (dom/th #js {:width "200"} "Dansdisciplin")
+         (dom/th #js {:width "20"} "Startande")
+         (dom/th #js {:width "20"} "Rond")
+         (dom/th #js {:width "20"} "Heats")
+         (dom/th #js {:width "20"} "Recall")
+         (dom/th #js {:width "20"} "Panel")
+         (dom/th #js {:width "20"} "Type")))
+       (apply dom/tbody nil (map (om/factory ScheduleRow) activites)))))))
 
-           [:div.checkbox
-            [:label
-             [:input
-              {:type "checkbox"}]  "Enter marks by Adjudicators, Qual/Semi"]]
+;;;;;;;;;;;;;;;;;;;;
+;; Menu
 
-           [:div.checkbox
-            [:label
-             [:input
-              {:type "checkbox"}]  "Enter marks by Adjudicators, Final"]]
+;; (dom/li #js {:className "active"
+;;              :onClick  #(log "click")}
+;;         (dom/a {:href "#"} "Classer"))
+;; (dom/li nil (dom/a {:href "#"} "Time Schedule"))
 
-           ;; NON EXISTING IN DP?
-           [:div.checkbox
-            [:label
-             [:input
-              {:type "checkbox"}]  "Reversed Final entry (NZ)"]]
+(defn make-menu-button
+  [component active-page-key button-name page-key ]
+  (dom/li
+   #js {:className (if (= active-page-key page-key) "active" "")
+        :onClick #(om/transact! component `[(app/select-page {:page ~page-key})])}
+   (dom/a nil button-name)))
 
-           [:div.checkbox
-            [:label
-             [:input
-              {:type "checkbox"}]  "Preview Printouts"]]
+;; (defn make-menu-button
+;;   [component button-name page-key]
+;;   (dom/button
+;;    #js {:className "btn btn-default"
+;;         :onClick #(om/transact! component `[(app/select-page {:page ~page-key})])}
+;;    button-name))
 
-           [:div.checkbox
-            [:label
-             [:input
-              {:type "checkbox"}]  "Select paper size before each printout"]]
+(defui MenuComponent
+  static om/IQuery
+  (query [this]
+         [:app/selected-page
+          :app/import-status
+          :app/status
+          {:app/competitions (om/get-query Competition)}
+          {:app/selected-competition
+           (concat (om/get-query ClassesView)
+                   (om/get-query ScheduleView)
+                   (om/get-query AdjudicatorPanelsView)
+                   (om/get-query AdjudicatorsView)
+                   (om/get-query PropertiesView))}])
+  Object
+  (render
+   [this]
+   (log "Renderz")
+   (let [competitions (:app/competitions (om/props this))
+         spage (:app/selected-page (om/props this))
+         selected-competition (:app/selected-competition (om/props this))
+         make-button (partial make-menu-button this spage)]
+     (log "Render MenuComponent")
+;     (dom/div #js {:className "container"})
+     (dom/div
+      nil
+      (dom/nav #js {:className "navbar navbar-inverse navbar-fixed-top"}
+               (dom/div #js {:className "container-fluid"}
+                        (dom/div #js {:className "navbar-header"}
+                                 (dom/a #js {:className "navbar-brand" :href  "#"} "Tango!"))
+                        (dom/div #js {:id "navbar" :className "navbar-collapse collapse"}
+                                 (dom/ul #js {:className "nav navbar-nav navbar-right"}
+                                         (dom/li
+                                          #js {:onClick #(om/transact!
+                                                          this
+                                                          `[(app/select-page {:page :competitions})])}
+                                          (dom/a #js {:href "#"} "Tävlingar"))
+                                         ;; (dom/li
+                                         ;;  #js {:onClick (fn [e] (test-query-click this))}
+                                         ;;  (dom/a #js {:href "#"} "Query"))
+                                         )
+                                 (dom/form #js {:className "navbar-form navbar-right"}
+                                           (dom/input #js {:type "text"
+                                                           :className "form-control"
+                                                           :placeholder "Search..."})))))
 
-           [:div.checkbox
-            [:label
-             [:input
-              {:type "checkbox"}]  "Do not print Adjudicators letters (A-ZZ)"]]
+      (dom/div #js {:className "container-fluid"}
+               (dom/div #js {:className "row"}
+                        (when (and (not (empty? selected-competition))
+                                   (= :running (:app/status (om/props this)))
+                                   (not= :importing (:app/import-status (om/props this))))
+                          (dom/div #js {:className "col-sm-2 col-md-2 sidebar"}
+                                   (dom/div nil (dom/u nil (:competition/name selected-competition)) )
+                                   (apply dom/ul #js {:className "nav nav-sidebar"}
+                                          (map (fn [[name key]] (make-button name key))
+                                               [["Properties" :properties]
+                                                ["Classes" :classes]
+                                                ["Time Schedule" :schedule]
+                                                ["Adjudicators" :adjudicators]
+                                                ["Adjudicator Panels" :adjudicator-panels]]))))
+                        
+                        (dom/div #js {:className "col-sm-10 col-sm-offset-2 col-md-10 col-md-offset-2 main"}
+                                 ;(dom/h1 #js {:className "page-header"} "Rikstävling yada yada")
+                                 (condp = spage
+                                   :properties ((om/factory PropertiesView) selected-competition)
+                                   :classes ((om/factory ClassesView) selected-competition)
+                                   :competitions ((om/factory CompetitionsView)
+                                                  {:competitions competitions
+                                                   :import-status (:app/import-status (om/props this))
+                                                   :status (:app/status (om/props this))
+                                                   })
+                                   :schedule ((om/factory ScheduleView) selected-competition)
+                                   :adjudicators ((om/factory AdjudicatorsView) selected-competition)
+                                   :adjudicator-panels ((om/factory AdjudicatorPanelsView) selected-competition)))))))))
 
-           [:div.checkbox
-            [:label
-             [:input
-              {:type "checkbox"}]  "Print with Chinese character set"]]
-           ]]]
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Remote Posts
 
-        [:button.btn.btn-primary {:type "button"} "Spara"]]
-       ])))
-
-(defn menu-component []
-  (fn []
-    [:div
-     [navigation-component]
-     (condp = (:selected-page @app-state)
-       :start-page [start-page-component]
-       :new-competition [new-competition]
-       :properties [new-competition]
-       :classes [classes-component]
-       :events [time-schedule-component]
-       :adjudicators [adjudictors-component]
-       :adjudicator-panels [adjudictor-panels-component])]))
-
-
+(defn sente-post []
+  (fn [{:keys [remote] :as env} cb]
+    (do
+      (log "Env > ")
+      (log env)
+      (log (str "Sent to Tango Backend => " remote))
+      (chsk-send! [:event-manager/query [[:competition/name :competition/location]]]))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Application
 
-(reagent/render-component [menu-component]
-                          (.getElementById js/document "app"))
+;; Init db etc if it has not been done
+(when (not (app-started? conn))
+  (init-app))
 
-;; (defn ^:export run []
-;;   (reagent/render-component [menu-component] (.-body js/document)))
+(def reconciler
+  (om/reconciler
+    {:state conn
+     :remotes [:remote]
+     :parser (om/parser {:read read :mutate mutate})
+     :send sente-post}))
 
-(defn on-js-reload []
-  ;; optionally touch your app-state to force rerendering depending on
-  ;; your application
-  ;; (swap! app-state update-in [:__figwheel_counter] inc)
-)
+(om/add-root! reconciler
+  MenuComponent (gdom/getElement "app"))
 
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; Socket handling
-
-(defn- event-handler [[id data :as ev] _]
-  (log (str "Event: " id))
-  (match [id data]
-         ;; TODO Match your events here <...>
-         [:chsk/recv [:file/imported content]]
-         (do
-           (swap! app-state #(merge % {:competition content
-                                       :import-status :import-done}))
-           (log (str @app-state)))
-         [:chsk/recv [:event-manager/transaction-result _]]
-         (do
-           (log "Server transacted - refresh to get latest")
-           (swap! app-state #(merge % {:import-status :import-done}))
-           (chsk-send! [:event-manager/query [[:competition/name :competition/location]]]))
-         [:chsk/recv [:event-manager/query-result payload]]
-         (do
-           (log (str "Query result " data))
-           ;; VERY TEMPORARY (KILL ME IF I DO NOT FIX IT)
-           ;; Need to make difference between query for all comps. vs query for details for a comp.
-           (if (vector? payload)
-             (do
-               (log "Init Q-res ")
-               (swap! app-state #(merge % {:competitions payload})))
-             (do
-               (log "Details Q-res")
-               (swap! app-state #(merge % {:competition payload
-                                           :selected-page :classes})))))
-         [:chsk/state d]
-         (if (:first-open? d)
-           (do
-             (log "Channel socket successfully established!")
-             (chsk-send! [:event-manager/query [[:competition/name :competition/location]]]))
-           (log (str "Channel socket state changed: " d)))
-                                        ;[:chsk/state new-state] (log (str "Chsk state change: " new-state))
-                                        ;[:chsk/recv payload] (log (str "Push event from server: " payload))
-         :else (log (str "Unmatched event: " ev))))
-
-(defonce chsk-router
-  (sente/start-chsk-router-loop! event-handler ch-chsk))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Purgatory
-
-;; Exempel till "Export"
-
-;; (defn handle-export []
-;;   (let [export-link (. js/document (getElementById "export-download-link"))]
-;;     (log "Exporting competition")
-;;     (.click export-link)))
-
-;; <a id="document-download-link" download="project.goy" href=""></a>
-
-;; (defn save-document []
-;; (let [download-link (. js/document (getElementById "document-download-link"))
-;; app-state-to-save (get-in @app/app-state [:main-app])
-;; document-content (pr-str app-state-to-save)
-;; compressed-content (.compressToBase64 js/LZString document-content)
-;; href-content (str "data:application/octet-stream;base64," compressed-content)]
-;; (set! (.-href download-link) href-content)
-;; (.click download-link)))
 

@@ -11,7 +11,7 @@
                  [org.clojure/clojurescript "1.7.228"]
                  [org.clojure/core.match "0.3.0-alpha4"]
 
-                 [datascript "0.13.3"]
+                 [datascript "0.14.0"]
 
                  ;; Utils
                  [com.stuartsierra/component "0.3.1"]
@@ -23,6 +23,7 @@
                  [com.taoensso/timbre "4.2.0"]
 
                  ;; Web UI
+                 [org.omcljs/om "1.0.0-alpha22"]
                  [com.taoensso/sente "1.7.0"]
 
                  [http-kit "2.1.19"]
@@ -32,7 +33,7 @@
 
                  [compojure "1.4.0"]
                                           
-                 [reagent "0.5.1"]
+                 ;[reagent "0.5.1"]
                                   
                  ; Code cleaness tools
                  [repetition-hunter "1.0.0"]
@@ -86,6 +87,9 @@
                            :optimizations :advanced
                            :pretty-print false}}]}
   
+  :figwheel {
+             :css-dirs ["resources/public/css"]}
+
   :main ^:skip-aot tango.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}}
