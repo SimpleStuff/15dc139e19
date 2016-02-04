@@ -618,9 +618,10 @@
                                                           this
                                                           `[(app/select-page {:page :competitions})])}
                                           (dom/a #js {:href "#"} "Tävlingar"))
-                                         (dom/li
-                                          #js {:onClick (fn [e] (test-query-click this))}
-                                          (dom/a #js {:href "#"} "Query")))
+                                         ;; (dom/li
+                                         ;;  #js {:onClick (fn [e] (test-query-click this))}
+                                         ;;  (dom/a #js {:href "#"} "Query"))
+                                         )
                                  (dom/form #js {:className "navbar-form navbar-right"}
                                            (dom/input #js {:type "text"
                                                            :className "form-control"
