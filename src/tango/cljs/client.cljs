@@ -89,7 +89,7 @@
     (log "Exit event-msg-handler*")))
 
 (defmethod event-msg-handler :default ; Fallback
-  [{:keys [event] :as ev-msg}]
+  [ev-msg]
   (log (str "Unhandled event: " ev-msg)))
 
 (defmethod event-msg-handler :chsk/state
@@ -134,9 +134,7 @@
   (let [file (.item (.. e -target -files) 0)
         r (js/FileReader.)]
     (set! (.-onload r) #(on-file-read % r))
-    (.readAsText r file)
-    ;(swap! app-state merge {:import-status :import-started})
-    ))
+    (.readAsText r file)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Read
@@ -155,22 +153,16 @@
 ;; Finally params is a hash map of parameters that can be used to customize the read. 
 ;; In many cases params will be empty.
 (defmethod read :app/competitions
-  [{:keys [state query] :as env} key params]
-  {:value (do
-            ;(log (str "Env: " env " --- Key : " key " --- Params" params))
-            (log (str "Read app/competitions with query " query))
-            (log (str "Key " key))
-            ;(log (str "Env " env))
-            (if query
-              (d/q '[:find [(pull ?e ?selector) ...]
-                     :in $ ?selector
-                     :where [?e :competition/name]]
-                   (d/db state) query))
-            ) ;(log (str "Read Comp, state " state " , query" query))
+  [{:keys [state query]} _ _]
+  {:value (if query
+            (d/q '[:find [(pull ?e ?selector) ...]
+                   :in $ ?selector
+                   :where [?e :competition/name]]
+                 (d/db state) query))
    :remote true})
 
 (defmethod read :app/selected-page
-  [{:keys [state query]} key params]
+  [{:keys [state]} _ _]
   {:value (do
             (log "Read Selected Page")
             (let [q (d/q '[:find ?page . :where [[:app/id 1] :selected-page ?page]] (d/db state))]
@@ -178,7 +170,7 @@
               q))})
 
 (defmethod read :app/selected-competition
-  [{:keys [state query]} key params]
+  [{:keys [state query]} _ _]
   {:value (do
             (log "Read Selected Comp.")
             (let [q (d/q '[:find (pull ?comp ?selector) .
@@ -189,7 +181,7 @@
               q))})
 
 (defmethod read :app/import-status
-  [{:keys [state query]} key params]
+  [{:keys [state]} _ _]
   {:value (do
             (log "Read Import status")
             (let [q (d/q '[:find ?status .
@@ -214,7 +206,7 @@
 (defmulti mutate om/dispatch)
 
 (defmethod mutate 'app/add-competition
-  [{:keys [state]} key params]
+  [{:keys [state]} _ params]
   (do
     {:value {:keys [:app/competitions]}
      :action (fn []
@@ -228,7 +220,7 @@
                      (d/transact! state [params])))))}))
 
 (defmethod mutate 'app/select-page
-  [{:keys [state]} key {:keys [page] :as params}]
+  [{:keys [state]} _ {:keys [page]}]
   {:value {:keys [:app/selected-page]}
    :action (fn []
              (do (log (str "Select Page "))
@@ -563,11 +555,6 @@
 ;;;;;;;;;;;;;;;;;;;;
 ;; Menu
 
-;; (dom/li #js {:className "active"
-;;              :onClick  #(log "click")}
-;;         (dom/a {:href "#"} "Classer"))
-;; (dom/li nil (dom/a {:href "#"} "Time Schedule"))
-
 (defn make-menu-button
   [component active-page-key button-name page-key ]
   (dom/li
@@ -575,16 +562,9 @@
         :onClick #(om/transact! component `[(app/select-page {:page ~page-key})])}
    (dom/a nil button-name)))
 
-;; (defn make-menu-button
-;;   [component button-name page-key]
-;;   (dom/button
-;;    #js {:className "btn btn-default"
-;;         :onClick #(om/transact! component `[(app/select-page {:page ~page-key})])}
-;;    button-name))
-
 (defui MenuComponent
   static om/IQuery
-  (query [this]
+  (query [_]
          [:app/selected-page
           :app/import-status
           :app/status
@@ -604,7 +584,6 @@
          selected-competition (:app/selected-competition (om/props this))
          make-button (partial make-menu-button this spage)]
      (log "Render MenuComponent")
-;     (dom/div #js {:className "container"})
      (dom/div
       nil
       (dom/nav #js {:className "navbar navbar-inverse navbar-fixed-top"}
@@ -617,11 +596,7 @@
                                           #js {:onClick #(om/transact!
                                                           this
                                                           `[(app/select-page {:page :competitions})])}
-                                          (dom/a #js {:href "#"} "Tävlingar"))
-                                         ;; (dom/li
-                                         ;;  #js {:onClick (fn [e] (test-query-click this))}
-                                         ;;  (dom/a #js {:href "#"} "Query"))
-                                         )
+                                          (dom/a #js {:href "#"} "Tävlingar")))
                                  (dom/form #js {:className "navbar-form navbar-right"}
                                            (dom/input #js {:type "text"
                                                            :className "form-control"
