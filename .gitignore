@@ -13,4 +13,6 @@ pom.xml.asc
 /test/repetitions.txt
 figwheel_server.log
 file-storage.dat
+/.idea
+tango.iml
 
