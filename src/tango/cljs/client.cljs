@@ -11,8 +11,8 @@
             [tango.presentation :as presentation]))
 
 ;; TODO - All Adjudicators 'r valbart i ui m[ste fixa, kolla hur de behandlas i importen
-;; TODO sortera p[ position ;aven klasser
 
+;; TODO - IntelliJ KeyPromoter
 ;; TODO - IntelliJ, emacs ctrl+u
 ;; TODO - IntelliJ, emacs send to repl
 
@@ -64,10 +64,8 @@
     (log "Handle Q R")
     (if (vector? d)
       (let [clean-data {:competitions d}]
-        (log "Compsss")
         (om/transact! reconciler `[(app/add-competition ~clean-data) :app/competitions]))
       (let [clean-data (uidb/sanitize d)]
-        (log "Crazzzy")
         (om/transact! reconciler `[(app/add-competition ~clean-data) :app/competitions])))
     (om/transact! reconciler `[(app/set-import-status {:status :none})])
     (om/transact! reconciler `[(app/status {:status :running})])))
@@ -253,8 +251,7 @@
   Object
   (render
     [this]
-    (let [adjudicators (:competition/adjudicators (om/props this))]
-      (log adjudicators)
+    (let [adjudicators (sort-by :adjudicator/name (:competition/adjudicators (om/props this)))]
       (dom/div nil
         (dom/h2 {:className "sub-header"} "Domare")
         (dom/table
@@ -289,7 +286,7 @@
   Object
   (render
     [this]
-    (let [panels (:competition/panels (om/props this))]
+    (let [panels (sort-by :adjudicator-panel/name (:competition/panels (om/props this)))]
       (log panels)
       (dom/div nil
         (dom/h2 {:className "sub-header"} "Domarpaneler")
@@ -390,7 +387,8 @@
   Object
   (render
     [this]
-    (let [classes (:competition/classes (om/props this))]
+    (let [classes (sort-by :class/position
+                           (:competition/classes (om/props this)))]
       (dom/div nil
         (dom/h2 {:className "sub-header"} "Klasser")
         (dom/table
@@ -445,7 +443,8 @@
   Object
   (render
     [this]
-    (let [activites (:competition/activities (om/props this))]
+    (let [activites (sort-by :activity/position
+                             (:competition/activities (om/props this)))]
       (dom/div nil
         (dom/h2 nil "Time Schedule")
         (dom/table
