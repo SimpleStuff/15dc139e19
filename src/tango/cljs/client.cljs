@@ -12,6 +12,7 @@
 
 ;; TODO - All Adjudicators 'r valbart i ui m[ste fixa, kolla hur de behandlas i importen
 
+;; TODO - IntelliJ KeyPromoter
 ;; TODO - IntelliJ, emacs ctrl+u
 ;; TODO - IntelliJ, emacs send to repl
 
