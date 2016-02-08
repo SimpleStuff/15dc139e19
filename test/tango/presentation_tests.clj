@@ -7,10 +7,14 @@
 ;; Utils
 
 (defn- make-time-schedule-presentations [competition]
-  (mapv #(p/make-time-schedule-activity-presenter
-         %
-         (:competition/classes competition))
-       (:competition/activities competition)))
+  (mapv (fn [act] (p/make-time-schedule-activity-presenter
+                    act
+                    (first
+                      (filter
+                        (fn [c]
+                          (= (:class/id c) (:round/class-id (:activity/source act))))
+                        (:competition/classes competition)))))
+        (:competition/activities competition)))
 
 (defn- make-class-presentations [example]
   (mapv p/make-class-presenter (:competition/classes example)))
