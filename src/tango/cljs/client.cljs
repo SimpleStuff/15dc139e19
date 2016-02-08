@@ -47,10 +47,9 @@
                      {:db/id -1 :app/selected-competition {}}]))
 
 (defn app-started? [conn]
-  (not
-    (empty? (d/q '[:find ?e
-                   :where
-                   [?e :app/id 1]] (d/db conn)))))
+  (seq (d/q '[:find ?e
+              :where
+              [?e :app/id 1]] (d/db conn))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Server message handling
@@ -511,7 +510,7 @@
 
         (dom/div #js {:className "container-fluid"}
           (dom/div #js {:className "row"}
-            (when (and (not (empty? selected-competition))
+            (when (and (seq selected-competition)
                        (= :running (:app/status (om/props this)))
                        (not= :importing (:app/import-status (om/props this))))
               (dom/div #js {:className "col-sm-2 col-md-2 sidebar"}
@@ -551,7 +550,7 @@
 ;; Application
 
 ;; Init db etc if it has not been done
-(when (not (app-started? conn))
+(when-not (app-started? conn)
   (init-app))
 
 (def reconciler
