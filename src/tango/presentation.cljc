@@ -147,7 +147,7 @@
      :panel (if (or comment? (= (:round/type round) :presentation))
               ""
               (let [panel (:adjudicator-panel/name (:round/panel round))]
-                (if (= panel "0")
+                (if (= panel "All adjudicators")
                   "All adj"
                   (str "Panel " panel))))
 
