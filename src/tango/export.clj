@@ -68,13 +68,15 @@
   ))
 
 (defn export-panel-list [db]
-  (let [adjudicator-panels
-        (map first (d/q '[:find (pull ?id [{:adjudicator-panel/adjudicators
-                                            [:adjudicator/id]}])
-                          :where
-                          [?id :adjudicator-panel/id]] db))]
-    (make-panel-list-node adjudicator-panels)
-    ))
+  (let [qr (d/q '[:find (pull ?id [{:adjudicator-panel/adjudicators
+                                                            [:adjudicator/id]}])
+                                          :where
+                                          [?id :adjudicator-panel/id]] db)
+        adjudicator-panels (reduce conj [] (map first qr))
+        n (- 30 (count adjudicator-panels))
+        padded-panels (repeat n {:adjudicator-panel/adjudicators []})
+        all-panels (reduce conj adjudicator-panels padded-panels)]
+    (make-panel-list-node all-panels)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; AdjPanelList
