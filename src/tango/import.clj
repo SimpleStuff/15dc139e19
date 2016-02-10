@@ -307,6 +307,8 @@
        ;; Save the id of the adjudicator panel to be able to look it up in post processing.
        ;; Subtract 3 since the 'index' in the file refer to a UI index witch is 3 of from
        ;; the Adjudicator index in this file beeing parsed.
+       ;; NOTE: A panel UI index of 2, (-1 when translated), has the meaning of "All adjudicators"
+       ;; in the DP UI. This need to be handled in post-processing of this round.
        :round/panel {:dp/panel-id (- (to-number (zx/attr round :AdjPanel)) 3)}
 
        ;; Post process
@@ -384,6 +386,7 @@
                                        (first (:class/results class)))
                                       adjudicators))
                  ;; TODO - Fix that id of -1(?) refers to an "All Ajd" panel, create such a panel and ref it
+                 ;; NOTE: Id of -1 mean "All adj" panel in DP UI.
                  :round/panel (dissoc
                                (first (filter
                                        #(= (:dp/panel-id (:round/panel round)) (:dp/panel-id %))
@@ -458,6 +461,12 @@
    []
    raw-activities))
 
+(defn- make-all-adjudicators-panel [id-generator-fn dp-adjudicators]
+  {:adjudicator-panel/name         "All adjudicators"
+   :adjudicator-panel/id           (id-generator-fn)
+   :adjudicator-panel/adjudicators (mapv #(dissoc % :dp/temp-id) dp-adjudicators)
+   :dp/panel-id                    -1})
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Import API
 
@@ -468,7 +477,9 @@
         dp-adjudicators (adjudicators-xml->map xml id-generator-fn)
         dp-classes (classes-xml->map xml id-generator-fn)
         dp-rounds (rounds-xml->map xml id-generator-fn (:competition/date comp-data))
-        dp-panels (adjudicator-panels-xml->map xml id-generator-fn dp-adjudicators)
+        dp-panels-from-xml (adjudicator-panels-xml->map xml id-generator-fn dp-adjudicators)
+        dp-panels-extended (make-all-adjudicators-panel id-generator-fn dp-adjudicators)
+        dp-panels (conj dp-panels-from-xml dp-panels-extended)
         classes (class-list-post-process
                  dp-classes
                  dp-rounds

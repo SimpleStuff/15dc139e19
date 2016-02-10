@@ -4,8 +4,10 @@
             [clojure.core.async :as async]))
 
 (def expected-folder "./test/tango/expected/")
+;(def expected-folder "./expected/")
 
 (def examples-folder "./test/tango/examples/")
+;(def examples-folder "./examples/")
 
 (defn- slurp-expected [file-name]
   (read-string (slurp (str expected-folder file-name))))
