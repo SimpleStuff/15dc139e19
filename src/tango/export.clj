@@ -14,7 +14,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; AdjPanelList/AdjList
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defn make-adjudicator-node [adjudicator-info]
+(defn- make-adjudicator-node [adjudicator-info]
   (let [name (:adjudicator/name adjudicator-info)
         id (:adjudicator/id adjudicator-info)
         country (:adjudicator/country adjudicator-info)]
@@ -23,7 +23,7 @@
                                :Country country})
     ))
 
-(defn make-adj-list-node [query-result]
+(defn- make-adj-list-node [query-result]
   (let [adjudicator-infos (map first query-result)]
     (xml/element
       :AdjList
@@ -31,22 +31,22 @@
       (map make-adjudicator-node (sort-by :adjudicator/id adjudicator-infos)))
     ))
 
-(defn export-adj-list [db]
+(defn- export-adj-list [db]
   (let [query-result (d/q '[:find (pull ?id [*])
                             :where
-                            [?id :adjudicator/id]] db)] ;; TODO: Improve query, no vector
+                            [?id :adjudicator/id]] db)]
     (make-adj-list-node query-result)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; AdjPanelList/PanelList
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defn make-panel-adj-node [query-result seq-number]
+(defn- make-panel-adj-node [query-result seq-number]
   (xml/element
     :PanelAdj
     {:Seq seq-number
      :AdjNumber (:adjudicator/id query-result)}))
 
-(defn make-panel-node [panel seq-number]
+(defn- make-panel-node [panel seq-number]
   (let [adjudicator-infos (:adjudicator-panel/adjudicators panel)]
     (xml/element
       :Panel
@@ -57,7 +57,7 @@
         []
         adjudicator-infos))))
 
-(defn make-panel-list-node [adjudicator-panels]
+(defn- make-panel-list-node [adjudicator-panels]
   (xml/element
     :PanelList
     {:Qty (count adjudicator-panels)}
@@ -67,21 +67,21 @@
             adjudicator-panels)
   ))
 
-(defn export-panel-list [db]
+(defn- export-panel-list [db]
   (let [qr (d/q '[:find (pull ?id [{:adjudicator-panel/adjudicators
                                                             [:adjudicator/id]}])
                                           :where
-                                          [?id :adjudicator-panel/id]] db) ;; TODO: Improve query, no vector
+                                          [?id :adjudicator-panel/id]] db)
         adjudicator-panels (reduce conj [] (map first qr))
         n (- 30 (count adjudicator-panels))
         padded-panels (repeat n {:adjudicator-panel/adjudicators []})
-        all-panels (reduce conj adjudicator-panels padded-panels)] ;; TODO: Use into
+        all-panels (into adjudicator-panels padded-panels)]
     (make-panel-list-node all-panels)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; AdjPanelList
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defn export-adj-panel-list [db]
+(defn- export-adj-panel-list [db]
   (xml/element
     :AdjPanelList
     {}
@@ -90,13 +90,12 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Utils
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defn get-db [data]
-  (let [clean-data (uidb/sanitize data)
-        conn (d/create-conn uidb/schema)]
-    (d/transact! conn [clean-data])
+(defn- get-db [data]
+  (let [conn (d/create-conn uidb/schema)]
+    (d/transact! conn [(uidb/sanitize data)])
     (d/db conn)))
 
-(defn export-dance-perfect [db]
+(defn- export-dance-perfect [db]
   (xml/element
       :DancePerfect
       {:Version "4.1"}
