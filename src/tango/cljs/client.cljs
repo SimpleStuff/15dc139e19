@@ -351,7 +351,16 @@
                                       :onChange #(do
                                                   (om/transact! reconciler `[(app/set-import-status
                                                                                {:status :importing})])
-                                                  (on-click-import-file %))}))))
+                                                  (on-click-import-file %))}))
+
+            ;(dom/li
+            ;  #js {:className (if (= active-page-key page-key) "active" "")
+            ;       :onClick   #(om/transact! component `[(app/select-page {:page ~page-key})])}
+            ;  (dom/a nil button-name))
+            (dom/button #js {:className "btn btn-default"
+                             :onClick #(om/transact! reconciler
+                                                     `[(app/select-page {:page :create-new-competition})])}
+                        "Skapa ny..")))
         (= import-status :importing) (dom/h3 nil "Importerar, vänligen vänta..")))))
 
 ;;;;;;;;;;;;;;;;;;;;
@@ -462,6 +471,37 @@
           (apply dom/tbody nil (map (om/factory ScheduleRow) activites)))))))
 
 ;;;;;;;;;;;;;;;;;;;;
+;; Create Competition
+(defui CreateCompetitionView
+  Object
+  (render [this]
+    (dom/div nil
+      (dom/h3 nil "Competition Information")
+      (dom/form nil
+        (dom/div #js {:className "form-group"}
+          (dom/label nil "Name")
+          (dom/input #js {:type "text" :className "form-control"}))
+
+        (dom/div #js {:className "form-group"}
+          (dom/label nil "Place")
+          (dom/input #js {:type "text" :className "form-control"}))
+
+        (dom/div #js {:className "form-group"}
+          (dom/label nil "Date")
+          (dom/input #js {:type "text" :className "form-control"}))
+
+        (dom/div #js {:className "form-group"}
+          (dom/label nil "Organizer")
+          (dom/input #js {:type "text" :className "form-control"}))
+        )
+
+      (dom/h3 nil "Competition Options")
+      (dom/form nil
+        (dom/div #js {:className "form-group"}
+          (dom/label #js {:className "checkbox"}
+            (dom/input #js {:type "checkbox"} "Prop")))))))
+
+;;;;;;;;;;;;;;;;;;;;
 ;; Menu
 
 (defn make-menu-button
@@ -525,6 +565,7 @@
 
             (dom/div #js {:className "col-sm-10 col-sm-offset-2 col-md-10 col-md-offset-2 main"}
               (condp = spage
+                :create-new-competition ((om/factory CreateCompetitionView))
                 :properties ((om/factory PropertiesView) selected-competition)
                 :classes ((om/factory ClassesView) selected-competition)
                 :competitions ((om/factory CompetitionsView)
