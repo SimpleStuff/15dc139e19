@@ -106,7 +106,7 @@
 
 (defn export [data]
   (let [db (get-db data)]
-    (export-dance-perfect db)
+    (export-dance-perfect db) ;; TODO: def queries in file and pass in query result
     ))
 
 (xml/indent-str
