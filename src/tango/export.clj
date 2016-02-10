@@ -14,10 +14,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; AdjPanelList/AdjList
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defn make-adjudicator-node [adjudicator-infos]
-  (let [name (:adjudicator/name adjudicator-infos)
-        id (:adjudicator/id adjudicator-infos)
-        country (:adjudicator/country adjudicator-infos)]
+(defn make-adjudicator-node [adjudicator-info]
+  (let [name (:adjudicator/name adjudicator-info)
+        id (:adjudicator/id adjudicator-info)
+        country (:adjudicator/country adjudicator-info)]
     (xml/element :Adjudicator {:Seq (dec id)
                                :Name name
                                :Country country})
@@ -34,7 +34,7 @@
 (defn export-adj-list [db]
   (let [query-result (d/q '[:find (pull ?id [*])
                             :where
-                            [?id :adjudicator/id]] db)]
+                            [?id :adjudicator/id]] db)] ;; TODO: Improve query, no vector
     (make-adj-list-node query-result)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -71,11 +71,11 @@
   (let [qr (d/q '[:find (pull ?id [{:adjudicator-panel/adjudicators
                                                             [:adjudicator/id]}])
                                           :where
-                                          [?id :adjudicator-panel/id]] db)
+                                          [?id :adjudicator-panel/id]] db) ;; TODO: Improve query, no vector
         adjudicator-panels (reduce conj [] (map first qr))
         n (- 30 (count adjudicator-panels))
         padded-panels (repeat n {:adjudicator-panel/adjudicators []})
-        all-panels (reduce conj adjudicator-panels padded-panels)]
+        all-panels (reduce conj adjudicator-panels padded-panels)] ;; TODO: Use into
     (make-panel-list-node all-panels)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
