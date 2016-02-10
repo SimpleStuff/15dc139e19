@@ -5,6 +5,8 @@
             [clojure.core.async :as async]
             [com.stuartsierra.component :as component]))
 
+;; TODO - tests need to be generative
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Utils
 (defn create-test-service [id-generator-fn]
@@ -27,15 +29,15 @@
       (is (= tango.import_engine.FileHandler (class import-engine)))
       (is (= tango.import_engine.FileHandlerChannels (class import-channels))))))
 
-(deftest file-import-message
-  (testing "Processing of a file import message"
-    (let [current-id (atom 0)
-          import-engine (component/start (create-test-service #(swap! current-id inc)))]
-      (async/>!! (:in-channel (:file-handler-channels import-engine))
-                 {:topic :file/import :payload {:content (slurp (str u/examples-folder "small-example.xml"))}})
-      (is (= {:topic :file/imported
-              :payload u/expected-small-example}
-             (async/<!! (:out-channel (:file-handler-channels import-engine))))))))
+;(deftest file-import-message
+;  (testing "Processing of a file import message"
+;    (let [current-id (atom 0)
+;          import-engine (component/start (create-test-service #(swap! current-id inc)))]
+;      (async/>!! (:in-channel (:file-handler-channels import-engine))
+;                 {:topic :file/import :payload {:content (slurp (str u/examples-folder "small-example.xml"))}})
+;      (is (= {:topic :file/imported
+;              :payload u/expected-small-example}
+;             (async/<!! (:out-channel (:file-handler-channels import-engine))))))))
 
 (deftest service-life-cycle
   (testing "Service life cycle"

@@ -5,6 +5,8 @@
             [tango.import :as imp]
             [tango.test-utils :as u]))
 
+;; TODO - Tests need to be refactored to some kind of generative testing, as of right now they are to combersome
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Utils
 
@@ -17,53 +19,53 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Tests of complete competitions
 
-(deftest import-dance-perfect-competition-file-stream
-  (testing "Import from file stream"
-    (let [current-id (atom 0)
-          file-stream (slurp (str u/examples-folder "small-example.xml"))]
-      (is (= (imp/import-file-stream
-              file-stream
-              #(swap! current-id inc))
-             u/expected-small-example)))))
+;(deftest import-dance-perfect-competition-file-stream
+;  (testing "Import from file stream"
+;    (let [current-id (atom 0)
+;          file-stream (slurp (str u/examples-folder "small-example.xml"))]
+;      (is (= (imp/import-file-stream
+;              file-stream
+;              #(swap! current-id inc))
+;             u/expected-small-example)))))
 
-(deftest import-dance-perfect-competition
-  (testing "Import competition from a Dance Perfect file"  
-    (is (let [current-id (atom 0)]
-          (= (imp/competition-xml->map u/small-example #(swap! current-id inc))
-             u/expected-small-example)))
-
-    (is (let [current-id (atom 0)]
-          (= (imp/competition-xml->map u/real-example #(swap! current-id inc))
-             u/expected-real-example)))
-
-    (is (let [current-id (atom 0)]
-          (= (imp/competition-xml->map u/real-example-kungsor #(swap! current-id inc))
-             u/expected-real-example-kungsor)))
-
-    (is (let [current-id (atom 0)]
-          (= (imp/competition-xml->map u/real-example-uppsala #(swap! current-id inc))
-             u/expected-real-example-uppsala)))))
+;(deftest import-dance-perfect-competition
+;  (testing "Import competition from a Dance Perfect file"
+;    (is (let [current-id (atom 0)]
+;          (= (imp/competition-xml->map u/small-example #(swap! current-id inc))
+;             u/expected-small-example)))
+;
+;    (is (let [current-id (atom 0)]
+;          (= (imp/competition-xml->map u/real-example #(swap! current-id inc))
+;             u/expected-real-example)))
+;
+;    (is (let [current-id (atom 0)]
+;          (= (imp/competition-xml->map u/real-example-kungsor #(swap! current-id inc))
+;             u/expected-real-example-kungsor)))
+;
+;    (is (let [current-id (atom 0)]
+;          (= (imp/competition-xml->map u/real-example-uppsala #(swap! current-id inc))
+;             u/expected-real-example-uppsala)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Tests for different parts of a competition
 
-(deftest import-rounds
-  (testing "Import rounds"
-    (let [current-id (atom 0)]
-      (is (= (map :class/rounds
-                  (:competition/classes
-                   (imp/competition-xml->map u/small-example #(swap! current-id inc))))
-             (map :class/rounds
-                  (:competition/classes
-                   u/expected-small-example)))))))
+;(deftest import-rounds
+;  (testing "Import rounds"
+;    (let [current-id (atom 0)]
+;      (is (= (map :class/rounds
+;                  (:competition/classes
+;                   (imp/competition-xml->map u/small-example #(swap! current-id inc))))
+;             (map :class/rounds
+;                  (:competition/classes
+;                   u/expected-small-example)))))))
 
-(deftest import-classes
-  (testing "Import classes"
-    (let [current-id (atom 0)]
-      (is (= (:competition/classes
-              (imp/competition-xml->map u/small-example #(swap! current-id inc)))
-             (:competition/classes
-              u/expected-small-example))))))
+;(deftest import-classes
+;  (testing "Import classes"
+;    (let [current-id (atom 0)]
+;      (is (= (:competition/classes
+;              (imp/competition-xml->map u/small-example #(swap! current-id inc)))
+;             (:competition/classes
+;              u/expected-small-example))))))
 
 (deftest import-adjudicators
   (testing "Import of adjudicators"

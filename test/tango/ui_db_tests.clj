@@ -3,8 +3,6 @@
             [tango.ui-db :as db]
             [tango.test-utils :as u]))
 
-
-
 (defn- transact-small-example []
   (let [conn (db/create-connection db/schema)]
     (db/transform-competition conn (fn [] (db/sanitize u/expected-small-example)))
@@ -68,7 +66,7 @@ Checks that those adjudicators are the same as in the competition."
                                           [?e :competition/adjudicators ?a]]
                                    "TurboMegatävling")]
      
-      (is (= 4 (count panels-with-adjs)))
+      (is (= 7 (count panels-with-adjs)))
       ;; The difference between adjudicators in the panels and
       ;;  adjudicators in the competition should be empty
       (is (= #{} (clojure.set/difference
@@ -164,9 +162,7 @@ Checks that those adjudicators are the same as in the competition."
                                  [?r :round/results ?res]
                                  [?res :result/judgings ?jud]
                                  [?jud :judging/adjudicator ?adj]]
-                          "TurboMegatävling"))))
-      
-      )))
+                          "TurboMegatävling")))))))
 
 (deftest query-for-round-judings
   (testing "Query to get judgings"
@@ -219,19 +215,8 @@ Checks that those adjudicators are the same as in the competition."
                                      [?c :class/remaining ?r]
                                      [?c :class/starting ?s]]
                               "TurboMegatävling"))]
-         (>= start-count rem-count)))
-      )))
+         (>= start-count rem-count))))))
 
-
-;; (deftest query-for-competition-panels
-;;   (testing "Query to get adjudicators panels"
-;;     (let [conn (transact-small-example)]
-;;       (is (= []
-;;              (db/query conn '[:find ?e
-;;                               :in $ ?competition-name
-;;                               :where
-;;                               [?e :competition/name ?competition-name]]
-;;                        "TurboMegatävling"))))))
 
 
 
