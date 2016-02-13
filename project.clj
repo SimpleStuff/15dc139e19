@@ -32,9 +32,7 @@
                  [ring/ring-defaults        "0.1.5"]
 
                  [compojure "1.4.0"]
-                                          
-                 ;[reagent "0.5.1"]
-                                  
+
                  ; Code cleaness tools
                  [repetition-hunter "1.0.0"]
 
@@ -51,7 +49,9 @@
 
   :source-paths ["src"]
 
-  :clean-targets ^{:protect false} ["resources/public/js/out" "target"]
+  :clean-targets ^{:protect false} ["resources/public/js/out"
+                                    "resources/public/js/app.js"
+                                    "target"]
 
   :test-paths ["test" "test/services"]
 
@@ -82,8 +82,9 @@
                ;; lein cljsbuild once min
                {:id "min"
                 :source-paths ["src"]
-                :compiler {:output-to "resources/public/js/app.js"
-                           :main tango.cljs.client
+                :compiler {:main tango.cljs.client
+                           :output-to "resources/public/js/app.js"
+                           :asset-path "js/out"
                            :optimizations :advanced
                            :pretty-print false}}]}
   
@@ -92,17 +93,18 @@
 
   :main ^:skip-aot tango.core
   :target-path "target/%s"
-  :profiles {:uberjar {:aot :all}}
+  :profiles {:uberjar {:aot :all
+                       :hooks     [leiningen.cljsbuild]}}
 
-  :aliases {"quality" ["do"
-                       ;; excluding constant test due to not working well with logging
-                       ["eastwood" "{:exclude-linters [:constant-test]}"]
-                       ["kibit"]
-                       ["ancient"]]
+  :aliases {"quality"    ["do"
+                          ;; excluding constant test due to not working well with logging
+                          ["eastwood" "{:exclude-linters [:constant-test]}"]
+                          ["kibit"]
+                          ["ancient"]]
 
-            "doc" ["do"
-                   ["hiera"]
-                   ["marg" "src" "test" "specs" "--dir" "./doc"]]
+            "doc"        ["do"
+                          ["hiera"]
+                          ["marg" "src" "test" "specs" "--dir" "./doc"]]
 
             "pre-commit" ["do"
                           ["test"]
