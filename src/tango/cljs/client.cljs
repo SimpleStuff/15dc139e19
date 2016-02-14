@@ -9,7 +9,8 @@
             [datascript.core :as d]
             [tango.ui-db :as uidb]
             [tango.presentation :as presentation]
-            [tango.cljs.client-mutation :as m]))
+            [tango.cljs.client-mutation :as m]
+            [tango.cljs.client-read :as r]))
 
 ;; TODO - IntelliJ KeyPromoter
 ;; TODO - IntelliJ, emacs ctrl+u
@@ -131,82 +132,7 @@
     (set! (.-onload r) #(on-file-read % r))
     (.readAsText r file)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Read
 
-(defmulti read om/dispatch)
-
-(defmethod read :app/competitions
-  [{:keys [state query]} _ _]
-  {:value  (if query
-             (d/q '[:find [(pull ?e ?selector) ...]
-                    :in $ ?selector
-                    :where [?e :competition/name]]
-                  (d/db state) query))
-   :remote true})
-
-(defmethod read :app/selected-page
-  [{:keys [state]} _ _]
-  {:value (d/q '[:find ?page .
-                 :where [[:app/id 1] :selected-page ?page]]
-               (d/db state))})
-
-(defmethod read :app/selected-competition
-  [{:keys [state query]} _ _]
-  {:value (d/q '[:find (pull ?comp ?selector) .
-                 :in $ ?selector
-                 :where [[:app/id 1] :app/selected-competition ?comp]]
-               (d/db state) query)})
-
-(defmethod read :app/import-status
-  [{:keys [state]} _ _]
-  {:value (d/q '[:find ?status .
-                 :where [[:app/id 1] :app/import-status ?status]]
-               (d/db state))})
-
-(defmethod read :app/status
-  [{:keys [state]} _ _]
-  {:value (d/q '[:find ?status .
-                 :where [[:app/id 1] :app/status ?status]]
-               (d/db state))})
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Mutate
-
-;(defmulti mutate om/dispatch)
-;
-;(defmethod mutate 'app/add-competition
-;  [{:keys [state]} _ params]
-;  {:value  {:keys [:app/competitions]}
-;   :action (fn []
-;             (when params
-;               (if (:competitions params)
-;                 (d/transact! state (:competitions params))
-;                 (d/transact! state [params]))))})
-;
-;(defmethod mutate 'app/select-page
-;  [{:keys [state]} _ {:keys [page]}]
-;  {:value  {:keys [:app/selected-page]}
-;   :action (fn []
-;             (d/transact! state [{:app/id 1 :selected-page page}]))})
-;
-;(defmethod mutate 'app/set-import-status
-;  [{:keys [state]} _ {:keys [status]}]
-;  {:value  {:keys [:app/import-status]}
-;   :action (fn []
-;             (d/transact! state [{:app/id 1 :app/import-status status}]))})
-;
-;(defmethod mutate 'app/status
-;  [{:keys [state]} _ {:keys [status]}]
-;  {:value  {:keys [:app/status]}
-;   :action (fn []
-;             (d/transact! state [{:app/id 1 :app/status status}]))})
-;
-;(defmethod mutate 'app/select-competition
-;  [{:keys [state]} _ {:keys [name]}]
-;  {:value  {:keys [:app/selected-competition]}
-;   :action (fn []
-;             (d/transact! state [{:app/id 1 :app/selected-competition {:competition/name name}}]))})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Components
@@ -620,7 +546,7 @@
   (om/reconciler
     {:state   conn
      :remotes [:remote]
-     :parser  (om/parser {:read read :mutate m/mutate})
+     :parser  (om/parser {:read r/read :mutate m/mutate})
      :send    sente-post}))
 
 (om/add-root! reconciler
