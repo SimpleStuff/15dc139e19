@@ -8,15 +8,17 @@
             [taoensso.sente :as sente :refer (cb-success?)]
             [datascript.core :as d]
             [tango.ui-db :as uidb]
-            [tango.presentation :as presentation]))
-
-;; TODO - All Adjudicators 'r valbart i ui m[ste fixa, kolla hur de behandlas i importen
+            [tango.presentation :as presentation]
+            [tango.cljs.client-mutation :as m]))
 
 ;; TODO - IntelliJ KeyPromoter
 ;; TODO - IntelliJ, emacs ctrl+u
 ;; TODO - IntelliJ, emacs send to repl
 
 ;https://github.com/omcljs/om/wiki/Quick-Start-%28om.next%29
+;https://blog.juxt.pro/posts/course-notes-2.html
+;https://github.com/awkay/om-tutorial
+;http://juxt.pro/
 
 (enable-console-print!)
 
@@ -171,40 +173,40 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Mutate
 
-(defmulti mutate om/dispatch)
-
-(defmethod mutate 'app/add-competition
-  [{:keys [state]} _ params]
-  {:value  {:keys [:app/competitions]}
-   :action (fn []
-             (when params
-               (if (:competitions params)
-                 (d/transact! state (:competitions params))
-                 (d/transact! state [params]))))})
-
-(defmethod mutate 'app/select-page
-  [{:keys [state]} _ {:keys [page]}]
-  {:value  {:keys [:app/selected-page]}
-   :action (fn []
-             (d/transact! state [{:app/id 1 :selected-page page}]))})
-
-(defmethod mutate 'app/set-import-status
-  [{:keys [state]} _ {:keys [status]}]
-  {:value  {:keys [:app/import-status]}
-   :action (fn []
-             (d/transact! state [{:app/id 1 :app/import-status status}]))})
-
-(defmethod mutate 'app/status
-  [{:keys [state]} _ {:keys [status]}]
-  {:value  {:keys [:app/status]}
-   :action (fn []
-             (d/transact! state [{:app/id 1 :app/status status}]))})
-
-(defmethod mutate 'app/select-competition
-  [{:keys [state]} _ {:keys [name]}]
-  {:value  {:keys [:app/selected-competition]}
-   :action (fn []
-             (d/transact! state [{:app/id 1 :app/selected-competition {:competition/name name}}]))})
+;(defmulti mutate om/dispatch)
+;
+;(defmethod mutate 'app/add-competition
+;  [{:keys [state]} _ params]
+;  {:value  {:keys [:app/competitions]}
+;   :action (fn []
+;             (when params
+;               (if (:competitions params)
+;                 (d/transact! state (:competitions params))
+;                 (d/transact! state [params]))))})
+;
+;(defmethod mutate 'app/select-page
+;  [{:keys [state]} _ {:keys [page]}]
+;  {:value  {:keys [:app/selected-page]}
+;   :action (fn []
+;             (d/transact! state [{:app/id 1 :selected-page page}]))})
+;
+;(defmethod mutate 'app/set-import-status
+;  [{:keys [state]} _ {:keys [status]}]
+;  {:value  {:keys [:app/import-status]}
+;   :action (fn []
+;             (d/transact! state [{:app/id 1 :app/import-status status}]))})
+;
+;(defmethod mutate 'app/status
+;  [{:keys [state]} _ {:keys [status]}]
+;  {:value  {:keys [:app/status]}
+;   :action (fn []
+;             (d/transact! state [{:app/id 1 :app/status status}]))})
+;
+;(defmethod mutate 'app/select-competition
+;  [{:keys [state]} _ {:keys [name]}]
+;  {:value  {:keys [:app/selected-competition]}
+;   :action (fn []
+;             (d/transact! state [{:app/id 1 :app/selected-competition {:competition/name name}}]))})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Components
@@ -495,11 +497,31 @@
           (dom/input #js {:type "text" :className "form-control"}))
         )
 
-      (dom/h3 nil "Competition Options")
-      (dom/form nil
-        (dom/div #js {:className "form-group"}
-          (dom/label #js {:className "checkbox"}
-            (dom/input #js {:type "checkbox"} "Prop")))))))
+      (let [make-property-check (fn [name] (dom/div #js {:className "checkbox"}
+                                             (dom/label nil
+                                               (dom/input #js {:type "checkbox"}) name)))]
+        (dom/div nil
+          (dom/h3 nil "Options")
+
+          (dom/h4 nil "Competition")
+          (apply dom/form nil (map make-property-check
+                                   ["Same heat in all dances"
+                                    "Random order in heats"
+                                    "Heat text on Adjudicator sheets"
+                                    "Names on Number signs"
+                                    "Clubs on Number signs"
+                                    "Enter marks by Adjudicators, Qual/Semi"
+                                    "Enter marks by Adjudicators, Final"
+                                    "Do not print Adjudicators letters (A-ZZ)"]))
+          (dom/h4 nil "Printing")
+          (apply dom/form nil (map make-property-check
+                                   ["Preview Printouts"
+                                    "Select paper size before each printout"
+                                    "Print with Chinese character set"]))
+          ))
+
+      (dom/button nil "Spara")
+      )))
 
 ;;;;;;;;;;;;;;;;;;;;
 ;; Menu
@@ -598,7 +620,7 @@
   (om/reconciler
     {:state   conn
      :remotes [:remote]
-     :parser  (om/parser {:read read :mutate mutate})
+     :parser  (om/parser {:read read :mutate m/mutate})
      :send    sente-post}))
 
 (om/add-root! reconciler
