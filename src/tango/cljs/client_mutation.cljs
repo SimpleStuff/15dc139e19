@@ -36,8 +36,28 @@
    :action (fn []
              (d/transact! state [{:app/id 1 :app/status status}]))})
 
+(defn log [m]
+  (.log js/console m))
+
 (defmethod mutate 'app/select-competition
   [{:keys [state]} _ {:keys [name]}]
   {:value  {:keys [:app/selected-competition]}
    :action (fn []
-             (d/transact! state [{:app/id 1 :app/selected-competition {:competition/name name}}]))})
+             (let [q
+                   (d/transact! state [{:app/id 1 :app/selected-competition {:competition/name name}}])]
+               q))})
+
+;(d/transact! state [[:db/add 3 :competition/name "test 2"]])
+
+(defmethod mutate 'app/update-competition
+  [{:keys [state]} _ {:keys [db/id attribute value]}]
+  {:value  {:keys [:app/selected-competition]}
+   :action (fn []
+             (let [q
+                   (d/transact! state [[:db/add id attribute value]])]
+               q))})
+
+(defmethod mutate 'app/create-competition
+  [{:keys [state]} _ {:keys [competition/name]}]
+  {:value {:keys []}
+   :action (fn [] (d/transact! state [{:db/id -1 :competition/name name}]))})

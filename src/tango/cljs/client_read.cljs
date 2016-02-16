@@ -26,6 +26,13 @@
                  :where [[:app/id 1] :app/selected-competition ?comp]]
                (d/db state) query)})
 
+(defmethod read :app/new-competition
+  [{:keys [state query]} _ _]
+  {:value (d/q '[:find (pull ?comp ?selector) .
+                 :in $ ?selector
+                 :where [[:app/id 1] :app/new-competition ?comp]]
+               (d/db state) query)})
+
 (defmethod read :app/import-status
   [{:keys [state]} _ _]
   {:value (d/q '[:find ?status .

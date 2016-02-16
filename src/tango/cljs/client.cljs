@@ -12,6 +12,9 @@
             [tango.cljs.client-mutation :as m]
             [tango.cljs.client-read :as r]))
 
+;; TODO - check performance issue
+; https://github.com/omcljs/om/issues/556
+
 ;; TODO - IntelliJ KeyPromoter
 ;; TODO - IntelliJ, emacs ctrl+u
 ;; TODO - IntelliJ, emacs send to repl
@@ -47,7 +50,8 @@
                      {:db/id -1 :selected-page :competitions}
                      {:db/id -1 :app/import-status :none}
                      {:db/id -1 :app/status :running}
-                     {:db/id -1 :app/selected-competition {}}]))
+                     {:db/id -1 :app/selected-competition {}}
+                     {:db/id -1 :app/new-competition {:app/id 2 :competition/name "New Comp"}}]))
 
 (defn app-started? [conn]
   (seq (d/q '[:find ?e
@@ -141,20 +145,20 @@
 ;; Properties
 
 ;; TODO - Not completed yet..
-(defui PropertiesView
-  static om/IQuery
-  (query [_]
-    [{:competition/options
-      [:dance-competition/adjudicator-order-final]}
-     :competition/name])
-  Object
-  (render
-    [this]
-    (let [options (:competition/options (om/props this))]
-      (log "Properties")
-      (log options)
-      (dom/h3 nil "Properties")
-      (dom/h2 nil (:competition/name (om/props this))))))
+;(defui PropertiesView
+;  static om/IQuery
+;  (query [_]
+;    [{:competition/options
+;      [:dance-competition/adjudicator-order-final]}
+;     :competition/name])
+;  Object
+;  (render
+;    [this]
+;    (let [options (:competition/options (om/props this))]
+;      (log "Properties")
+;      (log options)
+;      (dom/h3 nil "Properties")
+;      (dom/h2 nil (:competition/name (om/props this))))))
 
 ;;;;;;;;;;;;;;;;;;;;
 ;; Adjudicators
@@ -287,7 +291,9 @@
             ;  (dom/a nil button-name))
             (dom/button #js {:className "btn btn-default"
                              :onClick #(om/transact! reconciler
-                                                     `[(app/select-page {:page :create-new-competition})])}
+                                                     `[(app/create-competition
+                                                         {:competition/name "Ny Tävling"})
+                                                       (app/select-page {:page :create-new-competition})])}
                         "Skapa ny..")))
         (= import-status :importing) (dom/h3 nil "Importerar, vänligen vänta..")))))
 
@@ -400,54 +406,81 @@
 
 ;;;;;;;;;;;;;;;;;;;;
 ;; Create Competition
-(defui CreateCompetitionView
+(defui PropertiesView
+  static om/IQuery
+  (query [_]
+    [:db/id :competition/name :competition/location :competition/date
+     :competition/options])
   Object
   (render [this]
-    (dom/div nil
-      (dom/h3 nil "Competition Information")
-      (dom/form nil
-        (dom/div #js {:className "form-group"}
-          (dom/label nil "Name")
-          (dom/input #js {:type "text" :className "form-control"}))
+    (let [entity (om/props this)
+          options (:competition/options entity)
+          update-fn (fn [ent value-fn]
+                      (fn [attribute e]
+                        (om/transact! this `[(app/update-competition
+                                               ~{:db/id (:db/id ent)
+                                                 :attribute attribute
+                                                 :value (value-fn e)}) ])))
+          update-competition-fn (update-fn entity #(.. % -target -value))
+          update-competition-options-fn (update-fn options #(.. % -target -checked))]
+      (log "Render Properties")
+      (log "Entity >")
+      (log options)
+      (dom/div nil
+        (dom/h3 nil "Competition Information")
+        (dom/form nil
+          (dom/div #js {:className "form-group"}
+            (dom/label nil "Name")
+            (dom/input #js {:type "text" :className "form-control" :value (:competition/name entity)
+                            :onChange #(update-competition-fn :competition/name %)}))
 
-        (dom/div #js {:className "form-group"}
-          (dom/label nil "Place")
-          (dom/input #js {:type "text" :className "form-control"}))
+          (dom/div #js {:className "form-group"}
+            (dom/label nil "Place")
+            (dom/input #js {:type "text" :className "form-control" :value (:competition/location entity)
+                            :onChange #(update-competition-fn :competition/location %)}))
 
-        (dom/div #js {:className "form-group"}
-          (dom/label nil "Date")
-          (dom/input #js {:type "text" :className "form-control"}))
+          (dom/div #js {:className "form-group"}
+            (dom/label nil "Date")
+            (dom/input #js {:type "text" :className "form-control" :value (:competition/date entity)
+                            :onChange #(update-competition-fn :competition/date %)}))
 
-        (dom/div #js {:className "form-group"}
-          (dom/label nil "Organizer")
-          (dom/input #js {:type "text" :className "form-control"}))
-        )
+          ;; TODO - is not included in the import, why?
+          ;(dom/div #js {:className "form-group"}
+          ;  (dom/label nil "Organizer")
+          ;  (dom/input #js {:type "text" :className "form-control"
+          ;                  :onChange #(update-competition-fn :competition/or %)}))
+          )
 
-      (let [make-property-check (fn [name] (dom/div #js {:className "checkbox"}
-                                             (dom/label nil
-                                               (dom/input #js {:type "checkbox"}) name)))]
-        (dom/div nil
-          (dom/h3 nil "Options")
+        (let [make-property-check
+              (fn [name k]
+                (dom/div #js {:className "checkbox"}
+                  (dom/label nil
+                    (dom/input #js {:type     "checkbox"
+                                    :checked  (get options k false)
+                                    :onChange #(update-competition-options-fn k %)}) name)))]
+          (dom/div nil
+            (dom/h3 nil "Options")
 
-          (dom/h4 nil "Competition")
-          (apply dom/form nil (map make-property-check
-                                   ["Same heat in all dances"
-                                    "Random order in heats"
-                                    "Heat text on Adjudicator sheets"
-                                    "Names on Number signs"
-                                    "Clubs on Number signs"
-                                    "Enter marks by Adjudicators, Qual/Semi"
-                                    "Enter marks by Adjudicators, Final"
-                                    "Do not print Adjudicators letters (A-ZZ)"]))
-          (dom/h4 nil "Printing")
-          (apply dom/form nil (map make-property-check
-                                   ["Preview Printouts"
-                                    "Select paper size before each printout"
-                                    "Print with Chinese character set"]))
-          ))
-
-      (dom/button nil "Spara")
-      )))
+            (dom/h4 nil "Competition")
+            (apply dom/form nil
+                   (map (fn [[name k]]
+                          (make-property-check name k))
+                        [["Same heat in all dances" :dance-competition/same-heat-all-dances]
+                         ["Random order in heats" :dance-competition/random-order-in-heats]
+                         ["Heat text on Adjudicator sheets" :dance-competition/heat-text-on-adjudicator-sheet]
+                         ["Names on Number signs" :dance-competition/name-on-number-sign]
+                         ["Clubs on Number signs" :dance-competition/club-on-number-sign]
+                         ["Enter marks by Adjudicators, Qual/Semi" :dance-competition/adjudicator-order-other]
+                         ["Enter marks by Adjudicators, Final" :dance-competition/adjudicator-order-final]
+                         ["Do not print Adjudicators letters (A-ZZ)" :dance-competition/skip-adjudicator-letter]]))
+            (dom/h4 nil "Printing")
+            (apply dom/form nil
+                   (map (fn [[name k]] (make-property-check name k))
+                        [["Preview Printouts" :printer/preview]
+                         ["Select paper size before each printout" :printer/printer-select-paper]]))
+            ))
+        ;(dom/button nil "Spara")
+        ))))
 
 ;;;;;;;;;;;;;;;;;;;;
 ;; Menu
@@ -471,7 +504,8 @@
               (om/get-query ScheduleView)
               (om/get-query AdjudicatorPanelsView)
               (om/get-query AdjudicatorsView)
-              (om/get-query PropertiesView))}])
+              (om/get-query PropertiesView))}
+     {:app/new-competition (om/get-query PropertiesView)}])
   Object
   (render
     [this]
@@ -502,7 +536,7 @@
                        (= :running (:app/status (om/props this)))
                        (not= :importing (:app/import-status (om/props this))))
               (dom/div #js {:className "col-sm-2 col-md-2 sidebar"}
-                (dom/div nil (dom/u nil (:competition/name selected-competition)))
+                (dom/div nil (dom/u nil "Meny"))
                 (apply dom/ul #js {:className "nav nav-sidebar"}
                        (map (fn [[name key]] (make-button name key))
                             [["Properties" :properties]
@@ -513,7 +547,7 @@
 
             (dom/div #js {:className "col-sm-10 col-sm-offset-2 col-md-10 col-md-offset-2 main"}
               (condp = spage
-                :create-new-competition ((om/factory CreateCompetitionView))
+                :create-new-competition ((om/factory PropertiesView) selected-competition)
                 :properties ((om/factory PropertiesView) selected-competition)
                 :classes ((om/factory ClassesView) selected-competition)
                 :competitions ((om/factory CompetitionsView)
