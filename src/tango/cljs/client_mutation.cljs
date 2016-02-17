@@ -36,6 +36,12 @@
    :action (fn []
              (d/transact! state [{:app/id 1 :app/status status}]))})
 
+(defmethod mutate 'app/online?
+  [{:keys [state]} _ {:keys [online?]}]
+  {:value  {:keys [:app/online?]}
+   :action (fn []
+             (d/transact! state [{:app/id 1 :app/online? online?}]))})
+
 (defn log [m]
   (.log js/console m))
 
@@ -58,6 +64,8 @@
                q))})
 
 (defmethod mutate 'app/create-competition
-  [{:keys [state]} _ {:keys [competition/name]}]
-  {:value {:keys []}
-   :action (fn [] (d/transact! state [{:db/id -1 :competition/name name}]))})
+  [{:keys [state]} _ {:keys [competition/name] :as competition}]
+  {:value  {:keys []}
+   :action (fn [] (do
+                    (log competition)
+                    (d/transact! state [competition])))})

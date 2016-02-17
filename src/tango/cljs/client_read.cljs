@@ -44,3 +44,11 @@
   {:value (d/q '[:find ?status .
                  :where [[:app/id 1] :app/status ?status]]
                (d/db state))})
+
+(defmethod read :app/online?
+  [{:keys [state]} _ _]
+  {:value (d/q '[:find ?online .
+                 :where [[:app/id 1] :app/online? ?online]]
+               (d/db state))})
+
+

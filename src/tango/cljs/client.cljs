@@ -8,6 +8,7 @@
             [taoensso.sente :as sente :refer (cb-success?)]
             [datascript.core :as d]
             [tango.ui-db :as uidb]
+            [tango.domain :as domain]
             [tango.presentation :as presentation]
             [tango.cljs.client-mutation :as m]
             [tango.cljs.client-read :as r]))
@@ -47,16 +48,24 @@
 
 (defn init-app []
   (d/transact! conn [{:db/id -1 :app/id 1}
+                     {:db/id -1 :app/online? false}
                      {:db/id -1 :selected-page :competitions}
                      {:db/id -1 :app/import-status :none}
                      {:db/id -1 :app/status :running}
                      {:db/id -1 :app/selected-competition {}}
-                     {:db/id -1 :app/new-competition {:app/id 2 :competition/name "New Comp"}}]))
+                     {:db/id -1 :app/new-competition {}
+                      ;(domain/make-competition "New" "" "" {} {} {} {} {})
+                      }]))
 
 (defn app-started? [conn]
   (seq (d/q '[:find ?e
               :where
               [?e :app/id 1]] (d/db conn))))
+
+(defn app-online? [conn]
+  (d/q '[:find ?online .
+         :where
+         [_ :app/online? ?online]] (d/db conn)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Server message handling
@@ -242,11 +251,14 @@
     (let [competition (om/props this)
           name (:competition/name competition)]
       (dom/tr
+        ;; TODO - if the comp is already selected, do nothing
         ;; TODO - this should be handle by some remote mechanism
-        #js {:onClick #(do
-                        (chsk-send! [:event-manager/query ['[*] [:competition/name name]]])
-                        (om/transact! this `[(app/select-competition {:name ~name})])
-                        (om/transact! this `[(app/status {:status :querying})]))}
+        #js {:onClick #(if (app-online? conn)
+                        (do
+                          (chsk-send! [:event-manager/query ['[*] [:competition/name name]]])
+                          (om/transact! this `[(app/select-competition {:name ~name})])
+                          (om/transact! this `[(app/status {:status :querying})]))
+                        (om/transact! this `[(app/select-competition {:name ~name})]))}
         (dom/td nil name)
         (dom/td nil (:competition/location competition))))))
 
@@ -290,10 +302,12 @@
             ;       :onClick   #(om/transact! component `[(app/select-page {:page ~page-key})])}
             ;  (dom/a nil button-name))
             (dom/button #js {:className "btn btn-default"
-                             :onClick #(om/transact! reconciler
-                                                     `[(app/create-competition
-                                                         {:competition/name "Ny Tävling"})
-                                                       (app/select-page {:page :create-new-competition})])}
+                             :onClick   #(om/transact! reconciler
+                                                       `[(app/create-competition
+                                                           ~(merge {:db/id -1 :competition/id (om/tempid)}
+                                                                   (domain/make-competition "New" "" "" {} {} {} {} {})))
+                                                         (app/select-page {:page :create-new-competition})
+                                                         (app/select-competition {:name "New"})])}
                         "Skapa ny..")))
         (= import-status :importing) (dom/h3 nil "Importerar, vänligen vänta..")))))
 
@@ -410,7 +424,7 @@
   static om/IQuery
   (query [_]
     [:db/id :competition/name :competition/location :competition/date
-     :competition/options])
+     :competition/options :competition/id])
   Object
   (render [this]
     (let [entity (om/props this)
@@ -425,7 +439,8 @@
           update-competition-options-fn (update-fn options #(.. % -target -checked))]
       (log "Render Properties")
       (log "Entity >")
-      (log options)
+      (log (:db/id entity))
+      (log (:competition/id entity))
       (dom/div nil
         (dom/h3 nil "Competition Information")
         (dom/form nil
@@ -498,6 +513,7 @@
     [:app/selected-page
      :app/import-status
      :app/status
+     :app/online?
      {:app/competitions (om/get-query Competition)}
      {:app/selected-competition
       (concat (om/get-query ClassesView)
@@ -517,7 +533,11 @@
         (dom/nav #js {:className "navbar navbar-inverse navbar-fixed-top"}
                  (dom/div #js {:className "container-fluid"}
                    (dom/div #js {:className "navbar-header"}
-                     (dom/a #js {:className "navbar-brand" :href "#"} "Tango!"))
+                     (dom/a #js {:className "navbar-brand" :href "#"}
+                            (str "Tango! - "
+                                 (if (:app/online? (om/props this))
+                                   "online"
+                                   "offline"))))
                    (dom/div #js {:id "navbar" :className "navbar-collapse collapse"}
                      (dom/ul #js {:className "nav navbar-nav navbar-right"}
                              (dom/li
