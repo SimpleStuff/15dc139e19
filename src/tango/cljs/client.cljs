@@ -529,43 +529,67 @@
           spage (:app/selected-page (om/props this))
           selected-competition (:app/selected-competition (om/props this))
           make-button (partial make-menu-button this spage)]
-      (dom/div nil
-        (dom/nav #js {:className "navbar navbar-inverse navbar-fixed-top"}
-                 (dom/div #js {:className "container-fluid"}
-                   (dom/div #js {:className "navbar-header"}
-                     (dom/a #js {:className "navbar-brand" :href "#"}
-                            (str "Tango! - "
-                                 (if (:app/online? (om/props this))
-                                   "online"
-                                   "offline"))))
-                   (dom/div #js {:id "navbar" :className "navbar-collapse collapse"}
-                     (dom/ul #js {:className "nav navbar-nav navbar-right"}
-                             (dom/li
-                               #js {:onClick #(om/transact!
-                                               this
-                                               `[(app/select-page {:page :competitions})])}
-                               (dom/a #js {:href "#"} "Tävlingar")))
-                     (dom/form #js {:className "navbar-form navbar-right"}
-                               (dom/input #js {:type        "text"
-                                               :className   "form-control"
-                                               :placeholder "Search..."})))))
+      (dom/div #js {:className "navbar-wrapper"}
+        (dom/div #js {:className "container"}
 
-        (dom/div #js {:className "container-fluid"}
+          (dom/nav #js {:className "navbar navbar-inverse navbar-static-top"}
+                   (dom/div #js {:className "container"}
+
+                     ;; Header
+                     (dom/div #js {:className "navbar-header"}
+                       (dom/button #js {:type "button" :className "navbar-toggle collapsed"
+                                        :data-toggle "collapse" :data-target "#navbar"
+                                        :aria-expanded "false" :aria-controls "navbar"}
+                                   (dom/span #js {:className "icon-bar"})
+                                   (dom/span #js {:className "icon-bar"})
+                                   (dom/span #js {:className "icon-bar"}))
+
+                       ;; Brand name
+                       (dom/a #js {:className "navbar-brand" :href "#"}
+                              (str "Tango! - "
+                                   (if (:app/online? (om/props this))
+                                     "online"
+                                     "offline"))))
+
+                     ;; Navigation items
+                     (dom/div #js {:id "navbar" :className "navbar-collapse collapse"}
+                       (dom/ul #js {:className "nav navbar-nav"}
+                               (dom/li #js {:className ""
+                                            :onClick #(om/transact!
+                                                       this
+                                                       `[(app/select-page {:page :competitions})])}
+                                       (dom/a nil
+                                         (dom/span #js {:className   "glyphicon glyphicon-home"
+                                                        :aria-hidden "true"}) " Home"))
+                               (dom/li #js {:className ""}
+                                       (dom/a nil "Properties"))
+
+                               (make-button "Classes" :classes)
+
+
+                               )
+                       ;(dom/form #js {:className "navbar-form navbar-right"}
+                       ;  (dom/input #js {:type        "text"
+                       ;                  :className   "form-control"
+                       ;                  :placeholder "Search..."}))
+                       ))))
+
+        (dom/div #js {:className "container"}
           (dom/div #js {:className "row"}
-            (when (and (seq selected-competition)
-                       (= :running (:app/status (om/props this)))
-                       (not= :importing (:app/import-status (om/props this))))
-              (dom/div #js {:className "col-sm-2 col-md-2 sidebar"}
-                (dom/div nil (dom/u nil "Meny"))
-                (apply dom/ul #js {:className "nav nav-sidebar"}
-                       (map (fn [[name key]] (make-button name key))
-                            [["Properties" :properties]
-                             ["Classes" :classes]
-                             ["Time Schedule" :schedule]
-                             ["Adjudicators" :adjudicators]
-                             ["Adjudicator Panels" :adjudicator-panels]]))))
+            ;(when (and (seq selected-competition)
+            ;           (= :running (:app/status (om/props this)))
+            ;           (not= :importing (:app/import-status (om/props this))))
+            ;  (dom/div #js {:className "col-sm-2 col-md-2 sidebar"}
+            ;    (dom/div nil (dom/u nil "Meny"))
+            ;    (apply dom/ul #js {:className "nav nav-sidebar"}
+            ;           (map (fn [[name key]] (make-button name key))
+            ;                [["Properties" :properties]
+            ;                 ["Classes" :classes]
+            ;                 ["Time Schedule" :schedule]
+            ;                 ["Adjudicators" :adjudicators]
+            ;                 ["Adjudicator Panels" :adjudicator-panels]]))))
 
-            (dom/div #js {:className "col-sm-10 col-sm-offset-2 col-md-10 col-md-offset-2 main"}
+            (dom/div #js {:className "col-lg-4"}
               (condp = spage
                 :create-new-competition ((om/factory PropertiesView) selected-competition)
                 :properties ((om/factory PropertiesView) selected-competition)
@@ -576,7 +600,8 @@
                                  :status        (:app/status (om/props this))})
                 :schedule ((om/factory ScheduleView) selected-competition)
                 :adjudicators ((om/factory AdjudicatorsView) selected-competition)
-                :adjudicator-panels ((om/factory AdjudicatorPanelsView) selected-competition)))))))))
+                :adjudicator-panels ((om/factory AdjudicatorPanelsView) selected-competition)))))
+        ))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Remote Posts
