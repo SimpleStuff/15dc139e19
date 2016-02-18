@@ -553,21 +553,29 @@
 
                      ;; Navigation items
                      (dom/div #js {:id "navbar" :className "navbar-collapse collapse"}
-                       (dom/ul #js {:className "nav navbar-nav"}
-                               (dom/li #js {:className ""
-                                            :onClick #(om/transact!
-                                                       this
-                                                       `[(app/select-page {:page :competitions})])}
-                                       (dom/a nil
-                                         (dom/span #js {:className   "glyphicon glyphicon-home"
-                                                        :aria-hidden "true"}) " Home"))
-                               (dom/li #js {:className ""}
-                                       (dom/a nil "Properties"))
-
-                               (make-button "Classes" :classes)
-
-
-                               )
+                       (apply dom/ul #js {:className "nav navbar-nav"}
+                              (map (fn [[name key]] (make-button name key))
+                                   [["Home" :competitions]
+                                    ["Properties" :properties]
+                                    ["Classes" :classes]
+                                    ["Time Schedule" :schedule]
+                                    ["Adjudicators" :adjudicators]
+                                    ["Adjudicator Panels" :adjudicator-panels]]))
+                       ;(dom/ul #js {:className "nav navbar-nav"}
+                       ;        (dom/li #js {:className ""
+                       ;                     :onClick #(om/transact!
+                       ;                                this
+                       ;                                `[(app/select-page {:page :competitions})])}
+                       ;                (dom/a nil
+                       ;                  (dom/span #js {:className   "glyphicon glyphicon-home"
+                       ;                                 :aria-hidden "true"}) " Home"))
+                       ;        (dom/li #js {:className ""}
+                       ;                (dom/a nil "Properties"))
+                       ;
+                       ;        (make-button "Classes" :classes)
+                       ;
+                       ;
+                       ;        )
                        ;(dom/form #js {:className "navbar-form navbar-right"}
                        ;  (dom/input #js {:type        "text"
                        ;                  :className   "form-control"
@@ -576,18 +584,7 @@
 
         (dom/div #js {:className "container"}
           (dom/div #js {:className "row"}
-            ;(when (and (seq selected-competition)
-            ;           (= :running (:app/status (om/props this)))
-            ;           (not= :importing (:app/import-status (om/props this))))
-            ;  (dom/div #js {:className "col-sm-2 col-md-2 sidebar"}
-            ;    (dom/div nil (dom/u nil "Meny"))
-            ;    (apply dom/ul #js {:className "nav nav-sidebar"}
-            ;           (map (fn [[name key]] (make-button name key))
-            ;                [["Properties" :properties]
-            ;                 ["Classes" :classes]
-            ;                 ["Time Schedule" :schedule]
-            ;                 ["Adjudicators" :adjudicators]
-            ;                 ["Adjudicator Panels" :adjudicator-panels]]))))
+
 
             (dom/div #js {:className "col-lg-4"}
               (condp = spage
