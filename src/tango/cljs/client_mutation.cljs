@@ -36,14 +36,17 @@
    :action (fn []
              (d/transact! state [{:app/id 1 :app/status status}]))})
 
+(defn log [m]
+  (.log js/console m))
+
 (defmethod mutate 'app/online?
   [{:keys [state]} _ {:keys [online?]}]
   {:value  {:keys [:app/online?]}
    :action (fn []
-             (d/transact! state [{:app/id 1 :app/online? online?}]))})
-
-(defn log [m]
-  (.log js/console m))
+             (do
+               (log "Mutate online")
+               (log online?)
+               (d/transact! state [{:app/id 1 :app/online? online?}])))})
 
 (defmethod mutate 'app/select-competition
   [{:keys [state]} _ {:keys [name]}]
