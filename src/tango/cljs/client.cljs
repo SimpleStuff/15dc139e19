@@ -102,12 +102,16 @@
 
 (defmethod event-msg-handler :chsk/state
   [{:as ev-msg :keys [?data]}]
-  (if (:first-open? ?data)
-    (do
-      (log "Channel socket successfully established!")
-      (log "Fetch initilize data from Tango server")
-      (chsk-send! [:event-manager/query [[:competition/name :competition/location]]]))
-    (log (str "Channel socket state change: " ?data))))
+  (do
+    (log (str "Channel socket state change: " ?data))
+    (if (:first-open? ?data)
+      (do
+        (log "Channel socket successfully established!")
+        (log "Fetch initilize data from Tango server")
+        (om/transact! reconciler `[(app/online? {:online? true})])
+        (chsk-send! [:event-manager/query [[:competition/name :competition/location]]]))
+      (let [open-state (:open? ?data)]
+        (om/transact! reconciler `[(app/online? {:online? ~open-state})])))))
 
 ;; TODO - Cleaning when respons type can be separated
 (defmethod event-msg-handler :chsk/recv
@@ -525,6 +529,7 @@
   Object
   (render
     [this]
+    (log (:app/online? (om/props this)))
     (let [competitions (:app/competitions (om/props this))
           spage (:app/selected-page (om/props this))
           selected-competition (:app/selected-competition (om/props this))
@@ -560,32 +565,10 @@
                                     ["Classes" :classes]
                                     ["Time Schedule" :schedule]
                                     ["Adjudicators" :adjudicators]
-                                    ["Adjudicator Panels" :adjudicator-panels]]))
-                       ;(dom/ul #js {:className "nav navbar-nav"}
-                       ;        (dom/li #js {:className ""
-                       ;                     :onClick #(om/transact!
-                       ;                                this
-                       ;                                `[(app/select-page {:page :competitions})])}
-                       ;                (dom/a nil
-                       ;                  (dom/span #js {:className   "glyphicon glyphicon-home"
-                       ;                                 :aria-hidden "true"}) " Home"))
-                       ;        (dom/li #js {:className ""}
-                       ;                (dom/a nil "Properties"))
-                       ;
-                       ;        (make-button "Classes" :classes)
-                       ;
-                       ;
-                       ;        )
-                       ;(dom/form #js {:className "navbar-form navbar-right"}
-                       ;  (dom/input #js {:type        "text"
-                       ;                  :className   "form-control"
-                       ;                  :placeholder "Search..."}))
-                       ))))
+                                    ["Adjudicator Panels" :adjudicator-panels]]))))))
 
         (dom/div #js {:className "container"}
           (dom/div #js {:className "row"}
-
-
             (dom/div #js {:className "col-lg-4"}
               (condp = spage
                 :create-new-competition ((om/factory PropertiesView) selected-competition)
@@ -597,8 +580,7 @@
                                  :status        (:app/status (om/props this))})
                 :schedule ((om/factory ScheduleView) selected-competition)
                 :adjudicators ((om/factory AdjudicatorsView) selected-competition)
-                :adjudicator-panels ((om/factory AdjudicatorPanelsView) selected-competition)))))
-        ))))
+                :adjudicator-panels ((om/factory AdjudicatorPanelsView) selected-competition)))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Remote Posts
