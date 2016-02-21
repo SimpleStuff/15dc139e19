@@ -23,6 +23,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ## Resources
 ;;
+
+;; https://github.com/stathissideris/dali
+
 ;; - http://www.core-async.info/tutorial/a-minimal-client
 ;; - https://github.com/enterlab/rente
 ;; - http://stuartsierra.com/2013/12/08/parallel-processing-with-core-async

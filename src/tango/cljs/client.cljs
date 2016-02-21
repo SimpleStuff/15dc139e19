@@ -8,15 +8,22 @@
             [taoensso.sente :as sente :refer (cb-success?)]
             [datascript.core :as d]
             [tango.ui-db :as uidb]
-            [tango.presentation :as presentation]))
+            [tango.domain :as domain]
+            [tango.presentation :as presentation]
+            [tango.cljs.client-mutation :as m]
+            [tango.cljs.client-read :as r]))
 
-;; TODO - All Adjudicators 'r valbart i ui m[ste fixa, kolla hur de behandlas i importen
+;; TODO - check performance issue
+; https://github.com/omcljs/om/issues/556
 
 ;; TODO - IntelliJ KeyPromoter
 ;; TODO - IntelliJ, emacs ctrl+u
 ;; TODO - IntelliJ, emacs send to repl
 
 ;https://github.com/omcljs/om/wiki/Quick-Start-%28om.next%29
+;https://blog.juxt.pro/posts/course-notes-2.html
+;https://github.com/awkay/om-tutorial
+;http://juxt.pro/
 
 (enable-console-print!)
 
@@ -41,15 +48,24 @@
 
 (defn init-app []
   (d/transact! conn [{:db/id -1 :app/id 1}
+                     {:db/id -1 :app/online? false}
                      {:db/id -1 :selected-page :competitions}
                      {:db/id -1 :app/import-status :none}
                      {:db/id -1 :app/status :running}
-                     {:db/id -1 :app/selected-competition {}}]))
+                     {:db/id -1 :app/selected-competition {}}
+                     {:db/id -1 :app/new-competition {}
+                      ;(domain/make-competition "New" "" "" {} {} {} {} {})
+                      }]))
 
 (defn app-started? [conn]
   (seq (d/q '[:find ?e
               :where
               [?e :app/id 1]] (d/db conn))))
+
+(defn app-online? [conn]
+  (d/q '[:find ?online .
+         :where
+         [_ :app/online? ?online]] (d/db conn)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Server message handling
@@ -129,82 +145,7 @@
     (set! (.-onload r) #(on-file-read % r))
     (.readAsText r file)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Read
 
-(defmulti read om/dispatch)
-
-(defmethod read :app/competitions
-  [{:keys [state query]} _ _]
-  {:value  (if query
-             (d/q '[:find [(pull ?e ?selector) ...]
-                    :in $ ?selector
-                    :where [?e :competition/name]]
-                  (d/db state) query))
-   :remote true})
-
-(defmethod read :app/selected-page
-  [{:keys [state]} _ _]
-  {:value (d/q '[:find ?page .
-                 :where [[:app/id 1] :selected-page ?page]]
-               (d/db state))})
-
-(defmethod read :app/selected-competition
-  [{:keys [state query]} _ _]
-  {:value (d/q '[:find (pull ?comp ?selector) .
-                 :in $ ?selector
-                 :where [[:app/id 1] :app/selected-competition ?comp]]
-               (d/db state) query)})
-
-(defmethod read :app/import-status
-  [{:keys [state]} _ _]
-  {:value (d/q '[:find ?status .
-                 :where [[:app/id 1] :app/import-status ?status]]
-               (d/db state))})
-
-(defmethod read :app/status
-  [{:keys [state]} _ _]
-  {:value (d/q '[:find ?status .
-                 :where [[:app/id 1] :app/status ?status]]
-               (d/db state))})
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Mutate
-
-(defmulti mutate om/dispatch)
-
-(defmethod mutate 'app/add-competition
-  [{:keys [state]} _ params]
-  {:value  {:keys [:app/competitions]}
-   :action (fn []
-             (when params
-               (if (:competitions params)
-                 (d/transact! state (:competitions params))
-                 (d/transact! state [params]))))})
-
-(defmethod mutate 'app/select-page
-  [{:keys [state]} _ {:keys [page]}]
-  {:value  {:keys [:app/selected-page]}
-   :action (fn []
-             (d/transact! state [{:app/id 1 :selected-page page}]))})
-
-(defmethod mutate 'app/set-import-status
-  [{:keys [state]} _ {:keys [status]}]
-  {:value  {:keys [:app/import-status]}
-   :action (fn []
-             (d/transact! state [{:app/id 1 :app/import-status status}]))})
-
-(defmethod mutate 'app/status
-  [{:keys [state]} _ {:keys [status]}]
-  {:value  {:keys [:app/status]}
-   :action (fn []
-             (d/transact! state [{:app/id 1 :app/status status}]))})
-
-(defmethod mutate 'app/select-competition
-  [{:keys [state]} _ {:keys [name]}]
-  {:value  {:keys [:app/selected-competition]}
-   :action (fn []
-             (d/transact! state [{:app/id 1 :app/selected-competition {:competition/name name}}]))})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Components
@@ -213,20 +154,20 @@
 ;; Properties
 
 ;; TODO - Not completed yet..
-(defui PropertiesView
-  static om/IQuery
-  (query [_]
-    [{:competition/options
-      [:dance-competition/adjudicator-order-final]}
-     :competition/name])
-  Object
-  (render
-    [this]
-    (let [options (:competition/options (om/props this))]
-      (log "Properties")
-      (log options)
-      (dom/h3 nil "Properties")
-      (dom/h2 nil (:competition/name (om/props this))))))
+;(defui PropertiesView
+;  static om/IQuery
+;  (query [_]
+;    [{:competition/options
+;      [:dance-competition/adjudicator-order-final]}
+;     :competition/name])
+;  Object
+;  (render
+;    [this]
+;    (let [options (:competition/options (om/props this))]
+;      (log "Properties")
+;      (log options)
+;      (dom/h3 nil "Properties")
+;      (dom/h2 nil (:competition/name (om/props this))))))
 
 ;;;;;;;;;;;;;;;;;;;;
 ;; Adjudicators
@@ -310,11 +251,14 @@
     (let [competition (om/props this)
           name (:competition/name competition)]
       (dom/tr
+        ;; TODO - if the comp is already selected, do nothing
         ;; TODO - this should be handle by some remote mechanism
-        #js {:onClick #(do
-                        (chsk-send! [:event-manager/query ['[*] [:competition/name name]]])
-                        (om/transact! this `[(app/select-competition {:name ~name})])
-                        (om/transact! this `[(app/status {:status :querying})]))}
+        #js {:onClick #(if (app-online? conn)
+                        (do
+                          (chsk-send! [:event-manager/query ['[*] [:competition/name name]]])
+                          (om/transact! this `[(app/select-competition {:name ~name})])
+                          (om/transact! this `[(app/status {:status :querying})]))
+                        (om/transact! this `[(app/select-competition {:name ~name})]))}
         (dom/td nil name)
         (dom/td nil (:competition/location competition))))))
 
@@ -351,7 +295,20 @@
                                       :onChange #(do
                                                   (om/transact! reconciler `[(app/set-import-status
                                                                                {:status :importing})])
-                                                  (on-click-import-file %))}))))
+                                                  (on-click-import-file %))}))
+
+            ;(dom/li
+            ;  #js {:className (if (= active-page-key page-key) "active" "")
+            ;       :onClick   #(om/transact! component `[(app/select-page {:page ~page-key})])}
+            ;  (dom/a nil button-name))
+            (dom/button #js {:className "btn btn-default"
+                             :onClick   #(om/transact! reconciler
+                                                       `[(app/create-competition
+                                                           ~(merge {:db/id -1 :competition/id (om/tempid)}
+                                                                   (domain/make-competition "New" "" "" {} {} {} {} {})))
+                                                         (app/select-page {:page :create-new-competition})
+                                                         (app/select-competition {:name "New"})])}
+                        "Skapa ny..")))
         (= import-status :importing) (dom/h3 nil "Importerar, vänligen vänta..")))))
 
 ;;;;;;;;;;;;;;;;;;;;
@@ -462,6 +419,85 @@
           (apply dom/tbody nil (map (om/factory ScheduleRow) activites)))))))
 
 ;;;;;;;;;;;;;;;;;;;;
+;; Create Competition
+(defui PropertiesView
+  static om/IQuery
+  (query [_]
+    [:db/id :competition/name :competition/location :competition/date
+     :competition/options :competition/id])
+  Object
+  (render [this]
+    (let [entity (om/props this)
+          options (:competition/options entity)
+          update-fn (fn [ent value-fn]
+                      (fn [attribute e]
+                        (om/transact! this `[(app/update-competition
+                                               ~{:db/id (:db/id ent)
+                                                 :attribute attribute
+                                                 :value (value-fn e)}) ])))
+          update-competition-fn (update-fn entity #(.. % -target -value))
+          update-competition-options-fn (update-fn options #(.. % -target -checked))]
+      (log "Render Properties")
+      (log "Entity >")
+      (log (:db/id entity))
+      (log (:competition/id entity))
+      (dom/div nil
+        (dom/h3 nil "Competition Information")
+        (dom/form nil
+          (dom/div #js {:className "form-group"}
+            (dom/label nil "Name")
+            (dom/input #js {:type "text" :className "form-control" :value (:competition/name entity)
+                            :onChange #(update-competition-fn :competition/name %)}))
+
+          (dom/div #js {:className "form-group"}
+            (dom/label nil "Place")
+            (dom/input #js {:type "text" :className "form-control" :value (:competition/location entity)
+                            :onChange #(update-competition-fn :competition/location %)}))
+
+          (dom/div #js {:className "form-group"}
+            (dom/label nil "Date")
+            (dom/input #js {:type "text" :className "form-control" :value (:competition/date entity)
+                            :onChange #(update-competition-fn :competition/date %)}))
+
+          ;; TODO - is not included in the import, why?
+          ;(dom/div #js {:className "form-group"}
+          ;  (dom/label nil "Organizer")
+          ;  (dom/input #js {:type "text" :className "form-control"
+          ;                  :onChange #(update-competition-fn :competition/or %)}))
+          )
+
+        (let [make-property-check
+              (fn [name k]
+                (dom/div #js {:className "checkbox"}
+                  (dom/label nil
+                    (dom/input #js {:type     "checkbox"
+                                    :checked  (get options k false)
+                                    :onChange #(update-competition-options-fn k %)}) name)))]
+          (dom/div nil
+            (dom/h3 nil "Options")
+
+            (dom/h4 nil "Competition")
+            (apply dom/form nil
+                   (map (fn [[name k]]
+                          (make-property-check name k))
+                        [["Same heat in all dances" :dance-competition/same-heat-all-dances]
+                         ["Random order in heats" :dance-competition/random-order-in-heats]
+                         ["Heat text on Adjudicator sheets" :dance-competition/heat-text-on-adjudicator-sheet]
+                         ["Names on Number signs" :dance-competition/name-on-number-sign]
+                         ["Clubs on Number signs" :dance-competition/club-on-number-sign]
+                         ["Enter marks by Adjudicators, Qual/Semi" :dance-competition/adjudicator-order-other]
+                         ["Enter marks by Adjudicators, Final" :dance-competition/adjudicator-order-final]
+                         ["Do not print Adjudicators letters (A-ZZ)" :dance-competition/skip-adjudicator-letter]]))
+            (dom/h4 nil "Printing")
+            (apply dom/form nil
+                   (map (fn [[name k]] (make-property-check name k))
+                        [["Preview Printouts" :printer/preview]
+                         ["Select paper size before each printout" :printer/printer-select-paper]]))
+            ))
+        ;(dom/button nil "Spara")
+        ))))
+
+;;;;;;;;;;;;;;;;;;;;
 ;; Menu
 
 (defn make-menu-button
@@ -477,13 +513,15 @@
     [:app/selected-page
      :app/import-status
      :app/status
+     :app/online?
      {:app/competitions (om/get-query Competition)}
      {:app/selected-competition
       (concat (om/get-query ClassesView)
               (om/get-query ScheduleView)
               (om/get-query AdjudicatorPanelsView)
               (om/get-query AdjudicatorsView)
-              (om/get-query PropertiesView))}])
+              (om/get-query PropertiesView))}
+     {:app/new-competition (om/get-query PropertiesView)}])
   Object
   (render
     [this]
@@ -491,40 +529,66 @@
           spage (:app/selected-page (om/props this))
           selected-competition (:app/selected-competition (om/props this))
           make-button (partial make-menu-button this spage)]
-      (dom/div nil
-        (dom/nav #js {:className "navbar navbar-inverse navbar-fixed-top"}
-                 (dom/div #js {:className "container-fluid"}
-                   (dom/div #js {:className "navbar-header"}
-                     (dom/a #js {:className "navbar-brand" :href "#"} "Tango!"))
-                   (dom/div #js {:id "navbar" :className "navbar-collapse collapse"}
-                     (dom/ul #js {:className "nav navbar-nav navbar-right"}
-                             (dom/li
-                               #js {:onClick #(om/transact!
-                                               this
-                                               `[(app/select-page {:page :competitions})])}
-                               (dom/a #js {:href "#"} "Tävlingar")))
-                     (dom/form #js {:className "navbar-form navbar-right"}
-                               (dom/input #js {:type        "text"
-                                               :className   "form-control"
-                                               :placeholder "Search..."})))))
+      (dom/div #js {:className "navbar-wrapper"}
+        (dom/div #js {:className "container"}
 
-        (dom/div #js {:className "container-fluid"}
+          (dom/nav #js {:className "navbar navbar-inverse navbar-static-top"}
+                   (dom/div #js {:className "container"}
+
+                     ;; Header
+                     (dom/div #js {:className "navbar-header"}
+                       (dom/button #js {:type "button" :className "navbar-toggle collapsed"
+                                        :data-toggle "collapse" :data-target "#navbar"
+                                        :aria-expanded "false" :aria-controls "navbar"}
+                                   (dom/span #js {:className "icon-bar"})
+                                   (dom/span #js {:className "icon-bar"})
+                                   (dom/span #js {:className "icon-bar"}))
+
+                       ;; Brand name
+                       (dom/a #js {:className "navbar-brand" :href "#"}
+                              (str "Tango! - "
+                                   (if (:app/online? (om/props this))
+                                     "online"
+                                     "offline"))))
+
+                     ;; Navigation items
+                     (dom/div #js {:id "navbar" :className "navbar-collapse collapse"}
+                       (apply dom/ul #js {:className "nav navbar-nav"}
+                              (map (fn [[name key]] (make-button name key))
+                                   [["Home" :competitions]
+                                    ["Properties" :properties]
+                                    ["Classes" :classes]
+                                    ["Time Schedule" :schedule]
+                                    ["Adjudicators" :adjudicators]
+                                    ["Adjudicator Panels" :adjudicator-panels]]))
+                       ;(dom/ul #js {:className "nav navbar-nav"}
+                       ;        (dom/li #js {:className ""
+                       ;                     :onClick #(om/transact!
+                       ;                                this
+                       ;                                `[(app/select-page {:page :competitions})])}
+                       ;                (dom/a nil
+                       ;                  (dom/span #js {:className   "glyphicon glyphicon-home"
+                       ;                                 :aria-hidden "true"}) " Home"))
+                       ;        (dom/li #js {:className ""}
+                       ;                (dom/a nil "Properties"))
+                       ;
+                       ;        (make-button "Classes" :classes)
+                       ;
+                       ;
+                       ;        )
+                       ;(dom/form #js {:className "navbar-form navbar-right"}
+                       ;  (dom/input #js {:type        "text"
+                       ;                  :className   "form-control"
+                       ;                  :placeholder "Search..."}))
+                       ))))
+
+        (dom/div #js {:className "container"}
           (dom/div #js {:className "row"}
-            (when (and (seq selected-competition)
-                       (= :running (:app/status (om/props this)))
-                       (not= :importing (:app/import-status (om/props this))))
-              (dom/div #js {:className "col-sm-2 col-md-2 sidebar"}
-                (dom/div nil (dom/u nil (:competition/name selected-competition)))
-                (apply dom/ul #js {:className "nav nav-sidebar"}
-                       (map (fn [[name key]] (make-button name key))
-                            [["Properties" :properties]
-                             ["Classes" :classes]
-                             ["Time Schedule" :schedule]
-                             ["Adjudicators" :adjudicators]
-                             ["Adjudicator Panels" :adjudicator-panels]]))))
 
-            (dom/div #js {:className "col-sm-10 col-sm-offset-2 col-md-10 col-md-offset-2 main"}
+
+            (dom/div #js {:className "col-lg-4"}
               (condp = spage
+                :create-new-competition ((om/factory PropertiesView) selected-competition)
                 :properties ((om/factory PropertiesView) selected-competition)
                 :classes ((om/factory ClassesView) selected-competition)
                 :competitions ((om/factory CompetitionsView)
@@ -533,7 +597,8 @@
                                  :status        (:app/status (om/props this))})
                 :schedule ((om/factory ScheduleView) selected-competition)
                 :adjudicators ((om/factory AdjudicatorsView) selected-competition)
-                :adjudicator-panels ((om/factory AdjudicatorPanelsView) selected-competition)))))))))
+                :adjudicator-panels ((om/factory AdjudicatorPanelsView) selected-competition)))))
+        ))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Remote Posts
@@ -557,7 +622,7 @@
   (om/reconciler
     {:state   conn
      :remotes [:remote]
-     :parser  (om/parser {:read read :mutate mutate})
+     :parser  (om/parser {:read r/read :mutate m/mutate})
      :send    sente-post}))
 
 (om/add-root! reconciler

@@ -5,7 +5,8 @@
             [clojure.data.xml :as xml]
             [clojure.xml :as cxml]
             [clojure.zip :as zip]
-            [clojure.data.zip.xml :as zx]))
+            [clojure.data.zip.xml :as zx]
+            [tango.domain :as d]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Export demo
@@ -45,42 +46,6 @@
     :presentation]
    val
    :unknown-round-value))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Makers
-
-(defn make-competition
-  [name date location options panels adjudicators activites classes]
-  {:competition/name name
-   :competition/date date
-   :competition/location location
-   :competition/options options
-   :competition/panels panels
-   :competition/adjudicators adjudicators
-   :competition/activities activites
-   :competition/classes classes})
-
-(defn make-competition-data
-  [name date location options]
-  {:competition/name name
-   :competition/date date
-   :competition/location location
-   :competition/options options})
-
-(defn make-adjudicator
-  [id name country]
-  {:adjudicator/id id
-   :adjudicator/name name
-   :adjudicator/country country})
-
-(defn- make-activity [name number comment id position source-id time]
-  {:activity/name name
-   :activity/number number
-   :activity/comment comment
-   :activity/id id
-   :activity/position position
-   :activity/source-id source-id
-   :activity/time time})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Attribute Utils
@@ -186,14 +151,14 @@
 
 (defn- adjudicators->map [adjudicator-loc id-generator-fn]
   (assoc
-      (make-adjudicator
+      (d/make-adjudicator
        (id-generator-fn)
        (get-name-attr adjudicator-loc)
        (zx/attr adjudicator-loc :Country))
     :dp/temp-id (get-seq-attr-as-number adjudicator-loc)))
 
 (defn- competition-data->map [xml-loc]
-  (make-competition-data
+  (d/make-competition-data
    (get-name-attr xml-loc)
    (tcr/to-date
     (tf/parse (tf/formatter "yyyy-MM-dd")
@@ -283,7 +248,7 @@
        
        :round/id round-id
        
-       :temp/activity (assoc (make-activity
+       :temp/activity (assoc (d/make-activity
                               ;; Post processed
                               ""
                               ;; Events that represent comments do not have an EventNumber and do now get -1
@@ -486,7 +451,7 @@
                  dp-adjudicators
                  dp-panels
                  (:competition/date comp-data))]
-    (make-competition
+    (d/make-competition
      (:competition/name comp-data)
      (:competition/date comp-data)
      (:competition/location comp-data)
