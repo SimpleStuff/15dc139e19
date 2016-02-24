@@ -77,6 +77,17 @@
                            :optimizations :none
                            :pretty-print  true}}
 
+               {:id "adj"
+                :source-paths ["src/tango/cljs/adjudicator" "src"]
+                :compiler {:main tango.cljs.adjudicator.core
+                           :asset-path "js/out/adj"
+                           :output-to     "resources/public/js/adj.js"
+                           :output-dir    "resources/public/js/out/adj"
+                           ;:source-map    "resources/public/js/out.js.map"
+                           :source-map true
+                           :optimizations :none
+                           :pretty-print  true}}
+
                ;; This next build is an compressed minified build for
                ;; production. You can build this with:
                ;; lein cljsbuild once min
