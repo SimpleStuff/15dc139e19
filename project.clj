@@ -51,6 +51,7 @@
 
   :clean-targets ^{:protect false} ["resources/public/js/out"
                                     "resources/public/js/app.js"
+                                    "resources/public/js/adj.js"
                                     "target"]
 
   :test-paths ["test" "test/services"]
@@ -79,6 +80,7 @@
 
                {:id "adj"
                 :source-paths ["src/tango/cljs/adjudicator" "src"]
+                :figwheel {:on-jsload "tango.cljs.adjudicator.core/on-js-reload"}
                 :compiler {:main tango.cljs.adjudicator.core
                            :asset-path "js/out/adj"
                            :output-to     "resources/public/js/adj.js"
