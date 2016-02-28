@@ -129,7 +129,7 @@
         adjudicator-infos))))
 
 (defn- make-panel-list-node [qr]
-  (let [adjudicator-panels (reduce conj [] (map first qr))
+  (let [adjudicator-panels (into [] (map first qr))
         n (- 30 (count adjudicator-panels))
         padded-panels (repeat n {:adjudicator-panel/adjudicators []})
         all-panels (into adjudicator-panels padded-panels)]
@@ -148,35 +148,88 @@
 (def adj-data (d/q make-panel-list-node-query (get-db u/expected-small-example)))
 adj-data
 (make-panel-list-node adj-data)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; DancePerfect/ClassList
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defn- make-couple-node [participant seq]
+  (xml/element
+    :Couple
+    {:Seq seq
+     :Number (:participant/number participant)
+     :Name (:participant/name participant)
+     :Club (:participant/club participant)
+     :License ""}))
+
+(defn- make-start-list-node [participants]
+  (xml/element
+    :StartList
+    {:Qty (count participants)}
+    (reduce (fn [elements participant]
+              (conj elements (make-couple-node participant (count elements))))
+            [] participants)))
+
+(defn- make-class-node [class seq-number]
+  (let []
+    (xml/element
+      :Class
+      {:Seq      seq-number
+       :Name     (:class/name class)
+       :AdjPanel (:adjudicator-panel/name (:class/adjudicator-panel class))}
+      (make-start-list-node (:class/starting class))
+      )))
+
+(defn- make-class-list-node [query-result]
+  (let [classes (into [] (map first query-result))]
+    (xml/element :ClassList
+                 {}
+                 (reduce
+                   (fn [elements class-node]
+                     (conj elements (make-class-node class-node (count elements))))
+                   []
+                   classes))))
+
+(def- make-class-list-node-query
+      '[:find (pull ?e [:class/name
+                        {:class/adjudicator-panel [:adjudicator-panel/name]}
+                        {:class/dances [:dance/name]}
+                        {:class/starting [:participant/club
+                                          :participant/name
+                                          :participant/number]}
+                        ])
+        :where [?e :class/id]])
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Export Definition
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (def- export-definition
-  {
-   :xml-factory make-dance-perfect-node
-   :content [{:xml-factory make-comp-data-node
-              :query make-comp-data-node-query}
-             {:xml-factory make-adj-panel-list-node
-              :content [{:xml-factory make-adj-list-node
-                         :query       make-adj-list-node-query}
-                        {:xml-factory make-panel-list-node
-                         :query       make-panel-list-node-query}
-                        ]}
-             ]})
+      {
+       :xml-factory make-dance-perfect-node
+       :content     [{:xml-factory make-comp-data-node
+                      :query       make-comp-data-node-query}
+                     {:xml-factory make-adj-panel-list-node
+                      :content     [{:xml-factory make-adj-list-node
+                                     :query       make-adj-list-node-query}
+                                    {:xml-factory make-panel-list-node
+                                     :query       make-panel-list-node-query}
+                                    ]}
+                     {:xml-factory make-class-list-node
+                      :query       make-class-list-node-query
+                      :content     [{:xml-factory make-start-list-node
+                                     :query       make-start-list-node-query}]}
+                     ]})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Export
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn- export-xml [db export-def]
   (let [xml-factory (:xml-factory export-def)
-        query (:query export-def)
-        content (:content export-def)
-        export-xml-with-db (partial export-xml db)
-        ]
+       query (:query export-def)
+       content (:content export-def)
+       export-xml-with-db (partial export-xml db)]
     (if (nil? query)
       (xml-factory (map export-xml-with-db content))
-      (xml-factory (d/q query db)))
-    ))
+      (xml-factory (d/q query db)))))
 
 (defn export [data export-def file]
   (let
