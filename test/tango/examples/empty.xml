@@ -1,0 +1,49 @@
+<?xml version = "1.0" encoding = "UTF-8"?>
+<DancePerfect Version="4.1">
+  <CompData Name="Empty" Place="Void" Date="19700101" Org="OrgBy" AdjOrderFinal="1" AdjOrderOther="0" SameHeatAllDances="0" RadomHeats="0" PreView="1" HeatText="1" NameOnNumberSign="0" ClubOnNumberSign="0" SkipAdjLetter="0" PrinterSelectPaper="0" ChineseFonts="0" ArialFont="Arial" CourierFont="Courier New"/>
+  <AdjPanelList>
+    <AdjList Qty="0"/>
+    <PanelList Qty="30">
+      <Panel Seq="0" Qty="0"/>
+      <Panel Seq="1" Qty="0"/>
+      <Panel Seq="2" Qty="0"/>
+      <Panel Seq="3" Qty="0"/>
+      <Panel Seq="4" Qty="0"/>
+      <Panel Seq="5" Qty="0"/>
+      <Panel Seq="6" Qty="0"/>
+      <Panel Seq="7" Qty="0"/>
+      <Panel Seq="8" Qty="0"/>
+      <Panel Seq="9" Qty="0"/>
+      <Panel Seq="10" Qty="0"/>
+      <Panel Seq="11" Qty="0"/>
+      <Panel Seq="12" Qty="0"/>
+      <Panel Seq="13" Qty="0"/>
+      <Panel Seq="14" Qty="0"/>
+      <Panel Seq="15" Qty="0"/>
+      <Panel Seq="16" Qty="0"/>
+      <Panel Seq="17" Qty="0"/>
+      <Panel Seq="18" Qty="0"/>
+      <Panel Seq="19" Qty="0"/>
+      <Panel Seq="20" Qty="0"/>
+      <Panel Seq="21" Qty="0"/>
+      <Panel Seq="22" Qty="0"/>
+      <Panel Seq="23" Qty="0"/>
+      <Panel Seq="24" Qty="0"/>
+      <Panel Seq="25" Qty="0"/>
+      <Panel Seq="26" Qty="0"/>
+      <Panel Seq="27" Qty="0"/>
+      <Panel Seq="28" Qty="0"/>
+      <Panel Seq="29" Qty="0"/>
+    </PanelList>
+  </AdjPanelList>
+  <ClassList>
+    <Class Seq="0" Name="Unused Couples" AdjPanel="0">
+      <DanceList Qty="0"/>
+      <StartList Qty="0"/>
+      <Results Qty="0"/>
+      <StartOrderList Qty="0"/>
+    </Class>
+  </ClassList>
+  <EventList>
+</EventList>
+</DancePerfect>
