@@ -114,8 +114,8 @@
 (defn- make-panel-adj-node [query-result seq-number]
   (xml/element
     :PanelAdj
-    {:Seq seq-number
-     :AdjNumber (:adjudicator/id query-result)}))
+    {:Seq       seq-number
+     :AdjNumber (dec (:adjudicator/id query-result))}))
 
 (defn- make-panel-node [panel seq-number]
   (let [adjudicator-infos (:adjudicator-panel/adjudicators panel)]
@@ -145,6 +145,9 @@
   '[:find (pull ?e [{:adjudicator-panel/adjudicators [:adjudicator/id]}])
     :where [?e :adjudicator-panel/id]])
 
+(def adj-data (d/q make-panel-list-node-query (get-db u/expected-small-example)))
+adj-data
+(make-panel-list-node adj-data)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Export Definition
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
