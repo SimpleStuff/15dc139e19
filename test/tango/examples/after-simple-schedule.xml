@@ -1,0 +1,426 @@
+<?xml version = "1.0" encoding = "UTF-8"?>
+<DancePerfect Version="4.1">
+  <CompData Name="Extra klass silver disco singel och par" Place="V&#196;STER&#197;S" Date="2016-03-20" Org="" AdjOrderFinal="1" AdjOrderOther="0" SameHeatAllDances="0" RadomHeats="0" PreView="1" HeatText="1" NameOnNumberSign="0" ClubOnNumberSign="0" SkipAdjLetter="0" PrinterSelectPaper="0" ChineseFonts="0" ArialFont="Arial" CourierFont="Courier New"/>
+  <AdjPanelList>
+    <AdjList Qty="3">
+      <Adjudicator Seq="0" Name="Anders" Country=""/>
+      <Adjudicator Seq="1" Name="Bertil" Country=""/>
+      <Adjudicator Seq="2" Name="Cesar" Country=""/>
+    </AdjList>
+    <PanelList Qty="30">
+      <Panel Seq="0" Qty="0"/>
+      <Panel Seq="1" Qty="3">
+        <PanelAdj Seq="0" AdjNumber="0"/>
+        <PanelAdj Seq="1" AdjNumber="1"/>
+        <PanelAdj Seq="2" AdjNumber="2"/>
+      </Panel>
+      <Panel Seq="2" Qty="0"/>
+      <Panel Seq="3" Qty="0"/>
+      <Panel Seq="4" Qty="0"/>
+      <Panel Seq="5" Qty="0"/>
+      <Panel Seq="6" Qty="0"/>
+      <Panel Seq="7" Qty="0"/>
+      <Panel Seq="8" Qty="0"/>
+      <Panel Seq="9" Qty="0"/>
+      <Panel Seq="10" Qty="0"/>
+      <Panel Seq="11" Qty="0"/>
+      <Panel Seq="12" Qty="0"/>
+      <Panel Seq="13" Qty="0"/>
+      <Panel Seq="14" Qty="0"/>
+      <Panel Seq="15" Qty="0"/>
+      <Panel Seq="16" Qty="0"/>
+      <Panel Seq="17" Qty="0"/>
+      <Panel Seq="18" Qty="0"/>
+      <Panel Seq="19" Qty="0"/>
+      <Panel Seq="20" Qty="0"/>
+      <Panel Seq="21" Qty="0"/>
+      <Panel Seq="22" Qty="0"/>
+      <Panel Seq="23" Qty="0"/>
+      <Panel Seq="24" Qty="0"/>
+      <Panel Seq="25" Qty="0"/>
+      <Panel Seq="26" Qty="0"/>
+      <Panel Seq="27" Qty="0"/>
+      <Panel Seq="28" Qty="0"/>
+      <Panel Seq="29" Qty="0"/>
+    </PanelList>
+  </AdjPanelList>
+  <ClassList>
+    <Class Seq="0" Name="Disco Singel Silver B1" AdjPanel="0">
+      <DanceList Qty="0"/>
+      <StartList Qty="3">
+        <Couple Seq="0" Number="10" Name="Alma Brolin" Club="KSD" License=""/>
+        <Couple Seq="1" Number="11" Name="Nora Ider" Club="DVT" License=""/>
+        <Couple Seq="2" Number="12" Name="Amy Tran" Club="DH" License=""/>
+      </StartList>
+      <Results Qty="0"/>
+      <StartOrderList Qty="0"/>
+    </Class>
+    <Class Seq="1" Name="Disco Singel Silver B2" AdjPanel="2">
+      <DanceList Qty="1">
+        <Dance Seq="0" Name="Medium"/>
+      </DanceList>
+      <StartList Qty="18">
+        <Couple Seq="0" Number="20" Name="Vilma Johansson" Club="FLEX" License=""/>
+        <Couple Seq="1" Number="21" Name="Nova Johansson" Club="DA Nkpg" License=""/>
+        <Couple Seq="2" Number="22" Name="Saga Noren" Club="LDC" License=""/>
+        <Couple Seq="3" Number="23" Name="Tilde Thygesen" Club="DA Nkpg" License=""/>
+        <Couple Seq="4" Number="24" Name="Moa P&#233;tursson" Club="Team DANSA!" License=""/>
+        <Couple Seq="5" Number="25" Name="Tuva Stoor" Club="DTLH/DV" License=""/>
+        <Couple Seq="6" Number="26" Name="Maja Holmstedt" Club="WAD/VDC" License=""/>
+        <Couple Seq="7" Number="27" Name="Rebecca Falck Lagercrantz" Club="FLEX" License=""/>
+        <Couple Seq="8" Number="28" Name="Wilma Forsman" Club="WAD/VDC" License=""/>
+        <Couple Seq="9" Number="29" Name="Hanna Gr&#246;&#246;n" Club="DA Nkpg" License=""/>
+        <Couple Seq="10" Number="30" Name="Vendela Andersson" Club="KSD" License=""/>
+        <Couple Seq="11" Number="31" Name="Selma Cedic" Club="DA Nkpg" License=""/>
+        <Couple Seq="12" Number="32" Name="Alwa Eriksson" Club="MD" License=""/>
+        <Couple Seq="13" Number="33" Name="Hanna Rudstam" Club="DTLH/DV" License=""/>
+        <Couple Seq="14" Number="34" Name="Ella G&#228;rling" Club="WAD/VDC" License=""/>
+        <Couple Seq="15" Number="35" Name="Anastacia Raninen Sundstr&#246;m" Club="FLEX" License=""/>
+        <Couple Seq="16" Number="36" Name="Matilda Sj&#246;berg" Club="WAD/VDC" License=""/>
+        <Couple Seq="17" Number="37" Name="Sophia Peterson" Club="FLEX" License=""/>
+      </StartList>
+      <Results Qty="0"/>
+      <StartOrderList Qty="0"/>
+    </Class>
+    <Class Seq="2" Name="Disco Singel Silver J1" AdjPanel="0">
+      <DanceList Qty="0"/>
+      <StartList Qty="26">
+        <Couple Seq="0" Number="40" Name="Hugo St&#229;hl" Club="Kindahls" License=""/>
+        <Couple Seq="1" Number="41" Name="Amanda Brandt" Club="FLEX" License=""/>
+        <Couple Seq="2" Number="42" Name="Saga R&#229;dvall" Club="Kindahls" License=""/>
+        <Couple Seq="3" Number="43" Name="Iza Eriksson" Club="FLEX" License=""/>
+        <Couple Seq="4" Number="44" Name="Tindra Reid&#229;s" Club="Kindahls" License=""/>
+        <Couple Seq="5" Number="45" Name="Nina Nori" Club="FLEX" License=""/>
+        <Couple Seq="6" Number="46" Name="Jennifer K&#228;ller" Club="LDC" License=""/>
+        <Couple Seq="7" Number="47" Name="Hillevi Graneld" Club="KD" License=""/>
+        <Couple Seq="8" Number="48" Name="Maya Andersson Hjelm" Club="MD" License=""/>
+        <Couple Seq="9" Number="49" Name="Nina Rizell" Club="KSD" License=""/>
+        <Couple Seq="10" Number="50" Name="Isabelle K&#228;ll" Club="Team DANSA!" License=""/>
+        <Couple Seq="11" Number="51" Name="Elin Fornstedt" Club="Kindahls" License=""/>
+        <Couple Seq="12" Number="52" Name="Tilda Velander" Club="WAD/VDC" License=""/>
+        <Couple Seq="13" Number="53" Name="Stella Bervander B&#228;ck" Club="DCL" License=""/>
+        <Couple Seq="14" Number="54" Name="Isabelle Bellander" Club="Kindahls" License=""/>
+        <Couple Seq="15" Number="55" Name="Engla Klingenstierna" Club="FLEX" License=""/>
+        <Couple Seq="16" Number="56" Name="Thea Runsten" Club="Kindahls" License=""/>
+        <Couple Seq="17" Number="57" Name="Linnea &#214;stberg" Club="FLEX" License=""/>
+        <Couple Seq="18" Number="58" Name="Hedda Mol&#233;n" Club="LDC" License=""/>
+        <Couple Seq="19" Number="59" Name="Ella Botvidson" Club="KD" License=""/>
+        <Couple Seq="20" Number="60" Name="Julia Arnelund" Club="LDC" License=""/>
+        <Couple Seq="21" Number="61" Name="Sofia Henze Wahlund" Club="KD" License=""/>
+        <Couple Seq="22" Number="62" Name="Alma Borelius" Club="SDC" License=""/>
+        <Couple Seq="23" Number="63" Name="Saga Gustafsson" Club="KSD" License=""/>
+        <Couple Seq="24" Number="64" Name="Hannah Sj&#246;berg" Club="WAD/VDC" License=""/>
+        <Couple Seq="25" Number="65" Name="Filippa Levin" Club="Kindahls" License=""/>
+      </StartList>
+      <Results Qty="0"/>
+      <StartOrderList Qty="0"/>
+    </Class>
+    <Class Seq="3" Name="Disco Singel Silver J2" AdjPanel="0">
+      <DanceList Qty="0"/>
+      <StartList Qty="24">
+        <Couple Seq="0" Number="70" Name="Fanny Rejdemark" Club="KSD" License=""/>
+        <Couple Seq="1" Number="71" Name="Elin Mourad" Club="DA Nkpg" License=""/>
+        <Couple Seq="2" Number="72" Name="Alva Flyhammar" Club="Kindahls" License=""/>
+        <Couple Seq="3" Number="73" Name="Tilda Mor&#233;n" Club="DCL" License=""/>
+        <Couple Seq="4" Number="74" Name="Frida From" Club="Kindahls" License=""/>
+        <Couple Seq="5" Number="75" Name="Alva Persson" Club="DSH" License=""/>
+        <Couple Seq="6" Number="76" Name="Tindra &#197;kesdotter" Club="Kindahls" License=""/>
+        <Couple Seq="7" Number="77" Name="Moa Lindborg" Club="DWSUN" License=""/>
+        <Couple Seq="8" Number="78" Name="Olivia Lindeborg" Club="Laising" License=""/>
+        <Couple Seq="9" Number="79" Name="My Lennartsson" Club="KD" License=""/>
+        <Couple Seq="10" Number="80" Name="Emilia Bjurling" Club="Let's Move" License=""/>
+        <Couple Seq="11" Number="81" Name="Vilma Graflind" Club="KD" License=""/>
+        <Couple Seq="12" Number="82" Name="Alva Turd&#233;n" Club="DA Nkpg" License=""/>
+        <Couple Seq="13" Number="83" Name="Stina Hagberg" Club="KSD" License=""/>
+        <Couple Seq="14" Number="84" Name="Sofia Lindblom" Club="DA Nkpg" License=""/>
+        <Couple Seq="15" Number="85" Name="Filippa Uddenberg" Club="Kindahls" License=""/>
+        <Couple Seq="16" Number="86" Name="Clara Thulin" Club="DCSW" License=""/>
+        <Couple Seq="17" Number="87" Name="Nathalie Stendahl" Club="Kindahls" License=""/>
+        <Couple Seq="18" Number="88" Name="Ida Stegeby" Club="DWSUN" License=""/>
+        <Couple Seq="19" Number="89" Name="Beata Fylkner" Club="Laising" License=""/>
+        <Couple Seq="20" Number="90" Name="Emilia Dahlquist" Club="KD" License=""/>
+        <Couple Seq="21" Number="91" Name="Tilda Saxer" Club="Laising" License=""/>
+        <Couple Seq="22" Number="92" Name="Sofia Wilson" Club="KD" License=""/>
+        <Couple Seq="23" Number="93" Name="Matilda Wickberg" Club="Sinclairs" License=""/>
+      </StartList>
+      <Results Qty="0"/>
+      <StartOrderList Qty="0"/>
+    </Class>
+    <Class Seq="4" Name="Disco Singel Silver U" AdjPanel="0">
+      <DanceList Qty="0"/>
+      <StartList Qty="5">
+        <Couple Seq="0" Number="100" Name="Alice Knutas" Club="MD" License=""/>
+        <Couple Seq="1" Number="101" Name="Nora Axelsson" Club="DVT" License=""/>
+        <Couple Seq="2" Number="102" Name="Lisa Trange" Club="Kindahls" License=""/>
+        <Couple Seq="3" Number="103" Name="Nathalie Haag" Club="DA Nkpg" License=""/>
+        <Couple Seq="4" Number="104" Name="Linda Sk&#246;ld" Club="WAD/VDC" License=""/>
+      </StartList>
+      <Results Qty="0"/>
+      <StartOrderList Qty="0"/>
+    </Class>
+    <Class Seq="5" Name="Disco Singel Silver V" AdjPanel="0">
+      <DanceList Qty="0"/>
+      <StartList Qty="4">
+        <Couple Seq="0" Number="110" Name="Maria Munther" Club="Kindahls" License=""/>
+        <Couple Seq="1" Number="111" Name="Caroline Tynnstedt" Club="Edge Uppsala" License=""/>
+        <Couple Seq="2" Number="112" Name="Caroline Dil&#233;n" Club="Ackes" License=""/>
+        <Couple Seq="3" Number="113" Name="Alicia Aspelin" Club="Sinclairs" License=""/>
+      </StartList>
+      <Results Qty="0"/>
+      <StartOrderList Qty="0"/>
+    </Class>
+    <Class Seq="6" Name="Disco Par Silver B2" AdjPanel="0">
+      <DanceList Qty="0"/>
+      <StartList Qty="10">
+        <Couple Seq="0" Number="120" Name="Julia Einarsson - Madeleine Svennestam Lindell" Club="Let's Move" License=""/>
+        <Couple Seq="1" Number="121" Name="Nova Johansson - Tilde Thygesen" Club="DA Nkpg" License=""/>
+        <Couple Seq="2" Number="122" Name="Angelina Brandstedt - Ella G&#228;rling" Club="WAD/VDC" License=""/>
+        <Couple Seq="3" Number="123" Name="Elise Morling - Victoria Linder" Club="FLEX" License=""/>
+        <Couple Seq="4" Number="124" Name="Moa Norstr&#246;m - Nathalie Jireteg" Club="WAD/VDC" License=""/>
+        <Couple Seq="5" Number="125" Name="Hanna Gr&#246;&#246;n - Selma Cedic" Club="DA Nkpg" License=""/>
+        <Couple Seq="6" Number="126" Name="Alicia Larsson - Enna Fredin" Club="WAD/VDC" License=""/>
+        <Couple Seq="7" Number="127" Name="Hanna Rudstam - Tuva Stoor" Club="DTLH/DV" License=""/>
+        <Couple Seq="8" Number="128" Name="Lovisa Robson - Matilda Sj&#246;berg" Club="WAD/VDC" License=""/>
+        <Couple Seq="9" Number="129" Name="Alice Hagberg - Alma Brolin" Club="KSD" License=""/>
+      </StartList>
+      <Results Qty="0"/>
+      <StartOrderList Qty="0"/>
+    </Class>
+    <Class Seq="7" Name="Disco Par Silver J1" AdjPanel="0">
+      <DanceList Qty="0"/>
+      <StartList Qty="11">
+        <Couple Seq="0" Number="140" Name="Hedda Mol&#233;n - Julia Arnelund" Club="LDC" License=""/>
+        <Couple Seq="1" Number="141" Name="Maya Olm&#229;s - Sofia Henze Wahlund" Club="KD" License=""/>
+        <Couple Seq="2" Number="142" Name="Bianca Paulin - Elin Svensk" Club="SDC" License=""/>
+        <Couple Seq="3" Number="143" Name="Ella Ekberg - Melina Karapetsiani" Club="Kindahls" License=""/>
+        <Couple Seq="4" Number="144" Name="Sofia Fernstr&#246;m - Tilda Norstr&#246;m" Club="WAD/VDC" License=""/>
+        <Couple Seq="5" Number="145" Name="Hugo St&#229;hl - Isabelle Bellander" Club="Kindahls" License=""/>
+        <Couple Seq="6" Number="146" Name="Filippa Wenngren - Linnea &#214;stberg" Club="FLEX" License=""/>
+        <Couple Seq="7" Number="147" Name="Maya Andersson Hjelm - Moa Eriksson" Club="MD" License=""/>
+        <Couple Seq="8" Number="148" Name="Cornelia Farendahl - Saga R&#229;dvall" Club="Kindahls" License=""/>
+        <Couple Seq="9" Number="149" Name="Ida Oscarsson - Isabelle K&#228;ll" Club="Team DANSA!" License=""/>
+        <Couple Seq="10" Number="150" Name="Filippa Levin - Isabelle Uddenberg" Club="Kindahls" License=""/>
+      </StartList>
+      <Results Qty="0"/>
+      <StartOrderList Qty="0"/>
+    </Class>
+    <Class Seq="8" Name="Disco Par Silver J2" AdjPanel="0">
+      <DanceList Qty="0"/>
+      <StartList Qty="15">
+        <Couple Seq="0" Number="160" Name="Anna H&#229;kansdotter - Elsa H&#246;gberg" Club="Kindahls" License=""/>
+        <Couple Seq="1" Number="161" Name="Clara Karlsson - Yasemin Hamurcu" Club="KD" License=""/>
+        <Couple Seq="2" Number="162" Name="Felicia Karlsson - Hanna H&#228;rneman" Club="Kindahls" License=""/>
+        <Couple Seq="3" Number="163" Name="Peggy Schnitzer - Sofia Andersson" Club="KD" License=""/>
+        <Couple Seq="4" Number="164" Name="Beata Fylkner - Olivia Lindeborg" Club="Laising" License=""/>
+        <Couple Seq="5" Number="165" Name="Nathalie Hellstr&#246;m - Stina Hagberg" Club="KSD" License=""/>
+        <Couple Seq="6" Number="166" Name="Julia Borgenstedt - Tove Larsson" Club="WAD/VDC" License=""/>
+        <Couple Seq="7" Number="167" Name="Alva Flyhammar - Ellinor Zetterstr&#246;m" Club="Kindahls" License=""/>
+        <Couple Seq="8" Number="168" Name="Alva Turd&#233;n - Lisen K&#228;lvehed" Club="DA Nkpg" License=""/>
+        <Couple Seq="9" Number="169" Name="Emma Wessman - Nathalie Stendahl" Club="Kindahls" License=""/>
+        <Couple Seq="10" Number="170" Name="Elias Vermunt - Vilma Graflind" Club="KD" License=""/>
+        <Couple Seq="11" Number="171" Name="Melina Axner Ellgren - Tindra &#197;kesdotter" Club="Kindahls" License=""/>
+        <Couple Seq="12" Number="172" Name="Alice H&#246;rnestig - Simone Jakobsson" Club="KSD" License=""/>
+        <Couple Seq="13" Number="173" Name="Alva Lindgart - Johanna Tengvall Williams" Club="Team DANSA!" License=""/>
+        <Couple Seq="14" Number="174" Name="Agnes Nidsj&#246; - Agnes Rajsic" Club="Kindahls" License=""/>
+      </StartList>
+      <Results Qty="0"/>
+      <StartOrderList Qty="0"/>
+    </Class>
+    <Class Seq="9" Name="Disco Par Silver U" AdjPanel="0">
+      <DanceList Qty="0"/>
+      <StartList Qty="3">
+        <Couple Seq="0" Number="180" Name="Linnea Wahl - Sara Engerdahl" Club="SDC" License=""/>
+        <Couple Seq="1" Number="181" Name="Filippa Uddenberg - Lisa Trange" Club="Kindahls" License=""/>
+        <Couple Seq="2" Number="182" Name="Johanna Vilhelmsson - Nellie T&#246;rnblom" Club="DH" License=""/>
+      </StartList>
+      <Results Qty="0"/>
+      <StartOrderList Qty="0"/>
+    </Class>
+    <Class Seq="10" Name="Disco Par Silver V" AdjPanel="0">
+      <DanceList Qty="0"/>
+      <StartList Qty="1">
+        <Couple Seq="0" Number="190" Name="Amanda Edling - Maria Munther" Club="Kindahls" License=""/>
+      </StartList>
+      <Results Qty="0"/>
+      <StartOrderList Qty="0"/>
+    </Class>
+    <Class Seq="11" Name="Unused Couples" AdjPanel="0">
+      <DanceList Qty="0"/>
+      <StartList Qty="0"/>
+      <Results Qty="0"/>
+      <StartOrderList Qty="0"/>
+    </Class>
+  </ClassList>
+  <EventList>
+    <Event Seq="0" ClassNumber="0" DanceQty="0" EventNumber="" Time="" Comment="" AdjPanel="0" Heats="1" Round="32" Status="0" Startorder="0">
+      <DanceList Qty="0"/>
+      <Panel Qty="0"/>
+      <RecallList Qty="10">
+        <Recall Seq="0" Recall="0"/>
+        <Recall Seq="1" Recall="0"/>
+        <Recall Seq="2" Recall="0"/>
+        <Recall Seq="3" Recall="0"/>
+        <Recall Seq="4" Recall="0"/>
+        <Recall Seq="5" Recall="0"/>
+        <Recall Seq="6" Recall="0"/>
+        <Recall Seq="7" Recall="0"/>
+        <Recall Seq="8" Recall="0"/>
+        <Recall Seq="9" Recall="0"/>
+      </RecallList>
+    </Event>
+    <Event Seq="1" ClassNumber="1" DanceQty="1" EventNumber="" Time="" Comment="" AdjPanel="3" Heats="1" Round="3" Status="0" Startorder="0">
+      <DanceList Qty="1">
+        <Dance Seq="0" Name="Medium"/>
+      </DanceList>
+      <Panel Qty="0"/>
+      <RecallList Qty="10">
+        <Recall Seq="0" Recall="0"/>
+        <Recall Seq="1" Recall="0"/>
+        <Recall Seq="2" Recall="0"/>
+        <Recall Seq="3" Recall="0"/>
+        <Recall Seq="4" Recall="0"/>
+        <Recall Seq="5" Recall="0"/>
+        <Recall Seq="6" Recall="0"/>
+        <Recall Seq="7" Recall="0"/>
+        <Recall Seq="8" Recall="0"/>
+        <Recall Seq="9" Recall="0"/>
+      </RecallList>
+    </Event>
+    <Event Seq="2" ClassNumber="0" DanceQty="0" EventNumber="" Time="" Comment="" AdjPanel="0" Heats="1" Round="0" Status="0" Startorder="0">
+      <DanceList Qty="0"/>
+      <Panel Qty="0"/>
+      <RecallList Qty="10">
+        <Recall Seq="0" Recall="0"/>
+        <Recall Seq="1" Recall="0"/>
+        <Recall Seq="2" Recall="0"/>
+        <Recall Seq="3" Recall="0"/>
+        <Recall Seq="4" Recall="0"/>
+        <Recall Seq="5" Recall="0"/>
+        <Recall Seq="6" Recall="0"/>
+        <Recall Seq="7" Recall="0"/>
+        <Recall Seq="8" Recall="0"/>
+        <Recall Seq="9" Recall="0"/>
+      </RecallList>
+    </Event>
+    <Event Seq="3" ClassNumber="0" DanceQty="0" EventNumber="" Time="" Comment="" AdjPanel="0" Heats="1" Round="0" Status="0" Startorder="0">
+      <DanceList Qty="0"/>
+      <Panel Qty="0"/>
+      <RecallList Qty="10">
+        <Recall Seq="0" Recall="0"/>
+        <Recall Seq="1" Recall="0"/>
+        <Recall Seq="2" Recall="0"/>
+        <Recall Seq="3" Recall="0"/>
+        <Recall Seq="4" Recall="0"/>
+        <Recall Seq="5" Recall="0"/>
+        <Recall Seq="6" Recall="0"/>
+        <Recall Seq="7" Recall="0"/>
+        <Recall Seq="8" Recall="0"/>
+        <Recall Seq="9" Recall="0"/>
+      </RecallList>
+    </Event>
+    <Event Seq="4" ClassNumber="2" DanceQty="1" EventNumber="" Time="" Comment="" AdjPanel="4" Heats="2" Round="1" Status="0" Startorder="0">
+      <DanceList Qty="1">
+        <Dance Seq="0" Name="Medium"/>
+      </DanceList>
+      <Panel Qty="0"/>
+      <RecallList Qty="10">
+        <Recall Seq="0" Recall="12"/>
+        <Recall Seq="1" Recall="0"/>
+        <Recall Seq="2" Recall="0"/>
+        <Recall Seq="3" Recall="0"/>
+        <Recall Seq="4" Recall="0"/>
+        <Recall Seq="5" Recall="0"/>
+        <Recall Seq="6" Recall="0"/>
+        <Recall Seq="7" Recall="0"/>
+        <Recall Seq="8" Recall="0"/>
+        <Recall Seq="9" Recall="0"/>
+      </RecallList>
+    </Event>
+    <Event Seq="5" ClassNumber="2" DanceQty="1" EventNumber="" Time="" Comment="" AdjPanel="4" Heats="1" Round="2" Status="0" Startorder="0">
+      <DanceList Qty="1">
+        <Dance Seq="0" Name="Medium"/>
+      </DanceList>
+      <Panel Qty="0"/>
+      <RecallList Qty="10">
+        <Recall Seq="0" Recall="6"/>
+        <Recall Seq="1" Recall="0"/>
+        <Recall Seq="2" Recall="0"/>
+        <Recall Seq="3" Recall="0"/>
+        <Recall Seq="4" Recall="0"/>
+        <Recall Seq="5" Recall="0"/>
+        <Recall Seq="6" Recall="0"/>
+        <Recall Seq="7" Recall="0"/>
+        <Recall Seq="8" Recall="0"/>
+        <Recall Seq="9" Recall="0"/>
+      </RecallList>
+    </Event>
+    <Event Seq="6" ClassNumber="2" DanceQty="1" EventNumber="" Time="" Comment="" AdjPanel="4" Heats="1" Round="3" Status="0" Startorder="0">
+      <DanceList Qty="1">
+        <Dance Seq="0" Name="Medium"/>
+      </DanceList>
+      <Panel Qty="0"/>
+      <RecallList Qty="10">
+        <Recall Seq="0" Recall="0"/>
+        <Recall Seq="1" Recall="0"/>
+        <Recall Seq="2" Recall="0"/>
+        <Recall Seq="3" Recall="0"/>
+        <Recall Seq="4" Recall="0"/>
+        <Recall Seq="5" Recall="0"/>
+        <Recall Seq="6" Recall="0"/>
+        <Recall Seq="7" Recall="0"/>
+        <Recall Seq="8" Recall="0"/>
+        <Recall Seq="9" Recall="0"/>
+      </RecallList>
+    </Event>
+    <Event Seq="7" ClassNumber="0" DanceQty="0" EventNumber="" Time="" Comment="" AdjPanel="0" Heats="1" Round="32" Status="0" Startorder="0">
+      <DanceList Qty="0"/>
+      <Panel Qty="0"/>
+      <RecallList Qty="10">
+        <Recall Seq="0" Recall="0"/>
+        <Recall Seq="1" Recall="0"/>
+        <Recall Seq="2" Recall="0"/>
+        <Recall Seq="3" Recall="0"/>
+        <Recall Seq="4" Recall="0"/>
+        <Recall Seq="5" Recall="0"/>
+        <Recall Seq="6" Recall="0"/>
+        <Recall Seq="7" Recall="0"/>
+        <Recall Seq="8" Recall="0"/>
+        <Recall Seq="9" Recall="0"/>
+      </RecallList>
+    </Event>
+    <Event Seq="8" ClassNumber="3" DanceQty="1" EventNumber="" Time="" Comment="" AdjPanel="3" Heats="1" Round="11" Status="0" Startorder="0">
+      <DanceList Qty="1">
+        <Dance Seq="0" Name="Forward Medium"/>
+      </DanceList>
+      <Panel Qty="0"/>
+      <RecallList Qty="10">
+        <Recall Seq="0" Recall="0"/>
+        <Recall Seq="1" Recall="0"/>
+        <Recall Seq="2" Recall="0"/>
+        <Recall Seq="3" Recall="0"/>
+        <Recall Seq="4" Recall="0"/>
+        <Recall Seq="5" Recall="0"/>
+        <Recall Seq="6" Recall="0"/>
+        <Recall Seq="7" Recall="0"/>
+        <Recall Seq="8" Recall="0"/>
+        <Recall Seq="9" Recall="0"/>
+      </RecallList>
+    </Event>
+    <Event Seq="9" ClassNumber="0" DanceQty="0" EventNumber="" Time="" Comment="" AdjPanel="0" Heats="1" Round="32" Status="0" Startorder="0">
+      <DanceList Qty="0"/>
+      <Panel Qty="0"/>
+      <RecallList Qty="10">
+        <Recall Seq="0" Recall="0"/>
+        <Recall Seq="1" Recall="0"/>
+        <Recall Seq="2" Recall="0"/>
+        <Recall Seq="3" Recall="0"/>
+        <Recall Seq="4" Recall="0"/>
+        <Recall Seq="5" Recall="0"/>
+        <Recall Seq="6" Recall="0"/>
+        <Recall Seq="7" Recall="0"/>
+        <Recall Seq="8" Recall="0"/>
+        <Recall Seq="9" Recall="0"/>
+      </RecallList>
+    </Event>
+  </EventList>
+</DancePerfect>
