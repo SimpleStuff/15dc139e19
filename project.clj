@@ -37,7 +37,8 @@
                  [repetition-hunter "1.0.0"]
 
                  ;; Cljs
-                 [com.andrewmcveigh/cljs-time "0.4.0"]]
+                 [com.andrewmcveigh/cljs-time "0.4.0"]
+                 [cljs-http "0.1.39"]]
 
   :plugins [[lein-figwheel "0.5.0-2"]
             [lein-cljsbuild "1.1.2"]

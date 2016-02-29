@@ -4,7 +4,10 @@
   (:require [goog.dom :as gdom]
             [om.next :as om :refer-macros [defui]]
             [om.dom :as dom]
+
             [cljs.core.async :as async :refer (<! >! put! chan)]
+            [cljs-http.client :as http]
+
             [taoensso.sente :as sente :refer (cb-success?)]
             [datascript.core :as d]
             [tango.ui-db :as uidb]
@@ -55,7 +58,14 @@
         (dom/h3 nil "Adjudicator UI")
         (dom/span nil
           (dom/label nil "Command Test : ")
-          (dom/button #js {:onClick #(log "Command")} "Command"))))))
+                  ;https://github.com/r0man/cljs-http
+          (dom/button #js {:onClick #(do
+                                      (log (http/post
+                                             "http://localhost:1337/commands"
+                                             ;{:form-params {:foo :bar}}
+                                             {:edn-params {:foo :bar}}
+                                             ))
+                                      (log "Command"))} "Command"))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Application
