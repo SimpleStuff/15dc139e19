@@ -52,20 +52,48 @@
   Object
   (render
     [this]
-    (let [app (om/props this)]
-      (log app)
+    (let [app (om/props this)
+          status (:app/status app)
+          next-status (if (not= status :on) :on :off)]
+      ;(log status)
       (dom/div nil
         (dom/h3 nil "Adjudicator UI")
+        (dom/h3 nil (str "Status : " status))
         (dom/span nil
           (dom/label nil "Command Test : ")
                   ;https://github.com/r0man/cljs-http
-          (dom/button #js {:onClick #(do
-                                      (log (http/post
-                                             "http://localhost:1337/commands"
-                                             ;{:form-params {:foo :bar}}
-                                             {:edn-params {:foo :bar}}
-                                             ))
-                                      (log "Command"))} "Command"))))))
+          (dom/button #js {:onClick
+                           #(do
+                             (om/transact!
+                               this
+                               `[(app/status {:status ~next-status})
+                                 (app/online? {:online? true})])
+                             ;(log (http/post
+                             ;       "http://localhost:1337/commands"
+                             ;       {:form-params {:foo :bar}}
+                             ;       ;{:edn-params {:foo :bar}}
+                             ;       ))
+                             (log "Command"))} "Command"))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Remote Posts
+
+(defn sente-post []
+  (fn [{:keys [remote] :as env} cb]
+    (do
+      (log "Env > ")
+      (log env)
+      (log (str "Sent to Tango Backend => " remote))
+      (log (http/post
+             "http://localhost:1337/commands"
+             {:transit-params {:command remote}}
+             ;{:json-params {:command remote}}
+             ;{:form-params {:command remote}}
+             ;{:edn-params {:command remote}}
+             ))
+
+      ;(chsk-send! [:event-manager/query [[:competition/name :competition/location]]])
+      )))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Application
@@ -79,7 +107,7 @@
     {:state   conn
      :remotes [:remote]
      :parser  (om/parser {:read r/read :mutate m/mutate})
-     :send    #()}))
+     :send    (sente-post)}))
 
 (om/add-root! reconciler
               MainComponent (gdom/getElement "app"))
