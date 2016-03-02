@@ -86,7 +86,7 @@
       (log (str "Sent to Tango Backend => " remote))
       (log (http/post
              "http://localhost:1337/commands"
-             {:transit-params {:command remote}}
+             {:query-params {:command remote}}
              ;{:json-params {:command remote}}
              ;{:form-params {:command remote}}
              ;{:edn-params {:command remote}}

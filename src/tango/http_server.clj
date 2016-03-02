@@ -33,7 +33,7 @@
    (GET "/" req {:body (slurp (clojure.java.io/resource "public/index.html"))
                  :session {:uid (rand-int 100)}
                  :headers {"Content-Type" "text/html"}})
-   (POST "/commands" req (str "Command: " req))
+   (POST "/commands" req (str "Command: " (:params req)))
    (GET "/adjudicator" req {:body (slurp (clojure.java.io/resource "public/adjudicator.html"))
                             :session {:uid (rand-int 100)}
                             :headers {"Content-Type" "text/html"}})

@@ -25,7 +25,7 @@
    :remote true
    :action (fn []
              (do
-               (log "Mutate online")
-               (log online?)
+               ;(log "Mutate online")
+               ;(log online?)
                (d/transact! state [{:app/id 1 :app/online? online?}])))})
 
