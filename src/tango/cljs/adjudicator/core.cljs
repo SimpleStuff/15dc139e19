@@ -5,6 +5,8 @@
             [om.next :as om :refer-macros [defui]]
             [om.dom :as dom]
 
+            [cognitect.transit :as t]
+
             [cljs.core.async :as async :refer (<! >! put! chan)]
             [cljs-http.client :as http]
 
@@ -14,7 +16,8 @@
             [tango.domain :as domain]
             [tango.presentation :as presentation]
             [tango.cljs.adjudicator.mutation :as m]
-            [tango.cljs.adjudicator.read :as r]))
+            [tango.cljs.adjudicator.read :as r])
+  (:import [goog.net XhrIo]))
 
 (defn log [m]
   (.log js/console m))
@@ -78,6 +81,21 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Remote Posts
 
+;http://jeremyraines.com/2015/11/16/getting-started-with-clojure-web-development.html
+(defn transit-post [url]
+  (fn [edn cb]
+    (log edn)
+    (.send XhrIo url
+           (fn [e]
+             (log e)
+             ;(this-as this
+             ;  (log (t/read (t/reader :json)
+             ;               (.getResponseText this)))
+             ;  (cb (t/read (t/reader :json) (.getResponseText this))))
+             )
+           "POST" (t/write (t/writer :json) edn)
+           #js {"Content-Type" "application/transit+json"})))
+
 (defn sente-post []
   (fn [{:keys [remote] :as env} cb]
     (do
@@ -107,7 +125,8 @@
     {:state   conn
      :remotes [:remote]
      :parser  (om/parser {:read r/read :mutate m/mutate})
-     :send    (sente-post)}))
+     :send    (transit-post "http://localhost:1337/commands")                                              ;(sente-post)
+     }))
 
 (om/add-root! reconciler
               MainComponent (gdom/getElement "app"))
