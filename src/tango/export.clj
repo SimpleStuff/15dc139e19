@@ -8,6 +8,7 @@
             [clojure.data.xml :as xml]
             [clojure.xml :as cxml]
             [clojure.zip :as zip]
+            [tango.expected.expected-small-result :as esr]
             [clojure.data.zip.xml :as zx]
             ))
 
@@ -145,10 +146,6 @@
   '[:find (pull ?e [{:adjudicator-panel/adjudicators [:adjudicator/id]}])
     :where [?e :adjudicator-panel/id]])
 
-(def adj-data (d/q make-panel-list-node-query (get-db u/expected-small-example)))
-adj-data
-(make-panel-list-node adj-data)
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; DancePerfect/ClassList
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -214,10 +211,9 @@ adj-data
                                      :query       make-panel-list-node-query}
                                     ]}
                      {:xml-factory make-class-list-node
-                      :query       make-class-list-node-query
-                      :content     [{:xml-factory make-start-list-node
-                                     :query       make-start-list-node-query}]}
-                     ]})
+                      :query       make-class-list-node-query}
+                     ]
+       })
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Export
@@ -231,10 +227,10 @@ adj-data
       (xml-factory (map export-xml-with-db content))
       (xml-factory (d/q query db)))))
 
-(defn export [data export-def file]
+(defn export [data]
   (let
     [db (get-db data)]
-    (spit file (xml/emit-str (export-xml db export-def)))))
+    (xml/emit-str (export-xml db export-definition))))
 
-(export u/expected-small-example export-definition "/tmp/baz.xml")
 
+(export esr/expected-small-example)

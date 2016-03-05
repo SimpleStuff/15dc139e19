@@ -3,6 +3,7 @@
             [tango.test-utils :as u]
             [tango.event-access :as ea]
             [tango.event-file-storage :as fs]
+            [tango.expected.expected-small-result :as esr]
             [clojure.core.async :as async]
             [com.stuartsierra.component :as component]))
 
@@ -56,7 +57,7 @@
 (deftest transact-with-file-storage
   (testing "A query should be run on file storage"
     (let [event-access (component/start (create-test-service-with-file-storage))]
-      (send-to event-access {:topic :event-access/transact :payload u/expected-small-example})
+      (send-to event-access {:topic :event-access/transact :payload esr/expected-small-example})
       (is (= {:topic :event-access/transaction-result :payload nil}
              (receive-from event-access)))
 
