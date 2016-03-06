@@ -42,7 +42,7 @@
 ;; DancePerfect/CompData
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn- make-comp-data-node [query-result]
-  (let [result (first (first query-result))
+  (let [result (ffirst query-result)
         options (:competition/options result)]
     (xml/element
       :CompData
@@ -130,7 +130,7 @@
         adjudicator-infos))))
 
 (defn- make-panel-list-node [qr]
-  (let [adjudicator-panels (into [] (map first qr))
+  (let [adjudicator-panels (vec (map first qr))
         n (- 30 (count adjudicator-panels))
         padded-panels (repeat n {:adjudicator-panel/adjudicators []})
         all-panels (into adjudicator-panels padded-panels)]
@@ -177,7 +177,7 @@
       )))
 
 (defn- make-class-list-node [query-result]
-  (let [classes (into [] (map first query-result))]
+  (let [classes (vec (map first query-result))]
     (xml/element :ClassList
                  {}
                  (reduce
