@@ -13,6 +13,8 @@
 
                  [datascript "0.15.0"]
 
+                 [com.cognitect/transit-clj "0.8.285"]
+
                  ;; Utils
                  [com.stuartsierra/component "0.3.1"]
                  [org.clojure/data.xml "0.0.8"]
@@ -30,6 +32,7 @@
 
                  [ring                      "1.4.0"]
                  [ring/ring-defaults        "0.1.5"]
+                 [ring-transit "0.1.4"]
 
                  [compojure "1.4.0"]
 

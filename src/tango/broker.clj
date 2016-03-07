@@ -17,6 +17,8 @@
   (let [client-in-channel (:in-channel channel-connection-channels)]
     (log/info (str "Dispatching Topic [" topic "], Sender [" sender "]"))
     (match [topic payload]
+           [:command _]
+           (log/info (str "Command: " payload))
            [:file/import _]
            (let [[import import-ch] (async/alts!!
                                      [[(:in-channel file-handler-channels)
@@ -94,7 +96,10 @@
           (recur))))))
 
 ;; TODO - need to fix som pub/sub pattern
-(defrecord MessageBroker [channel-connection-channels file-handler-channels event-access-channels]
+(defrecord MessageBroker [channel-connection-channels
+                          file-handler-channels
+                          event-access-channels
+                          http-server-channels]
   component/Lifecycle
   (start [component]
     (log/report "Starting MessageBroker")
@@ -102,7 +107,8 @@
                           message-dispatch 
                           {:channel-connection-channels channel-connection-channels
                            :file-handler-channels file-handler-channels
-                           :event-access-channels event-access-channels})]
+                           :event-access-channels event-access-channels
+                           :http-server-channels http-server-channels})]
       (assoc component :broker-process broker-process)))
   (stop [component]
     (log/report "Stopping MessageBroker")
