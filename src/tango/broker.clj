@@ -7,18 +7,50 @@
 ;; Provides useful Timbre aliases in this ns
 (log/refer-timbre)
 
+(defn start-result-rules-engine [in-ch out-ch]
+  (async/go-loop []
+    (when-let [message (async/<! in-ch)]
+      (when message
+        (try
+          (let [topic (:topic message)
+                payload (:payload message)]
+            (log/trace (str "Result Rules received: " message))
+            (log/info (str "Result Received Topic: [" topic "]"))
+            (log/info (str "Result Received payload: [" payload "]"))
+            (match [topic payload]
+                   [:result/mark-x p]
+                   (log/info "Mark X")
+                   :else (async/>!!
+                           out-ch
+                           {:topic :rules/unkown-topic :payload {:topic topic}})))
+          (catch Exception e
+            (log/error e "Exception in Broker message go loop")
+            (async/>! out-ch (str "Exception message: " (.getMessage e)))))
+        (recur)))))
+
 (defn message-dispatch [{:keys [topic payload sender] :as message}
                         {:keys [channel-connection-channels
                                 file-handler-channels
-                                event-access-channels] :as components}]
+                                event-access-channels
+                                rules-engine-channels] :as components}]
   {:pre [(some? channel-connection-channels)
          (some? file-handler-channels)
-         (some? event-access-channels)]}
+         (some? event-access-channels)
+         (some? rules-engine-channels)]}
   (let [client-in-channel (:in-channel channel-connection-channels)]
     (log/info (str "Dispatching Topic [" topic "], Sender [" sender "]"))
     (match [topic payload]
            [:command _]
-           (log/info (str "Command: " payload))
+           ;; Results should be handled by "Result Rules Engine"
+           ;; If a result is accepted it should be sent to the
+           ;; "Results Access" for handling.
+           (async/>!! (:in-channel rules-engine-channels)
+                      {:topic topic
+                       :payload payload})
+           ;(result-rules-engine (:in-channel rules-engine-channels)
+           ;                     (:out-channel rules-engine-channels))
+           ;(let [[command data] payload]
+           ;  (log/info (str "Command: " command " Payload " data)))
            [:file/import _]
            (let [[import import-ch] (async/alts!!
                                      [[(:in-channel file-handler-channels)
@@ -103,16 +135,25 @@
   component/Lifecycle
   (start [component]
     (log/report "Starting MessageBroker")
-    (let [broker-process (start-message-process
+    (let [rules-in-ch (async/chan)
+          rules-out-ch (async/chan)
+          rules-engine (start-result-rules-engine
+                         rules-in-ch
+                         rules-out-ch)
+          broker-process (start-message-process
                           message-dispatch 
                           {:channel-connection-channels channel-connection-channels
                            :file-handler-channels file-handler-channels
                            :event-access-channels event-access-channels
-                           :http-server-channels http-server-channels})]
-      (assoc component :broker-process broker-process)))
+                           :http-server-channels http-server-channels
+                           :rules-engine-channels {:in-channel rules-in-ch
+                                                   :out-channel rules-out-ch}})]
+      (assoc component :broker-process broker-process
+                       :rules-engine rules-engine)))
   (stop [component]
     (log/report "Stopping MessageBroker")
-    (assoc component :broker-process nil :file-handler-channels nil :event-access-channels nil)))
+    (assoc component :broker-process nil :file-handler-channels nil :event-access-channels nil
+                     :rules-engine nil)))
 
 (defn create-message-broker []
   (map->MessageBroker {})) 

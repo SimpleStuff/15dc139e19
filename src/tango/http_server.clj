@@ -43,7 +43,7 @@
 (defmethod mutate 'app/online?
   [{:keys [state] :as env} key params]
   {:action (fn []
-             (log/info (async/>!! state {:topic :command :sender :http :payload key}))
+             (log/info (async/>!! state {:topic :command :sender :http :payload [key params]}))
              (str "Mutate online"))})
 
 (def parser

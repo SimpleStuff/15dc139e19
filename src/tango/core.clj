@@ -84,6 +84,7 @@
      :ws-connection-channels (ws/create-ws-channels)
      :ws-connection (component/using (ws/create-ws-connection) [:ws-connection-channels])
 
+     ;; Http-Server
      :http-server-channels (http/create-http-channels)
      :http-server (component/using (http/create-http-server port) [:ws-connection :http-server-channels])
 
