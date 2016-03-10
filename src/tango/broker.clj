@@ -18,7 +18,7 @@
             (log/info (str "Result Received Topic: [" topic "]"))
             (log/info (str "Result Received payload: [" payload "]"))
             (match [topic payload]
-                   [:result/mark-x p]
+                   [:set-result p]
                    (log/info "Mark X")
                    :else (async/>!!
                            out-ch
@@ -47,10 +47,6 @@
            (async/>!! (:in-channel rules-engine-channels)
                       {:topic topic
                        :payload payload})
-           ;(result-rules-engine (:in-channel rules-engine-channels)
-           ;                     (:out-channel rules-engine-channels))
-           ;(let [[command data] payload]
-           ;  (log/info (str "Command: " command " Payload " data)))
            [:file/import _]
            (let [[import import-ch] (async/alts!!
                                      [[(:in-channel file-handler-channels)

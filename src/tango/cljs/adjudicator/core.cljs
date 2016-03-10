@@ -48,6 +48,13 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Components
 
+;; TODO:
+;; - Select judge for UI
+;; - Get selected round that is to be judged
+;; - Get the number of participants to be recalled
+;; - Show participant number
+;; - Command to set mark on participant for the specific round for this judge
+;; - Command to inc/dec the judges 'point' for a participant
 (defui MainComponent
   static om/IQuery
   (query [_]
@@ -82,6 +89,9 @@
 ;; Remote Posts
 
 ;http://jeremyraines.com/2015/11/16/getting-started-with-clojure-web-development.html
+
+;; example of a mark message
+;; [:set-result {:round/id 1 :adjudicator/id 1 :participant-id 1 :mark/x true}]
 (defn transit-post [url]
   (fn [edn cb]
     (log edn)
