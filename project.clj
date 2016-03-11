@@ -13,6 +13,8 @@
 
                  [datascript "0.15.0"]
 
+                 [com.cognitect/transit-clj "0.8.285"]
+
                  ;; Utils
                  [com.stuartsierra/component "0.3.1"]
                  [org.clojure/data.xml "0.0.8"]
@@ -30,6 +32,7 @@
 
                  [ring                      "1.4.0"]
                  [ring/ring-defaults        "0.1.5"]
+                 [ring-transit "0.1.4"]
 
                  [compojure "1.4.0"]
 
@@ -37,7 +40,9 @@
                  [repetition-hunter "1.0.0"]
 
                  ;; Cljs
-                 [com.andrewmcveigh/cljs-time "0.4.0"]]
+                 [com.andrewmcveigh/cljs-time "0.4.0"]
+                 [cljs-http "0.1.39"]
+                 [com.cognitect/transit-cljs "0.8.237"]]
 
   :plugins [[lein-figwheel "0.5.0-2"]
             [lein-cljsbuild "1.1.2"]
@@ -51,6 +56,7 @@
 
   :clean-targets ^{:protect false} ["resources/public/js/out"
                                     "resources/public/js/app.js"
+                                    "resources/public/js/adj.js"
                                     "target"]
 
   :test-paths ["test" "test/services"]
@@ -72,6 +78,18 @@
                            :asset-path "js/out"
                            :output-to     "resources/public/js/app.js"
                            :output-dir    "resources/public/js/out"
+                           ;:source-map    "resources/public/js/out.js.map"
+                           :source-map true
+                           :optimizations :none
+                           :pretty-print  true}}
+
+               {:id "adj"
+                :source-paths ["src/tango/cljs/adjudicator" "src"]
+                :figwheel {:on-jsload "tango.cljs.adjudicator.core/on-js-reload"}
+                :compiler {:main tango.cljs.adjudicator.core
+                           :asset-path "js/out/adj"
+                           :output-to     "resources/public/js/adj.js"
+                           :output-dir    "resources/public/js/out/adj"
                            ;:source-map    "resources/public/js/out.js.map"
                            :source-map true
                            :optimizations :none

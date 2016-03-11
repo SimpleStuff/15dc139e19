@@ -80,10 +80,13 @@
      :channel-connection-channels (channels/create-channel-connection-channels)
      :channel-connection (component/using (channels/create-channel-connection) [:channel-connection-channels])
 
-     ;; Http/WS-Service
+     ;; WS-Service
      :ws-connection-channels (ws/create-ws-channels)
      :ws-connection (component/using (ws/create-ws-connection) [:ws-connection-channels])
-     :http-server (component/using (http/create-http-server port) [:ws-connection])
+
+     ;; Http-Server
+     :http-server-channels (http/create-http-channels)
+     :http-server (component/using (http/create-http-server port) [:ws-connection :http-server-channels])
 
      ;; Event Storage
      :event-file-storage-channels (file-storage/create-event-file-storage-channels)
@@ -99,6 +102,7 @@
      ;; Message broker
      :message-broker (component/using (broker/create-message-broker)
                                       {:channel-connection-channels client-connection
+                                       :http-server-channels :http-server-channels
                                        :file-handler-channels :file-handler-channels
                                        :event-access-channels :event-access-channels}))))
 
