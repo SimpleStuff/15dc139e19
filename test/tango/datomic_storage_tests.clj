@@ -8,16 +8,25 @@
 ;    (db/transform-competition conn (fn [] (db/sanitize u/expected-small-example)))
 ;    conn))
 ;
+
+(def mem-uri "datomic:mem://localhost:4334//competitions")
+
 (deftest create-connection
   (testing "Create a connection to db"
-    (is (not= nil (ds/create-connection {})))))
+    (is (not= nil (ds/create-storage mem-uri)))
+    (is (not= nil (ds/create-connection mem-uri)))))
 
-;(deftest add-competition
-;  (testing "Add map represention of a competition"
-;    (let [conn (db/create-connection {})]
-;      (is (= [:db-before :db-after :tx-data :tempids :tx-meta]
-;             (keys (db/transform-competition conn (fn [] u/expected-small-example))))))))
-;
+
+(deftest add-competition
+  (testing "Add map represention of a competition"
+    (let [conn (ds/create-connection mem-uri)]
+      (is (= [:db-before :db-after :tx-data :tempids :tx-meta]
+             (keys (ds/transform-competition
+                     conn
+                     (fn [] (select-keys u/expected-small-example
+                                         [:competition/name])))))))))
+
+
 ;(deftest query-for-competition-info
 ;  (testing "Query to get competition info"
 ;    (let [conn (transact-small-example)]
