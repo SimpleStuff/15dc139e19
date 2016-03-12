@@ -232,5 +232,11 @@
     [db (get-db data)]
     (xml/emit-str (export-xml db export-definition))))
 
+(defn foo [x]
+  (+ 6 4))
+
+(defn bar [y]
+  (* 9 y))
 
 (export esr/expected-small-example)
+(bar 66)
