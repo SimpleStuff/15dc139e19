@@ -7,6 +7,12 @@
 ;; Provides useful Timbre aliases in this ns
 (log/refer-timbre)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; This should be componitized
+
+(defn select-activity [activity]
+  (log/info "Get this stuff to Datomic"))
+
 (defn start-result-rules-engine [in-ch out-ch]
   (async/go-loop []
     (when-let [message (async/<! in-ch)]
@@ -18,6 +24,10 @@
             (log/info (str "Result Received Topic: [" topic "]"))
             (log/info (str "Result Received payload: [" payload "]"))
             (match [topic payload]
+                   ['app/select-activity _]
+                   (do
+                     (log/info (str "Select activity " payload))
+                     (select-activity payload))
                    [:set-result p]
                    (log/info "Mark X")
                    :else (async/>!!
@@ -27,6 +37,8 @@
             (log/error e "Exception in Broker message go loop")
             (async/>! out-ch (str "Exception message: " (.getMessage e)))))
         (recur)))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
 (defn message-dispatch [{:keys [topic payload sender] :as message}
                         {:keys [channel-connection-channels
@@ -47,8 +59,8 @@
              ;; If a result is accepted it should be sent to the
              ;; "Results Access" for handling.
              (async/>!! (:in-channel rules-engine-channels)
-                        {:topic   topic
-                         :payload payload}))
+                        {:topic   (first payload)
+                         :payload (second payload)}))
            [:file/import _]
            (let [[import import-ch] (async/alts!!
                                      [[(:in-channel file-handler-channels)
