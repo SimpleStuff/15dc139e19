@@ -41,12 +41,14 @@
     (log/info (str "Dispatching Topic [" topic "], Sender [" sender "]"))
     (match [topic payload]
            [:command _]
-           ;; Results should be handled by "Result Rules Engine"
-           ;; If a result is accepted it should be sent to the
-           ;; "Results Access" for handling.
-           (async/>!! (:in-channel rules-engine-channels)
-                      {:topic topic
-                       :payload payload})
+           (do
+             (log/info (str "Command " payload))
+             ;; Results should be handled by "Result Rules Engine"
+             ;; If a result is accepted it should be sent to the
+             ;; "Results Access" for handling.
+             (async/>!! (:in-channel rules-engine-channels)
+                        {:topic   topic
+                         :payload payload}))
            [:file/import _]
            (let [[import import-ch] (async/alts!!
                                      [[(:in-channel file-handler-channels)

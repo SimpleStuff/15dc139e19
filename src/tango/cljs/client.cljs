@@ -11,7 +11,9 @@
             [tango.domain :as domain]
             [tango.presentation :as presentation]
             [tango.cljs.client-mutation :as m]
-            [tango.cljs.client-read :as r]))
+            [tango.cljs.client-read :as r]
+            [cognitect.transit :as t])
+  (:import [goog.net XhrIo]))
 
 ;; TODO - check performance issue
 ; https://github.com/omcljs/om/issues/556
@@ -55,7 +57,8 @@
                      {:db/id -1 :app/selected-competition {}}
                      {:db/id -1 :app/new-competition {}
                       ;(domain/make-competition "New" "" "" {} {} {} {} {})
-                      }]))
+                      }
+                     {:db/id -1 :app/selected-activity {}}]))
 
 (defn app-started? [conn]
   (seq (d/q '[:find ?e
@@ -117,14 +120,15 @@
 (defmethod event-msg-handler :chsk/recv
   [{:as ev-msg :keys [?data]}]
   (let [[topic payload] ?data]
-    (log (str "Push event from server: " topic))
+    ;(log (str "Push event from server: " topic))
     (when (= topic :event-manager/query-result)
       (if (vector? payload)
         (handle-query-result payload)
         (handle-query-result (second ?data))))
     (when (= topic :event-manager/transaction-result)
       (chsk-send! [:event-manager/query [[:competition/name :competition/location]]]))
-    (log "Exit event-msg-handler")))
+    ;(log "Exit event-msg-handler")
+    ))
 
 (defmethod event-msg-handler :chsk/handshake
   [{:as ev-msg :keys [?data]}]
@@ -385,7 +389,8 @@
           (presentation/make-time-schedule-activity-presenter
             (om/props this)
             (first (:class/_rounds (:activity/source (om/props this)))))]
-      (dom/tr nil
+      (dom/tr #js {:onClick #(om/transact! this `[(app/select-activity
+                                                    {:name ~name})])}
         (dom/td nil time)
         (dom/td nil number)
         (dom/td nil name)
@@ -585,13 +590,32 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Remote Posts
 
+(defn transit-post [url]
+  (fn [edn cb]
+    (log edn)
+    (.send XhrIo url
+           (fn [e]
+             (log e)
+             ;(this-as this
+             ;  (log (t/read (t/reader :json)
+             ;               (.getResponseText this)))
+             ;  (cb (t/read (t/reader :json) (.getResponseText this))))
+             )
+           "POST" (t/write (t/writer :json) edn)
+           #js {"Content-Type" "application/transit+json"})))
+
 (defn sente-post []
-  (fn [{:keys [remote] :as env} cb]
-    (do
-      (log "Env > ")
-      (log env)
-      (log (str "Sent to Tango Backend => " remote))
-      (chsk-send! [:event-manager/query [[:competition/name :competition/location]]]))))
+  (fn [{:keys [remote command] :as env} cb]
+    (if remote
+      (do
+        (log "Env > ")
+        (log env)
+        (log (str "Sent to Tango Backend => " remote))
+        (chsk-send! [:event-manager/query [[:competition/name :competition/location]]]))
+      (do
+        ((transit-post "http://localhost:1337/commands") env cb)))))
+
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Application
@@ -603,9 +627,10 @@
 (def reconciler
   (om/reconciler
     {:state   conn
-     :remotes [:remote]
+     :remotes [:remote :command]
      :parser  (om/parser {:read r/read :mutate m/mutate})
-     :send    sente-post}))
+     :send    (sente-post)                                  ;(transit-post "http://localhost:1337/commands")
+     }))
 
 (om/add-root! reconciler
               MenuComponent (gdom/getElement "app"))

@@ -48,6 +48,13 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Components
 
+
+;; TODO:
+;; Data needed from the back end:
+; - Judge info
+; - Round name
+; - Participants to be marked
+
 ;; TODO:
 ;; - Select judge for UI
 ;; - Get selected round that is to be judged

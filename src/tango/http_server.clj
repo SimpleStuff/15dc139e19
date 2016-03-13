@@ -43,15 +43,20 @@
 (defmethod mutate 'app/online?
   [{:keys [state] :as env} key params]
   {:action (fn []
-             (log/info (async/>!! state {:topic :command :sender :http :payload [key params]}))
+             (log/info (async/>!! state {:topic :command :sender :http :payload [key (:remote params)]}))
              (str "Mutate online"))})
+
+(defmethod mutate 'app/select-activity
+  [{:keys [state] :as env} key params]
+  {:action (fn []
+             (async/>!! state {:topic :command :sender :http :payload [key params]}))})
 
 (def parser
   (om/parser {:mutate mutate}))
 
 (defn handle-command [ch-out req]
   (do
-    (parser {:state ch-out} (:remote (:params req)))
+    (parser {:state ch-out} (:command (:params req)))
 
     {:body "Tjena"})
   ;(str (:remote (:params req)))

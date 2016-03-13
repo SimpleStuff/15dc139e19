@@ -4,8 +4,7 @@
     [datascript.core :as ds]
     [tango.ui-db :as ui]
     [datascript.core :as ds]
-    [tango.test-utils :as u]
-    [datascript.core :as d]))
+    [tango.test-utils :as u]))
 
 (def schema-test
   [{:db/id                 #db/id[:db.part/db]
@@ -53,7 +52,7 @@
 ;; transact data
 @(d/transact conn test-data)
 
-@(d/transact conn test-no-id)
+;@(d/transact conn test-no-id)
 
 ;; query
 (def result-1
@@ -86,4 +85,16 @@ ds-conn
 (create-literal 1)
 
 (d/transact conn [{:competition/name "Test"
-                   :db/id (create-literal 1)}])
+                   :db/id            (create-literal 1)}])
+
+(d/transact conn [[:db/add (create-literal 1) :competition/name "Ost"]])
+
+(def test-data (keys (ds/transact! ds-conn [(ui/sanitize u/expected-small-example)])))
+
+(ds/datoms (ds/db ds-conn) :eavt)
+
+(defn stuff [conn]
+  (let [dvec #(vector (:e %) (:a %) (:v %))]
+    (map dvec (ds/datoms (ds/db conn) :eavt))))
+
+(stuff ds-conn)
