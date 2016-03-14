@@ -373,10 +373,11 @@
 (defui ScheduleRow
   static om/IQuery
   (query [_]
-    [:activity/comment :activity/number :activity/time :activity/name
+    [:activity/comment :activity/number :activity/time :activity/name :activity/id
      {:activity/source
       [:round/class-id :round/type :round/index :round/status
-       :round/starting :round/heats :round/recall
+       {:round/starting [:participant/number :participant/id]}
+       :round/heats :round/recall
        {:round/dances [:dance/name]}
        {:round/panel [:adjudicator-panel/name]}
        {:class/_rounds
@@ -390,7 +391,15 @@
             (om/props this)
             (first (:class/_rounds (:activity/source (om/props this)))))]
       (dom/tr #js {:onClick #(om/transact! this `[(app/select-activity
-                                                    {:name ~name})])}
+                                                    {:activity/id   ~(:activity/id (om/props this))
+                                                     :activity/name ~name
+                                                     :round/recall  ~(:round/recall (:activity/source
+                                                                                      (om/props this)))
+                                                     :round/name    ~round
+                                                     :round/heats   ~(:round/heats (:activity/source
+                                                                                     (om/props this)))
+                                                     :round/starting ~(:round/starting (:activity/source
+                                                                                         (om/props this)))})])}
         (dom/td nil time)
         (dom/td nil number)
         (dom/td nil name)

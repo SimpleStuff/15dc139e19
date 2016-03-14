@@ -11,7 +11,8 @@
 ;; This should be componitized
 
 (defn select-activity [activity]
-  (log/info "Get this stuff to Datomic"))
+  (do
+    (log/report (str "Get this stuff to Datomic : " activity))))
 
 (defn start-result-rules-engine [in-ch out-ch]
   (async/go-loop []

@@ -9,6 +9,25 @@
 ;    conn))
 ;
 
+(def select-round-data
+  {:app/selected-activity
+   {:activity/id   #uuid "4b0b1db9-6e5d-4aa6-9947-cb214a4d89df"
+    :activity/name "Hiphop Par Brons J1"
+    :round/recall  12
+    :round/name    "Normal"
+    :round/heats   3
+    :round/starting
+                   [{:participant/number 143, :participant/id #uuid "6eee044a-a9e5-4c3b-8a3b-583f566ca3b8"}
+                    {:participant/number 146, :participant/id #uuid "967d051d-ea8b-43d4-9dba-35fb51aedda9"}]}})
+
+(defn fix-id [round-data]
+  (clojure.walk/postwalk
+    (fn [form]
+      (if (map? form) (assoc form :db/id (ds/create-literal)) form))
+    round-data))
+
+(fix-id select-round-data)
+
 (def mem-uri "datomic:mem://localhost:4334//competitions")
 
 (deftest create-connection
@@ -16,15 +35,22 @@
     (is (not= nil (ds/create-storage mem-uri)))
     (is (not= nil (ds/create-connection mem-uri)))))
 
+(deftest select-round
+  (testing "Transaction of selecting a round"
+    (let [created? (ds/create-storage mem-uri)
+          conn (ds/create-connection mem-uri)]
+      (is (= [:db-before :db-after :tx-data :tempids]
+             (keys (ds/select-round conn (fix-id select-round-data))))))))
 
-(deftest add-competition
-  (testing "Add map represention of a competition"
-    (let [conn (ds/create-connection mem-uri)]
-      (is (= [:db-before :db-after :tx-data :tempids :tx-meta]
-             (keys (ds/transform-competition
-                     conn
-                     (fn [] (select-keys u/expected-small-example
-                                         [:competition/name])))))))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;(deftest add-competition
+;  (testing "Add map represention of a competition"
+;    (let [conn (ds/create-connection mem-uri)]
+;      (is (= [:db-before :db-after :tx-data :tempids :tx-meta]
+;             (keys (ds/transform-competition
+;                     conn
+;                     (fn [] (select-keys u/expected-small-example
+;                                         [:competition/name])))))))))
 
 
 ;(deftest query-for-competition-info

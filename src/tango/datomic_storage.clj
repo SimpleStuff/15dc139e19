@@ -8,21 +8,82 @@
 
 (def schema-test
   [{:db/id                 #db/id[:db.part/db]
-    :db/ident              :competition/name
+    :db/ident              :app/selected-activity
+    :db/valueType          :db.type/ref
+    :db/cardinality        :db.cardinality/one
+    :db/doc                "The applications selected activity"
+    :db.install/_attribute :db.part/db}
+
+   {:db/id                 #db/id[:db.part/db]
+    :db/ident              :activity/id
     :db/unique             :db.unique/identity
+    :db/valueType          :db.type/uuid
+    :db/cardinality        :db.cardinality/one
+    :db/doc                "An activity id"
+    :db.install/_attribute :db.part/db}
+
+   {:db/id                 #db/id[:db.part/db]
+    :db/ident              :activity/name
     :db/valueType          :db.type/string
     :db/cardinality        :db.cardinality/one
-    :db/fulltext           true
-    :db/doc                "A competitions name"
+    :db/doc                "An activity name"
+    :db.install/_attribute :db.part/db}
+
+   {:db/id                 #db/id[:db.part/db]
+    :db/ident              :round/recall
+    :db/valueType          :db.type/long
+    :db/cardinality        :db.cardinality/one
+    :db/doc                "The number of participants to be recalled from a round"
+    :db.install/_attribute :db.part/db}
+
+   {:db/id                 #db/id[:db.part/db]
+    :db/ident              :round/name
+    :db/valueType          :db.type/string
+    :db/cardinality        :db.cardinality/one
+    :db/doc                "A rounds name"
+    :db.install/_attribute :db.part/db}
+
+   {:db/id                 #db/id[:db.part/db]
+    :db/ident              :round/heats
+    :db/valueType          :db.type/long
+    :db/cardinality        :db.cardinality/one
+    :db/doc                "A rounds number of heats"
+    :db.install/_attribute :db.part/db}
+
+   {:db/id                 #db/id[:db.part/db]
+    :db/ident              :round/starting
+    :db/valueType          :db.type/ref
+    :db/cardinality        :db.cardinality/many
+    :db/doc                "The starting participants in a round"
+    :db.install/_attribute :db.part/db}
+
+   {:db/id                 #db/id[:db.part/db]
+    :db/ident              :participant/number
+    :db/valueType          :db.type/long
+    :db/cardinality        :db.cardinality/one
+    :db/doc                "A participants start number"
+    :db.install/_attribute :db.part/db}
+
+   {:db/id                 #db/id[:db.part/db]
+    :db/ident              :participant/id
+    :db/unique             :db.unique/identity
+    :db/valueType          :db.type/uuid
+    :db/cardinality        :db.cardinality/one
+    :db/doc                "A participants id"
     :db.install/_attribute :db.part/db}])
 
 (defn create-storage [uri]
-  (d/create-database uri))
+  (do
+    (d/delete-database uri)
+    (d/create-database uri)))
 
 (defn create-connection [uri]
   (let [conn (d/connect uri)]
     @(d/transact conn schema-test)
     conn))
+
+(defn select-round [conn round]
+  @(d/transact conn [round]))
 
 (defn transform-competition [db update-fn]
   (let [tx-data (update-fn)]
@@ -31,70 +92,73 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Examples
 
-(def uri "datomic:mem://localhost:4334//competitions")
-
-(d/delete-database uri)
-;; create db
-(d/create-database uri)
-
-;; create conn
-(def conn (d/connect uri))
-
-;; add schema
-@(d/transact conn schema-test)
-
-;; simple test data
-(def test-data [{:competition/name "Rikstävling i disco"
-                 :db/id #db/id[:db.part/user -100000]}])
-
-(def test-no-id [{:competition/name "No ID"}])
-
-;; transact data
-@(d/transact conn test-data)
-
-;@(d/transact conn test-no-id)
-
-;; query
-(def result-1
-  (d/q '[:find ?n :where [?n :competition/name]] (d/db conn)))
-
-;; test entity api
-(:competition/name (d/entity (d/db conn) (ffirst result-1)))
-
-;; test of pull
-(d/q '[:find [(pull ?n [:competition/name])]
-       :where [?n :competition/name]]
-     (d/db conn))
-
-;; DS test
-(def ds-conn (ds/create-conn ui/schema))
-
-(ds/transact! ds-conn test-no-id)
-
-(ds/transact! ds-conn [(ui/sanitize u/expected-small-example)])
-
-ds-conn
-
-(ds/q '[:find (pull ?e [*])
-        :where [?e :competition/name]]
-      (ds/db ds-conn))
-
-(defn create-literal [id]
-  (d/tempid :db.part/user (- id 100000)))
-
-(create-literal 1)
-
-(d/transact conn [{:competition/name "Test"
-                   :db/id            (create-literal 1)}])
-
-(d/transact conn [[:db/add (create-literal 1) :competition/name "Ost"]])
-
-(def test-data (keys (ds/transact! ds-conn [(ui/sanitize u/expected-small-example)])))
-
-(ds/datoms (ds/db ds-conn) :eavt)
-
-(defn stuff [conn]
-  (let [dvec #(vector (:e %) (:a %) (:v %))]
-    (map dvec (ds/datoms (ds/db conn) :eavt))))
-
-(stuff ds-conn)
+;(def uri "datomic:mem://localhost:4334//competitions")
+;
+;(d/delete-database uri)
+;;; create db
+;(d/create-database uri)
+;
+;;; create conn
+;(def conn (d/connect uri))
+;
+;;; add schema
+;@(d/transact conn schema-test)
+;
+;;; simple test data
+;(def test-data [{:competition/name "Rikstävling i disco"
+;                 :db/id #db/id[:db.part/user -100000]}])
+;
+;(def test-no-id [{:competition/name "No ID"}])
+;
+;;; transact data
+;@(d/transact conn test-data)
+;
+;;@(d/transact conn test-no-id)
+;
+;;; query
+;(def result-1
+;  (d/q '[:find ?n :where [?n :competition/name]] (d/db conn)))
+;
+;;; test entity api
+;(:competition/name (d/entity (d/db conn) (ffirst result-1)))
+;
+;;; test of pull
+;(d/q '[:find [(pull ?n [:competition/name])]
+;       :where [?n :competition/name]]
+;     (d/db conn))
+;
+;;; DS test
+;(def ds-conn (ds/create-conn ui/schema))
+;
+;(ds/transact! ds-conn test-no-id)
+;
+;(ds/transact! ds-conn [(ui/sanitize u/expected-small-example)])
+;
+;ds-conn
+;
+;(ds/q '[:find (pull ?e [*])
+;        :where [?e :competition/name]]
+;      (ds/db ds-conn))
+;
+;(defn create-literal
+;  ([]
+;    (d/tempid :db.part/user))
+;  ([id]
+;   (d/tempid :db.part/user (- id 100000))))
+;
+;(create-literal 1)
+;
+;(d/transact conn [{:competition/name "Test"
+;                   :db/id            (create-literal 1)}])
+;
+;(d/transact conn [[:db/add (create-literal 1) :competition/name "Ost"]])
+;
+;(def test-data (keys (ds/transact! ds-conn [(ui/sanitize u/expected-small-example)])))
+;
+;(ds/datoms (ds/db ds-conn) :eavt)
+;
+;(defn stuff [conn]
+;  (let [dvec #(vector (:e %) (:a %) (:v %))]
+;    (map dvec (ds/datoms (ds/db conn) :eavt))))
+;
+;(stuff ds-conn)
