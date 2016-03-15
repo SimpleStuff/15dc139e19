@@ -20,27 +20,24 @@
                    [{:participant/number 143, :participant/id #uuid "6eee044a-a9e5-4c3b-8a3b-583f566ca3b8"}
                     {:participant/number 146, :participant/id #uuid "967d051d-ea8b-43d4-9dba-35fb51aedda9"}]}})
 
-(defn fix-id [round-data]
-  (clojure.walk/postwalk
-    (fn [form]
-      (if (map? form) (assoc form :db/id (ds/create-literal)) form))
-    round-data))
 
-(fix-id select-round-data)
+
+;(fix-id select-round-data)
 
 (def mem-uri "datomic:mem://localhost:4334//competitions")
 
 (deftest create-connection
   (testing "Create a connection to db"
-    (is (not= nil (ds/create-storage mem-uri)))
+    (is (not= nil (ds/create-storage mem-uri ds/select-activity-schema)))
     (is (not= nil (ds/create-connection mem-uri)))))
 
 (deftest select-round
   (testing "Transaction of selecting a round"
-    (let [created? (ds/create-storage mem-uri)
+    (let [deleted? (ds/delete-storage mem-uri)
+          created? (ds/create-storage mem-uri ds/select-activity-schema)
           conn (ds/create-connection mem-uri)]
       (is (= [:db-before :db-after :tx-data :tempids]
-             (keys (ds/select-round conn (fix-id select-round-data))))))))
+             (keys (ds/select-round conn select-round-data)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;(deftest add-competition

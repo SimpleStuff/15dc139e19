@@ -6,7 +6,7 @@
     [datascript.core :as ds]
     [tango.test-utils :as u]))
 
-(def schema-test
+(def select-activity-schema
   [{:db/id                 #db/id[:db.part/db]
     :db/ident              :app/selected-activity
     :db/valueType          :db.type/ref
@@ -72,22 +72,43 @@
     :db/doc                "A participants id"
     :db.install/_attribute :db.part/db}])
 
-(defn create-storage [uri]
-  (do
-    (d/delete-database uri)
-    (d/create-database uri)))
 
+;; TODO fixa id so that we can have only one selected
+(defn create-literal
+  ([]
+    (d/tempid :db.part/user))
+  ([id]
+   (d/tempid :db.part/user (- id 100000))))
+
+(defn fix-id [round-data]
+  (clojure.walk/postwalk
+    (fn [form]
+      (if (map? form) (assoc form :db/id (create-literal)) form))
+    round-data))
+
+(defn delete-storage [uri]
+  (d/delete-database uri))
+
+(defn create-storage [uri schema]
+  (do
+    (d/create-database uri)
+    @(d/transact (d/connect uri) schema)))
+
+; dont make schema trans
 (defn create-connection [uri]
-  (let [conn (d/connect uri)]
-    @(d/transact conn schema-test)
-    conn))
+  (d/connect uri))
 
 (defn select-round [conn round]
-  @(d/transact conn [round]))
+  @(d/transact conn [(fix-id {:app/selected-activity round})]))
 
 (defn transform-competition [db update-fn]
   (let [tx-data (update-fn)]
     @(d/transact db [tx-data])))
+
+(defn get-selected-activity [conn]
+  (d/q '[:find (pull ?a [:activity/name])
+         :where [?e :app/selected-activity ?a]]
+       (d/db conn)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Examples

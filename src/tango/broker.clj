@@ -2,7 +2,8 @@
   (:require [clojure.core.async :as async]
             [com.stuartsierra.component :as component]
             [taoensso.timbre :as log]
-            [clojure.core.match :refer [match]]))
+            [clojure.core.match :refer [match]]
+            [tango.datomic-storage :as d]))
 
 ;; Provides useful Timbre aliases in this ns
 (log/refer-timbre)
@@ -10,11 +11,14 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; This should be componitized
 
-(defn select-activity [activity]
+(defn select-activity [conn activity]
   (do
-    (log/report (str "Get this stuff to Datomic : " activity))))
+    ;(log/report (str "Get this stuff to Datomic : " activity))
+    (let [tx (d/select-round conn activity)]
+      (log/report tx))
+    (log/report (count (d/get-selected-activity conn)))))
 
-(defn start-result-rules-engine [in-ch out-ch]
+(defn start-result-rules-engine [in-ch out-ch datomic-storage-uri]
   (async/go-loop []
     (when-let [message (async/<! in-ch)]
       (when message
@@ -28,7 +32,8 @@
                    ['app/select-activity _]
                    (do
                      (log/info (str "Select activity " payload))
-                     (select-activity payload))
+                     ;; TODO - should the connection be kept open?
+                     (select-activity (d/create-connection datomic-storage-uri) payload))
                    [:set-result p]
                    (log/info "Mark X")
                    :else (async/>!!
@@ -142,15 +147,18 @@
 (defrecord MessageBroker [channel-connection-channels
                           file-handler-channels
                           event-access-channels
-                          http-server-channels]
+                          http-server-channels
+                          datomic-storage-uri]
   component/Lifecycle
   (start [component]
     (log/report "Starting MessageBroker")
     (let [rules-in-ch (async/chan)
           rules-out-ch (async/chan)
+          db (d/create-storage datomic-storage-uri d/select-activity-schema)
           rules-engine (start-result-rules-engine
                          rules-in-ch
-                         rules-out-ch)
+                         rules-out-ch
+                         datomic-storage-uri)
           broker-process (start-message-process
                           message-dispatch 
                           {:channel-connection-channels channel-connection-channels
@@ -166,5 +174,5 @@
     (assoc component :broker-process nil :file-handler-channels nil :event-access-channels nil
                      :rules-engine nil)))
 
-(defn create-message-broker []
-  (map->MessageBroker {})) 
+(defn create-message-broker [datomic-uri]
+  (map->MessageBroker {:datomic-storage-uri datomic-uri}))

@@ -15,7 +15,8 @@
             [tango.channels :as channels]
             [tango.import-engine :as import]
             [tango.event-access :as access]
-            [tango.event-file-storage :as file-storage]))
+            [tango.event-file-storage :as file-storage]
+            [tango.datomic-storage :as d]))
 
 ;; Provides useful Timbre aliases in this ns
 (log/refer-timbre)
@@ -100,11 +101,12 @@
                                      :storage-channels :event-file-storage-channels})
 
      ;; Message broker
-     :message-broker (component/using (broker/create-message-broker)
+     :message-broker (component/using (broker/create-message-broker "datomic:free://localhost:4334//competitions")
                                       {:channel-connection-channels client-connection
                                        :http-server-channels :http-server-channels
                                        :file-handler-channels :file-handler-channels
-                                       :event-access-channels :event-access-channels}))))
+                                       :event-access-channels :event-access-channels}
+                                      ))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Defines a pointer to the current system.
@@ -137,6 +139,7 @@
   "REPL helper that allow to restart the application and reload namespaces."
   []
   (stop)
+  (d/delete-storage "datomic:free://localhost:4334//competitions")
   (refresh :after 'tango.core/go))
 
 ;; TODO - Add possibillity to set log level as a param
