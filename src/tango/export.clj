@@ -19,7 +19,8 @@
   `(def ^{:private true} ~item ~value))
 
 (defn- format-date [date]
-  (tf/unparse (tf/formatter "yyyy-MM-dd") (tf/parse date)) )
+  (let [df (java.text.SimpleDateFormat. "yyyy-MM-dd")]
+    (.format df date)))
 
 (defn- b2i [b]
   (if (true? b) 1 0))
