@@ -21,9 +21,6 @@
 (def small-example
   (parse-examples "small-example.xml"))
 
-(def expected-small-example
-  (slurp-expected "expected_small_result.clj.test"))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Real example
 

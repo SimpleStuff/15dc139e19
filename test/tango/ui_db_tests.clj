@@ -1,11 +1,12 @@
 (ns tango.ui-db-tests
   (:require [clojure.test :refer :all]
+            [tango.expected.expected-small-result :as esr]
             [tango.ui-db :as db]
             [tango.test-utils :as u]))
 
 (defn- transact-small-example []
   (let [conn (db/create-connection db/schema)]
-    (db/transform-competition conn (fn [] (db/sanitize u/expected-small-example)))
+    (db/transform-competition conn (fn [] (db/sanitize esr/expected-small-example)))
     conn))
 
 (deftest create-connection
@@ -16,7 +17,7 @@
   (testing "Add map represention of a competition"
     (let [conn (db/create-connection {})]
       (is (= [:db-before :db-after :tx-data :tempids :tx-meta]
-             (keys (db/transform-competition conn (fn [] u/expected-small-example))))))))
+             (keys (db/transform-competition conn (fn [] esr/expected-small-example))))))))
 
 (deftest query-for-competition-info
   (testing "Query to get competition info"
@@ -77,7 +78,7 @@ Checks that those adjudicators are the same as in the competition."
 (deftest query-for-competition-options
   (testing "Query to get competition options"
     (let [conn (transact-small-example)]
-      (is (= (:competition/options u/expected-small-example)
+      (is (= (:competition/options esr/expected-small-example)
              (dissoc (db/query conn '[:find (pull ?o [*]) .
                                       :in $ ?competition-name
                                       :where

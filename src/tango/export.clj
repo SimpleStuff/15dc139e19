@@ -8,6 +8,7 @@
             [clojure.data.xml :as xml]
             [clojure.xml :as cxml]
             [clojure.zip :as zip]
+            [tango.expected.expected-small-result :as esr]
             [clojure.data.zip.xml :as zx]
             ))
 
@@ -18,7 +19,8 @@
   `(def ^{:private true} ~item ~value))
 
 (defn- format-date [date]
-  (tf/unparse (tf/formatter "yyyy-MM-dd") (tf/parse date)) )
+  (let [df (java.text.SimpleDateFormat. "yyyy-MM-dd")]
+    (.format df date)))
 
 (defn- b2i [b]
   (if (true? b) 1 0))
@@ -41,7 +43,7 @@
 ;; DancePerfect/CompData
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn- make-comp-data-node [query-result]
-  (let [result (first (first query-result))
+  (let [result (ffirst query-result)
         options (:competition/options result)]
     (xml/element
       :CompData
@@ -129,7 +131,7 @@
         adjudicator-infos))))
 
 (defn- make-panel-list-node [qr]
-  (let [adjudicator-panels (into [] (map first qr))
+  (let [adjudicator-panels (vec (map first qr))
         n (- 30 (count adjudicator-panels))
         padded-panels (repeat n {:adjudicator-panel/adjudicators []})
         all-panels (into adjudicator-panels padded-panels)]
@@ -144,10 +146,6 @@
 (def- make-panel-list-node-query
   '[:find (pull ?e [{:adjudicator-panel/adjudicators [:adjudicator/id]}])
     :where [?e :adjudicator-panel/id]])
-
-(def adj-data (d/q make-panel-list-node-query (get-db u/expected-small-example)))
-adj-data
-(make-panel-list-node adj-data)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; DancePerfect/ClassList
@@ -180,7 +178,7 @@ adj-data
       )))
 
 (defn- make-class-list-node [query-result]
-  (let [classes (into [] (map first query-result))]
+  (let [classes (vec (map first query-result))]
     (xml/element :ClassList
                  {}
                  (reduce
@@ -214,10 +212,9 @@ adj-data
                                      :query       make-panel-list-node-query}
                                     ]}
                      {:xml-factory make-class-list-node
-                      :query       make-class-list-node-query
-                      :content     [{:xml-factory make-start-list-node
-                                     :query       make-start-list-node-query}]}
-                     ]})
+                      :query       make-class-list-node-query}
+                     ]
+       })
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Export
@@ -231,10 +228,16 @@ adj-data
       (xml-factory (map export-xml-with-db content))
       (xml-factory (d/q query db)))))
 
-(defn export [data export-def file]
+(defn export [data]
   (let
     [db (get-db data)]
-    (spit file (xml/emit-str (export-xml db export-def)))))
+    (xml/emit-str (export-xml db export-definition))))
 
-(export u/expected-small-example export-definition "/tmp/baz.xml")
+(defn foo [x]
+  (+ 6 4))
 
+(defn bar [y]
+  (* 9 y))
+
+(export esr/expected-small-example)
+(bar 66)

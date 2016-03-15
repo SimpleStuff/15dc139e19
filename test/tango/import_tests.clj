@@ -3,6 +3,7 @@
             [clj-time.core :as tc]
             [clj-time.coerce :as tcr]
             [tango.import :as imp]
+            [tango.expected.expected-small-result :as esr]
             [tango.test-utils :as u]))
 
 ;; TODO - Tests need to be refactored to some kind of generative testing, as of right now they are to combersome
@@ -26,13 +27,13 @@
 ;      (is (= (imp/import-file-stream
 ;              file-stream
 ;              #(swap! current-id inc))
-;             u/expected-small-example)))))
+;             esr/expected-small-example)))))
 
 ;(deftest import-dance-perfect-competition
 ;  (testing "Import competition from a Dance Perfect file"
 ;    (is (let [current-id (atom 0)]
 ;          (= (imp/competition-xml->map u/small-example #(swap! current-id inc))
-;             u/expected-small-example)))
+;             esr/expected-small-example)))
 ;
 ;    (is (let [current-id (atom 0)]
 ;          (= (imp/competition-xml->map u/real-example #(swap! current-id inc))
@@ -57,7 +58,7 @@
 ;                   (imp/competition-xml->map u/small-example #(swap! current-id inc))))
 ;             (map :class/rounds
 ;                  (:competition/classes
-;                   u/expected-small-example)))))))
+;                   esr/expected-small-example)))))))
 
 ;(deftest import-classes
 ;  (testing "Import classes"
@@ -65,7 +66,7 @@
 ;      (is (= (:competition/classes
 ;              (imp/competition-xml->map u/small-example #(swap! current-id inc)))
 ;             (:competition/classes
-;              u/expected-small-example))))))
+;              esr/expected-small-example))))))
 
 (deftest import-adjudicators
   (testing "Import of adjudicators"
@@ -73,7 +74,7 @@
       (is (= (:competition/adjudicators
               (imp/competition-xml->map u/small-example #(swap! current-id inc)))
              (:competition/adjudicators
-              u/expected-small-example))))))
+              esr/expected-small-example))))))
 
 (deftest import-dance-perfect-panels
   (testing "Import of adjudicator panels"
@@ -81,7 +82,7 @@
       (is (= (:competition/panels
               (imp/competition-xml->map u/small-example #(swap! current-id inc)))
              (:competition/panels
-             u/expected-small-example))))))
+             esr/expected-small-example))))))
 
 (deftest import-dance-perfect-competition-data
   (testing "Import competition data of Dance Perfect file"
