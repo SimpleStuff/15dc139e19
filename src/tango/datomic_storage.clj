@@ -6,15 +6,24 @@
     [datascript.core :as ds]
     [tango.test-utils :as u]))
 
-(def select-activity-schema
+(def application-schema
   [{:db/id                 #db/id[:db.part/db]
+    :db/ident              :app/id
+    :db/valueType          :db.type/long
+    :db/unique             :db.unique/identity
+    :db/cardinality        :db.cardinality/one
+    :db/doc                "The applications id"
+    :db.install/_attribute :db.part/db}
+
+   {:db/id                 #db/id[:db.part/db]
     :db/ident              :app/selected-activity
     :db/valueType          :db.type/ref
     :db/cardinality        :db.cardinality/one
     :db/doc                "The applications selected activity"
-    :db.install/_attribute :db.part/db}
+    :db.install/_attribute :db.part/db}])
 
-   {:db/id                 #db/id[:db.part/db]
+(def select-activity-schema
+  [{:db/id                 #db/id[:db.part/db]
     :db/ident              :activity/id
     :db/unique             :db.unique/identity
     :db/valueType          :db.type/uuid
@@ -99,15 +108,18 @@
   (d/connect uri))
 
 (defn select-round [conn round]
-  @(d/transact conn [(fix-id {:app/selected-activity round})]))
+  @(d/transact conn [(fix-id {:app/selected-activity round
+                              :app/id 1})]))
 
 (defn transform-competition [db update-fn]
   (let [tx-data (update-fn)]
     @(d/transact db [tx-data])))
 
 (defn get-selected-activity [conn]
-  (d/q '[:find (pull ?a [:activity/name])
-         :where [?e :app/selected-activity ?a]]
+  (d/q '[:find (pull ?a [:activity/name]) .
+         :where
+         [?e :app/id 1]
+         [?e :app/selected-activity ?a]]
        (d/db conn)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

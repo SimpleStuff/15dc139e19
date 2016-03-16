@@ -13,10 +13,8 @@
 
 (defn select-activity [conn activity]
   (do
-    ;(log/report (str "Get this stuff to Datomic : " activity))
-    (let [tx (d/select-round conn activity)]
-      (log/report tx))
-    (log/report (count (d/get-selected-activity conn)))))
+    (d/select-round conn activity)
+    (log/info (str "Application selected round changed : " (d/get-selected-activity conn)))))
 
 (defn start-result-rules-engine [in-ch out-ch datomic-storage-uri]
   (async/go-loop []
@@ -154,7 +152,7 @@
     (log/report "Starting MessageBroker")
     (let [rules-in-ch (async/chan)
           rules-out-ch (async/chan)
-          db (d/create-storage datomic-storage-uri d/select-activity-schema)
+          db (d/create-storage datomic-storage-uri (into d/select-activity-schema d/application-schema))
           rules-engine (start-result-rules-engine
                          rules-in-ch
                          rules-out-ch
