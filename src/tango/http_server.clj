@@ -64,6 +64,15 @@
   ;(prn (t/read (t/reader (:body req) :json)))
   )
 
+(defn handle-query [ch-out req]
+  (do
+    (async/>!! ch-out {:topic :query
+                       :sender :http
+                       :payload (clojure.edn/read-string
+                                  (:query (:params req)))})
+    {:body "Query accepted"})
+  )
+
 (defn handler [ajax-post-fn ajax-get-or-ws-handshake-fn http-server-channels]
   (routes
    (GET "/" req {:body (slurp (clojure.java.io/resource "public/index.html"))
@@ -75,6 +84,7 @@
    (GET "/adjudicator" req {:body (slurp (clojure.java.io/resource "public/adjudicator.html"))
                             :session {:uid (rand-int 100)}
                             :headers {"Content-Type" "text/html"}})
+   (GET "/query" req (partial handle-query (:out-channel http-server-channels)))
    ;; Sente channel routes
    (GET  "/chsk" req (ajax-get-or-ws-handshake-fn req))
    (POST "/chsk" req (ajax-post-fn req))

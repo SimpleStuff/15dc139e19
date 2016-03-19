@@ -22,4 +22,12 @@
                  :where [[:app/id 1] :app/online? ?online]]
                (d/db state))})
 
+(defn log [m]
+  (.log js/console m))
+
+(defmethod read :app/selected-activity
+  [{:keys [state query]} _ _]
+  {:value (do (log query) {:name "Test"})
+   :query true})
+
 

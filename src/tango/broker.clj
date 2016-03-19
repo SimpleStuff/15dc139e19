@@ -16,6 +16,9 @@
     (d/select-round conn activity)
     (log/info (str "Application selected round changed : " (d/get-selected-activity conn)))))
 
+(defn selected-activity [conn]
+  (log/info (str "Application selected round : " (d/get-selected-activity conn))))
+
 (defn start-result-rules-engine [in-ch out-ch datomic-storage-uri]
   (async/go-loop []
     (when-let [message (async/<! in-ch)]
@@ -32,11 +35,17 @@
                      (log/info (str "Select activity " payload))
                      ;; TODO - should the connection be kept open?
                      (select-activity (d/create-connection datomic-storage-uri) payload))
+                   [:app/selected-activity _]
+                   (do
+                     (log/info (str "Selected activity " (:app/selected-activity payload)))
+                     (selected-activity (d/create-connection datomic-storage-uri)))
                    [:set-result p]
                    (log/info "Mark X")
                    :else (async/>!!
                            out-ch
-                           {:topic :rules/unkown-topic :payload {:topic topic}})))
+                           {:topic :rules/unkown-topic :payload {:topic topic}})
+
+                   ))
           (catch Exception e
             (log/error e "Exception in Broker message go loop")
             (async/>! out-ch (str "Exception message: " (.getMessage e)))))
@@ -65,6 +74,12 @@
              (async/>!! (:in-channel rules-engine-channels)
                         {:topic   (first payload)
                          :payload (second payload)}))
+           [:query _]
+           (do
+             (log/info (str "Query " payload))
+             (async/>!! (:in-channel rules-engine-channels)
+                        {:topic   (first (keys (first payload)))
+                         :payload (first payload)}))
            [:file/import _]
            (let [[import import-ch] (async/alts!!
                                      [[(:in-channel file-handler-channels)

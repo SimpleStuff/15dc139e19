@@ -65,7 +65,8 @@
 (defui MainComponent
   static om/IQuery
   (query [_]
-    [:app/status])
+    [:app/status
+     {:app/selected-activity [:activity/name]}])
   Object
   (render
     [this]
@@ -74,6 +75,7 @@
           next-status (if (not= status :on) :on :off)]
       ;(log status)
       (dom/div nil
+        (dom/h3 nil (str "Selected Activity : " (:name (:app/selected-activity (om/props this)))))
         (dom/h3 nil "Adjudicator UI")
         (dom/h3 nil (str "Status : " status))
         (dom/span nil
@@ -90,7 +92,30 @@
                              ;       {:form-params {:foo :bar}}
                              ;       ;{:edn-params {:foo :bar}}
                              ;       ))
-                             (log "Command"))} "Command"))))))
+                             (log "Command"))} "Command"))
+
+        (dom/span nil
+          (dom/label nil "Query Test : ")
+          (dom/button #js {:onClick #(do
+                                      (log "Query")
+                                      (.send XhrIo "http://localhost:1337/query?a"
+                                             (fn [e]
+                                               (do
+                                                 (log "Query CB")
+                                                 (log e)))
+                                             "GET"
+                                             "Test"))}
+                      "Query"
+            ))
+
+        (dom/span nil
+          (dom/label nil "Query Test 2: ")
+          (dom/button #js {:onClick #(do
+                                      (log "Query")
+                                      (http/get "http://localhost:1337/query"
+                                                {:query-params {:query (pr-str '[:find])}}))}
+                      "Query 2"
+                      ))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Remote Posts
@@ -102,16 +127,23 @@
 (defn transit-post [url]
   (fn [edn cb]
     (log edn)
-    (.send XhrIo url
-           (fn [e]
-             (log e)
-             ;(this-as this
-             ;  (log (t/read (t/reader :json)
-             ;               (.getResponseText this)))
-             ;  (cb (t/read (t/reader :json) (.getResponseText this))))
-             )
-           "POST" (t/write (t/writer :json) edn)
-           #js {"Content-Type" "application/transit+json"})))
+    (cond
+      (:remote edn) (.send XhrIo url
+                           (fn [e]
+                             (log e)
+                             ;(this-as this
+                             ;  (log (t/read (t/reader :json)
+                             ;               (.getResponseText this)))
+                             ;  (cb (t/read (t/reader :json) (.getResponseText this))))
+                             )
+                           "POST" (t/write (t/writer :json) edn)
+                           #js {"Content-Type" "application/transit+json"})
+      (:query edn) (do
+                     (log "Queryzz")
+                     (http/get "http://localhost:1337/query"
+                               {:query-params {:query (pr-str (:query edn))}})))))
+
+
 
 (defn sente-post []
   (fn [{:keys [remote] :as env} cb]
@@ -140,7 +172,7 @@
 (def reconciler
   (om/reconciler
     {:state   conn
-     :remotes [:remote]
+     :remotes [:remote :query]
      :parser  (om/parser {:read r/read :mutate m/mutate})
      :send    (transit-post "http://localhost:1337/commands")                                              ;(sente-post)
      }))
