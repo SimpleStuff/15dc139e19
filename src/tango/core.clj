@@ -87,7 +87,8 @@
 
      ;; Http-Server
      :http-server-channels (http/create-http-channels)
-     :http-server (component/using (http/create-http-server port) [:ws-connection :http-server-channels])
+     :http-server (component/using (http/create-http-server port "datomic:free://localhost:4334//competitions")
+                                   [:ws-connection :http-server-channels])
 
      ;; Event Storage
      :event-file-storage-channels (file-storage/create-event-file-storage-channels)
@@ -139,7 +140,7 @@
   "REPL helper that allow to restart the application and reload namespaces."
   []
   (stop)
-  (d/delete-storage "datomic:free://localhost:4334//competitions")
+  ;(d/delete-storage "datomic:free://localhost:4334//competitions")
   (refresh :after 'tango.core/go))
 
 ;; TODO - Add possibillity to set log level as a param

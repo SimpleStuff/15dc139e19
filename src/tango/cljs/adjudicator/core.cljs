@@ -122,6 +122,7 @@
 
 ;http://jeremyraines.com/2015/11/16/getting-started-with-clojure-web-development.html
 
+(declare reconciler)
 ;; example of a mark message
 ;; [:set-result {:round/id 1 :adjudicator/id 1 :participant-id 1 :mark/x true}]
 (defn transit-post [url]
@@ -140,10 +141,25 @@
                            #js {"Content-Type" "application/transit+json"})
       (:query edn) (do
                      (log "Queryzz")
-                     (http/get "http://localhost:1337/query"
-                               {:query-params {:query (pr-str (:query edn))}})))))
+                     ;(http/get "http://localhost:1337/query"
+                     ;          {:query-params {:query (pr-str (:query edn))}})
+                     (go
+                       (let [response (async/<! (http/get "http://localhost:1337/query"
+                                                          {:query-params {:query (pr-str (:query edn))}}))]
+                         (log "Response")
+                         (log (:body response))
+                         ;(om/transact! reconciler `[(app/add-competition ~clean-data) :app/competitions])
+                         (om/transact! reconciler `[(app/status {:status "uff"})])
+                         (log (second (cljs.reader/read-string (:body response))))
+                         ;(cb (second (cljs.reader/read-string (:body response))))
+                         (cb {:app/status {:app/selected-activity {:activity/name "Doo"}}})
+                         ;(cb [:app/status {:app/selected-activity [:activity/name]}])
+                         (log (om/app-state reconciler))
+                         ))
+                     ))))
 
-
+;[:app/status
+; {:app/selected-activity [:activity/name]}]
 
 (defn sente-post []
   (fn [{:keys [remote] :as env} cb]

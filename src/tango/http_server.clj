@@ -8,7 +8,8 @@
             [ring.middleware.transit :refer [wrap-transit-params]]
             [taoensso.timbre :as log]
             [cognitect.transit :as t]
-            [om.next.server :as om]))
+            [om.next.server :as om]
+            [tango.datomic-storage :as d]))
 
 ;; Provides useful Timbre aliases in this ns
 (log/refer-timbre)
@@ -64,16 +65,19 @@
   ;(prn (t/read (t/reader (:body req) :json)))
   )
 
-(defn handle-query [ch-out req]
-  (do
-    (async/>!! ch-out {:topic :query
-                       :sender :http
-                       :payload (clojure.edn/read-string
-                                  (:query (:params req)))})
-    {:body "Query accepted"})
+(defn handle-query [ch-out datomic-storage-uri req]
+  (let [conn (d/create-connection datomic-storage-uri)
+        result (d/get-selected-activity conn)]
+    ;(async/>!! ch-out {:topic :query
+    ;                   :sender :http
+    ;                   :payload (clojure.edn/read-string
+    ;                              (:query (:params req)))})
+
+    (log/info (str "Query >> " result))
+    {:body {:query result}})
   )
 
-(defn handler [ajax-post-fn ajax-get-or-ws-handshake-fn http-server-channels]
+(defn handler [ajax-post-fn ajax-get-or-ws-handshake-fn http-server-channels datomic-storage-uri]
   (routes
    (GET "/" req {:body (slurp (clojure.java.io/resource "public/index.html"))
                  :session {:uid (rand-int 100)}
@@ -84,7 +88,7 @@
    (GET "/adjudicator" req {:body (slurp (clojure.java.io/resource "public/adjudicator.html"))
                             :session {:uid (rand-int 100)}
                             :headers {"Content-Type" "text/html"}})
-   (GET "/query" req (partial handle-query (:out-channel http-server-channels)))
+   (GET "/query" req (partial handle-query (:out-channel http-server-channels) datomic-storage-uri))
    ;; Sente channel routes
    (GET  "/chsk" req (ajax-get-or-ws-handshake-fn req))
    (POST "/chsk" req (ajax-post-fn req))
@@ -95,7 +99,7 @@
   (:ring-handlers ws-connection))
 
 ;; TODO - handle that port is nil
-(defrecord HttpServer [port http-server-channels ws-connection server-stop]
+(defrecord HttpServer [port http-server-channels ws-connection server-stop datomic-storage-uri]
   component/Lifecycle
   (start [component]
     (if server-stop
@@ -103,8 +107,7 @@
         (log/info "Server already started")
         component)
       (let [{:keys [ajax-post-fn ajax-get-or-ws-handshake-fn]} (ring-handlers ws-connection)
-
-            handler (handler ajax-post-fn ajax-get-or-ws-handshake-fn http-server-channels)
+            handler (handler ajax-post-fn ajax-get-or-ws-handshake-fn http-server-channels datomic-storage-uri)
 
             ;; TODO - implement proper CSRF instead of turning it off
             server-stop (http-kit-server/run-server
@@ -120,8 +123,8 @@
       (log/report "HTTP server stopped"))
     (assoc component :server-stop nil)))
 
-(defn create-http-server [port]
-  (map->HttpServer {:port port}))
+(defn create-http-server [port datomic-storage-uri]
+  (map->HttpServer {:port port :datomic-storage-uri datomic-storage-uri}))
 
 (defrecord HttpServerChannels [in-channel out-channel]
   component/Lifecycle
