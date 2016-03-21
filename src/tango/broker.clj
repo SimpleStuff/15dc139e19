@@ -19,7 +19,7 @@
 (defn selected-activity [conn]
   (log/info (str "Application selected round : " (d/get-selected-activity conn))))
 
-(defn start-result-rules-engine [in-ch out-ch datomic-storage-uri]
+(defn start-result-rules-engine [in-ch out-ch client-in-channel datomic-storage-uri]
   (async/go-loop []
     (when-let [message (async/<! in-ch)]
       (when message
@@ -45,7 +45,13 @@
                            out-ch
                            {:topic :rules/unkown-topic :payload {:topic topic}})
 
-                   ))
+                   )
+            (let [[tx tx-ch] (async/alts!!
+                               [[client-in-channel
+                                 ;(merge message)
+                                 {:topic   :tx/accepted
+                                  :payload topic}]
+                                (async/timeout 500)])]))
           (catch Exception e
             (log/error e "Exception in Broker message go loop")
             (async/>! out-ch (str "Exception message: " (.getMessage e)))))
@@ -171,6 +177,7 @@
           rules-engine (start-result-rules-engine
                          rules-in-ch
                          rules-out-ch
+                         (:in-channel channel-connection-channels)
                          datomic-storage-uri)
           broker-process (start-message-process
                           message-dispatch 

@@ -120,7 +120,7 @@
 (defmethod event-msg-handler :chsk/recv
   [{:as ev-msg :keys [?data]}]
   (let [[topic payload] ?data]
-    ;(log (str "Push event from server: " topic))
+    (log (str "Push event from server: " topic))
     (when (= topic :event-manager/query-result)
       (if (vector? payload)
         (handle-query-result payload)
