@@ -19,12 +19,22 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Sente web-socket implementation
 
+;(doseq [uid (:any @connected-uids)]
+;  (chsk-send! uid
+;              [:some/broadcast
+;               {:what-is-this "An async broadcast pushed from server"
+;                :how-often "Every 10 seconds"
+;                :to-whom uid
+;                :i i}]))
+
 (defn sente-ws-bus-adapter-out
   "Convert a internal message to a sente socket event :
   [user-id event] where event [<ev-id> <?ev-data>], 
   e.g. [:my-app/some-req {:data data}]"
   [{:keys [topic payload sender]}]
-  (let [sender-id (or sender :sente/all-users-without-uid)]
+  (let [sender-id (or sender :broadcast ;:sente/all-users-without-uid
+                      )]
+    (log/info (str "Web socket adapter out " sender-id))
     [sender-id [topic payload]]))
 
 (defn sente-ws-bus-adapter-in
@@ -88,11 +98,16 @@
           :connected-uids connected-uids
           :send-fn send-fn
           :stop-the-thing 
-          (sente/start-chsk-router! ch-recv (partial event-msg-handler* (:out-channel ws-connection-channels)))
+          (sente/start-chsk-router! ch-recv (partial event-msg-handler*
+                                                     (:out-channel ws-connection-channels)
+                                                     ))
           :ring-handlers (->WSRingHandlers ajax-post-fn ajax-get-or-ws-handshake-fn)
           :send-loop (start-message-send-loop
                       (fn [[user-id event]]
-                        (send-fn user-id event))
+                        (if (= user-id :broadcast)
+                          (doseq [id (:any @connected-uids)]
+                            (send-fn id event))
+                          (send-fn user-id event)))
                       (:in-channel ws-connection-channels)
                       (async/chan)
                       sente-ws-bus-adapter-out)))))

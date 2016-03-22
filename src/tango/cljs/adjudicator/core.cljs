@@ -22,6 +22,18 @@
 (defn log [m]
   (.log js/console m))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Sente Socket setup
+
+(let [{:keys [chsk ch-recv send-fn state]}
+      (sente/make-channel-socket! "/chsk"
+                                  {:type :auto})]
+  (def chsk chsk)
+  (def ch-chsk ch-recv)                                     ; ChannelSocket's receive channel
+  (def chsk-send! send-fn)                                  ; ChannelSocket's send API fn
+  (def chsk-state state)                                    ; Watchable, read-only atom
+  )
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Init DB
 (defonce conn (d/create-conn uidb/schema))
@@ -44,6 +56,58 @@
   (d/q '[:find ?online .
          :where
          [_ :app/online? ?online]] (d/db conn)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Sente message handling
+
+; Dispatch on event-id
+(defmulti event-msg-handler :id)
+
+;; Wrap for logging, catching, etc.:
+(defn event-msg-handler* [{:keys [id ?data event] :as ev-msg}]
+  (event-msg-handler {:id    (first ev-msg)
+                      :?data (second ev-msg)}))
+
+(defmethod event-msg-handler :default
+  [ev-msg]
+  (log (str "Unhandled event: " ev-msg)))
+
+(defmethod event-msg-handler :chsk/state
+  [{:as ev-msg :keys [?data]}]
+  (do
+    (log (str "Channel socket state change: " ?data))
+    (if (:first-open? ?data)
+      (do
+        (log "Channel socket successfully established!")
+        ;(log "Fetch initilize data from Tango server")
+        ;(om/transact! reconciler `[(app/online? {:online? true})])
+        ;(chsk-send! [:event-manager/query [[:competition/name :competition/location]]]))
+      ;(let [open-state (:open? ?data)]
+      ;  (om/transact! reconciler `[(app/online? {:online? ~open-state})]))
+      ))))
+
+;; TODO - Cleaning when respons type can be separated
+(defmethod event-msg-handler :chsk/recv
+  [{:as ev-msg :keys [?data]}]
+  (let [[topic payload] ?data]
+    (log (str "Push event from server: " topic))
+    (log payload)
+    ;(when (= topic :event-manager/query-result)
+    ;  (if (vector? payload)
+    ;    (handle-query-result payload)
+    ;    (handle-query-result (second ?data))))
+    ;(when (= topic :event-manager/transaction-result)
+    ;  (chsk-send! [:event-manager/query [[:competition/name :competition/location]]]))
+    ;(log "Exit event-msg-handler")
+    ))
+
+(defmethod event-msg-handler :chsk/handshake
+  [{:as ev-msg :keys [?data]}]
+  (let [[?uid ?csrf-token ?handshake-data] ?data]
+    (log (str "Handshake: " ?data))))
+
+(defonce chsk-router
+         (sente/start-chsk-router-loop! event-msg-handler* ch-chsk))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Components
@@ -150,6 +214,8 @@
                          (log (:body response))
                          ;(om/transact! reconciler `[(app/add-competition ~clean-data) :app/competitions])
                          (om/transact! reconciler `[(app/status {:status "uff"})])
+                         (log "Response to")
+                         (log (:query edn))
                          (log (second (cljs.reader/read-string (:body response))))
                          ;(cb (second (cljs.reader/read-string (:body response))))
                          (cb {:app/status {:app/selected-activity {:activity/name "Doo"}}})
