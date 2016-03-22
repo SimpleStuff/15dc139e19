@@ -150,6 +150,20 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; DancePerfect/ClassList
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defn- make-dance-node [dance seq]
+  (xml/element
+    :Dance
+    {:Seq seq
+     :Name (:dance/name dance)}))
+
+(defn- make-dance-list-node [dances]
+  (xml/element
+    :DanceList
+    {:Qty (count dances)}
+    (reduce (fn [elements dance]
+              (conj elements (make-dance-node dance (count elements))))
+            [] dances)))
+
 (defn- make-couple-node [participant seq]
   (xml/element
     :Couple
@@ -174,6 +188,7 @@
       {:Seq      seq-number
        :Name     (:class/name class)
        :AdjPanel (:adjudicator-panel/name (:class/adjudicator-panel class))}
+      (make-dance-list-node (:class/dances class))
       (make-start-list-node (:class/starting class))
       )))
 
