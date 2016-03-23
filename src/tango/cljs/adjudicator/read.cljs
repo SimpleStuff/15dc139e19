@@ -27,7 +27,15 @@
 
 (defmethod read :app/selected-activity
   [{:keys [state query]} _ _]
-  {:value (do (log query) {:name "Test"})
+  {:value (do
+            (log "Read selected-activity")
+            (log query)
+            ;{:name "TEst"}
+            {:name
+             (d/q '[:find ?a .
+                    :where [[:app/id 1] :app/selected-activity ?a]]
+                  (d/db state))})
+
    :query true})
 
 

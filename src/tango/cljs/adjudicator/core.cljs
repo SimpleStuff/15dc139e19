@@ -22,6 +22,7 @@
 (defn log [m]
   (.log js/console m))
 
+(declare reconciler)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Sente Socket setup
 
@@ -45,6 +46,7 @@
                      ;{:db/id -1 :app/import-status :none}
                      {:db/id -1 :app/status :running}
                      ;{:db/id -1 :app/selected-competition {}}
+                     {:db/id -1 :app/selected-activity-status :in-sync}
                      ]))
 
 (defn app-started? [conn]
@@ -90,8 +92,13 @@
 (defmethod event-msg-handler :chsk/recv
   [{:as ev-msg :keys [?data]}]
   (let [[topic payload] ?data]
-    (log (str "Push event from server: " topic))
-    (log payload)
+    (if (= topic :tx/accepted)
+      (do
+        (log (str " event from server: " topic))
+        (log payload)
+        ;(d/transact! conn [{:app/id 1 :app/status :sync}])
+        (om/transact! reconciler `[(app/selected-activity-status {:status :out-of-sync}) :app/selected-activity])
+        ))
     ;(when (= topic :event-manager/query-result)
     ;  (if (vector? payload)
     ;    (handle-query-result payload)
@@ -137,8 +144,11 @@
     (let [app (om/props this)
           status (:app/status app)
           next-status (if (not= status :on) :on :off)]
-      ;(log status)
+      ;(log app)
+      (log "Rendering MainComponent")
       (dom/div nil
+        ;(log "name")
+        ;(log (str (:name (:app/selected-activity (om/props this)))))
         (dom/h3 nil (str "Selected Activity : " (:name (:app/selected-activity (om/props this)))))
         (dom/h3 nil "Adjudicator UI")
         (dom/h3 nil (str "Status : " status))
@@ -186,7 +196,7 @@
 
 ;http://jeremyraines.com/2015/11/16/getting-started-with-clojure-web-development.html
 
-(declare reconciler)
+
 ;; example of a mark message
 ;; [:set-result {:round/id 1 :adjudicator/id 1 :participant-id 1 :mark/x true}]
 (defn transit-post [url]
@@ -217,6 +227,9 @@
                          (log "Response to")
                          (log (:query edn))
                          (log (second (cljs.reader/read-string (:body response))))
+
+                         (om/transact! reconciler `[(app/select-activity
+                                                      {:name ~(:activity/name (second (cljs.reader/read-string (:body response))))})])
                          ;(cb (second (cljs.reader/read-string (:body response))))
                          (cb {:app/status {:app/selected-activity {:activity/name "Doo"}}})
                          ;(cb [:app/status {:app/selected-activity [:activity/name]}])
