@@ -96,8 +96,8 @@
       (do
         (log (str " event from server: " topic))
         (log payload)
-        ;(d/transact! conn [{:app/id 1 :app/status :sync}])
-        (om/transact! reconciler `[(app/selected-activity-status {:status :out-of-sync}) :app/selected-activity])
+        (om/transact! reconciler `[(app/selected-activity-status {:status :out-of-sync})
+                                   :app/selected-activity])
         ))
     ;(when (= topic :event-manager/query-result)
     ;  (if (vector? payload)
@@ -144,11 +144,8 @@
     (let [app (om/props this)
           status (:app/status app)
           next-status (if (not= status :on) :on :off)]
-      ;(log app)
       (log "Rendering MainComponent")
       (dom/div nil
-        ;(log "name")
-        ;(log (str (:name (:app/selected-activity (om/props this)))))
         (dom/h3 nil (str "Selected Activity : " (:name (:app/selected-activity (om/props this)))))
         (dom/h3 nil "Adjudicator UI")
         (dom/h3 nil (str "Status : " status))
@@ -161,11 +158,6 @@
                                this
                                `[(app/status {:status ~next-status})
                                  (app/online? {:online? true})])
-                             ;(log (http/post
-                             ;       "http://localhost:1337/commands"
-                             ;       {:form-params {:foo :bar}}
-                             ;       ;{:edn-params {:foo :bar}}
-                             ;       ))
                              (log "Command"))} "Command"))
 
         (dom/span nil
@@ -179,8 +171,7 @@
                                                  (log e)))
                                              "GET"
                                              "Test"))}
-                      "Query"
-            ))
+                      "Query"))
 
         (dom/span nil
           (dom/label nil "Query Test 2: ")
@@ -188,8 +179,7 @@
                                       (log "Query")
                                       (http/get "http://localhost:1337/query"
                                                 {:query-params {:query (pr-str '[:find])}}))}
-                      "Query 2"
-                      ))))))
+                      "Query 2"))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Remote Posts
@@ -206,6 +196,7 @@
       (:remote edn) (.send XhrIo url
                            (fn [e]
                              (log e)
+                             ;; TODO - Should do something with the response..
                              ;(this-as this
                              ;  (log (t/read (t/reader :json)
                              ;               (.getResponseText this)))
@@ -214,48 +205,36 @@
                            "POST" (t/write (t/writer :json) edn)
                            #js {"Content-Type" "application/transit+json"})
       (:query edn) (do
-                     (log "Queryzz")
-                     ;(http/get "http://localhost:1337/query"
-                     ;          {:query-params {:query (pr-str (:query edn))}})
+                     (log (str "Run Query: " (pr-str (:query edn))))
                      (go
                        (let [response (async/<! (http/get "http://localhost:1337/query"
-                                                          {:query-params {:query (pr-str (:query edn))}}))]
+                                                          {:query-params {:query (pr-str (:query edn))}}))
+                             body (:body response)
+                             edn-result (second (cljs.reader/read-string body))]
                          (log "Response")
                          (log (:body response))
-                         ;(om/transact! reconciler `[(app/add-competition ~clean-data) :app/competitions])
-                         (om/transact! reconciler `[(app/status {:status "uff"})])
-                         (log "Response to")
-                         (log (:query edn))
-                         (log (second (cljs.reader/read-string (:body response))))
-
+                         ;(om/transact! reconciler `[(app/status {:status "uff"})])
+                         ;(log (second (cljs.reader/read-string (:body response))))
                          (om/transact! reconciler `[(app/select-activity
-                                                      {:name ~(:activity/name (second (cljs.reader/read-string (:body response))))})])
-                         ;(cb (second (cljs.reader/read-string (:body response))))
-                         (cb {:app/status {:app/selected-activity {:activity/name "Doo"}}})
-                         ;(cb [:app/status {:app/selected-activity [:activity/name]}])
-                         (log (om/app-state reconciler))
-                         ))
-                     ))))
+                                                      {:name ~(:activity/name edn-result)})])
+                         ))))))
 
-;[:app/status
-; {:app/selected-activity [:activity/name]}]
-
-(defn sente-post []
-  (fn [{:keys [remote] :as env} cb]
-    (do
-      (log "Env > ")
-      (log env)
-      (log (str "Sent to Tango Backend => " remote))
-      (log (http/post
-             "http://localhost:1337/commands"
-             {:query-params {:command remote}}
-             ;{:json-params {:command remote}}
-             ;{:form-params {:command remote}}
-             ;{:edn-params {:command remote}}
-             ))
-
-      ;(chsk-send! [:event-manager/query [[:competition/name :competition/location]]])
-      )))
+;(defn sente-post []
+;  (fn [{:keys [remote] :as env} cb]
+;    (do
+;      (log "Env > ")
+;      (log env)
+;      (log (str "Sent to Tango Backend => " remote))
+;      (log (http/post
+;             "http://localhost:1337/commands"
+;             {:query-params {:command remote}}
+;             ;{:json-params {:command remote}}
+;             ;{:form-params {:command remote}}
+;             ;{:edn-params {:command remote}}
+;             ))
+;
+;      ;(chsk-send! [:event-manager/query [[:competition/name :competition/location]]])
+;      )))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Application
@@ -269,8 +248,7 @@
     {:state   conn
      :remotes [:remote :query]
      :parser  (om/parser {:read r/read :mutate m/mutate})
-     :send    (transit-post "http://localhost:1337/commands")                                              ;(sente-post)
-     }))
+     :send    (transit-post "http://localhost:1337/commands")}))
 
 (om/add-root! reconciler
               MainComponent (gdom/getElement "app"))
