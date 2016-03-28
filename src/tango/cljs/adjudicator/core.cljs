@@ -137,7 +137,9 @@
   static om/IQuery
   (query [_]
     [:app/status
-     {:app/selected-activity [:activity/name]}])
+     {:app/selected-activity [:activity/name
+                              :round/recall
+                              :round/heats]}])
   Object
   (render
     [this]
@@ -213,10 +215,14 @@
                              edn-result (second (cljs.reader/read-string body))]
                          (log "Response")
                          (log (:body response))
+                         (log "Edn")
+                         (log edn-result)
                          ;(om/transact! reconciler `[(app/status {:status "uff"})])
                          ;(log (second (cljs.reader/read-string (:body response))))
                          (om/transact! reconciler `[(app/select-activity
-                                                      {:name ~(:activity/name edn-result)})])
+                                                      {:name ~(:activity/name
+                                                                (:app/selected-activity
+                                                                  edn-result))})])
                          ))))))
 
 ;(defn sente-post []

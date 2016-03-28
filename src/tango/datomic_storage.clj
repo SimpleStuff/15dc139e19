@@ -2,9 +2,14 @@
   (:require
     [datomic.api :as d]
     [datascript.core :as ds]
+    [taoensso.timbre :as log]
     [tango.ui-db :as ui]
     [datascript.core :as ds]
     [tango.test-utils :as u]))
+
+;; Provides useful Timbre aliases in this ns
+(log/refer-timbre)
+
 
 (def application-schema
   [{:db/id                 #db/id[:db.part/db]
@@ -115,12 +120,14 @@
   (let [tx-data (update-fn)]
     @(d/transact db [tx-data])))
 
-(defn get-selected-activity [conn]
-  (d/q '[:find (pull ?a [:activity/name]) .
-         :where
-         [?e :app/id 1]
-         [?e :app/selected-activity ?a]]
-       (d/db conn)))
+(defn get-selected-activity [conn query]
+  (do (log/info "DT query " query)
+      (d/q '[:find (pull ?a selector) .
+             :in $ selector
+             :where
+             [?e :app/id 1]
+             [?e :app/selected-activity ?a]]
+           (d/db conn) query)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Examples

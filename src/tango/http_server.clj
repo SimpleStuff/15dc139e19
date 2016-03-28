@@ -33,6 +33,9 @@
 ;; http://codingstruggles.com/clojure-integrating-friend-with-sente/
 ;; curl -X POST -v -d "t=d" http://localhost:1337/commands
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Mutate
+
 (defmulti mutate (fn [env key params] key))
 
 (defmethod mutate 'app/status
@@ -52,13 +55,26 @@
   {:action (fn []
              (async/>!! state {:topic :command :sender :http :payload [key params]}))})
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Read
+(defmulti reader (fn [env key params] key))
+
+(defmethod reader :app/selected-activity
+  [{:keys [state query]} key params]
+  {:value (do
+            (log/info (str "Selector " query))
+            (d/get-selected-activity state query)
+              )
+   ;(do (log/info (str "Reader Query Key Params " query key params)))
+   })
+
 (def parser
-  (om/parser {:mutate mutate}))
+  (om/parser {:mutate mutate
+              :read reader}))
 
 (defn handle-command [ch-out req]
   (do
     (parser {:state ch-out} (:command (:params req)))
-
     {:body "Tjena"})
   ;(str (:remote (:params req)))
   ;(str (prn (t/read (t/reader (:body req) :json))))
@@ -67,12 +83,16 @@
 
 (defn handle-query [ch-out datomic-storage-uri req]
   (let [conn (d/create-connection datomic-storage-uri)
-        result (d/get-selected-activity conn)]
+        ;result (d/get-selected-activity conn)
+        result (parser {:state conn} (clojure.edn/read-string (:query (:params req))))
+        ]
     ;(async/>!! ch-out {:topic :query
     ;                   :sender :http
     ;                   :payload (clojure.edn/read-string
     ;                              (:query (:params req)))})
 
+    ;(parser {:state conn} (clojure.edn/read-string (:query (:params req))))
+    (log/info (str "Request Query " req))
     (log/info (str "Query >> " result))
     {:body {:query result}})
   )
