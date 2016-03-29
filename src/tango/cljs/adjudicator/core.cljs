@@ -37,7 +37,12 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Init DB
-(defonce conn (d/create-conn uidb/schema))
+(def adjudicator-ui-schema {:app/selected-activity {:db/cardinality :db.cardinality/one
+                                                    :db/valueType :db.type/ref}})
+
+(defonce conn (d/create-conn (merge adjudicator-ui-schema uidb/schema)))
+
+;(defonce conn (d/create-conn adjudicator-ui-schema))
 
 (defn init-app []
   (d/transact! conn [{:db/id -1 :app/id 1}
@@ -46,6 +51,7 @@
                      ;{:db/id -1 :app/import-status :none}
                      {:db/id -1 :app/status :running}
                      ;{:db/id -1 :app/selected-competition {}}
+
                      {:db/id -1 :app/selected-activity-status :in-sync}
                      ]))
 
@@ -128,7 +134,7 @@
 
 ;; TODO:
 ;; - Select judge for UI
-;; - Get selected round that is to be judged
+;; X Get selected round that is to be judged
 ;; - Get the number of participants to be recalled
 ;; - Show participant number
 ;; - Command to set mark on participant for the specific round for this judge
@@ -137,51 +143,69 @@
   static om/IQuery
   (query [_]
     [:app/status
-     {:app/selected-activity [:activity/name
-                              :round/recall
-                              :round/heats]}])
+     {:app/selected-activity
+      [:activity/id :activity/name
+       :round/recall :round/heats :round/name
+       {:round/starting [:participant/number]}]}])
   Object
   (render
     [this]
     (let [app (om/props this)
           status (:app/status app)
-          next-status (if (not= status :on) :on :off)]
+          next-status (if (not= status :on) :on :off)
+          selected-activity (:app/selected-activity (om/props this))]
+      (log app)
       (log "Rendering MainComponent")
       (dom/div nil
         (dom/h3 nil (str "Selected Activity : " (:name (:app/selected-activity (om/props this)))))
         (dom/h3 nil "Adjudicator UI")
-        (dom/h3 nil (str "Status : " status))
-        (dom/span nil
-          (dom/label nil "Command Test : ")
-                  ;https://github.com/r0man/cljs-http
-          (dom/button #js {:onClick
-                           #(do
-                             (om/transact!
-                               this
-                               `[(app/status {:status ~next-status})
-                                 (app/online? {:online? true})])
-                             (log "Command"))} "Command"))
+        (dom/h3 nil (str "Status : " status)))
 
-        (dom/span nil
-          (dom/label nil "Query Test : ")
-          (dom/button #js {:onClick #(do
-                                      (log "Query")
-                                      (.send XhrIo "http://localhost:1337/query?a"
-                                             (fn [e]
-                                               (do
-                                                 (log "Query CB")
-                                                 (log e)))
-                                             "GET"
-                                             "Test"))}
-                      "Query"))
+      (dom/div nil
+        (dom/h3 nil (str "Judge : " "TODO"))
+        (dom/h3 nil (:activity/name selected-activity))
+        (dom/h3 nil (:round/name selected-activity))
+        (dom/h3 nil (str "Mark " (:round/recall selected-activity) " of "
+                         (count
+                           (:round/starting selected-activity))))
+        (dom/h3 nil (str "Heats TODO : " (:round/heats selected-activity)))
+        (dom/h3 nil (str "Example Participant " (:participant/number (first (:round/starting selected-activity)))))))))
 
-        (dom/span nil
-          (dom/label nil "Query Test 2: ")
-          (dom/button #js {:onClick #(do
-                                      (log "Query")
-                                      (http/get "http://localhost:1337/query"
-                                                {:query-params {:query (pr-str '[:find])}}))}
-                      "Query 2"))))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Test components
+;; Command Test
+;(dom/span nil
+;  (dom/label nil "Command Test : ")
+;  (dom/button #js {:onClick
+;                   #(do
+;                     (om/transact!
+;                       this
+;                       `[(app/status {:status ~next-status})
+;                         (app/online? {:online? true})])
+;                     (log "Command"))} "Command"))
+
+;; Query test
+;(dom/span nil
+;  (dom/label nil "Query Test : ")
+;  (dom/button #js {:onClick #(do
+;                              (log "Query")
+;                              (.send XhrIo "http://localhost:1337/query?a"
+;                                     (fn [e]
+;                                       (do
+;                                         (log "Query CB")
+;                                         (log e)))
+;                                     "GET"
+;                                     "Test"))}
+;              "Query"))
+
+;; Query 2 test
+;(dom/span nil
+;  (dom/label nil "Query Test 2: ")
+;  (dom/button #js {:onClick #(do
+;                              (log "Query")
+;                              (http/get "http://localhost:1337/query"
+;                                        {:query-params {:query (pr-str '[:find])}}))}
+;              "Query 2"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Remote Posts
@@ -219,10 +243,12 @@
                          (log edn-result)
                          ;(om/transact! reconciler `[(app/status {:status "uff"})])
                          ;(log (second (cljs.reader/read-string (:body response))))
+                         ;(om/transact! reconciler `[(app/select-activity
+                         ;                             {:name ~(:activity/name
+                         ;                                       (:app/selected-activity
+                         ;                                         edn-result))})])
                          (om/transact! reconciler `[(app/select-activity
-                                                      {:name ~(:activity/name
-                                                                (:app/selected-activity
-                                                                  edn-result))})])
+                                                      {:activity ~(:app/selected-activity edn-result)})])
                          ))))))
 
 ;(defn sente-post []

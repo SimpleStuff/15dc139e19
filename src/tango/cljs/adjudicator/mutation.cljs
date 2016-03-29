@@ -35,11 +35,17 @@
                ;(log online?)
                (d/transact! state [{:app/id 1 :app/online? online?}])))})
 
+;(defmethod mutate 'app/select-activity
+;  [{:keys [state]} _ {:keys [name]}]
+;  {:value  {:keys [:app/selected-activity]}
+;   :action (fn []
+;             (d/transact! state [{:app/id 1 :app/selected-activity name}]))})
+
 (defmethod mutate 'app/select-activity
-  [{:keys [state]} _ {:keys [name]}]
+  [{:keys [state]} _ {:keys [activity]}]
   {:value  {:keys [:app/selected-activity]}
    :action (fn []
-             (d/transact! state [{:app/id 1 :app/selected-activity name}]))})
+             (d/transact! state [{:app/id 1 :app/selected-activity activity}]))})
 
 ;(defmethod read :app/selected-activity
 ;  [{:keys [state query]} _ _]
