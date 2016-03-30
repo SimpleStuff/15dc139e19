@@ -14,10 +14,10 @@
 (defn select-activity [conn activity]
   (do
     (d/select-round conn activity)
-    (log/info (str "Application selected round changed : " (d/get-selected-activity conn)))))
+    (log/info (str "Application selected round changed : " ))))
 
 (defn selected-activity [conn]
-  (log/info (str "Application selected round : " (d/get-selected-activity conn))))
+  (log/info (str "Application selected round : " (d/get-selected-activity conn '[:activity/name]))))
 
 (defn start-result-rules-engine [in-ch out-ch client-in-channel datomic-storage-uri]
   (async/go-loop []
@@ -35,10 +35,10 @@
                      (log/info (str "Select activity " payload))
                      ;; TODO - should the connection be kept open?
                      (select-activity (d/create-connection datomic-storage-uri) payload))
-                   [:app/selected-activity _]
-                   (do
-                     (log/info (str "Selected activity " (:app/selected-activity payload)))
-                     (selected-activity (d/create-connection datomic-storage-uri)))
+                   ;[:app/selected-activity _]
+                   ;(do
+                   ;  (log/info (str "Selected activity " (:app/selected-activity payload)))
+                   ;  (selected-activity (d/create-connection datomic-storage-uri)))
                    [:set-result p]
                    (log/info "Mark X")
                    :else (async/>!!
