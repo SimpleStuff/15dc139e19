@@ -142,8 +142,7 @@
 (defui MainComponent
   static om/IQuery
   (query [_]
-    [:app/status
-     {:app/selected-activity
+    [{:app/selected-activity
       [:activity/id :activity/name
        :round/recall :round/heats :round/name
        {:round/starting [:participant/number]}]}])
@@ -154,7 +153,7 @@
           status (:app/status app)
           next-status (if (not= status :on) :on :off)
           selected-activity (:app/selected-activity (om/props this))]
-      (log app)
+      ;(log app)
       (log "Rendering MainComponent")
       (dom/div nil
         (dom/h3 nil (str "Selected Activity : " (:name (:app/selected-activity (om/props this)))))
@@ -230,11 +229,16 @@
                              )
                            "POST" (t/write (t/writer :json) edn)
                            #js {"Content-Type" "application/transit+json"})
-      (:query edn) (do
+      (:query edn) (let [edn-query-str (pr-str (om/get-query MainComponent))]
                      (log (str "Run Query: " (pr-str (:query edn))))
+                     (log (:query edn))
+
+                     (log (str "Om Query" (pr-str (om/get-query MainComponent))))
+                     ;; TODO - testa om/get-query on component
+
                      (go
                        (let [response (async/<! (http/get "http://localhost:1337/query"
-                                                          {:query-params {:query (pr-str (:query edn))}}))
+                                                          {:query-params {:query edn-query-str}}))
                              body (:body response)
                              edn-result (second (cljs.reader/read-string body))]
                          (log "Response")
@@ -248,8 +252,14 @@
                          ;                                       (:app/selected-activity
                          ;                                         edn-result))})])
                          (om/transact! reconciler `[(app/select-activity
-                                                      {:activity ~(:app/selected-activity edn-result)})])
+                                                      {:activity ~(:app/selected-activity edn-result)})
+                                                    ;:app/selected-activity
+                                                    ])
                          ))))))
+
+;[{:app/selected-activity [:activity/id :activity/name
+;                          :round/recall :round/heats
+;                          :round/name {:round/starting [:participant/number]}]}]
 
 ;(defn sente-post []
 ;  (fn [{:keys [remote] :as env} cb]

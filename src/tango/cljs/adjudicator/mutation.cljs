@@ -21,7 +21,7 @@
 
 (defmethod mutate 'app/selected-activity-status
   [{:keys [state]} _ {:keys [status]}]
-  {:value  {:keys [:app/selected-activity]}
+  {:value  {:keys []}
    :action (fn []
              (d/transact! state [{:app/id 1 :app/selected-activity-status status}]))})
 
@@ -43,7 +43,7 @@
 
 (defmethod mutate 'app/select-activity
   [{:keys [state]} _ {:keys [activity]}]
-  {:value  {:keys [:app/selected-activity]}
+  {:value  {:keys [:app/selected-activity ]}
    :action (fn []
              (d/transact! state [{:app/id 1 :app/selected-activity activity}]))})
 
