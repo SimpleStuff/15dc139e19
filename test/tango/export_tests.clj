@@ -4,10 +4,6 @@
             [clj-time.coerce :as tcr]
             [tango.export :as e]
             [tango.test-utils :as u]
+            [tango.expected.expected-small-result :as esr]
             ))
-
-(deftest test-export
-  (testing "Export from test data"
-    (let [x 42]
-      (is (= x (e/export u/transact-small-example))))))
 

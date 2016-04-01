@@ -2,6 +2,7 @@
   (:require [clojure.test :refer :all]
             [tango.test-utils :as u]
             [tango.event-file-storage :as storage]
+            [tango.expected.expected-small-result :as esr]
             [clojure.core.async :as async]
             [com.stuartsierra.component :as component]))
 
@@ -50,13 +51,9 @@
       ;; (is (= {:topic :event-file-storage/created :payload nil}
       ;;        (receive-from event-storage)))
 
-      (send-to event-storage {:topic :event-file-storage/transact :payload u/expected-small-example})
+      (send-to event-storage {:topic :event-file-storage/transact :payload esr/expected-small-example})
       (is (= {:topic :event-file-storage/added :payload nil}
              (receive-from event-storage)))
-
-      ;; (send-to event-storage {:topic :event-file-storage/add :payload u/expected-small-example})
-      ;; (is (= {:topic :event-file-storage/added :payload nil}
-      ;;        (receive-from event-storage)))
 
       (send-to event-storage {:topic :event-file-storage/transact :payload u/expected-real-example})
       (is (= {:topic :event-file-storage/added :payload nil}
