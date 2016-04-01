@@ -84,35 +84,18 @@
   [{:as ev-msg :keys [?data]}]
   (do
     (log (str "Channel socket state change: " ?data))
-    (if (:first-open? ?data)
-      (do
-        (log "Channel socket successfully established!")
-        ;(log "Fetch initilize data from Tango server")
-        ;(om/transact! reconciler `[(app/online? {:online? true})])
-        ;(chsk-send! [:event-manager/query [[:competition/name :competition/location]]]))
-      ;(let [open-state (:open? ?data)]
-      ;  (om/transact! reconciler `[(app/online? {:online? ~open-state})]))
-      ))))
+    (when (:first-open? ?data)
+      (log "Channel socket successfully established!"))))
 
 ;; TODO - Cleaning when respons type can be separated
 (defmethod event-msg-handler :chsk/recv
   [{:as ev-msg :keys [?data]}]
   (let [[topic payload] ?data]
-    (if (= topic :tx/accepted)
-      (do
-        (log (str " event from server: " topic))
-        (log payload)
-        (om/transact! reconciler `[(app/selected-activity-status {:status :out-of-sync})
-                                   :app/selected-activity])
-        ))
-    ;(when (= topic :event-manager/query-result)
-    ;  (if (vector? payload)
-    ;    (handle-query-result payload)
-    ;    (handle-query-result (second ?data))))
-    ;(when (= topic :event-manager/transaction-result)
-    ;  (chsk-send! [:event-manager/query [[:competition/name :competition/location]]]))
-    ;(log "Exit event-msg-handler")
-    ))
+    (when (= topic :tx/accepted)
+      (log (str " event from server: " topic))
+      (log payload)
+      (om/transact! reconciler `[(app/selected-activity-status {:status :out-of-sync})
+                                 :app/selected-activity]))))
 
 (defmethod event-msg-handler :chsk/handshake
   [{:as ev-msg :keys [?data]}]
@@ -219,14 +202,13 @@
     (log edn)
     (cond
       (:remote edn) (.send XhrIo url
-                           (fn [e]
-                             (log e)
-                             ;; TODO - Should do something with the response..
-                             ;(this-as this
-                             ;  (log (t/read (t/reader :json)
-                             ;               (.getResponseText this)))
-                             ;  (cb (t/read (t/reader :json) (.getResponseText this))))
-                             )
+                           log
+                           ;; TODO - Should do something with the response..
+                           ;(this-as this
+                           ;  (log (t/read (t/reader :json)
+                           ;               (.getResponseText this)))
+                           ;  (cb (t/read (t/reader :json) (.getResponseText this))))
+
                            "POST" (t/write (t/writer :json) edn)
                            #js {"Content-Type" "application/transit+json"})
       (:query edn) (let [edn-query-str (pr-str (om/get-query MainComponent))]

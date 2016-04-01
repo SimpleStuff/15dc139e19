@@ -603,13 +603,12 @@
   (fn [edn cb]
     (log edn)
     (.send XhrIo url
-           (fn [e]
-             (log e)
-             ;(this-as this
-             ;  (log (t/read (t/reader :json)
-             ;               (.getResponseText this)))
-             ;  (cb (t/read (t/reader :json) (.getResponseText this))))
-             )
+           (log e)
+           ;(this-as this
+           ;  (log (t/read (t/reader :json)
+           ;               (.getResponseText this)))
+           ;  (cb (t/read (t/reader :json) (.getResponseText this))))
+
            "POST" (t/write (t/writer :json) edn)
            #js {"Content-Type" "application/transit+json"})))
 
@@ -621,10 +620,7 @@
         (log env)
         (log (str "Sent to Tango Backend => " remote))
         (chsk-send! [:event-manager/query [[:competition/name :competition/location]]]))
-      (do
-        ((transit-post "http://localhost:1337/commands") env cb)))))
-
-
+      ((transit-post "http://localhost:1337/commands") env cb))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Application

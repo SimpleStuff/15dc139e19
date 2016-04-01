@@ -10,7 +10,7 @@
 ;; Provides useful Timbre aliases in this ns
 (log/refer-timbre)
 
-
+;; TODO - move schema to its own file (liters start to cry otherwise)
 (def application-schema
   [{:db/id                 #db/id[:db.part/db]
     :db/ident              :app/id

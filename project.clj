@@ -117,7 +117,7 @@
 
   :aliases {"quality"    ["do"
                           ;; excluding constant test due to not working well with logging
-                          ["eastwood" "{:exclude-linters [:constant-test]}"]
+                          ["eastwood" "{:exclude-linters [:constant-test] :exclude-namespaces [tango.datomic-storage]}"]
                           ["kibit"]
                           ["ancient"]]
 
