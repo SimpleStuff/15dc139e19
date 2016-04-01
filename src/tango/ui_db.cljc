@@ -1,10 +1,7 @@
 (ns tango.ui-db
-  (:require [datascript.core :as d]
-            ))
+  (:require [datascript.core :as d]))
 
-
-
-(defn participant-index 
+(defn participant-index
   "Return map of index number -> id"
   [cmp]
   (reduce

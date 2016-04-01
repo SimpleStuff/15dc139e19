@@ -6,12 +6,13 @@
 
 (defmethod read :app/competitions
   [{:keys [state query]} _ _]
-  {:value  (if query
-             (d/q '[:find [(pull ?e ?selector) ...]
-                    :in $ ?selector
-                    :where [?e :competition/name]]
-                  (d/db state) query))
-   :remote true})
+  {:value (if query
+            (d/q '[:find [(pull ?e ?selector) ...]
+                   :in $ ?selector
+                   :where [?e :competition/name]]
+                 (d/db state) query))
+   ;:remote true
+   })
 
 (defmethod read :app/selected-page
   [{:keys [state]} _ _]

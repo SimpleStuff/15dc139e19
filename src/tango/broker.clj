@@ -2,12 +2,24 @@
   (:require [clojure.core.async :as async]
             [com.stuartsierra.component :as component]
             [taoensso.timbre :as log]
-            [clojure.core.match :refer [match]]))
+            [clojure.core.match :refer [match]]
+            [tango.datomic-storage :as d]))
 
 ;; Provides useful Timbre aliases in this ns
 (log/refer-timbre)
 
-(defn start-result-rules-engine [in-ch out-ch]
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; This should be componitized
+
+(defn select-activity [conn activity]
+  (do
+    (d/select-round conn activity)
+    (log/info (str "Application selected round changed : " ))))
+
+(defn selected-activity [conn]
+  (log/info (str "Application selected round : " (d/get-selected-activity conn '[:activity/name]))))
+
+(defn start-result-rules-engine [in-ch out-ch client-in-channel datomic-storage-uri]
   (async/go-loop []
     (when-let [message (async/<! in-ch)]
       (when message
@@ -18,15 +30,34 @@
             (log/info (str "Result Received Topic: [" topic "]"))
             (log/info (str "Result Received payload: [" payload "]"))
             (match [topic payload]
+                   ['app/select-activity _]
+                   (do
+                     (log/info (str "Select activity " payload))
+                     ;; TODO - should the connection be kept open?
+                     (select-activity (d/create-connection datomic-storage-uri) payload))
+                   ;[:app/selected-activity _]
+                   ;(do
+                   ;  (log/info (str "Selected activity " (:app/selected-activity payload)))
+                   ;  (selected-activity (d/create-connection datomic-storage-uri)))
                    [:set-result p]
                    (log/info "Mark X")
                    :else (async/>!!
                            out-ch
-                           {:topic :rules/unkown-topic :payload {:topic topic}})))
+                           {:topic :rules/unkown-topic :payload {:topic topic}})
+
+                   )
+            (let [[tx tx-ch] (async/alts!!
+                               [[client-in-channel
+                                 ;(merge message)
+                                 {:topic   :tx/accepted
+                                  :payload topic}]
+                                (async/timeout 500)])]))
           (catch Exception e
             (log/error e "Exception in Broker message go loop")
             (async/>! out-ch (str "Exception message: " (.getMessage e)))))
         (recur)))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 
 (defn message-dispatch [{:keys [topic payload sender] :as message}
                         {:keys [channel-connection-channels
@@ -41,12 +72,20 @@
     (log/info (str "Dispatching Topic [" topic "], Sender [" sender "]"))
     (match [topic payload]
            [:command _]
-           ;; Results should be handled by "Result Rules Engine"
-           ;; If a result is accepted it should be sent to the
-           ;; "Results Access" for handling.
-           (async/>!! (:in-channel rules-engine-channels)
-                      {:topic topic
-                       :payload payload})
+           (do
+             (log/info (str "Command " payload))
+             ;; Results should be handled by "Result Rules Engine"
+             ;; If a result is accepted it should be sent to the
+             ;; "Results Access" for handling.
+             (async/>!! (:in-channel rules-engine-channels)
+                        {:topic   (first payload)
+                         :payload (second payload)}))
+           [:query _]
+           (do
+             (log/info (str "Query " payload))
+             (async/>!! (:in-channel rules-engine-channels)
+                        {:topic   (first (keys (first payload)))
+                         :payload (first payload)}))
            [:file/import _]
            (let [[import import-ch] (async/alts!!
                                      [[(:in-channel file-handler-channels)
@@ -127,15 +166,19 @@
 (defrecord MessageBroker [channel-connection-channels
                           file-handler-channels
                           event-access-channels
-                          http-server-channels]
+                          http-server-channels
+                          datomic-storage-uri]
   component/Lifecycle
   (start [component]
     (log/report "Starting MessageBroker")
     (let [rules-in-ch (async/chan)
           rules-out-ch (async/chan)
+          db (d/create-storage datomic-storage-uri (into d/select-activity-schema d/application-schema))
           rules-engine (start-result-rules-engine
                          rules-in-ch
-                         rules-out-ch)
+                         rules-out-ch
+                         (:in-channel channel-connection-channels)
+                         datomic-storage-uri)
           broker-process (start-message-process
                           message-dispatch 
                           {:channel-connection-channels channel-connection-channels
@@ -151,5 +194,5 @@
     (assoc component :broker-process nil :file-handler-channels nil :event-access-channels nil
                      :rules-engine nil)))
 
-(defn create-message-broker []
-  (map->MessageBroker {})) 
+(defn create-message-broker [datomic-uri]
+  (map->MessageBroker {:datomic-storage-uri datomic-uri}))

@@ -11,6 +11,7 @@
                  [org.clojure/clojurescript "1.7.228"]
                  [org.clojure/core.match "0.3.0-alpha4"]
 
+                 [com.datomic/datomic-free "0.9.5350"]
                  [datascript "0.15.0"]
 
                  [com.cognitect/transit-clj "0.8.285"]
@@ -116,7 +117,7 @@
 
   :aliases {"quality"    ["do"
                           ;; excluding constant test due to not working well with logging
-                          ["eastwood" "{:exclude-linters [:constant-test]}"]
+                          ["eastwood" "{:exclude-linters [:constant-test] :exclude-namespaces [tango.datomic-storage]}"]
                           ["kibit"]
                           ["ancient"]]
 

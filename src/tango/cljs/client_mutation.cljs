@@ -56,6 +56,13 @@
                    (d/transact! state [{:app/id 1 :app/selected-competition {:competition/name name}}])]
                q))})
 
+(defmethod mutate 'app/select-activity
+  [{:keys [state]} _ {:keys [name]}]
+  {:value  {:keys [:app/selected-activity]}
+   :command true
+   :action (fn []
+             (d/transact! state [{:app/id 1 :app/selected-activity {:activity/name name}}]))})
+
 ;(d/transact! state [[:db/add 3 :competition/name "test 2"]])
 
 (defmethod mutate 'app/update-competition
