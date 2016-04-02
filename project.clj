@@ -8,7 +8,7 @@
                  [org.clojure/clojure "1.8.0"]
                  [org.clojure/core.async "0.2.374"]                 
                  [org.clojure/tools.namespace "0.2.10"]
-                 [org.clojure/clojurescript "1.7.228"]
+                 [org.clojure/clojurescript "1.8.40"]
                  [org.clojure/core.match "0.3.0-alpha4"]
 
                  [com.datomic/datomic-free "0.9.5350"]
@@ -26,7 +26,7 @@
                  [com.taoensso/timbre "4.2.1"]
 
                  ;; Web UI
-                 [org.omcljs/om "1.0.0-alpha22"]
+                 [org.omcljs/om "1.0.0-alpha32"]
                  [com.taoensso/sente "1.7.0"]
 
                  [http-kit "2.1.19"]

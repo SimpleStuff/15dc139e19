@@ -533,12 +533,14 @@
      :app/status
      :app/online?
      {:app/competitions (om/get-query Competition)}
+     ;{:app/selected-competition (into [] (concat (om/get-query ClassesView)
+     ;                                            (om/get-query ScheduleView)))}
      {:app/selected-competition
-      (concat (om/get-query ClassesView)
-              (om/get-query ScheduleView)
-              (om/get-query AdjudicatorPanelsView)
-              (om/get-query AdjudicatorsView)
-              (om/get-query PropertiesView))}
+      (into [] (concat (om/get-query ClassesView)
+                       (om/get-query ScheduleView)
+                       (om/get-query AdjudicatorPanelsView)
+                       (om/get-query AdjudicatorsView)
+                       (om/get-query PropertiesView)))}
      {:app/new-competition (om/get-query PropertiesView)}])
   Object
   (render
@@ -603,7 +605,7 @@
   (fn [edn cb]
     (log edn)
     (.send XhrIo url
-           (log e)
+           log
            ;(this-as this
            ;  (log (t/read (t/reader :json)
            ;               (.getResponseText this)))
