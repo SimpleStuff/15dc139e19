@@ -4,8 +4,7 @@
     [datascript.core :as ds]
     [taoensso.timbre :as log]
     [tango.ui-db :as ui]
-    [datascript.core :as ds]
-    [tango.test-utils :as u]))
+    [datascript.core :as ds]))
 
 ;; Provides useful Timbre aliases in this ns
 (log/refer-timbre)

@@ -1,6 +1,5 @@
 (ns tango.export
   (:require [datascript.core :as d]
-            [tango.test-utils :as u]
             [tango.ui-db :as uidb]
             [clj-time.coerce :as tcr]
             [clj-time.format :as tf]
@@ -8,7 +7,7 @@
             [clojure.data.xml :as xml]
             [clojure.xml :as cxml]
             [clojure.zip :as zip]
-            [tango.expected.expected-small-result :as esr]
+    ;[tango.expected.expected-small-result :as esr]
             [clojure.data.zip.xml :as zx]
             ))
 
@@ -248,11 +247,11 @@
     [db (get-db data)]
     (xml/emit-str (export-xml db export-definition))))
 
-(defn foo [x]
-  (+ 6 4))
-
-(defn bar [y]
-  (* 9 y))
-
-(export esr/expected-small-example)
-(bar 66)
+;(defn foo [x]
+;  (+ 6 4))
+;
+;(defn bar [y]
+;  (* 9 y))
+;
+;(export esr/expected-small-example)
+;(bar 66)
