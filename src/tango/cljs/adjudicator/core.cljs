@@ -128,7 +128,7 @@
     [{:app/selected-activity
       [:activity/id :activity/name
        :round/recall :round/heats :round/name
-       {:round/starting [:participant/number]}]}])
+       {:round/starting [:participant/number :participant/id]}]}])
   Object
   (render
     [this]

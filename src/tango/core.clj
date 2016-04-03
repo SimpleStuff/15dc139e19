@@ -106,8 +106,7 @@
                                       {:channel-connection-channels client-connection
                                        :http-server-channels :http-server-channels
                                        :file-handler-channels :file-handler-channels
-                                       :event-access-channels :event-access-channels}
-                                      ))))
+                                       :event-access-channels :event-access-channels}))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Defines a pointer to the current system.

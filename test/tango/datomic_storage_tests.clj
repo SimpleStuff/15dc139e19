@@ -51,6 +51,16 @@
       (is (= (:activity/name (ds/get-selected-activity conn [:activity/name]))
              "Two")))))
 
+(deftest selecting-the-same-activity-should-not-add-data
+  (testing "Selecting the same activity multiple times should add data"
+    (let [_ (ds/delete-storage mem-uri)
+          _ (ds/create-storage mem-uri (into ds/select-activity-schema ds/application-schema))
+          conn (ds/create-connection mem-uri)
+          round (create-selected-round "One")]
+      (ds/select-round conn round)
+      (ds/select-round conn round)
+      (is (= 2 (count (:round/starting (ds/get-selected-activity conn ['*]))))))))
+
 ;(deftest select-round-should-be-sanitized
 ;  (testing "Nil values etc should be removed before transacted"
 ;    (is (= 1 0))))
