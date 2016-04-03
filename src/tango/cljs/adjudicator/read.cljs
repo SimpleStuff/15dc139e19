@@ -30,9 +30,9 @@
   {:value (do
             ;(log "DB ")
             ;(log (d/db state))
-            (log "Reee")
-            (log query)
-            (log ast)
+            ;(log "Reee")
+            ;(log query)
+            ;(log ast)
             (if query
               (d/q '[:find (pull ?a selector) .
                      :in $ selector

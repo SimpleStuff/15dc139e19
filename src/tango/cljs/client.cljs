@@ -379,7 +379,11 @@
        {:round/starting [:participant/number :participant/id]}
        :round/heats :round/recall
        {:round/dances [:dance/name]}
-       {:round/panel [:adjudicator-panel/name]}
+       {:round/panel [:adjudicator-panel/name
+                      :adjudicator-panel/id
+                      {:adjudicator-panel/adjudicators
+                       [:adjudicator/name
+                        :adjudicator/id]}]}
        {:class/_rounds
         [{:class/rounds
           [:round/type :round/index :round/status]}]}]}])
@@ -390,16 +394,20 @@
           (presentation/make-time-schedule-activity-presenter
             (om/props this)
             (first (:class/_rounds (:activity/source (om/props this)))))]
-      (dom/tr #js {:onClick #(om/transact! this `[(app/select-activity
-                                                    {:activity/id   ~(:activity/id (om/props this))
-                                                     :activity/name ~name
-                                                     :round/recall  ~(:round/recall (:activity/source
-                                                                                      (om/props this)))
-                                                     :round/name    ~round
-                                                     :round/heats   ~(:round/heats (:activity/source
-                                                                                     (om/props this)))
-                                                     :round/starting ~(:round/starting (:activity/source
-                                                                                         (om/props this)))})])}
+      (dom/tr #js {:onClick #(om/transact!
+                              this
+                              `[(app/select-activity
+                                  {:activity/id    ~(:activity/id (om/props this))
+                                   :activity/name  ~name
+                                   :round/recall   ~(:round/recall (:activity/source
+                                                                     (om/props this)))
+                                   :round/name     ~round
+                                   :round/heats    ~(:round/heats (:activity/source
+                                                                    (om/props this)))
+                                   :round/starting ~(:round/starting (:activity/source
+                                                                       (om/props this)))
+                                   :round/panel    ~(:round/panel (:activity/source
+                                                                    (om/props this)))})])}
         (dom/td nil time)
         (dom/td nil number)
         (dom/td nil name)

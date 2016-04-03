@@ -132,6 +132,7 @@
 (defn go
   "Entry point from a REPL, will initilize a default system and start it."
   []
+  ;(d/delete-storage "datomic:free://localhost:4334//competitions")
   (init)
   (start))
 
@@ -139,7 +140,6 @@
   "REPL helper that allow to restart the application and reload namespaces."
   []
   (stop)
-  ;(d/delete-storage "datomic:free://localhost:4334//competitions")
   (refresh :after 'tango.core/go))
 
 ;; TODO - Add possibillity to set log level as a param

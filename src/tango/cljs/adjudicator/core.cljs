@@ -128,7 +128,11 @@
     [{:app/selected-activity
       [:activity/id :activity/name
        :round/recall :round/heats :round/name
-       {:round/starting [:participant/number :participant/id]}]}])
+       {:round/starting [:participant/number :participant/id]}
+       {:round/panel [:adjudicator-panel/name
+                      :adjudicator-panel/id
+                      {:adjudicator-panel/adjudicators [:adjudicator/name
+                                                        :adjudicator/id]}]}]}])
   Object
   (render
     [this]
@@ -136,14 +140,20 @@
           status (:app/status app)
           next-status (if (not= status :on) :on :off)
           selected-activity (:app/selected-activity (om/props this))]
-      ;(log app)
       (log "Rendering MainComponent")
+      ;(log app)
       (dom/div nil
         (dom/h3 nil (str "Selected Activity : " (:name (:app/selected-activity (om/props this)))))
         (dom/h3 nil "Adjudicator UI")
         (dom/h3 nil (str "Status : " status)))
 
       (dom/div nil
+        (dom/h3 nil (str "Panel for this round : " (:adjudicator-panel/name
+                                                     (:round/panel selected-activity))))
+        (dom/h3 nil (str "Select judge :"))
+        (dom/ul nil
+          (dom/li nil (:adjudicator/name
+                        (first (:adjudicator-panel/adjudicators (:round/panel selected-activity))))))
         (dom/h3 nil (str "Judge : " "TODO"))
         (dom/h3 nil (:activity/name selected-activity))
         (dom/h3 nil (:round/name selected-activity))
@@ -212,10 +222,10 @@
                            "POST" (t/write (t/writer :json) edn)
                            #js {"Content-Type" "application/transit+json"})
       (:query edn) (let [edn-query-str (pr-str (om/get-query MainComponent))]
-                     (log (str "Run Query: " (pr-str (:query edn))))
-                     (log (:query edn))
+                     ;(log (str "Run Query: " (pr-str (:query edn))))
+                     ;(log (:query edn))
 
-                     (log (str "Om Query" (pr-str (om/get-query MainComponent))))
+                     ;(log (str "Om Query" (pr-str (om/get-query MainComponent))))
                      ;; TODO - testa om/get-query on component
 
                      (go
@@ -224,8 +234,8 @@
                              body (:body response)
                              edn-result (second (cljs.reader/read-string body))]
                          (log "Response")
-                         (log (:body response))
-                         (log "Edn")
+                         ;(log (:body response))
+                         ;(log "Edn")
                          (log edn-result)
                          ;(om/transact! reconciler `[(app/status {:status "uff"})])
                          ;(log (second (cljs.reader/read-string (:body response))))
@@ -236,8 +246,7 @@
                          (om/transact! reconciler `[(app/select-activity
                                                       {:activity ~(:app/selected-activity edn-result)})
                                                     ;:app/selected-activity
-                                                    ])
-                         ))))))
+                                                    ])))))))
 
 ;[{:app/selected-activity [:activity/id :activity/name
 ;                          :round/recall :round/heats

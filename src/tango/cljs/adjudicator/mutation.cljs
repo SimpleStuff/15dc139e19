@@ -43,9 +43,11 @@
 
 (defmethod mutate 'app/select-activity
   [{:keys [state]} _ {:keys [activity]}]
-  {:value  {:keys [:app/selected-activity ]}
+  {:value  {:keys [:app/selected-activity]}
    :action (fn []
-             (d/transact! state [{:app/id 1 :app/selected-activity activity}]))})
+             (do
+               ;(log "Mutate")
+               (d/transact! state [{:app/id 1 :app/selected-activity activity}])))})
 
 ;(defmethod read :app/selected-activity
 ;  [{:keys [state query]} _ _]

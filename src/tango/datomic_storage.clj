@@ -27,7 +27,10 @@
     :db.install/_attribute :db.part/db}])
 
 (def select-activity-schema
-  [{:db/id                 #db/id[:db.part/db]
+  [;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+   ;; Activity
+
+   {:db/id                 #db/id[:db.part/db]
     :db/ident              :activity/id
     :db/unique             :db.unique/identity
     :db/valueType          :db.type/uuid
@@ -41,6 +44,9 @@
     :db/cardinality        :db.cardinality/one
     :db/doc                "An activity name"
     :db.install/_attribute :db.part/db}
+
+   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+   ;; Round
 
    {:db/id                 #db/id[:db.part/db]
     :db/ident              :round/recall
@@ -71,6 +77,16 @@
     :db.install/_attribute :db.part/db}
 
    {:db/id                 #db/id[:db.part/db]
+    :db/ident              :round/panel
+    :db/valueType          :db.type/ref
+    :db/cardinality        :db.cardinality/one
+    :db/doc                "The adjudicator panel in a round"
+    :db.install/_attribute :db.part/db}
+
+   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+   ;; Participant
+
+   {:db/id                 #db/id[:db.part/db]
     :db/ident              :participant/number
     :db/valueType          :db.type/long
     :db/cardinality        :db.cardinality/one
@@ -83,7 +99,49 @@
     :db/valueType          :db.type/uuid
     :db/cardinality        :db.cardinality/one
     :db/doc                "A participants id"
-    :db.install/_attribute :db.part/db}])
+    :db.install/_attribute :db.part/db}
+
+   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+   ;; Adjudicator Panel
+   {:db/id                 #db/id[:db.part/db]
+    :db/ident              :adjudicator-panel/id
+    :db/unique             :db.unique/identity
+    :db/valueType          :db.type/uuid
+    :db/cardinality        :db.cardinality/one
+    :db/doc                "An adjudicator panels id"
+    :db.install/_attribute :db.part/db}
+
+   {:db/id                 #db/id[:db.part/db]
+    :db/ident              :adjudicator-panel/name
+    :db/valueType          :db.type/string
+    :db/cardinality        :db.cardinality/one
+    :db/doc                "An adjudicator panels name"
+    :db.install/_attribute :db.part/db}
+
+   {:db/id                 #db/id[:db.part/db]
+    :db/ident              :adjudicator-panel/adjudicators
+    :db/valueType          :db.type/ref
+    :db/cardinality        :db.cardinality/many
+    :db/doc                "The adjudicators in a panel"
+    :db.install/_attribute :db.part/db}
+
+   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+   ;; Adjudicator
+   {:db/id                 #db/id[:db.part/db]
+    :db/ident              :adjudicator/id
+    :db/unique             :db.unique/identity
+    :db/valueType          :db.type/uuid
+    :db/cardinality        :db.cardinality/one
+    :db/doc                "An adjudicators id"
+    :db.install/_attribute :db.part/db}
+
+   {:db/id                 #db/id[:db.part/db]
+    :db/ident              :adjudicator/name
+    :db/valueType          :db.type/string
+    :db/cardinality        :db.cardinality/one
+    :db/doc                "An adjudicators name"
+    :db.install/_attribute :db.part/db}
+   ])
 
 
 ;; TODO fixa id so that we can have only one selected
