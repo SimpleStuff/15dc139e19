@@ -122,6 +122,20 @@
 ;; - Show participant number
 ;; - Command to set mark on participant for the specific round for this judge
 ;; - Command to inc/dec the judges 'point' for a participant
+(defui AdjudicatorSelection
+  static om/IQuery
+  (query [_]
+    [:adjudicator-panel/name
+     :adjudicator-panel/id
+     {:adjudicator-panel/adjudicators [:adjudicator/name
+                                       :adjudicator/id]}])
+  Object
+  (render [this]
+    (log "Render Panels")
+    (let [panel (om/props this)]
+      (log panel)
+      (dom/h3 nil "Panels"))))
+
 (defui MainComponent
   static om/IQuery
   (query [_]
@@ -129,17 +143,16 @@
       [:activity/id :activity/name
        :round/recall :round/heats :round/name
        {:round/starting [:participant/number :participant/id]}
-       {:round/panel [:adjudicator-panel/name
-                      :adjudicator-panel/id
-                      {:adjudicator-panel/adjudicators [:adjudicator/name
-                                                        :adjudicator/id]}]}]}])
+       {:round/panel (om/get-query AdjudicatorSelection)}]}])
   Object
   (render
     [this]
     (let [app (om/props this)
           status (:app/status app)
           next-status (if (not= status :on) :on :off)
-          selected-activity (:app/selected-activity (om/props this))]
+          selected-activity (:app/selected-activity (om/props this))
+          panel (:round/panel selected-activity)
+          adjudicators (:adjudicator-panel/adjudicators panel)]
       (log "Rendering MainComponent")
       ;(log app)
       (dom/div nil
@@ -151,9 +164,9 @@
         (dom/h3 nil (str "Panel for this round : " (:adjudicator-panel/name
                                                      (:round/panel selected-activity))))
         (dom/h3 nil (str "Select judge :"))
-        (dom/ul nil
-          (dom/li nil (:adjudicator/name
-                        (first (:adjudicator-panel/adjudicators (:round/panel selected-activity))))))
+        ((om/factory AdjudicatorSelection) panel)
+        ;(dom/ul nil
+        ;  (map #(dom/li #js {:onClick (fn [e] (log (str "Click " (:adjudicator/name %))))} (:adjudicator/name %)) adjudicators))
         (dom/h3 nil (str "Judge : " "TODO"))
         (dom/h3 nil (:activity/name selected-activity))
         (dom/h3 nil (:round/name selected-activity))
