@@ -35,23 +35,17 @@
                ;(log online?)
                (d/transact! state [{:app/id 1 :app/online? online?}])))})
 
-;(defmethod mutate 'app/select-activity
-;  [{:keys [state]} _ {:keys [name]}]
-;  {:value  {:keys [:app/selected-activity]}
-;   :action (fn []
-;             (d/transact! state [{:app/id 1 :app/selected-activity name}]))})
-
 (defmethod mutate 'app/select-activity
   [{:keys [state]} _ {:keys [activity]}]
-  {:value  {:keys [:app/selected-activity ]}
+  {:value  {:keys [:app/selected-activity]}
    :action (fn []
-             (d/transact! state [{:app/id 1 :app/selected-activity activity}]))})
+             (do
+               ;(log "Mutate")
+               (d/transact! state [{:app/id 1 :app/selected-activity activity}])))})
 
-;(defmethod read :app/selected-activity
-;  [{:keys [state query]} _ _]
-;  {:value (do
-;            (log "Read selected-activity")
-;            (log query)
-;            {:name "Test"})
-;   :query true})
+(defmethod mutate 'app/select-adjudicator
+  [{:keys [state]} _ adjudicator]
+  {:value {:keys [:app/selected-adjudicator]}
+   :action (fn []
+             (d/transact! state [{:app/id 1 :app/selected-adjudicator adjudicator}]))})
 

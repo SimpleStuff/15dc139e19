@@ -38,7 +38,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Init DB
 (def adjudicator-ui-schema {:app/selected-activity {:db/cardinality :db.cardinality/one
-                                                    :db/valueType :db.type/ref}})
+                                                    :db/valueType :db.type/ref}
+
+                            :app/selected-adjudicator {:db/cardinality :db.cardinality/one
+                                                       :db/valueType :db.type/ref}})
 
 (defonce conn (d/create-conn (merge adjudicator-ui-schema uidb/schema)))
 
@@ -51,7 +54,7 @@
                      ;{:db/id -1 :app/import-status :none}
                      {:db/id -1 :app/status :running}
                      ;{:db/id -1 :app/selected-competition {}}
-
+                     ; :app/selected-adjudicator
                      {:db/id -1 :app/selected-activity-status :in-sync}
                      ]))
 
@@ -95,6 +98,7 @@
       (log (str " event from server: " topic))
       (log payload)
       (om/transact! reconciler `[(app/selected-activity-status {:status :out-of-sync})
+                                 (app/select-adjudicator {})
                                  :app/selected-activity]))))
 
 (defmethod event-msg-handler :chsk/handshake
@@ -122,36 +126,135 @@
 ;; - Show participant number
 ;; - Command to set mark on participant for the specific round for this judge
 ;; - Command to inc/dec the judges 'point' for a participant
+(defui AdjudicatorSelection
+  static om/IQuery
+  (query [_]
+    [:adjudicator-panel/name
+     :adjudicator-panel/id
+     {:adjudicator-panel/adjudicators [:adjudicator/name
+                                       :adjudicator/id]}])
+  Object
+  (render [this]
+    (log "Render Panels")
+    (let [panel (om/props this)]
+      (log panel)
+      (dom/div nil
+        (dom/h3 nil (str "Panel for this round : " (:adjudicator-panel/name panel)))
+        (dom/h3 nil (str "Select judge for use in this client :"))
+        (dom/ul nil
+          (map #(dom/li #js {:onClick
+                             (fn [e]
+                               (do
+                                 (log (str "Click " (:adjudicator/name %)))
+                                 (om/transact! this `[(app/select-adjudicator ~%)
+                                                      :app/selected-adjudicator])))}
+                 (:adjudicator/name %)) (:adjudicator-panel/adjudicators panel)))))))
+
 (defui MainComponent
   static om/IQuery
   (query [_]
     [{:app/selected-activity
       [:activity/id :activity/name
        :round/recall :round/heats :round/name
-       {:round/starting [:participant/number :participant/id]}]}])
+       {:round/starting [:participant/number :participant/id]}
+       {:round/panel (om/get-query AdjudicatorSelection)}]}
+     {:app/selected-adjudicator [:adjudicator/name
+                                 :adjudicator/id]}])
   Object
   (render
     [this]
     (let [app (om/props this)
           status (:app/status app)
-          next-status (if (not= status :on) :on :off)
-          selected-activity (:app/selected-activity (om/props this))]
-      ;(log app)
+          selected-activity (:app/selected-activity (om/props this))
+          panel (:round/panel selected-activity)
+          selected-adjudicator (:app/selected-adjudicator (om/props this))]
       (log "Rendering MainComponent")
+      ;(log app)
+      (log "--------------------------------------------")
+      (log (str selected-adjudicator))
       (dom/div nil
         (dom/h3 nil (str "Selected Activity : " (:name (:app/selected-activity (om/props this)))))
         (dom/h3 nil "Adjudicator UI")
         (dom/h3 nil (str "Status : " status)))
 
       (dom/div nil
-        (dom/h3 nil (str "Judge : " "TODO"))
+        ((om/factory AdjudicatorSelection) panel)
+
+        (dom/h3 nil (str "Judge : " (if selected-adjudicator
+                                      (:adjudicator/name selected-adjudicator)
+                                      "None selected")))
         (dom/h3 nil (:activity/name selected-activity))
         (dom/h3 nil (:round/name selected-activity))
         (dom/h3 nil (str "Mark " (:round/recall selected-activity) " of "
                          (count
                            (:round/starting selected-activity))))
-        (dom/h3 nil (str "Heats TODO : " (:round/heats selected-activity)))
+        (dom/h3 nil (str "Heats " (:round/heats selected-activity)))
         (dom/h3 nil (str "Example Participant " (:participant/number (first (:round/starting selected-activity)))))))))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Remote Posts
+
+;http://jeremyraines.com/2015/11/16/getting-started-with-clojure-web-development.html
+
+;; example of a mark message
+;; [:set-result {:round/id 1 :adjudicator/id 1 :participant-id 1 :mark/x true}]
+(defn transit-post [url]
+  (fn [edn cb]
+    (log edn)
+    (cond
+      (:remote edn) (.send XhrIo url
+                           log  ;; TODO - Should do something with the response..
+                           "POST" (t/write (t/writer :json) edn)
+                           #js {"Content-Type" "application/transit+json"})
+      (:query edn) (let [edn-query-str (pr-str
+                                         ;; TODO - fix this hack with proper query handling
+                                         (conj [] (first (om/get-query MainComponent))))]
+                     (go
+                       (let [response (async/<! (http/get "http://localhost:1337/query"
+                                                          {:query-params
+                                                           {:query edn-query-str}}))
+                             body (:body response)
+                             edn-result (second (cljs.reader/read-string body))]
+                         (log "Response")
+                         (log edn-result)
+                         (om/transact! reconciler
+                                       `[(app/select-activity
+                                           {:activity ~(:app/selected-activity edn-result)})])))))))
+
+;(defn sente-post []
+;  (fn [{:keys [remote] :as env} cb]
+;    (do
+;      (log "Env > ")
+;      (log env)
+;      (log (str "Sent to Tango Backend => " remote))
+;      (log (http/post
+;             "http://localhost:1337/commands"
+;             {:query-params {:command remote}}
+;             ;{:json-params {:command remote}}
+;             ;{:form-params {:command remote}}
+;             ;{:edn-params {:command remote}}
+;             ))
+;
+;      ;(chsk-send! [:event-manager/query [[:competition/name :competition/location]]])
+;      )))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Application
+
+;; Init db etc if it has not been done
+(when-not (app-started? conn)
+  (init-app))
+
+(def reconciler
+  (om/reconciler
+    {:state   conn
+     :remotes [:remote :query]
+     :parser  (om/parser {:read r/read :mutate m/mutate})
+     :send    (transit-post "http://localhost:1337/commands")}))
+
+(om/add-root! reconciler
+              MainComponent (gdom/getElement "app"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Test components
@@ -188,91 +291,3 @@
 ;                              (http/get "http://localhost:1337/query"
 ;                                        {:query-params {:query (pr-str '[:find])}}))}
 ;              "Query 2"))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Remote Posts
-
-;http://jeremyraines.com/2015/11/16/getting-started-with-clojure-web-development.html
-
-
-;; example of a mark message
-;; [:set-result {:round/id 1 :adjudicator/id 1 :participant-id 1 :mark/x true}]
-(defn transit-post [url]
-  (fn [edn cb]
-    (log edn)
-    (cond
-      (:remote edn) (.send XhrIo url
-                           log
-                           ;; TODO - Should do something with the response..
-                           ;(this-as this
-                           ;  (log (t/read (t/reader :json)
-                           ;               (.getResponseText this)))
-                           ;  (cb (t/read (t/reader :json) (.getResponseText this))))
-
-                           "POST" (t/write (t/writer :json) edn)
-                           #js {"Content-Type" "application/transit+json"})
-      (:query edn) (let [edn-query-str (pr-str (om/get-query MainComponent))]
-                     (log (str "Run Query: " (pr-str (:query edn))))
-                     (log (:query edn))
-
-                     (log (str "Om Query" (pr-str (om/get-query MainComponent))))
-                     ;; TODO - testa om/get-query on component
-
-                     (go
-                       (let [response (async/<! (http/get "http://localhost:1337/query"
-                                                          {:query-params {:query edn-query-str}}))
-                             body (:body response)
-                             edn-result (second (cljs.reader/read-string body))]
-                         (log "Response")
-                         (log (:body response))
-                         (log "Edn")
-                         (log edn-result)
-                         ;(om/transact! reconciler `[(app/status {:status "uff"})])
-                         ;(log (second (cljs.reader/read-string (:body response))))
-                         ;(om/transact! reconciler `[(app/select-activity
-                         ;                             {:name ~(:activity/name
-                         ;                                       (:app/selected-activity
-                         ;                                         edn-result))})])
-                         (om/transact! reconciler `[(app/select-activity
-                                                      {:activity ~(:app/selected-activity edn-result)})
-                                                    ;:app/selected-activity
-                                                    ])
-                         ))))))
-
-;[{:app/selected-activity [:activity/id :activity/name
-;                          :round/recall :round/heats
-;                          :round/name {:round/starting [:participant/number]}]}]
-
-;(defn sente-post []
-;  (fn [{:keys [remote] :as env} cb]
-;    (do
-;      (log "Env > ")
-;      (log env)
-;      (log (str "Sent to Tango Backend => " remote))
-;      (log (http/post
-;             "http://localhost:1337/commands"
-;             {:query-params {:command remote}}
-;             ;{:json-params {:command remote}}
-;             ;{:form-params {:command remote}}
-;             ;{:edn-params {:command remote}}
-;             ))
-;
-;      ;(chsk-send! [:event-manager/query [[:competition/name :competition/location]]])
-;      )))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Application
-
-;; Init db etc if it has not been done
-(when-not (app-started? conn)
-  (init-app))
-
-(def reconciler
-  (om/reconciler
-    {:state   conn
-     :remotes [:remote :query]
-     :parser  (om/parser {:read r/read :mutate m/mutate})
-     :send    (transit-post "http://localhost:1337/commands")}))
-
-(om/add-root! reconciler
-              MainComponent (gdom/getElement "app"))
