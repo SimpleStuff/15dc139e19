@@ -113,16 +113,11 @@
 ;; Components
 
 
-;; TODO:
-;; Data needed from the back end:
-; - Judge info
-; - Round name
-; - Participants to be marked
 
 ;; TODO:
-;; - Select judge for UI
+;; X Select judge for UI
 ;; X Get selected round that is to be judged
-;; - Get the number of participants to be recalled
+;; X Get the number of participants to be recalled
 ;; - Show participant number
 ;; - Command to set mark on participant for the specific round for this judge
 ;; - Command to inc/dec the judges 'point' for a participant
@@ -150,13 +145,66 @@
                                                       :app/selected-adjudicator])))}
                  (:adjudicator/name %)) (:adjudicator-panel/adjudicators panel)))))))
 
+;(defn positions
+;  [pred coll]
+;  (keep-indexed (fn [idx x]
+;                  (when (pred x)
+;                    idx))
+;                coll))
+
+;(fn [idx x] (str idx)) (partition-all (int (Math/ceil (/ 40 7))) (range 1 41)))
+
+(defui HeatRowComponent
+  static om/IQuery
+  (query [_])
+  Object
+  (render [this]
+    (dom/div nil
+      (dom/h4 nil (:participant/number (om/props this)))
+      (dom/div #js {:className "checkbox"}
+        (dom/label nil
+          (dom/input #js {:type     "checkbox"
+                          :checked  true
+                          :onChange #(.. % -target -checked)})))
+      (dom/button nil "+")
+      (dom/button nil "-")
+      (dom/h4 nil "2p"))))
+
+(defui HeatComponent
+  static om/IQuery
+  (query [_])
+  Object
+  (render [this]
+    (let [heat (:heat (om/props this))
+          participants (:participants (om/props this))]
+      (dom/div #js {:className "col-sm-4"}
+        (dom/h3 nil "Heat : " (str (+ 1 heat)))
+        (map #((om/factory HeatRowComponent) %) participants)))))
+
+(defui HeatsComponent
+  static om/IQuery
+  (query [_]
+    [:participant/id :participant/number])
+  Object
+  (render [this]
+    (let [participants (:participants (om/props this))
+          heats (:heats (om/props this))
+          heat-parts (partition-all (int (Math/ceil (/ (count participants) heats)))
+                                    (sort-by :participant/number participants))]
+      (dom/div nil
+        (dom/h3 nil (str "Heats : " heats))
+        (map-indexed (fn [idx parts] ((om/factory HeatComponent)
+                                       {:heat idx
+                                        :participants parts}))
+                     heat-parts)))))
+
 (defui MainComponent
   static om/IQuery
   (query [_]
     [{:app/selected-activity
       [:activity/id :activity/name
        :round/recall :round/heats :round/name
-       {:round/starting [:participant/number :participant/id]}
+       {:round/starting (om/get-query HeatsComponent)}
        {:round/panel (om/get-query AdjudicatorSelection)}]}
      {:app/selected-adjudicator [:adjudicator/name
                                  :adjudicator/id]}])
@@ -188,8 +236,11 @@
         (dom/h3 nil (str "Mark " (:round/recall selected-activity) " of "
                          (count
                            (:round/starting selected-activity))))
-        (dom/h3 nil (str "Heats " (:round/heats selected-activity)))
-        (dom/h3 nil (str "Example Participant " (:participant/number (first (:round/starting selected-activity)))))))))
+        ((om/factory HeatsComponent) {:participants (:round/starting selected-activity)
+                                      :heats (:round/heats selected-activity)})
+        ;(dom/h3 nil (str "Example Participant " (:participant/number
+        ;                                          (first (:round/starting selected-activity)))))
+        ))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
