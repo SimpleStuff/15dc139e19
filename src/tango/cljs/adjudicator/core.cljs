@@ -153,6 +153,23 @@
 ;                coll))
 
 ;(fn [idx x] (str idx)) (partition-all (int (Math/ceil (/ 40 7))) (range 1 41)))
+
+(defui HeatRowComponent
+  static om/IQuery
+  (query [_])
+  Object
+  (render [this]
+    (dom/div nil
+      (dom/h4 nil (:participant/number (om/props this)))
+      (dom/div #js {:className "checkbox"}
+        (dom/label nil
+          (dom/input #js {:type     "checkbox"
+                          :checked  true
+                          :onChange #(.. % -target -checked)})))
+      (dom/button nil "+")
+      (dom/button nil "-")
+      (dom/h4 nil "2p"))))
+
 (defui HeatComponent
   static om/IQuery
   (query [_])
@@ -160,7 +177,9 @@
   (render [this]
     (let [heat (:heat (om/props this))
           participants (:participants (om/props this))]
-      (dom/div nil (str "Heat : " heat)))))
+      (dom/div #js {:className "col-sm-4"}
+        (dom/h3 nil "Heat : " (str (+ 1 heat)))
+        (map #((om/factory HeatRowComponent) %) participants)))))
 
 (defui HeatsComponent
   static om/IQuery
@@ -170,7 +189,8 @@
   (render [this]
     (let [participants (:participants (om/props this))
           heats (:heats (om/props this))
-          heat-parts (partition-all (int (Math/ceil (/ (count participants) heats))) participants)]
+          heat-parts (partition-all (int (Math/ceil (/ (count participants) heats)))
+                                    (sort-by :participant/number participants))]
       (dom/div nil
         (dom/h3 nil (str "Heats : " heats))
         (map-indexed (fn [idx parts] ((om/factory HeatComponent)
