@@ -160,15 +160,21 @@
   Object
   (render [this]
     (dom/div nil
-      (dom/h4 nil (:participant/number (om/props this)))
-      (dom/div #js {:className "checkbox"}
-        (dom/label nil
-          (dom/input #js {:type     "checkbox"
-                          :checked  true
-                          :onChange #(.. % -target -checked)})))
-      (dom/button nil "+")
-      (dom/button nil "-")
-      (dom/h4 nil "2p"))))
+      (dom/form #js {:className "form-inline"}
+        (dom/div #js {:className "form-group"}
+          (dom/p #js {:className "control-label"} (:participant/number (om/props this))))
+
+        (dom/div #js {:className "form-group"}
+          (dom/label nil
+            (dom/input #js {:type     "checkbox"
+                            :checked  true
+                            :onChange #(.. % -target -checked)})))
+
+        (dom/div #js {:className "form-group"}
+          (dom/button #js {:className "btn btn-default"} "+")
+          (dom/button #js {:className "btn btn-default"} "-")
+          (dom/label #js {:className "control-label"} "2p"))
+        ))))
 
 (defui HeatComponent
   static om/IQuery
@@ -177,7 +183,8 @@
   (render [this]
     (let [heat (:heat (om/props this))
           participants (:participants (om/props this))]
-      (dom/div #js {:className "col-sm-4"}
+
+      (dom/div #js {:className "col-sm-3"}
         (dom/h3 nil "Heat : " (str (+ 1 heat)))
         (map #((om/factory HeatRowComponent) %) participants)))))
 
