@@ -189,7 +189,7 @@
                             ;; TODO - set result id or -1 if non existing
                             #(om/transact!
                               reconciler `[(participant/set-result
-                                             {:result/id    -1
+                                             {:result/id    ~(random-uuid)
                                               :result/mark-x      ~(.. % -target -checked)
                                               :result/participant ~(:participant/id (om/props this))
                                               :result/activity ~(:activity/id (om/props this))
