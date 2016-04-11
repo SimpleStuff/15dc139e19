@@ -57,7 +57,7 @@
              (log result)
              (let [q
                    (d/transact! state [{:db/id              -1
-                                        ;:result/id (:result/id result)
+                                        :result/id -1
                                         :result/mark-x      mark-x
                                         :result/participant [:participant/id (:result/participant result)]
                                         :result/activity [:activity/id (:result/activity result)]
