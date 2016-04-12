@@ -169,6 +169,14 @@
      ])
   Object
   (render [this]
+    ;(log "Render row")
+    (when (:result/id (:result (om/props this)))
+      (do
+        (log "Render row")
+        (log "Result id")
+        (log (:result/id (:result (om/props this))))))
+
+    ;(log "----")
     (dom/div nil
       (dom/form #js {:className "form-inline"}
         (dom/div #js {:className "form-group"}
@@ -176,25 +184,21 @@
 
         (dom/div #js {:className "form-group"}
           (dom/label nil
-            (dom/input #js {:type     "checkbox"
-                            :checked  (:mark/x (om/props this))
-                            ;:onChange #(om/transact!
-                            ;            reconciler `[(participant/set-result
-                            ;                     {:participant/x         ~(.. % -target -checked)
-                            ;                      :participant/id ~(:participant/id (om/props this))
-                            ;                      :activity/id ~(:activity/id (om/props this))
-                            ;                      :adjudicator/id ~(:adjudicator/id (om/props this))})
-                            ;                         :app/results])
+            (dom/input #js {:type    "checkbox"
+                            :checked (:mark/x (om/props this))
                             :onChange
-                            ;; TODO - set result id or -1 if non existing
-                            #(om/transact!
-                              reconciler `[(participant/set-result
-                                             {:result/id    ~(random-uuid)
-                                              :result/mark-x      ~(.. % -target -checked)
-                                              :result/participant ~(:participant/id (om/props this))
-                                              :result/activity ~(:activity/id (om/props this))
-                                              :result/adjudicator ~(:adjudicator/id (om/props this))})
-                                           :app/results])
+                            ;; TODO - Fix this transaction
+                                     #(om/transact!
+                                       reconciler
+                                       `[(participant/set-result
+                                           {:result/id          ~(if (:result/id (:result (om/props this)))
+                                                                   (:result/id (:result (om/props this)))
+                                                                   (random-uuid))
+                                            :result/mark-x      ~(.. % -target -checked)
+                                            :result/participant ~(:participant/id (om/props this))
+                                            :result/activity    ~(:activity/id (om/props this))
+                                            :result/adjudicator ~(:adjudicator/id (om/props this))})
+                                         :app/results])
                             })))
 
         (dom/div #js {:className "form-group"}
@@ -213,12 +217,20 @@
     (let [heat (:heat (om/props this))
           participants (:participants (om/props this))
           adjudicator-id (:adjudicator/id (om/props this))
-          activity-id (:activity/id (om/props this))]
-
+          activity-id (:activity/id (om/props this))
+          results (:results (om/props this))
+          find-result (fn [participant]
+                        (first (filter (fn [res] (= (:participant/id participant)
+                                                    (:participant/id (:result/participant res))))
+                                       results)))]
+      (log "Render Heat")
+      (log results)
       (dom/div #js {:className "col-sm-3"}
         (dom/h3 nil "Heat : " (str (+ 1 heat)))
+
         (map #((om/factory HeatRowComponent) (merge % {:adjudicator/id adjudicator-id
-                                                       :activity/id activity-id}))
+                                                       :activity/id activity-id
+                                                       :result (find-result %)}))
              participants)))))
 
 (defui HeatsComponent
@@ -232,14 +244,15 @@
           heat-parts (partition-all (int (Math/ceil (/ (count participants) heats)))
                                     (sort-by :participant/number participants))]
       ;(log participants)
-      (log (:results (om/props this)))
+      ;(log (:results (om/props this)))
       (dom/div nil
         (dom/h3 nil (str "Heats : " heats))
         (map-indexed (fn [idx parts] ((om/factory HeatComponent)
                                        {:heat idx
                                         :participants parts
                                         :adjudicator/id (:adjudicator/id (om/props this))
-                                        :activity/id (:activity/id (om/props this))}))
+                                        :activity/id (:activity/id (om/props this))
+                                        :results (:results (om/props this))}))
                      heat-parts)))))
 
 ;{:round/results
@@ -269,7 +282,7 @@
           panel (:round/panel selected-activity)
           selected-adjudicator (:app/selected-adjudicator (om/props this))]
       (log "Rendering MainComponent")
-      (log (:app/results (om/props this)))
+      ;(log (:app/results (om/props this)))
       ;(log app)
       ;(log "--------------------------------------------")
       ;(log (str selected-adjudicator))
@@ -310,7 +323,7 @@
   (fn [edn cb]
     ;(log edn)
     (cond
-      (:remote edn) (.send XhrIo url
+      (:command edn) (.send XhrIo url
                            #()                              ;log  ;; TODO - Should do something with the response..
                            "POST" (t/write (t/writer :json) edn)
                            #js {"Content-Type" "application/transit+json"})
@@ -339,7 +352,7 @@
 (def reconciler
   (om/reconciler
     {:state   conn
-     :remotes [:remote :query]
+     :remotes [:command :query]
      :parser  (om/parser {:read r/read :mutate m/mutate})
      :send    (transit-post "http://localhost:1337/commands")}))
 

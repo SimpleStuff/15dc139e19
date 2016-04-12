@@ -65,5 +65,5 @@
                                        {:app/id 1 :app/results -1}
                                        ])]
                (log q)))
-   :remote true})
+   :command true})
 
