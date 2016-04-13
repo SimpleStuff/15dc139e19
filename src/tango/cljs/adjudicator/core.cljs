@@ -131,6 +131,7 @@
 ;; X Show participant number
 ;; - Command to set mark on participant for the specific round for this judge
 ;; - Command to inc/dec the judges 'point' for a participant
+;; - Query param to only fetch results for the selected adjudicator
 (defui AdjudicatorSelection
   static om/IQuery
   (query [_]
@@ -184,22 +185,19 @@
 
         (dom/div #js {:className "form-group"}
           (dom/label nil
-            (dom/input #js {:type    "checkbox"
-                            :checked (:mark/x (om/props this))
-                            :onChange
-                            ;; TODO - Fix this transaction
-                                     #(om/transact!
-                                       reconciler
-                                       `[(participant/set-result
-                                           {:result/id          ~(if (:result/id (:result (om/props this)))
-                                                                   (:result/id (:result (om/props this)))
-                                                                   (random-uuid))
-                                            :result/mark-x      ~(.. % -target -checked)
-                                            :result/participant ~(:participant/id (om/props this))
-                                            :result/activity    ~(:activity/id (om/props this))
-                                            :result/adjudicator ~(:adjudicator/id (om/props this))})
-                                         :app/results])
-                            })))
+            (dom/input #js {:type     "checkbox"
+                            :checked  (:result/mark-x (:result (om/props this)))
+                            :onChange #(om/transact!
+                                        reconciler
+                                        `[(participant/set-result
+                                            {:result/id          ~(if (:result/id (:result (om/props this)))
+                                                                    (:result/id (:result (om/props this)))
+                                                                    (random-uuid))
+                                             :result/mark-x      ~(.. % -target -checked)
+                                             :result/participant ~(:participant/id (om/props this))
+                                             :result/activity    ~(:activity/id (om/props this))
+                                             :result/adjudicator ~(:adjudicator/id (om/props this))})
+                                          :app/results])})))
 
         (dom/div #js {:className "form-group"}
           (dom/button #js {:className "btn btn-default"} "+")
@@ -280,7 +278,10 @@
           status (:app/status app)
           selected-activity (:app/selected-activity (om/props this))
           panel (:round/panel selected-activity)
-          selected-adjudicator (:app/selected-adjudicator (om/props this))]
+          selected-adjudicator (:app/selected-adjudicator (om/props this))
+          results-for-this-adjudicator (filter #(= (:adjudicator/id selected-adjudicator)
+                                                   (:adjudicator/id (:result/adjudicator %)))
+                                               (:app/results (om/props this)))]
       (log "Rendering MainComponent")
       ;(log (:app/results (om/props this)))
       ;(log app)
@@ -306,7 +307,7 @@
                                       :heats (:round/heats selected-activity)
                                       :adjudicator/id (:adjudicator/id selected-adjudicator)
                                       :activity/id (:activity/id selected-activity)
-                                      :results (:app/results (om/props this))})
+                                      :results results-for-this-adjudicator})
         ;(dom/h3 nil (str "Example Participant " (:participant/number
         ;                                          (first (:round/starting selected-activity)))))
         ))))
