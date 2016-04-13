@@ -41,7 +41,16 @@
                                                     :db/valueType :db.type/ref}
 
                             :app/selected-adjudicator {:db/cardinality :db.cardinality/one
-                                                       :db/valueType :db.type/ref}})
+                                                       :db/valueType :db.type/ref}
+
+                            :app/results {:db/cardinality :db.cardinality/many
+                                          :db/valueType :db.type/ref}
+
+                            :result/participant {:db/cardinality :db.cardinality/one
+                                                 :db/valueType :db.type/ref}
+
+                            :result/id {:db/unique :db.unique/identity}
+                            })
 
 (defonce conn (d/create-conn (merge adjudicator-ui-schema uidb/schema)))
 
@@ -56,6 +65,7 @@
                      ;{:db/id -1 :app/selected-competition {}}
                      ; :app/selected-adjudicator
                      {:db/id -1 :app/selected-activity-status :in-sync}
+                     ;{:db/id -1 :app/results {}}
                      ]))
 
 (defn app-started? [conn]
@@ -96,7 +106,7 @@
   (let [[topic payload] ?data]
     (when (= topic :tx/accepted)
       (log (str " event from server: " topic))
-      (log payload)
+      ;(log payload)
       (om/transact! reconciler `[(app/selected-activity-status {:status :out-of-sync})
                                  (app/select-adjudicator {})
                                  :app/selected-activity]))))
@@ -118,9 +128,10 @@
 ;; X Select judge for UI
 ;; X Get selected round that is to be judged
 ;; X Get the number of participants to be recalled
-;; - Show participant number
+;; X Show participant number
 ;; - Command to set mark on participant for the specific round for this judge
 ;; - Command to inc/dec the judges 'point' for a participant
+;; - Query param to only fetch results for the selected adjudicator
 (defui AdjudicatorSelection
   static om/IQuery
   (query [_]
@@ -130,9 +141,9 @@
                                        :adjudicator/id]}])
   Object
   (render [this]
-    (log "Render Panels")
+    ;(log "Render Panels")
     (let [panel (om/props this)]
-      (log panel)
+      ;(log panel)
       (dom/div nil
         (dom/h3 nil (str "Panel for this round : " (:adjudicator-panel/name panel)))
         (dom/h3 nil (str "Select judge for use in this client :"))
@@ -145,41 +156,80 @@
                                                       :app/selected-adjudicator])))}
                  (:adjudicator/name %)) (:adjudicator-panel/adjudicators panel)))))))
 
-;(defn positions
-;  [pred coll]
-;  (keep-indexed (fn [idx x]
-;                  (when (pred x)
-;                    idx))
-;                coll))
+;; example of a mark message
+;; [:set-result {:round/id 1 :adjudicator/id 1 :participant-id 1 :mark/x true}]
 
-;(fn [idx x] (str idx)) (partition-all (int (Math/ceil (/ 40 7))) (range 1 41)))
-
+;{:round/results
+; [{:result/id 1 :result/adjudicator 2 :result/participant 3 :result/mark-x}]}
 (defui HeatRowComponent
   static om/IQuery
-  (query [_])
+  (query [_]
+    [:participant/id :participant/number
+     :app/results
+     ;{:participant/result [:activity/id :adjudicator/id :mark/x]}
+     ])
   Object
   (render [this]
+    ;(log "Render row")
+    (when (:result/id (:result (om/props this)))
+      (do
+        (log "Render row")
+        (log "Result id")
+        (log (:result/id (:result (om/props this))))))
+
+    ;(log "----")
     (dom/div nil
-      (dom/h4 nil (:participant/number (om/props this)))
-      (dom/div #js {:className "checkbox"}
-        (dom/label nil
-          (dom/input #js {:type     "checkbox"
-                          :checked  true
-                          :onChange #(.. % -target -checked)})))
-      (dom/button nil "+")
-      (dom/button nil "-")
-      (dom/h4 nil "2p"))))
+      (dom/form #js {:className "form-inline"}
+        (dom/div #js {:className "form-group"}
+          (dom/p #js {:className "control-label"} (str (:participant/number (om/props this)))))
+
+        (dom/div #js {:className "form-group"}
+          (dom/label nil
+            (dom/input #js {:type     "checkbox"
+                            :checked  (:result/mark-x (:result (om/props this)))
+                            :onChange #(om/transact!
+                                        reconciler
+                                        `[(participant/set-result
+                                            {:result/id          ~(if (:result/id (:result (om/props this)))
+                                                                    (:result/id (:result (om/props this)))
+                                                                    (random-uuid))
+                                             :result/mark-x      ~(.. % -target -checked)
+                                             :result/participant ~(:participant/id (om/props this))
+                                             :result/activity    ~(:activity/id (om/props this))
+                                             :result/adjudicator ~(:adjudicator/id (om/props this))})
+                                          :app/results])})))
+
+        (dom/div #js {:className "form-group"}
+          (dom/button #js {:className "btn btn-default"} "+")
+          (dom/button #js {:className "btn btn-default"} "-")
+          (dom/label #js {:className "control-label"} "2p"))
+        ))))
 
 (defui HeatComponent
   static om/IQuery
-  (query [_])
+  (query [_]
+    [{:round/heats [:heat/number
+                    {:heat/participants (om/get-query HeatRowComponent)}]}])
   Object
   (render [this]
     (let [heat (:heat (om/props this))
-          participants (:participants (om/props this))]
-      (dom/div #js {:className "col-sm-4"}
+          participants (:participants (om/props this))
+          adjudicator-id (:adjudicator/id (om/props this))
+          activity-id (:activity/id (om/props this))
+          results (:results (om/props this))
+          find-result (fn [participant]
+                        (first (filter (fn [res] (= (:participant/id participant)
+                                                    (:participant/id (:result/participant res))))
+                                       results)))]
+      (log "Render Heat")
+      (log results)
+      (dom/div #js {:className "col-sm-3"}
         (dom/h3 nil "Heat : " (str (+ 1 heat)))
-        (map #((om/factory HeatRowComponent) %) participants)))))
+
+        (map #((om/factory HeatRowComponent) (merge % {:adjudicator/id adjudicator-id
+                                                       :activity/id activity-id
+                                                       :result (find-result %)}))
+             participants)))))
 
 (defui HeatsComponent
   static om/IQuery
@@ -191,12 +241,20 @@
           heats (:heats (om/props this))
           heat-parts (partition-all (int (Math/ceil (/ (count participants) heats)))
                                     (sort-by :participant/number participants))]
+      ;(log participants)
+      ;(log (:results (om/props this)))
       (dom/div nil
         (dom/h3 nil (str "Heats : " heats))
         (map-indexed (fn [idx parts] ((om/factory HeatComponent)
                                        {:heat idx
-                                        :participants parts}))
+                                        :participants parts
+                                        :adjudicator/id (:adjudicator/id (om/props this))
+                                        :activity/id (:activity/id (om/props this))
+                                        :results (:results (om/props this))}))
                      heat-parts)))))
+
+;{:round/results
+; [{:result/id 1 :result/adjudicator 2 :result/participant 3 :result/mark-x}]}
 
 (defui MainComponent
   static om/IQuery
@@ -207,7 +265,12 @@
        {:round/starting (om/get-query HeatsComponent)}
        {:round/panel (om/get-query AdjudicatorSelection)}]}
      {:app/selected-adjudicator [:adjudicator/name
-                                 :adjudicator/id]}])
+                                 :adjudicator/id]}
+     {:app/results [:result/mark-x
+                    :result/id
+                    {:result/participant [:participant/id]}
+                    {:result/adjudicator [:adjudicator/id]}
+                    {:result/activity [:activity/id]}]}])
   Object
   (render
     [this]
@@ -215,11 +278,15 @@
           status (:app/status app)
           selected-activity (:app/selected-activity (om/props this))
           panel (:round/panel selected-activity)
-          selected-adjudicator (:app/selected-adjudicator (om/props this))]
+          selected-adjudicator (:app/selected-adjudicator (om/props this))
+          results-for-this-adjudicator (filter #(= (:adjudicator/id selected-adjudicator)
+                                                   (:adjudicator/id (:result/adjudicator %)))
+                                               (:app/results (om/props this)))]
       (log "Rendering MainComponent")
+      ;(log (:app/results (om/props this)))
       ;(log app)
-      (log "--------------------------------------------")
-      (log (str selected-adjudicator))
+      ;(log "--------------------------------------------")
+      ;(log (str selected-adjudicator))
       (dom/div nil
         (dom/h3 nil (str "Selected Activity : " (:name (:app/selected-activity (om/props this)))))
         (dom/h3 nil "Adjudicator UI")
@@ -237,7 +304,10 @@
                          (count
                            (:round/starting selected-activity))))
         ((om/factory HeatsComponent) {:participants (:round/starting selected-activity)
-                                      :heats (:round/heats selected-activity)})
+                                      :heats (:round/heats selected-activity)
+                                      :adjudicator/id (:adjudicator/id selected-adjudicator)
+                                      :activity/id (:activity/id selected-activity)
+                                      :results results-for-this-adjudicator})
         ;(dom/h3 nil (str "Example Participant " (:participant/number
         ;                                          (first (:round/starting selected-activity)))))
         ))))
@@ -252,10 +322,10 @@
 ;; [:set-result {:round/id 1 :adjudicator/id 1 :participant-id 1 :mark/x true}]
 (defn transit-post [url]
   (fn [edn cb]
-    (log edn)
+    ;(log edn)
     (cond
-      (:remote edn) (.send XhrIo url
-                           log  ;; TODO - Should do something with the response..
+      (:command edn) (.send XhrIo url
+                           #()                              ;log  ;; TODO - Should do something with the response..
                            "POST" (t/write (t/writer :json) edn)
                            #js {"Content-Type" "application/transit+json"})
       (:query edn) (let [edn-query-str (pr-str
@@ -267,28 +337,11 @@
                                                            {:query edn-query-str}}))
                              body (:body response)
                              edn-result (second (cljs.reader/read-string body))]
-                         (log "Response")
-                         (log edn-result)
+                         ;(log "Response")
+                         ;(log edn-result)
                          (om/transact! reconciler
                                        `[(app/select-activity
                                            {:activity ~(:app/selected-activity edn-result)})])))))))
-
-;(defn sente-post []
-;  (fn [{:keys [remote] :as env} cb]
-;    (do
-;      (log "Env > ")
-;      (log env)
-;      (log (str "Sent to Tango Backend => " remote))
-;      (log (http/post
-;             "http://localhost:1337/commands"
-;             {:query-params {:command remote}}
-;             ;{:json-params {:command remote}}
-;             ;{:form-params {:command remote}}
-;             ;{:edn-params {:command remote}}
-;             ))
-;
-;      ;(chsk-send! [:event-manager/query [[:competition/name :competition/location]]])
-;      )))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Application
@@ -300,7 +353,7 @@
 (def reconciler
   (om/reconciler
     {:state   conn
-     :remotes [:remote :query]
+     :remotes [:command :query]
      :parser  (om/parser {:read r/read :mutate m/mutate})
      :send    (transit-post "http://localhost:1337/commands")}))
 

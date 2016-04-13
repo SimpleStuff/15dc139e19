@@ -55,6 +55,11 @@
   {:action (fn []
              (async/>!! state {:topic :command :sender :http :payload [key params]}))})
 
+(defmethod mutate 'participant/set-result
+  [{:keys [state] :as env} key params]
+  {:action (fn []
+             (log/info (str "Set result " key " " params)))})
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Read
 (defmulti reader (fn [env key params] key))
@@ -75,7 +80,8 @@
 (defn handle-command [ch-out req]
   (do
     (parser {:state ch-out} (:command (:params req)))
-    {:body "Tjena"})
+    (log/info "Command params " (:command (:params req)))
+    {:body req})
   ;(str (:remote (:params req)))
   ;(str (prn (t/read (t/reader (:body req) :json))))
   ;(prn (t/read (t/reader (:body req) :json)))

@@ -44,6 +44,17 @@
                (d/db state) query)
    })
 
+(defmethod read :app/results
+  [{:keys [state query]} _ _]
+  {:value (do
+            (log "Read Results")
+            (log query)
+            (if query
+              (d/q '[:find [(pull ?a selector) ...]
+                     :in $ selector
+                     :where [[:app/id 1] :app/results ?a]]
+                   (d/db state) query)))})
+
 
 
 
