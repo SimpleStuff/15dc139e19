@@ -72,7 +72,11 @@
                   :result/adjudicator {:adjudicator/id #uuid "1ace2915-42dc-4f58-8017-dcb79f958463"}
                   :result/activity {:activity/id #uuid "33501fc6-087a-47f6-b003-4edb694655e5"}}]
       (ds/set-results conn [result])
-      (is (= 1 (ds/query-results conn ['*]))))))
+      (is (= result (first (ds/query-results conn [:result/id
+                                                   :result/mark-x
+                                                   {:result/adjudicator [:adjudicator/id]
+                                                    :result/participant [:participant/id]
+                                                    :result/activity    [:activity/id]}])))))))
 
 
 
