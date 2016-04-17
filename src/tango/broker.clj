@@ -19,6 +19,16 @@
 (defn selected-activity [conn]
   (log/info (str "Application selected round : " (d/get-selected-activity conn '[:activity/name]))))
 
+(defn set-result [conn result]
+  (do
+    (log/info (str "Set Result : " ) result)
+
+    (d/set-results conn [(merge
+                           result
+                           {:result/participant {:participant/id (:result/participant result)}
+                            :result/activity {:activity/id (:result/activity result)}
+                            :result/adjudicator {:adjudicator/id (:result/adjudicator result)}})])))
+
 (defn start-result-rules-engine [in-ch out-ch client-in-channel datomic-storage-uri]
   (async/go-loop []
     (when-let [message (async/<! in-ch)]
@@ -35,6 +45,10 @@
                      (log/info (str "Select activity " payload))
                      ;; TODO - should the connection be kept open?
                      (select-activity (d/create-connection datomic-storage-uri) payload))
+                   ['participant/set-result _]
+                   (do
+                     (log/info (str "Set Result"))
+                     (set-result (d/create-connection datomic-storage-uri) payload))
                    ;[:app/selected-activity _]
                    ;(do
                    ;  (log/info (str "Selected activity " (:app/selected-activity payload)))
@@ -173,7 +187,9 @@
     (log/report "Starting MessageBroker")
     (let [rules-in-ch (async/chan)
           rules-out-ch (async/chan)
-          db (d/create-storage datomic-storage-uri (into d/select-activity-schema d/application-schema))
+          db (d/create-storage datomic-storage-uri (into d/select-activity-schema
+                                                         (into d/application-schema
+                                                               d/result-schema)))
           rules-engine (start-result-rules-engine
                          rules-in-ch
                          rules-out-ch

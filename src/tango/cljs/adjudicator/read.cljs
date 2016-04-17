@@ -47,8 +47,8 @@
 (defmethod read :app/results
   [{:keys [state query]} _ _]
   {:value (do
-            (log "Read Results")
-            (log query)
+            ;(log "Read Results")
+            ;(log query)
             (if query
               (d/q '[:find [(pull ?a selector) ...]
                      :in $ selector

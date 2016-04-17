@@ -106,10 +106,11 @@
   (let [[topic payload] ?data]
     (when (= topic :tx/accepted)
       (log (str " event from server: " topic))
-      ;(log payload)
-      (om/transact! reconciler `[(app/selected-activity-status {:status :out-of-sync})
-                                 (app/select-adjudicator {})
-                                 :app/selected-activity]))))
+      (log (str "payload: " payload))
+      (when (= payload 'app/select-activity)
+        (om/transact! reconciler `[(app/selected-activity-status {:status :out-of-sync})
+                                   (app/select-adjudicator {})
+                                   :app/selected-activity])))))
 
 (defmethod event-msg-handler :chsk/handshake
   [{:as ev-msg :keys [?data]}]
@@ -151,7 +152,7 @@
           (map #(dom/li #js {:onClick
                              (fn [e]
                                (do
-                                 (log (str "Click " (:adjudicator/name %)))
+                                 ;(log (str "Click " (:adjudicator/name %)))
                                  (om/transact! this `[(app/select-adjudicator ~%)
                                                       :app/selected-adjudicator])))}
                  (:adjudicator/name %)) (:adjudicator-panel/adjudicators panel)))))))
@@ -173,9 +174,10 @@
     ;(log "Render row")
     (when (:result/id (:result (om/props this)))
       (do
-        (log "Render row")
-        (log "Result id")
-        (log (:result/id (:result (om/props this))))))
+        ;(log "Render row")
+        ;(log "Result id")
+        ;(log (:result/id (:result (om/props this))))
+        ))
 
     ;(log "----")
     (dom/div nil
@@ -221,8 +223,8 @@
                         (first (filter (fn [res] (= (:participant/id participant)
                                                     (:participant/id (:result/participant res))))
                                        results)))]
-      (log "Render Heat")
-      (log results)
+      ;(log "Render Heat")
+      ;(log results)
       (dom/div #js {:className "col-sm-3"}
         (dom/h3 nil "Heat : " (str (+ 1 heat)))
 

@@ -58,6 +58,7 @@
 (defmethod mutate 'participant/set-result
   [{:keys [state] :as env} key params]
   {:action (fn []
+             (async/>!! state {:topic :command :sender :http :payload [key params]})
              (log/info (str "Set result " key " " params)))})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
