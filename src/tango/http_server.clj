@@ -74,6 +74,19 @@
    ;(do (log/info (str "Reader Query Key Params " query key params)))
    })
 
+(defmethod reader :app/results
+  [{:keys [state query]} key params]
+  {:value (do
+            (log/info (str "app/results read"))
+            (d/query-results state query))})
+
+;; TODO - hack fix
+(defmethod reader :app/selected-adjudicator
+  [{:keys [state query]} key params]
+  {:value (do
+            (log/info (str "app/results read"))
+            nil)})
+
 (def parser
   (om/parser {:mutate mutate
               :read reader}))

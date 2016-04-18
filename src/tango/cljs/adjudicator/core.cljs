@@ -57,16 +57,24 @@
 ;(defonce conn (d/create-conn adjudicator-ui-schema))
 
 (defn init-app []
-  (d/transact! conn [{:db/id -1 :app/id 1}
-                     {:db/id -1 :app/online? false}
-                     ;{:db/id -1 :selected-page :competitions}
-                     ;{:db/id -1 :app/import-status :none}
-                     {:db/id -1 :app/status :running}
-                     ;{:db/id -1 :app/selected-competition {}}
-                     ; :app/selected-adjudicator
-                     {:db/id -1 :app/selected-activity-status :in-sync}
-                     ;{:db/id -1 :app/results {}}
-                     ]))
+  (do
+    (d/transact! conn [{:db/id -1 :app/id 1}
+                       {:db/id -1 :app/online? false}
+                       ;{:db/id -1 :selected-page :competitions}
+                       ;{:db/id -1 :app/import-status :none}
+                       {:db/id -1 :app/status :loading}
+                       ;{:db/id -1 :app/selected-competition {}}
+                       ; :app/selected-adjudicator
+                       {:db/id -1 :app/selected-activity-status :in-sync}
+                       ;{:db/id -1 :app/results {}}
+                       ])
+    (let [r (d/q '[:find ?s .
+                   :where [[:app/id 1] :app/status ?s]]
+                 (d/db conn))]
+      (log (str "Empty Results> " r)))
+    ))
+
+
 
 (defn app-started? [conn]
   (seq (d/q '[:find ?e
@@ -110,7 +118,8 @@
       (when (= payload 'app/select-activity)
         (om/transact! reconciler `[(app/selected-activity-status {:status :out-of-sync})
                                    (app/select-adjudicator {})
-                                   :app/selected-activity])))))
+                                   :app/selected-activity
+                                   :app/results])))))
 
 (defmethod event-msg-handler :chsk/handshake
   [{:as ev-msg :keys [?data]}]
@@ -258,6 +267,7 @@
 ;{:round/results
 ; [{:result/id 1 :result/adjudicator 2 :result/participant 3 :result/mark-x}]}
 
+;https://medium.com/@kovasb/om-next-the-reconciler-af26f02a6fb4#.kwq2t2jzr
 (defui MainComponent
   static om/IQuery
   (query [_]
@@ -266,6 +276,7 @@
        :round/recall :round/heats :round/name
        {:round/starting (om/get-query HeatsComponent)}
        {:round/panel (om/get-query AdjudicatorSelection)}]}
+
      {:app/selected-adjudicator [:adjudicator/name
                                  :adjudicator/id]}
      {:app/results [:result/mark-x
@@ -285,7 +296,7 @@
                                                    (:adjudicator/id (:result/adjudicator %)))
                                                (:app/results (om/props this)))]
       (log "Rendering MainComponent")
-      ;(log (:app/results (om/props this)))
+      (log (:app/results (om/props this)))
       ;(log app)
       ;(log "--------------------------------------------")
       ;(log (str selected-adjudicator))
@@ -332,7 +343,12 @@
                            #js {"Content-Type" "application/transit+json"})
       (:query edn) (let [edn-query-str (pr-str
                                          ;; TODO - fix this hack with proper query handling
-                                         (conj [] (first (om/get-query MainComponent))))]
+                                         (if (map? (first (:query edn)))
+                                           (:query edn)
+                                           (om/get-query MainComponent)))]
+                     (log "Query >>")
+                     (log edn)
+
                      (go
                        (let [response (async/<! (http/get "http://localhost:1337/query"
                                                           {:query-params
@@ -341,10 +357,17 @@
                              edn-result (second (cljs.reader/read-string body))]
                          ;(log "Response")
                          ;(log edn-result)
+                         ;; TODO - check if cb can be used with the transaction keys and after
+                         ;; doing an explicit datalog transaction
+                         (log "App RESULT")
+                         (log (:app/results edn-result))
                          (om/transact! reconciler
                                        `[(app/select-activity
-                                           {:activity ~(:app/selected-activity edn-result)})])))))))
+                                           {:activity ~(:app/selected-activity edn-result)})
+                                         (app/set-results
+                                           {:results ~(:app/results edn-result)})])))))))
 
+; {:query [:app/selected-activity :app/results]}
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Application
 

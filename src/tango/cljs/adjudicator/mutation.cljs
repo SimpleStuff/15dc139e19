@@ -49,6 +49,23 @@
    :action (fn []
              (d/transact! state [{:app/id 1 :app/selected-adjudicator adjudicator}]))})
 
+
+;; TODO - this might be redundant if results are filtered on selected
+;; activity
+(defn fix-result [results]
+  (mapv #(hash-map
+          :result/id          (:result/id %)
+          :result/mark-x      (:result/mark-x %)
+          :result/participant [:participant/id (:participant/id (:result/participant %))]
+          :result/activity    [:activity/id (:activity/id (:result/activity %))]
+          :result/adjudicator [:adjudicator/id (:adjudicator/id (:result/adjudicator %))])
+        results))
+
+(defmethod mutate 'app/set-results
+  [{:keys [state]} _ {:keys [results]}]
+  {:value  {:keys [:app/results]}
+   :action (d/transact! state [{:app/id 1 :app/results (fix-result results)}])})
+
 ;{:result/id 1 :result/adjudicator 2 :result/participant 3 :result/mark-x}
 (defmethod mutate 'participant/set-result
   [{:keys [state]} _ {:keys [result/mark-x participant/x] :as result}]

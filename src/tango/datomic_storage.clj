@@ -231,6 +231,7 @@
              [?e :app/selected-activity ?a]]
            (d/db conn) query)))
 
+;; TODO - need to pull only for a specific activity
 (defn query-results [conn query]
   (d/q '[:find [(pull ?e selector) ...]
          :in $ selector
