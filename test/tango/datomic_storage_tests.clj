@@ -61,6 +61,49 @@
       (ds/select-round conn round)
       (is (= 2 (count (:round/starting (ds/get-selected-activity conn ['*]))))))))
 
+(deftest adjudicator-results-can-be-transacted
+  (testing "Adjudicator result can be transacted to db"
+    (let [_ (ds/delete-storage mem-uri)
+          _ (ds/create-storage mem-uri (into ds/select-activity-schema ds/result-schema))
+          conn (ds/create-connection mem-uri)
+          result {:result/mark-x true
+                  :result/id #uuid "60edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"
+                  :result/participant {:participant/id #uuid "4932976a-7009-41fb-9dab-f003b89dba41"}
+                  :result/adjudicator {:adjudicator/id #uuid "1ace2915-42dc-4f58-8017-dcb79f958463"}
+                  :result/activity {:activity/id #uuid "33501fc6-087a-47f6-b003-4edb694655e5"}}]
+      (ds/set-results conn [result])
+      (is (= result (first (ds/query-results conn [:result/id
+                                                   :result/mark-x
+                                                   {:result/adjudicator [:adjudicator/id]
+                                                    :result/participant [:participant/id]
+                                                    :result/activity    [:activity/id]}]
+                                             (:activity/id (:result/activity result)))))))))
+
+(deftest adjudicator-results-should-filter-on-given-activity
+  (testing "Adjudicator result can be transacted to db"
+    (let [_ (ds/delete-storage mem-uri)
+          _ (ds/create-storage mem-uri (into ds/select-activity-schema ds/result-schema))
+          conn (ds/create-connection mem-uri)
+          result-1 {:result/mark-x true
+                    :result/id #uuid "60edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"
+                    :result/participant {:participant/id #uuid "4932976a-7009-41fb-9dab-f003b89dba41"}
+                    :result/adjudicator {:adjudicator/id #uuid "1ace2915-42dc-4f58-8017-dcb79f958463"}
+                    :result/activity {:activity/id #uuid "33501fc6-087a-47f6-b003-4edb694655e5"}}
+          result-2 {:result/mark-x false
+                    :result/id #uuid "666dcf5d-1a8b-423e-9d6b-5cda00ff1b6e"
+                    :result/participant {:participant/id #uuid "4932976a-7009-41fb-9dab-f003b89dba41"}
+                    :result/adjudicator {:adjudicator/id #uuid "1ace2915-42dc-4f58-8017-dcb79f958463"}
+                    :result/activity {:activity/id #uuid "66601fc6-087a-47f6-b003-4edb694655e5"}}]
+      (ds/set-results conn [result-1 result-2])
+      (is (= result-2 (first (ds/query-results conn [:result/id
+                                                     :result/mark-x
+                                                     {:result/adjudicator [:adjudicator/id]
+                                                      :result/participant [:participant/id]
+                                                      :result/activity    [:activity/id]}]
+                                               (:activity/id (:result/activity result-2)))))))))
+
+
+
 ;(deftest select-round-should-be-sanitized
 ;  (testing "Nil values etc should be removed before transacted"
 ;    (is (= 1 0))))

@@ -58,6 +58,7 @@
 (defmethod mutate 'participant/set-result
   [{:keys [state] :as env} key params]
   {:action (fn []
+             (async/>!! state {:topic :command :sender :http :payload [key params]})
              (log/info (str "Set result " key " " params)))})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -72,6 +73,21 @@
               )
    ;(do (log/info (str "Reader Query Key Params " query key params)))
    })
+
+(defmethod reader :app/results
+  [{:keys [state query]} key params]
+  {:value (do
+            (log/info (str "app/results read"))
+            (let [selected-act (d/get-selected-activity state '[:activity/id])]
+              (log/info (str "Selected act " selected-act))
+              (d/query-results state query (:activity/id selected-act))))})
+
+;; TODO - hack fix
+(defmethod reader :app/selected-adjudicator
+  [{:keys [state query]} key params]
+  {:value (do
+            (log/info (str "app/results read"))
+            nil)})
 
 (def parser
   (om/parser {:mutate mutate

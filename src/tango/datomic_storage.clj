@@ -4,7 +4,7 @@
     [datascript.core :as ds]
     [taoensso.timbre :as log]
     [tango.ui-db :as ui]
-    [datascript.core :as ds]))
+    ))
 
 ;; Provides useful Timbre aliases in this ns
 (log/refer-timbre)
@@ -25,6 +25,48 @@
     :db/cardinality        :db.cardinality/one
     :db/doc                "The applications selected activity"
     :db.install/_attribute :db.part/db}])
+
+(def result-schema
+  [{:db/id                 #db/id[:db.part/db]
+    :db/ident              :result/id
+    :db/valueType          :db.type/uuid
+    :db/unique             :db.unique/identity
+    :db/cardinality        :db.cardinality/one
+    :db/doc                "The results id"
+    :db.install/_attribute :db.part/db}
+
+   ;; mark-x
+   {:db/id                 #db/id[:db.part/db]
+    :db/ident              :result/mark-x
+    :db/valueType          :db.type/boolean
+    :db/cardinality        :db.cardinality/one
+    :db/doc                "Determines if a X has been marked in this result"
+    :db.install/_attribute :db.part/db}
+
+   ;; result/participant
+   {:db/id                 #db/id[:db.part/db]
+    :db/ident              :result/participant
+    :db/valueType          :db.type/ref
+    :db/cardinality        :db.cardinality/one
+    :db/doc                "The participant these result is associated with"
+    :db.install/_attribute :db.part/db}
+
+   ;; result/activity
+   {:db/id                 #db/id[:db.part/db]
+    :db/ident              :result/activity
+    :db/valueType          :db.type/ref
+    :db/cardinality        :db.cardinality/one
+    :db/doc                "The activity these result is associated with"
+    :db.install/_attribute :db.part/db}
+
+   ;; result/adjudicator
+   {:db/id                 #db/id[:db.part/db]
+    :db/ident              :result/adjudicator
+    :db/valueType          :db.type/ref
+    :db/cardinality        :db.cardinality/one
+    :db/doc                "The adjudicator these result is associated with"
+    :db.install/_attribute :db.part/db}
+   ])
 
 (def select-activity-schema
   [;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -171,7 +213,10 @@
 
 (defn select-round [conn round]
   @(d/transact conn [(fix-id {:app/selected-activity round
-                              :app/id 1})]))
+                              :app/id                1})]))
+
+(defn set-results [conn results]
+  @(d/transact conn (mapv fix-id results)))
 
 (defn transform-competition [db update-fn]
   (let [tx-data (update-fn)]
@@ -186,6 +231,17 @@
              [?e :app/selected-activity ?a]]
            (d/db conn) query)))
 
+;; TODO - need to pull only for a specific activity
+;; understand how to query for guid value
+(defn query-results [conn query activity-id]
+  (d/q '[:find [(pull ?e selector) ...]
+         ;:find (pull ?a [*])
+         :in $ selector ?id
+         :where
+         [?e :result/id]
+         [?e :result/activity ?a]
+         [?a :activity/id ?id]]
+       (d/db conn) query activity-id))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Examples
 

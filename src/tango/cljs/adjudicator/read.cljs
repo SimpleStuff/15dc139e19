@@ -41,19 +41,34 @@
    (d/q '[:find (pull ?a selector) .
           :in $ selector
           :where [[:app/id 1] :app/selected-adjudicator ?a]]
-               (d/db state) query)
-   })
+        (d/db state) query)})
+
+(defn loading? [conn]
+  (if (= :loading
+         (d/q '[:find ?s .
+                :where [[:app/id 1] :app/status ?s]]
+              (d/db conn)))
+    true
+    false))
 
 (defmethod read :app/results
   [{:keys [state query]} _ _]
-  {:value (do
-            (log "Read Results")
-            (log query)
-            (if query
-              (d/q '[:find [(pull ?a selector) ...]
-                     :in $ selector
-                     :where [[:app/id 1] :app/results ?a]]
-                   (d/db state) query)))})
+  (do
+    (log "Read results ")
+    (log query)
+    ;(if loading?)
+    ;{:query true}
+
+    {:value (do
+              ;(log "Read Results")
+              (log query)
+              (if query
+                (d/q '[:find [(pull ?a selector) ...]
+                       :in $ selector
+                       :where [[:app/id 1] :app/results ?a]]
+                     (d/db state) query)))
+     :query true
+     }))
 
 
 
