@@ -232,12 +232,16 @@
            (d/db conn) query)))
 
 ;; TODO - need to pull only for a specific activity
-(defn query-results [conn query]
+;; understand how to query for guid value
+(defn query-results [conn query activity-id]
   (d/q '[:find [(pull ?e selector) ...]
-         :in $ selector
+         ;:find (pull ?a [*])
+         :in $ selector ?id
          :where
-         [?e :result/id]]
-       (d/db conn) query))
+         [?e :result/id]
+         [?e :result/activity ?a]
+         [?a :activity/id ?id]]
+       (d/db conn) query activity-id))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Examples
 

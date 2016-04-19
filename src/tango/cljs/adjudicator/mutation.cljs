@@ -61,10 +61,14 @@
           :result/adjudicator [:adjudicator/id (:adjudicator/id (:result/adjudicator %))])
         results))
 
+;; TODO - fix that set result with [] actually clear db current value
 (defmethod mutate 'app/set-results
   [{:keys [state]} _ {:keys [results]}]
   {:value  {:keys [:app/results]}
-   :action (d/transact! state [{:app/id 1 :app/results (fix-result results)}])})
+   :action (fn []
+             (log (str "SET RESULTS "))
+             (log (fix-result results))
+             (d/transact! state [{:app/id 1 :app/results (fix-result results)}]))})
 
 ;{:result/id 1 :result/adjudicator 2 :result/participant 3 :result/mark-x}
 (defmethod mutate 'participant/set-result

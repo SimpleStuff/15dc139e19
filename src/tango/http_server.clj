@@ -78,7 +78,9 @@
   [{:keys [state query]} key params]
   {:value (do
             (log/info (str "app/results read"))
-            (d/query-results state query))})
+            (let [selected-act (d/get-selected-activity state '[:activity/id])]
+              (log/info (str "Selected act " selected-act))
+              (d/query-results state query (:activity/id selected-act))))})
 
 ;; TODO - hack fix
 (defmethod reader :app/selected-adjudicator
