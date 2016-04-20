@@ -630,7 +630,7 @@
         (log env)
         (log (str "Sent to Tango Backend => " remote))
         (chsk-send! [:event-manager/query [[:competition/name :competition/location]]]))
-      ((transit-post "http://localhost:1337/commands") env cb))))
+      ((transit-post "/commands") env cb))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Application

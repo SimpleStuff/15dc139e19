@@ -352,7 +352,7 @@
                      (log edn)
 
                      (go
-                       (let [response (async/<! (http/get "http://localhost:1337/query"
+                       (let [response (async/<! (http/get "/query"
                                                           {:query-params
                                                            {:query edn-query-str}}))
                              body (:body response)
@@ -382,7 +382,7 @@
     {:state   conn
      :remotes [:command :query]
      :parser  (om/parser {:read r/read :mutate m/mutate})
-     :send    (transit-post "http://localhost:1337/commands")}))
+     :send    (transit-post "/commands")}))
 
 (om/add-root! reconciler
               MainComponent (gdom/getElement "app"))
