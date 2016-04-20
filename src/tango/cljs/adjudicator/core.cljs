@@ -194,6 +194,7 @@
         (dom/div #js {:className "form-group"}
           (dom/p #js {:className "control-label"} (str (:participant/number (om/props this)))))
 
+        ;; TODO - change on + and - should also send a result
         (dom/div #js {:className "form-group"}
           (dom/label nil
             (dom/input #js {:type     "checkbox"
@@ -211,8 +212,8 @@
                                           :app/results])})))
 
         (dom/div #js {:className "form-group"}
-          (dom/button #js {:className "btn btn-default"} "+")
-          (dom/button #js {:className "btn btn-default"} "-")
+          (dom/button #js {:type "button" :className "btn btn-default" :onClick #(log "Click +")} "+")
+          (dom/button #js {:type "button" :className "btn btn-default" :onClick #(log "Click -")} "-")
           (dom/label #js {:className "control-label"} "2p"))
         ))))
 
