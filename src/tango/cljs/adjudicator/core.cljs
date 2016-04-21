@@ -189,6 +189,7 @@
       (when (:result/id (:result (om/props this)))
         (do
           ;(log "Render row")
+          ;(log (:allow-marks? (om/props this)))
           ;(log "Result id")
           ;(log (:result (om/props this)))
           ))
@@ -204,18 +205,26 @@
             (dom/label nil
               (dom/input #js {:type     "checkbox"
                               :checked  (:result/mark-x (:result (om/props this)))
-                              :onChange #(om/transact!
-                                          reconciler
-                                          `[(participant/set-result
-                                              {:result/id          ~(if (:result/id (:result (om/props this)))
-                                                                      (:result/id (:result (om/props this)))
-                                                                      (random-uuid))
-                                               :result/mark-x      ~(.. % -target -checked)
-                                               :result/point       ~point
-                                               :result/participant ~(:participant/id (om/props this))
-                                               :result/activity    ~(:activity/id (om/props this))
-                                               :result/adjudicator ~(:adjudicator/id (om/props this))})
-                                            :app/results])})))
+                              :disabled (and (not (:allow-marks? (om/props this)))
+                                             (not mark-x))
+                              :onChange #(let [mark-value (if (or (:allow-marks? (om/props this))
+                                                                  (and (not (:allow-marks? (om/props this)))
+                                                                       mark-x))
+                                                            (.. % -target -checked)
+                                                            mark-x)]
+                                          (om/transact!
+                                            reconciler
+                                            `[(participant/set-result
+                                                {:result/id          ~(if (:result/id (:result (om/props this)))
+                                                                        (:result/id (:result (om/props this)))
+                                                                        (random-uuid))
+                                                 :result/mark-x      ~mark-value
+                                                 :result/point       ~point
+                                                 :result/participant ~(:participant/id (om/props this))
+                                                 :result/activity    ~(:activity/id (om/props this))
+                                                 :result/adjudicator ~(:adjudicator/id (om/props this))})
+                                              :app/results])
+                                          )})))
 
           (let [set-result-fn (fn [transform-fn]
                                 (om/transact!
@@ -265,8 +274,9 @@
         (dom/h3 nil "Heat : " (str (+ 1 heat)))
 
         (map #((om/factory HeatRowComponent) (merge % {:adjudicator/id adjudicator-id
-                                                       :activity/id activity-id
-                                                       :result (find-result %)}))
+                                                       :activity/id    activity-id
+                                                       :result         (find-result %)
+                                                       :allow-marks? (:allow-marks? (om/props this))}))
              participants)))))
 
 (defui HeatsComponent
@@ -284,11 +294,12 @@
       (dom/div nil
         (dom/h3 nil (str "Heats : " heats))
         (map-indexed (fn [idx parts] ((om/factory HeatComponent)
-                                       {:heat idx
-                                        :participants parts
+                                       {:heat           idx
+                                        :participants   parts
                                         :adjudicator/id (:adjudicator/id (om/props this))
-                                        :activity/id (:activity/id (om/props this))
-                                        :results (:results (om/props this))}))
+                                        :activity/id    (:activity/id (om/props this))
+                                        :results        (:results (om/props this))
+                                        :allow-marks? (:allow-marks? (om/props this))}))
                      heat-parts)))))
 
 ;{:round/results
@@ -322,9 +333,16 @@
           selected-adjudicator (:app/selected-adjudicator (om/props this))
           results-for-this-adjudicator (filter #(= (:adjudicator/id selected-adjudicator)
                                                    (:adjudicator/id (:result/adjudicator %)))
-                                               (:app/results (om/props this)))]
+                                               (:app/results (om/props this)))
+          mark-count (count (filter #(when (:result/mark-x %) %) results-for-this-adjudicator))
+          allow-marks? (< mark-count (int (:round/recall selected-activity)) )
+          ]
       (log "Rendering MainComponent")
-      (log (:app/results (om/props this)))
+      ;(log "Marks--------------------------------")
+      ;(log allow-marks?)
+      ;(log (int (:round/recall selected-activity)))
+      ;(log mark-count)
+      ;(log (:app/results (om/props this)))
       ;(log app)
       ;(log "--------------------------------------------")
       ;(log (str selected-adjudicator))
@@ -338,19 +356,28 @@
 
         (when selected-adjudicator
           (dom/div nil
-            (dom/h3 nil (str "Judge : " (if selected-adjudicator
-                                          (:adjudicator/name selected-adjudicator)
-                                          "None selected")))
-            (dom/h3 nil (:activity/name selected-activity))
-            (dom/h3 nil (:round/name selected-activity))
-            (dom/h3 nil (str "Mark " (:round/recall selected-activity) " of "
-                             (count
-                               (:round/starting selected-activity))))
-            ((om/factory HeatsComponent) {:participants   (:round/starting selected-activity)
-                                          :heats          (:round/heats selected-activity)
-                                          :adjudicator/id (:adjudicator/id selected-adjudicator)
-                                          :activity/id    (:activity/id selected-activity)
-                                          :results        results-for-this-adjudicator})))
+            (dom/div nil
+              (dom/h3 nil (str "Judge : " (if selected-adjudicator
+                                            (:adjudicator/name selected-adjudicator)
+                                            "None selected")))
+              (dom/h3 nil (:activity/name selected-activity))
+              (dom/h3 nil (:round/name selected-activity))
+              (dom/h3 nil (str "Mark " (:round/recall selected-activity) " of "
+                               (count
+                                 (:round/starting selected-activity))
+                               " to next round"))
+              ((om/factory HeatsComponent) {:participants   (:round/starting selected-activity)
+                                            :heats          (:round/heats selected-activity)
+                                            :adjudicator/id (:adjudicator/id selected-adjudicator)
+                                            :activity/id    (:activity/id selected-activity)
+                                            :results        results-for-this-adjudicator
+                                            :allow-marks? allow-marks?}))
+            (dom/div nil
+              ;(log "RESULT FOR ADJ")
+              ;(log results-for-this-adjudicator)
+              (dom/h3 nil (str "Marks " mark-count "/" (:round/recall selected-activity)))
+              )
+            ))
         ;(dom/h3 nil (str "Example Participant " (:participant/number
         ;                                          (first (:round/starting selected-activity)))))
         ))))
@@ -389,8 +416,8 @@
                          ;(log edn-result)
                          ;; TODO - check if cb can be used with the transaction keys and after
                          ;; doing an explicit datalog transaction
-                         (log "App RESULT")
-                         (log (:app/results edn-result))
+                         ;(log "App RESULT")
+                         ;(log (:app/results edn-result))
                          (om/transact! reconciler
                                        `[(app/select-activity
                                            {:activity ~(:app/selected-activity edn-result)})

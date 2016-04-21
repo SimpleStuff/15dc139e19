@@ -67,9 +67,9 @@
   [{:keys [state]} _ {:keys [results]}]
   {:value  {:keys [:app/results]}
    :action (fn []
-             (log (str "SET RESULTS "))
-             (log results)
-             (log (fix-result results))
+             ;(log (str "SET RESULTS "))
+             ;(log results)
+             ;(log (fix-result results))
              (d/transact! state [{:app/id 1 :app/results (fix-result results)}]))})
 
 ;{:result/id 1 :result/adjudicator 2 :result/participant 3 :result/mark-x}
@@ -77,7 +77,7 @@
   [{:keys [state]} _ {:keys [result/mark-x participant/x] :as result}]
   {:value   {:keys [:app/results]}
    :action  (fn []
-              (log result)
+              ;(log result)
               (let [q
                     (d/transact! state
                                  [{:db/id              -1
