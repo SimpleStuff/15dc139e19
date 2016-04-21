@@ -55,13 +55,13 @@
   [{:keys [state query]} _ _]
   (do
     (log "Read results ")
-    (log query)
+    ;(log query)
     ;(if loading?)
     ;{:query true}
 
     {:value (do
               ;(log "Read Results")
-              (log query)
+              ;(log query)
               (if query
                 (d/q '[:find [(pull ?a selector) ...]
                        :in $ selector
