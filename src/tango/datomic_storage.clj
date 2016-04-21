@@ -43,6 +43,14 @@
     :db/doc                "Determines if a X has been marked in this result"
     :db.install/_attribute :db.part/db}
 
+   ;; point
+   {:db/id                 #db/id[:db.part/db]
+    :db/ident              :result/point
+    :db/valueType          :db.type/long
+    :db/cardinality        :db.cardinality/one
+    :db/doc                "The number of points given a participant (can be neg.)"
+    :db.install/_attribute :db.part/db}
+
    ;; result/participant
    {:db/id                 #db/id[:db.part/db]
     :db/ident              :result/participant

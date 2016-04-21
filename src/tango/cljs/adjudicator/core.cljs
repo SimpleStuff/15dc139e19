@@ -50,6 +50,8 @@
                                                  :db/valueType :db.type/ref}
 
                             :result/id {:db/unique :db.unique/identity}
+
+                            ;:result/point {:db/valueType :db.type/long}
                             })
 
 (defonce conn (d/create-conn (merge adjudicator-ui-schema uidb/schema)))
@@ -181,13 +183,14 @@
   Object
   (render [this]
     (let [result (:result (om/props this))
-          point (if (:result/point result) (:result/point result) 0)]
+          point (if (:result/point result) (:result/point result) 0)
+          mark-x (if (:result/mark-x result) (:result/mark-x result) false)]
       ;(log "Render row")
       (when (:result/id (:result (om/props this)))
         (do
           ;(log "Render row")
           ;(log "Result id")
-          ;(log (:result/id (:result (om/props this))))
+          ;(log (:result (om/props this)))
           ))
 
       ;(log "----")
@@ -208,6 +211,7 @@
                                                                       (:result/id (:result (om/props this)))
                                                                       (random-uuid))
                                                :result/mark-x      ~(.. % -target -checked)
+                                               :result/point       ~point
                                                :result/participant ~(:participant/id (om/props this))
                                                :result/activity    ~(:activity/id (om/props this))
                                                :result/adjudicator ~(:adjudicator/id (om/props this))})
@@ -220,7 +224,7 @@
                                       {:result/id          ~(if (:result/id (:result (om/props this)))
                                                               (:result/id (:result (om/props this)))
                                                               (random-uuid))
-                                       :result/mark-x      ~(:result/mark-x (:result (om/props this)))
+                                       :result/mark-x      ~mark-x
                                        :result/point       ~(transform-fn point)
                                        :result/participant ~(:participant/id (om/props this))
                                        :result/activity    ~(:activity/id (om/props this))

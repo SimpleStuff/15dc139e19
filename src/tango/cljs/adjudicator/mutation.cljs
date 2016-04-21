@@ -55,7 +55,8 @@
 (defn fix-result [results]
   (mapv #(hash-map
           :result/id          (:result/id %)
-          :result/mark-x      (:result/mark-x %)
+          :result/mark-x      (:result/mark-x %)                              ;(if (:result/mark-x %) (:result/mark-x %) false)
+          :result/point       (if (:result/point %) (:result/point %) 0)
           :result/participant [:participant/id (:participant/id (:result/participant %))]
           :result/activity    [:activity/id (:activity/id (:result/activity %))]
           :result/adjudicator [:adjudicator/id (:adjudicator/id (:result/adjudicator %))])
@@ -67,6 +68,7 @@
   {:value  {:keys [:app/results]}
    :action (fn []
              (log (str "SET RESULTS "))
+             (log results)
              (log (fix-result results))
              (d/transact! state [{:app/id 1 :app/results (fix-result results)}]))})
 
@@ -81,7 +83,7 @@
                                  [{:db/id              -1
                                    :result/id          (:result/id result)
                                    :result/mark-x      mark-x
-                                   :result/point       (:result/point result)
+                                   :result/point       (if (:result/point result) (:result/point result) 0)
                                    :result/participant [:participant/id (:result/participant result)]
                                    :result/activity    [:activity/id (:result/activity result)]
                                    :result/adjudicator [:adjudicator/id (:result/adjudicator result)]}
