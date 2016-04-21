@@ -81,6 +81,7 @@
                                  [{:db/id              -1
                                    :result/id          (:result/id result)
                                    :result/mark-x      mark-x
+                                   :result/point       (:result/point result)
                                    :result/participant [:participant/id (:result/participant result)]
                                    :result/activity    [:activity/id (:result/activity result)]
                                    :result/adjudicator [:adjudicator/id (:result/adjudicator result)]}
