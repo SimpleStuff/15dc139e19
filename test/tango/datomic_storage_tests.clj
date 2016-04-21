@@ -102,6 +102,26 @@
                                                       :result/activity    [:activity/id]}]
                                                (:activity/id (:result/activity result-2)))))))))
 
+(deftest results-can-contain-points
+  (testing "Adjudicator results can contain a point value"
+    (let [_ (ds/delete-storage mem-uri)
+          _ (ds/create-storage mem-uri (into ds/select-activity-schema ds/result-schema))
+          conn (ds/create-connection mem-uri)
+          result {:result/mark-x true
+                  :result/point 34
+                  :result/id #uuid "60edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"
+                  :result/participant {:participant/id #uuid "4932976a-7009-41fb-9dab-f003b89dba41"}
+                  :result/adjudicator {:adjudicator/id #uuid "1ace2915-42dc-4f58-8017-dcb79f958463"}
+                  :result/activity {:activity/id #uuid "33501fc6-087a-47f6-b003-4edb694655e5"}}]
+      (ds/set-results conn [result])
+      (is (= result (first (ds/query-results conn [:result/id
+                                                   :result/mark-x
+                                                   :result/point
+                                                   {:result/adjudicator [:adjudicator/id]
+                                                    :result/participant [:participant/id]
+                                                    :result/activity    [:activity/id]}]
+                                             (:activity/id (:result/activity result)))))))))
+
 
 
 ;(deftest select-round-should-be-sanitized

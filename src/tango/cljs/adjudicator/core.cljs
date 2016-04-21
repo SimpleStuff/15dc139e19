@@ -50,6 +50,8 @@
                                                  :db/valueType :db.type/ref}
 
                             :result/id {:db/unique :db.unique/identity}
+
+                            ;:result/point {:db/valueType :db.type/long}
                             })
 
 (defonce conn (d/create-conn (merge adjudicator-ui-schema uidb/schema)))
@@ -180,41 +182,66 @@
      ])
   Object
   (render [this]
-    ;(log "Render row")
-    (when (:result/id (:result (om/props this)))
-      (do
-        ;(log "Render row")
-        ;(log "Result id")
-        ;(log (:result/id (:result (om/props this))))
-        ))
+    (let [result (:result (om/props this))
+          point (if (:result/point result) (:result/point result) 0)
+          mark-x (if (:result/mark-x result) (:result/mark-x result) false)]
+      ;(log "Render row")
+      (when (:result/id (:result (om/props this)))
+        (do
+          ;(log "Render row")
+          ;(log "Result id")
+          ;(log (:result (om/props this)))
+          ))
 
-    ;(log "----")
-    (dom/div nil
-      (dom/form #js {:className "form-inline"}
-        (dom/div #js {:className "form-group"}
-          (dom/p #js {:className "control-label"} (str (:participant/number (om/props this)))))
+      ;(log "----")
+      (dom/div nil
+        (dom/form #js {:className "form-inline"}
+          (dom/div #js {:className "form-group"}
+            (dom/p #js {:className "control-label"} (str (:participant/number (om/props this)))))
 
-        (dom/div #js {:className "form-group"}
-          (dom/label nil
-            (dom/input #js {:type     "checkbox"
-                            :checked  (:result/mark-x (:result (om/props this)))
-                            :onChange #(om/transact!
-                                        reconciler
-                                        `[(participant/set-result
-                                            {:result/id          ~(if (:result/id (:result (om/props this)))
-                                                                    (:result/id (:result (om/props this)))
-                                                                    (random-uuid))
-                                             :result/mark-x      ~(.. % -target -checked)
-                                             :result/participant ~(:participant/id (om/props this))
-                                             :result/activity    ~(:activity/id (om/props this))
-                                             :result/adjudicator ~(:adjudicator/id (om/props this))})
-                                          :app/results])})))
+          ;; TODO - change on + and - should also send a result
+          (dom/div #js {:className "form-group"}
+            (dom/label nil
+              (dom/input #js {:type     "checkbox"
+                              :checked  (:result/mark-x (:result (om/props this)))
+                              :onChange #(om/transact!
+                                          reconciler
+                                          `[(participant/set-result
+                                              {:result/id          ~(if (:result/id (:result (om/props this)))
+                                                                      (:result/id (:result (om/props this)))
+                                                                      (random-uuid))
+                                               :result/mark-x      ~(.. % -target -checked)
+                                               :result/point       ~point
+                                               :result/participant ~(:participant/id (om/props this))
+                                               :result/activity    ~(:activity/id (om/props this))
+                                               :result/adjudicator ~(:adjudicator/id (om/props this))})
+                                            :app/results])})))
 
-        (dom/div #js {:className "form-group"}
-          (dom/button #js {:className "btn btn-default"} "+")
-          (dom/button #js {:className "btn btn-default"} "-")
-          (dom/label #js {:className "control-label"} "2p"))
-        ))))
+          (let [set-result-fn (fn [transform-fn]
+                                (om/transact!
+                                  reconciler
+                                  `[(participant/set-result
+                                      {:result/id          ~(if (:result/id (:result (om/props this)))
+                                                              (:result/id (:result (om/props this)))
+                                                              (random-uuid))
+                                       :result/mark-x      ~mark-x
+                                       :result/point       ~(transform-fn point)
+                                       :result/participant ~(:participant/id (om/props this))
+                                       :result/activity    ~(:activity/id (om/props this))
+                                       :result/adjudicator ~(:adjudicator/id (om/props this))})
+                                    :app/results]))]
+            (dom/div #js {:className "form-group"}
+              (dom/button #js {:type      "button"
+                               :className "btn btn-default"
+                               :onClick   #(set-result-fn inc)} "+")
+
+              (dom/button #js {:type "button"
+                               :className "btn btn-default"
+                               :onClick #(set-result-fn dec)} "-")
+
+              (when (not= 0 point)
+                (dom/label #js {:className "control-label"} (str point)))))
+          )))))
 
 (defui HeatComponent
   static om/IQuery
@@ -280,6 +307,7 @@
      {:app/selected-adjudicator [:adjudicator/name
                                  :adjudicator/id]}
      {:app/results [:result/mark-x
+                    :result/point
                     :result/id
                     {:result/participant [:participant/id]}
                     {:result/adjudicator [:adjudicator/id]}
