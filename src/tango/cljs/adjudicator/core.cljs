@@ -68,6 +68,8 @@
                        ;{:db/id -1 :app/selected-competition {}}
                        ; :app/selected-adjudicator
                        {:db/id -1 :app/selected-activity-status :in-sync}
+                       {:db/id -1 :app/heat-page 0}
+                       {:db/id -1 :app/heat-page-size 2}
                        ;{:db/id -1 :app/results {}}
                        ])
     (let [r (d/q '[:find ?s .
@@ -177,22 +179,14 @@
   static om/IQuery
   (query [_]
     [:participant/id :participant/number
-     :app/results
-     ;{:participant/result [:activity/id :adjudicator/id :mark/x]}
-     ])
+     :app/results])
   Object
   (render [this]
     (let [result (:result (om/props this))
           point (if (:result/point result) (:result/point result) 0)
           mark-x (if (:result/mark-x result) (:result/mark-x result) false)]
       ;(log "Render row")
-      (when (:result/id (:result (om/props this)))
-        (do
-          ;(log "Render row")
-          ;(log (:allow-marks? (om/props this)))
-          ;(log "Result id")
-          ;(log (:result (om/props this)))
-          ))
+      ;(when (:result/id (:result (om/props this))))
 
       ;(log "----")
       (dom/div nil
@@ -249,8 +243,7 @@
                                :onClick #(set-result-fn dec)} "-")
 
               (when (not= 0 point)
-                (dom/label #js {:className "control-label"} (str point)))))
-          )))))
+                (dom/label #js {:className "control-label"} (str point))))))))))
 
 (defui HeatComponent
   static om/IQuery
@@ -268,15 +261,13 @@
                         (first (filter (fn [res] (= (:participant/id participant)
                                                     (:participant/id (:result/participant res))))
                                        results)))]
-      ;(log "Render Heat")
-      ;(log results)
-      (dom/div #js {:className "col-sm-3"}
+      (dom/div #js {:className "col-sm-6"}
         (dom/h3 nil "Heat : " (str (+ 1 heat)))
-
-        (map #((om/factory HeatRowComponent) (merge % {:adjudicator/id adjudicator-id
-                                                       :activity/id    activity-id
-                                                       :result         (find-result %)
-                                                       :allow-marks? (:allow-marks? (om/props this))}))
+        (map #((om/factory HeatRowComponent)
+               (merge % {:adjudicator/id adjudicator-id
+                         :activity/id    activity-id
+                         :result         (find-result %)
+                         :allow-marks? (:allow-marks? (om/props this))}))
              participants)))))
 
 (defui HeatsComponent
@@ -288,19 +279,39 @@
     (let [participants (:participants (om/props this))
           heats (:heats (om/props this))
           heat-parts (partition-all (int (Math/ceil (/ (count participants) heats)))
-                                    (sort-by :participant/number participants))]
-      ;(log participants)
-      ;(log (:results (om/props this)))
+                                    (sort-by :participant/number participants))
+          page-size (:heat-page-size (om/props this))
+          current-page (:heat-page (om/props this))
+          page-start (* page-size current-page)
+          page-end (+ page-start page-size)]
       (dom/div nil
-        (dom/h3 nil (str "Heats : " heats))
-        (map-indexed (fn [idx parts] ((om/factory HeatComponent)
-                                       {:heat           idx
-                                        :participants   parts
-                                        :adjudicator/id (:adjudicator/id (om/props this))
-                                        :activity/id    (:activity/id (om/props this))
-                                        :results        (:results (om/props this))
-                                        :allow-marks? (:allow-marks? (om/props this))}))
-                     heat-parts)))))
+        (dom/div #js {:className "col-sm-12"}
+          (dom/h3 nil (str "Heats : " heats))
+          (subvec
+            (vec (map-indexed (fn [idx parts] ((om/factory HeatComponent)
+                                                {:heat           idx
+                                                 :participants   parts
+                                                 :adjudicator/id (:adjudicator/id (om/props this))
+                                                 :activity/id    (:activity/id (om/props this))
+                                                 :results        (:results (om/props this))
+                                                 :allow-marks?   (:allow-marks? (om/props this))}))
+                              heat-parts))
+            page-start (min page-end (int heats))))))))
+
+(defui HeatsControll
+  static om/IQuery
+  (query [_])
+  Object
+  (render [this]
+    (let [current-page (:heat-page (om/props this))
+          last-page (:heat-last-page (om/props this))]
+      (dom/div nil
+        (dom/button #js {:disabled (= current-page 0)
+                         :onClick #(om/transact! this `[(app/heat-page {:page ~(dec current-page)})
+                                                        :app/heat-page])} "Previous")
+        (dom/button #js {:disabled (= current-page last-page)
+                         :onClick #(om/transact! this `[(app/heat-page {:page ~(inc current-page)})
+                                                        :app/heat-page])} "Next")))))
 
 ;{:round/results
 ; [{:result/id 1 :result/adjudicator 2 :result/participant 3 :result/mark-x}]}
@@ -322,7 +333,10 @@
                     :result/id
                     {:result/participant [:participant/id]}
                     {:result/adjudicator [:adjudicator/id]}
-                    {:result/activity [:activity/id]}]}])
+                    {:result/activity [:activity/id]}]}
+
+     :app/heat-page
+     :app/heat-page-size])
   Object
   (render
     [this]
@@ -371,12 +385,19 @@
                                             :adjudicator/id (:adjudicator/id selected-adjudicator)
                                             :activity/id    (:activity/id selected-activity)
                                             :results        results-for-this-adjudicator
-                                            :allow-marks? allow-marks?}))
-            (dom/div nil
-              ;(log "RESULT FOR ADJ")
-              ;(log results-for-this-adjudicator)
-              (dom/h3 nil (str "Marks " mark-count "/" (:round/recall selected-activity)))
+                                            :allow-marks? allow-marks?
+                                            :heat-page-size (:app/heat-page-size (om/props this))
+                                            :heat-page (:app/heat-page (om/props this))})
               )
+            (dom/div nil
+              ((om/factory HeatsControll)
+                {:heat-page      (:app/heat-page (om/props this))
+                 :heat-last-page (int (Math/floor
+                                        (/ (int (:round/heats selected-activity))
+                                           (:app/heat-page-size (om/props this)))))}))
+            (dom/div nil
+              (dom/h3 nil (str "Marks " mark-count "/" (:round/recall selected-activity))))
+
             ))
         ;(dom/h3 nil (str "Example Participant " (:participant/number
         ;                                          (first (:round/starting selected-activity)))))

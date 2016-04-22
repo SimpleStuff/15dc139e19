@@ -88,6 +88,15 @@
                                    :result/activity    [:activity/id (:result/activity result)]
                                    :result/adjudicator [:adjudicator/id (:result/adjudicator result)]}
                                   {:app/id 1 :app/results -1}])]
-                (log q)))
+                ))
    :command true})
 
+(defmethod mutate 'app/heat-page
+  [{:keys [state]} _ {:keys [page]}]
+  {:value  {:keys [:app/heat-page]}
+   :remote true
+   :action (fn []
+             (do
+               ;(log "Mutate online")
+               ;(log online?)
+               (d/transact! state [{:app/id 1 :app/heat-page page}])))})

@@ -70,6 +70,18 @@
      :query true
      }))
 
+(defmethod read :app/heat-page
+  [{:keys [state]} _ _]
+  {:value (d/q '[:find ?page .
+                 :where [[:app/id 1] :app/heat-page ?page]]
+               (d/db state))})
+
+(defmethod read :app/heat-page-size
+  [{:keys [state]} _ _]
+  {:value (d/q '[:find ?s .
+                 :where [[:app/id 1] :app/heat-page-size ?s]]
+               (d/db state))})
+
 
 
 
