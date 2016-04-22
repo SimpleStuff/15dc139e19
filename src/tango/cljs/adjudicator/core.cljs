@@ -465,7 +465,7 @@
                            ;(log act)
                            ;(log adjs)
                            (log should-judge?)
-                           (when should-judge?
+                           (when (or should-judge? (= nil current-adj))
                              (om/transact! reconciler
                                            `[(app/select-activity
                                                {:activity ~(:app/selected-activity edn-result)})
