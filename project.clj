@@ -43,7 +43,8 @@
                  ;; Cljs
                  [com.andrewmcveigh/cljs-time "0.4.0"]
                  [cljs-http "0.1.40"]
-                 [com.cognitect/transit-cljs "0.8.237"]]
+                 [com.cognitect/transit-cljs "0.8.237"]
+                 [alandipert/storage-atom "1.2.4"]]
 
   :plugins [[lein-figwheel "0.5.0-2"]
             [lein-cljsbuild "1.1.2"]

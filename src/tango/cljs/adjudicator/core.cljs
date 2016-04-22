@@ -16,7 +16,8 @@
             [tango.domain :as domain]
             [tango.presentation :as presentation]
             [tango.cljs.adjudicator.mutation :as m]
-            [tango.cljs.adjudicator.read :as r])
+            [tango.cljs.adjudicator.read :as r]
+            [alandipert.storage-atom :as ls])
   (:import [goog.net XhrIo]))
 
 (defn log [m]
@@ -90,6 +91,12 @@
          :where
          [_ :app/online? ?online]] (d/db conn)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Local storage
+(def local-id (ls/local-storage (atom {}) :local-id))
+
+(log "------------------------------ LOCAL ----------------")
+(log (:name @local-id))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Sente message handling
 
@@ -166,9 +173,13 @@
                              (fn [e]
                                (do
                                  ;(log (str "Click " (:adjudicator/name %)))
+                                 ;; Persist this adjudicator to storage
+                                 (swap! local-id assoc :name (:adjudicator/name %))
                                  (om/transact! this `[(app/select-adjudicator ~%)
                                                       :app/selected-adjudicator])))}
-                 (:adjudicator/name %)) (:adjudicator-panel/adjudicators panel)))))))
+                 (:adjudicator/name %)) (:adjudicator-panel/adjudicators panel)))
+        (dom/h3 nil (str "Local Storage Says : " (:name @local-id)))
+        (dom/button #js {:onClick #(ls/clear-local-storage!)} "Clear Storage")))))
 
 ;; example of a mark message
 ;; [:set-result {:round/id 1 :adjudicator/id 1 :participant-id 1 :mark/x true}]
@@ -363,7 +374,10 @@
       (dom/div nil
         (dom/h3 nil (str "Selected Activity : " (:name (:app/selected-activity (om/props this)))))
         (dom/h3 nil "Adjudicator UI")
-        (dom/h3 nil (str "Status : " status)))
+        (dom/h3 nil (str "Status : " status))
+
+        )
+
 
       (dom/div nil
         ((om/factory AdjudicatorSelection) panel)
@@ -374,6 +388,7 @@
               (dom/h3 nil (str "Judge : " (if selected-adjudicator
                                             (:adjudicator/name selected-adjudicator)
                                             "None selected")))
+
               (dom/h3 nil (:activity/name selected-activity))
               (dom/h3 nil (:round/name selected-activity))
               (dom/h3 nil (str "Mark " (:round/recall selected-activity) " of "
