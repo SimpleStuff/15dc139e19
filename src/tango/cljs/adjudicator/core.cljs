@@ -16,7 +16,8 @@
             [tango.domain :as domain]
             [tango.presentation :as presentation]
             [tango.cljs.adjudicator.mutation :as m]
-            [tango.cljs.adjudicator.read :as r])
+            [tango.cljs.adjudicator.read :as r]
+            [alandipert.storage-atom :as ls])
   (:import [goog.net XhrIo]))
 
 (defn log [m]
@@ -91,6 +92,12 @@
          [_ :app/online? ?online]] (d/db conn)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Local storage
+(def local-id (ls/local-storage (atom {}) :local-id))
+
+(log "------------------------------ LOCAL ----------------")
+(log (:name @local-id))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Sente message handling
 
 ; Dispatch on event-id
@@ -121,7 +128,7 @@
       (log (str "payload: " payload))
       (when (= payload 'app/select-activity)
         (om/transact! reconciler `[(app/selected-activity-status {:status :out-of-sync})
-                                   (app/select-adjudicator {})
+                                   ;(app/select-adjudicator {})
                                    :app/selected-activity
                                    :app/results])))))
 
@@ -166,9 +173,13 @@
                              (fn [e]
                                (do
                                  ;(log (str "Click " (:adjudicator/name %)))
+                                 ;; Persist this adjudicator to storage
+                                 (swap! local-id assoc :name (:adjudicator/name %))
                                  (om/transact! this `[(app/select-adjudicator ~%)
                                                       :app/selected-adjudicator])))}
-                 (:adjudicator/name %)) (:adjudicator-panel/adjudicators panel)))))))
+                 (:adjudicator/name %)) (:adjudicator-panel/adjudicators panel)))
+        (dom/h3 nil (str "Local Storage Says : " (:name @local-id)))
+        (dom/button #js {:onClick #(ls/clear-local-storage!)} "Clear Storage")))))
 
 ;; example of a mark message
 ;; [:set-result {:round/id 1 :adjudicator/id 1 :participant-id 1 :mark/x true}]
@@ -363,7 +374,10 @@
       (dom/div nil
         (dom/h3 nil (str "Selected Activity : " (:name (:app/selected-activity (om/props this)))))
         (dom/h3 nil "Adjudicator UI")
-        (dom/h3 nil (str "Status : " status)))
+        (dom/h3 nil (str "Status : " status))
+
+        )
+
 
       (dom/div nil
         ((om/factory AdjudicatorSelection) panel)
@@ -374,6 +388,7 @@
               (dom/h3 nil (str "Judge : " (if selected-adjudicator
                                             (:adjudicator/name selected-adjudicator)
                                             "None selected")))
+
               (dom/h3 nil (:activity/name selected-activity))
               (dom/h3 nil (:round/name selected-activity))
               (dom/h3 nil (str "Mark " (:round/recall selected-activity) " of "
@@ -439,11 +454,23 @@
                          ;; doing an explicit datalog transaction
                          ;(log "App RESULT")
                          ;(log (:app/results edn-result))
-                         (om/transact! reconciler
-                                       `[(app/select-activity
-                                           {:activity ~(:app/selected-activity edn-result)})
-                                         (app/set-results
-                                           {:results ~(:app/results edn-result)})])))))))
+
+                         ;; Only change round if this judge are in it
+                         (let [act (:app/selected-activity edn-result)
+                               adjs (:adjudicator-panel/adjudicators (:round/panel act))
+                               current-adj (:name @local-id)
+                               should-judge? (seq (filter #(= current-adj (:adjudicator/name %))
+                                                          adjs))]
+                           (log current-adj)
+                           ;(log act)
+                           ;(log adjs)
+                           (log should-judge?)
+                           (when (or should-judge? (= nil current-adj))
+                             (om/transact! reconciler
+                                           `[(app/select-activity
+                                               {:activity ~(:app/selected-activity edn-result)})
+                                             (app/set-results
+                                               {:results ~(:app/results edn-result)})])))))))))
 
 ; {:query [:app/selected-activity :app/results]}
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
