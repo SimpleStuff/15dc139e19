@@ -89,6 +89,18 @@
             (log/info (str "app/results read"))
             nil)})
 
+(defmethod reader :app/heat-page
+  [{:keys [state query]} key params]
+  {:value (do
+            (log/info (str "app/heat-page read"))
+            nil)})
+
+(defmethod reader :app/heat-page-size
+  [{:keys [state query]} key params]
+  {:value (do
+            (log/info (str "app/page read"))
+            nil)})
+
 (def parser
   (om/parser {:mutate mutate
               :read reader}))
