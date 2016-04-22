@@ -128,7 +128,7 @@
       (log (str "payload: " payload))
       (when (= payload 'app/select-activity)
         (om/transact! reconciler `[(app/selected-activity-status {:status :out-of-sync})
-                                   (app/select-adjudicator {})
+                                   ;(app/select-adjudicator {})
                                    :app/selected-activity
                                    :app/results])))))
 
@@ -454,11 +454,23 @@
                          ;; doing an explicit datalog transaction
                          ;(log "App RESULT")
                          ;(log (:app/results edn-result))
-                         (om/transact! reconciler
-                                       `[(app/select-activity
-                                           {:activity ~(:app/selected-activity edn-result)})
-                                         (app/set-results
-                                           {:results ~(:app/results edn-result)})])))))))
+
+                         ;; Only change round if this judge are in it
+                         (let [act (:app/selected-activity edn-result)
+                               adjs (:adjudicator-panel/adjudicators (:round/panel act))
+                               current-adj (:name @local-id)
+                               should-judge? (seq (filter #(= current-adj (:adjudicator/name %))
+                                                          adjs))]
+                           (log current-adj)
+                           ;(log act)
+                           ;(log adjs)
+                           (log should-judge?)
+                           (when should-judge?
+                             (om/transact! reconciler
+                                           `[(app/select-activity
+                                               {:activity ~(:app/selected-activity edn-result)})
+                                             (app/set-results
+                                               {:results ~(:app/results edn-result)})])))))))))
 
 ; {:query [:app/selected-activity :app/results]}
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
