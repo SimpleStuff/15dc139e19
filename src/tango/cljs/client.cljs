@@ -12,7 +12,8 @@
             [tango.presentation :as presentation]
             [tango.cljs.client-mutation :as m]
             [tango.cljs.client-read :as r]
-            [cognitect.transit :as t])
+            [cognitect.transit :as t]
+            [cljs-http.client :as http])
   (:import [goog.net XhrIo]))
 
 ;; TODO - check performance issue
@@ -85,7 +86,7 @@
         (om/transact! reconciler `[(app/add-competition ~clean-data) :app/competitions]))
       (let [clean-data (uidb/sanitize d)]
         (om/transact! reconciler `[(app/add-competition ~clean-data) :app/competitions])))
-    (om/transact! reconciler `[(app/set-import-status {:status :none})])
+    (om/transact! reconciler `[(app/set-import-status {:status :none}) :app/selected-competition])
     (om/transact! reconciler `[(app/status {:status :running})])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -305,18 +306,16 @@
                                                                                {:status :importing})])
                                                   (on-click-import-file %))}))
 
-            ;(dom/li
-            ;  #js {:className (if (= active-page-key page-key) "active" "")
-            ;       :onClick   #(om/transact! component `[(app/select-page {:page ~page-key})])}
-            ;  (dom/a nil button-name))
-            (dom/button #js {:className "btn btn-default"
-                             :onClick   #(om/transact! reconciler
-                                                       `[(app/create-competition
-                                                           ~(merge {:db/id -1 :competition/id (om/tempid)}
-                                                                   (domain/make-competition "New" "" "" {} {} {} {} {})))
-                                                         (app/select-page {:page :create-new-competition})
-                                                         (app/select-competition {:name "New"})])}
-                        "Skapa ny..")))
+
+            ;(dom/button #js {:className "btn btn-default"
+            ;                 :onClick   #(om/transact! reconciler
+            ;                                           `[(app/create-competition
+            ;                                               ~(merge {:db/id -1 :competition/id (om/tempid)}
+            ;                                                       (domain/make-competition "New" "" "" {} {} {} {} {})))
+            ;                                             (app/select-page {:page :create-new-competition})
+            ;                                             (app/select-competition {:name "New"})])}
+            ;            "Skapa ny..")
+            ))
         (= import-status :importing) (dom/h3 nil "Importerar, vänligen vänta..")))))
 
 ;;;;;;;;;;;;;;;;;;;;
@@ -623,14 +622,21 @@
            #js {"Content-Type" "application/transit+json"})))
 
 (defn sente-post []
-  (fn [{:keys [remote command] :as env} cb]
+  (fn [{:keys [remote query command] :as env} cb]
     (if remote
       (do
         (log "Env > ")
         (log env)
         (log (str "Sent to Tango Backend => " remote))
         (chsk-send! [:event-manager/query [[:competition/name :competition/location]]]))
-      ((transit-post "/commands") env cb))))
+      (if query
+        (do
+          (log "QQQQQQQQQQQQQQQQQQQQQQQ")
+          (go
+            (let [response (async/<! (http/get "/query"
+                                               {:query-params
+                                                {:query (pr-str (:query env))}}))])))
+        ((transit-post "/commands") env cb)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Application
@@ -642,7 +648,7 @@
 (def reconciler
   (om/reconciler
     {:state   conn
-     :remotes [:remote :command]
+     :remotes [:remote :command :query]
      :parser  (om/parser {:read r/read :mutate m/mutate})
      :send    (sente-post)                                  ;(transit-post "http://localhost:1337/commands")
      }))

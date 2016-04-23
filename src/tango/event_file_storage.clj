@@ -26,8 +26,12 @@
                    ;; [:event-file-storage/create p]
                    ;; (async/put! out-channel (create-message :event-file-storage/created (fs/save [] p)))
                    [:event-file-storage/transact p]
-                   (let [current (fs/read-file storage-path)
-                         new-content (conj current p)]
+                   (let [
+                         ;; TODO - only supporting one entry at this time
+                         ;current (fs/read-file storage-path)
+                         ;new-content (conj curren p)
+                         new-content (conj [] p)
+                         ]
                      (async/put! out-channel (merge message
                                                     {:topic :event-file-storage/added
                                                      :payload (fs/save new-content
