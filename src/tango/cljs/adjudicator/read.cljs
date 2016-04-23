@@ -38,10 +38,17 @@
 (defmethod read :app/selected-adjudicator
   [{:keys [state query]} _ _]
   {:value                                                   ;{:adjudicator/name "Bob"}
-   (d/q '[:find (pull ?a selector) .
-          :in $ selector
-          :where [[:app/id 1] :app/selected-adjudicator ?a]]
-        (d/db state) query)})
+   (do
+     (log "Read Adjudicator ")
+     (log query)
+     (if query
+       (let [q
+             (d/q '[:find (pull ?a selector) .
+                    :in $ selector
+                    :where [[:app/id 1] :app/selected-adjudicator ?a]]
+                  (d/db state) query)]
+         (log "Read Done")
+         q)))})
 
 (defn loading? [conn]
   (if (= :loading
@@ -59,14 +66,26 @@
     ;(if loading?)
     ;{:query true}
 
+    ;; TODO - make sure that results are only for this round
     {:value (do
               ;(log "Read Results")
               ;(log query)
               (if query
-                (d/q '[:find [(pull ?a selector) ...]
-                       :in $ selector
-                       :where [[:app/id 1] :app/results ?a]]
-                     (d/db state) query)))
+                (let [res
+                      (d/q '[                               ;:find [(pull ?r selector) ...]
+                             :find [(pull ?r selector) ...]
+                             :in $ selector
+                             :where
+                             [[:app/id 1] :app/results ?r]
+                             [[:app/id 1] :app/selected-activity ?a]
+                             [?a :activity/id ?id]
+                             [?r :result/activity ?ra]
+                             [?ra :activity/id ?id]
+                             ]
+                           (d/db state) query)]
+                  (log "//////////////////////////////////////////")
+                  (log res)
+                  res)))
      :query true
      }))
 
@@ -80,6 +99,12 @@
   [{:keys [state]} _ _]
   {:value (d/q '[:find ?s .
                  :where [[:app/id 1] :app/heat-page-size ?s]]
+               (d/db state))})
+
+(defmethod read :app/admin-mode
+  [{:keys [state]} _ _]
+  {:value (d/q '[:find ?a .
+                 :where [[:app/id 1] :app/admin-mode ?a]]
                (d/db state))})
 
 
