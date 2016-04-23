@@ -71,6 +71,7 @@
                        {:db/id -1 :app/selected-activity-status :in-sync}
                        {:db/id -1 :app/heat-page 0}
                        {:db/id -1 :app/heat-page-size 2}
+                       {:db/id -1 :app/admin-mode false}
                        ;{:db/id -1 :app/results {}}
                        ])
     (let [r (d/q '[:find ?s .
@@ -97,6 +98,7 @@
 
 (log "------------------------------ LOCAL ----------------")
 (log (:name @local-id))
+(log (:adjudicator @local-id))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Sente message handling
 
@@ -143,16 +145,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Components
 
-
-
-;; TODO:
-;; X Select judge for UI
-;; X Get selected round that is to be judged
-;; X Get the number of participants to be recalled
-;; X Show participant number
-;; - Command to set mark on participant for the specific round for this judge
-;; - Command to inc/dec the judges 'point' for a participant
-;; - Query param to only fetch results for the selected adjudicator
 (defui AdjudicatorSelection
   static om/IQuery
   (query [_]
@@ -175,11 +167,11 @@
                                  ;(log (str "Click " (:adjudicator/name %)))
                                  ;; Persist this adjudicator to storage
                                  (swap! local-id assoc :name (:adjudicator/name %))
+                                 (swap! local-id assoc :adjudicator %)
                                  (om/transact! this `[(app/select-adjudicator ~%)
                                                       :app/selected-adjudicator])))}
                  (:adjudicator/name %)) (:adjudicator-panel/adjudicators panel)))
-        (dom/h3 nil (str "Local Storage Says : " (:name @local-id)))
-        (dom/button #js {:onClick #(ls/clear-local-storage!)} "Clear Storage")))))
+        ))))
 
 ;; example of a mark message
 ;; [:set-result {:round/id 1 :adjudicator/id 1 :participant-id 1 :mark/x true}]
@@ -347,7 +339,8 @@
                     {:result/activity [:activity/id]}]}
 
      :app/heat-page
-     :app/heat-page-size])
+     :app/heat-page-size
+     :app/admin-mode])
   Object
   (render
     [this]
@@ -356,14 +349,17 @@
           selected-activity (:app/selected-activity (om/props this))
           panel (:round/panel selected-activity)
           selected-adjudicator (:app/selected-adjudicator (om/props this))
+          ;; Results must also be for selected round
           results-for-this-adjudicator (filter #(= (:adjudicator/id selected-adjudicator)
                                                    (:adjudicator/id (:result/adjudicator %)))
                                                (:app/results (om/props this)))
           mark-count (count (filter #(when (:result/mark-x %) %) results-for-this-adjudicator))
           allow-marks? (< mark-count (int (:round/recall selected-activity)) )
+          in-admin-mode? (:app/admin-mode (om/props this))
           ]
       (log "Rendering MainComponent")
       ;(log "Marks--------------------------------")
+      (log in-admin-mode?)
       ;(log allow-marks?)
       ;(log (int (:round/recall selected-activity)))
       ;(log mark-count)
@@ -378,13 +374,29 @@
 
         )
 
-
+      (log "------------------------------")
+      (log selected-adjudicator)
       (dom/div nil
-        ((om/factory AdjudicatorSelection) panel)
+        (when-not selected-adjudicator
+          ((om/factory AdjudicatorSelection) panel))
 
         (when selected-adjudicator
           (dom/div nil
             (dom/div nil
+              (dom/button #js {:className "btn btn-default"
+                               :onClick #(om/transact! this `[(app/set-admin-mode
+                                                                {:in-admin ~(not in-admin-mode?)})])}
+                          (dom/span #js {:className "glyphicon glyphicon-cog"})))
+            (when in-admin-mode?
+              (let [pwd (atom "")]
+                (dom/div nil
+                  (dom/h3 nil (str "Local Storage Says : " (:name @local-id)))
+                  (dom/button #js {:onClick #(when (= @pwd "1337")
+                                              (ls/clear-local-storage!))} "Clear Storage")
+                  (dom/input #js {:className "text" :value @pwd :onChange #(reset! pwd (.. % -target -value))})
+                  (dom/p nil "Refresh after clearing storage!"))))
+            (dom/div nil
+
               (dom/h3 nil (str "Judge : " (if selected-adjudicator
                                             (:adjudicator/name selected-adjudicator)
                                             "None selected")))
@@ -458,9 +470,13 @@
                          ;; Only change round if this judge are in it
                          (let [act (:app/selected-activity edn-result)
                                adjs (:adjudicator-panel/adjudicators (:round/panel act))
-                               current-adj (:name @local-id)
-                               should-judge? (seq (filter #(= current-adj (:adjudicator/name %))
-                                                          adjs))]
+                               current-adj-name (:name @local-id)
+                               current-adj (:adjudicator @local-id)
+                               should-judge? (seq (filter #(= current-adj-name (:adjudicator/name %))
+                                                          adjs))
+                               real-adj (first (filter #(= current-adj-name (:adjudicator/name %))
+                                                       adjs))]
+
                            (log current-adj)
                            ;(log act)
                            ;(log adjs)
@@ -470,7 +486,14 @@
                                            `[(app/select-activity
                                                {:activity ~(:app/selected-activity edn-result)})
                                              (app/set-results
-                                               {:results ~(:app/results edn-result)})])))))))))
+                                               {:results ~(:app/results edn-result)})
+                                             (app/heat-page ~{:page 0})]))
+
+                           ;; Always set judge to the locally selected
+                           (log "Real Adj")
+                           (log real-adj)
+                           (om/transact! reconciler `[(app/select-adjudicator ~current-adj)
+                                                      :app/selected-adjudicator]))))))))
 
 ; {:query [:app/selected-activity :app/results]}
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

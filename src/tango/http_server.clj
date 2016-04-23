@@ -101,6 +101,12 @@
             (log/info (str "app/page read"))
             nil)})
 
+(defmethod reader :app/admin-mode
+  [{:keys [state query]} key params]
+  {:value (do
+            (log/info (str "app/admin-mode read"))
+            nil)})
+
 (def parser
   (om/parser {:mutate mutate
               :read reader}))

@@ -100,3 +100,13 @@
                ;(log "Mutate online")
                ;(log online?)
                (d/transact! state [{:app/id 1 :app/heat-page page}])))})
+
+(defmethod mutate 'app/set-admin-mode
+  [{:keys [state]} _ {:keys [in-admin]}]
+  {:value  {:keys [:app/admin-mode]}
+   :remote true
+   :action (fn []
+             (do
+               ;(log "Mutate online")
+               ;(log online?)
+               (d/transact! state [{:app/id 1 :app/admin-mode in-admin}])))})
