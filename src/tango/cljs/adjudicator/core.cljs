@@ -401,29 +401,33 @@
                                             (:adjudicator/name selected-adjudicator)
                                             "None selected")))
 
-              (dom/h3 nil (:activity/name selected-activity))
-              (dom/h3 nil (:round/name selected-activity))
-              (dom/h3 nil (str "Mark " (:round/recall selected-activity) " of "
-                               (count
-                                 (:round/starting selected-activity))
-                               " to next round"))
-              ((om/factory HeatsComponent) {:participants   (:round/starting selected-activity)
-                                            :heats          (:round/heats selected-activity)
-                                            :adjudicator/id (:adjudicator/id selected-adjudicator)
-                                            :activity/id    (:activity/id selected-activity)
-                                            :results        results-for-this-adjudicator
-                                            :allow-marks? allow-marks?
-                                            :heat-page-size (:app/heat-page-size (om/props this))
-                                            :heat-page (:app/heat-page (om/props this))})
-              )
-            (dom/div nil
-              ((om/factory HeatsControll)
-                {:heat-page      (:app/heat-page (om/props this))
-                 :heat-last-page (int (Math/floor
-                                        (/ (int (:round/heats selected-activity))
-                                           (:app/heat-page-size (om/props this)))))}))
-            (dom/div nil
-              (dom/h3 nil (str "Marks " mark-count "/" (:round/recall selected-activity))))
+              (if selected-activity
+                (dom/div nil
+                  (dom/h3 nil (:activity/name selected-activity))
+                  (dom/h3 nil (:round/name selected-activity))
+                  (dom/h3 nil (str "Mark " (:round/recall selected-activity) " of "
+                                   (count
+                                     (:round/starting selected-activity))
+                                   " to next round"))
+                  ((om/factory HeatsComponent) {:participants   (:round/starting selected-activity)
+                                                :heats          (:round/heats selected-activity)
+                                                :adjudicator/id (:adjudicator/id selected-adjudicator)
+                                                :activity/id    (:activity/id selected-activity)
+                                                :results        results-for-this-adjudicator
+                                                :allow-marks?   allow-marks?
+                                                :heat-page-size (:app/heat-page-size (om/props this))
+                                                :heat-page      (:app/heat-page (om/props this))})
+
+                  (dom/div nil
+                    ((om/factory HeatsControll)
+                      {:heat-page      (:app/heat-page (om/props this))
+                       :heat-last-page (int (Math/floor
+                                              (/ (int (:round/heats selected-activity))
+                                                 (:app/heat-page-size (om/props this)))))}))
+                  (dom/div nil
+                    (dom/h3 nil (str "Marks " mark-count "/" (:round/recall selected-activity)))))
+                (dom/div nil
+                  (dom/h3 nil "Waiting for round.."))))
 
             ))
         ;(dom/h3 nil (str "Example Participant " (:participant/number

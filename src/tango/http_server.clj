@@ -80,7 +80,8 @@
             (log/info (str "app/results read"))
             (let [selected-act (d/get-selected-activity state '[:activity/id])]
               (log/info (str "Selected act " selected-act))
-              (d/query-results state query (:activity/id selected-act))))})
+              (when selected-act
+                (d/query-results state query (:activity/id selected-act)))))})
 
 ;; TODO - hack fix
 (defmethod reader :app/selected-adjudicator
