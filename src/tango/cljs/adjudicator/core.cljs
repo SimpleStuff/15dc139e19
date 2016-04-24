@@ -23,9 +23,28 @@
 (defn log [m]
   (.log js/console m))
 
+(defn log-command [m level]
+  (do
+    (.send XhrIo "/commands"
+           #()                              ;log  ;; TODO - Should do something with the response..
+           "POST" (t/write (t/writer :json) {:command `[(app/log {:message ~m :level ~level})]})
+           #js {"Content-Type" "application/transit+json"})
+    (.log js/console m)))
+
+
+(defn log-trace [m]
+  (log-command m :trace))
+
+(defn log-info [m]
+  (log-command m :info))
+
+(defn log-debug [m]
+  (log-command m :debug))
+
 (declare reconciler)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Sente Socket setup
+(log-trace "Begin Sente Socket Setup")
 
 (let [{:keys [chsk ch-recv send-fn state]}
       (sente/make-channel-socket! "/chsk"
@@ -36,8 +55,12 @@
   (def chsk-state state)                                    ; Watchable, read-only atom
   )
 
+(log-trace "End Sente Socket Setup")
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Init DB
+(log-trace "Begin Init DB")
+
 (def adjudicator-ui-schema {:app/selected-activity {:db/cardinality :db.cardinality/one
                                                     :db/valueType :db.type/ref}
 
@@ -50,37 +73,20 @@
                             :result/participant {:db/cardinality :db.cardinality/one
                                                  :db/valueType :db.type/ref}
 
-                            :result/id {:db/unique :db.unique/identity}
-
-                            ;:result/point {:db/valueType :db.type/long}
-                            })
+                            :result/id {:db/unique :db.unique/identity}})
 
 (defonce conn (d/create-conn (merge adjudicator-ui-schema uidb/schema)))
 
-;(defonce conn (d/create-conn adjudicator-ui-schema))
-
 (defn init-app []
   (do
+    (log-trace "Init App")
     (d/transact! conn [{:db/id -1 :app/id 1}
                        {:db/id -1 :app/online? false}
-                       ;{:db/id -1 :selected-page :competitions}
-                       ;{:db/id -1 :app/import-status :none}
                        {:db/id -1 :app/status :loading}
-                       ;{:db/id -1 :app/selected-competition {}}
-                       ; :app/selected-adjudicator
                        {:db/id -1 :app/selected-activity-status :in-sync}
                        {:db/id -1 :app/heat-page 0}
                        {:db/id -1 :app/heat-page-size 2}
-                       {:db/id -1 :app/admin-mode false}
-                       ;{:db/id -1 :app/results {}}
-                       ])
-    (let [r (d/q '[:find ?s .
-                   :where [[:app/id 1] :app/status ?s]]
-                 (d/db conn))]
-      (log (str "Empty Results> " r)))
-    ))
-
-
+                       {:db/id -1 :app/admin-mode false}])))
 
 (defn app-started? [conn]
   (seq (d/q '[:find ?e
@@ -92,15 +98,22 @@
          :where
          [_ :app/online? ?online]] (d/db conn)))
 
+(log-trace "End Init DB")
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Local storage
+(log-trace "Begin Local Storage")
+
 (def local-id (ls/local-storage (atom {}) :local-id))
 
-(log "------------------------------ LOCAL ----------------")
-(log (:name @local-id))
-(log (:adjudicator @local-id))
+(log-info (str "Local Adjudicator of Client : " (:name @local-id) " - "
+               (:adjudicator/id (:adjudicator @local-id))))
+
+(log-trace "End Local Storage")
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Sente message handling
+(log-trace "Begin Sente message handling")
 
 ; Dispatch on event-id
 (defmulti event-msg-handler :id)
@@ -112,38 +125,39 @@
 
 (defmethod event-msg-handler :default
   [ev-msg]
-  (log (str "Unhandled event: " ev-msg)))
+  (log-debug (str "Unhandled socket event: " ev-msg)))
 
 (defmethod event-msg-handler :chsk/state
   [{:as ev-msg :keys [?data]}]
   (do
-    (log (str "Channel socket state change: " ?data))
+    (log-debug (str "Channel socket state change: " ?data))
     (when (:first-open? ?data)
-      (log "Channel socket successfully established!"))))
+      (log-debug "Channel socket successfully established!"))))
 
 ;; TODO - Cleaning when respons type can be separated
 (defmethod event-msg-handler :chsk/recv
   [{:as ev-msg :keys [?data]}]
   (let [[topic payload] ?data]
     (when (= topic :tx/accepted)
-      (log (str " event from server: " topic))
-      (log (str "payload: " payload))
+      (log-debug (str "Socket Event from server: " topic))
+      (log (str "Socket Payload: " payload))
       (when (= payload 'app/select-activity)
         (om/transact! reconciler `[(app/selected-activity-status {:status :out-of-sync})
-                                   ;(app/select-adjudicator {})
                                    :app/selected-activity
                                    :app/results])))))
 
 (defmethod event-msg-handler :chsk/handshake
   [{:as ev-msg :keys [?data]}]
   (let [[?uid ?csrf-token ?handshake-data] ?data]
-    (log (str "Handshake: " ?data))))
+    (log-debug (str "Socket Handshake: " ?data))))
 
 (defonce chsk-router
          (sente/start-chsk-router-loop! event-msg-handler* ch-chsk))
 
+(log-trace "End Sente message handling")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Components
+(log-trace "Begin Components")
 
 (defui AdjudicatorSelection
   static om/IQuery
@@ -154,9 +168,8 @@
                                        :adjudicator/id]}])
   Object
   (render [this]
-    ;(log "Render Panels")
+    (log-trace "Render AdjudicatorSelection")
     (let [panel (om/props this)]
-      ;(log panel)
       (dom/div nil
         (dom/h3 nil (str "Panel for this round : " (:adjudicator-panel/name panel)))
         (dom/h3 nil (str "Select judge for use in this client :"))
@@ -164,20 +177,13 @@
           (map #(dom/li #js {:onClick
                              (fn [e]
                                (do
-                                 ;(log (str "Click " (:adjudicator/name %)))
                                  ;; Persist this adjudicator to storage
                                  (swap! local-id assoc :name (:adjudicator/name %))
                                  (swap! local-id assoc :adjudicator %)
                                  (om/transact! this `[(app/select-adjudicator ~%)
                                                       :app/selected-adjudicator])))}
-                 (:adjudicator/name %)) (:adjudicator-panel/adjudicators panel)))
-        ))))
+                 (:adjudicator/name %)) (:adjudicator-panel/adjudicators panel)))))))
 
-;; example of a mark message
-;; [:set-result {:round/id 1 :adjudicator/id 1 :participant-id 1 :mark/x true}]
-
-;{:round/results
-; [{:result/id 1 :result/adjudicator 2 :result/participant 3 :result/mark-x}]}
 (defui HeatRowComponent
   static om/IQuery
   (query [_]
@@ -188,10 +194,7 @@
     (let [result (:result (om/props this))
           point (if (:result/point result) (:result/point result) 0)
           mark-x (if (:result/mark-x result) (:result/mark-x result) false)]
-      ;(log "Render row")
-      ;(when (:result/id (:result (om/props this))))
-
-      ;(log "----")
+      (log-trace "Render HeatRowComponent")
       (dom/div nil
         (dom/form #js {:className "form-inline"}
           (dom/div #js {:className "form-group"}
@@ -220,8 +223,7 @@
                                                  :result/participant ~(:participant/id (om/props this))
                                                  :result/activity    ~(:activity/id (om/props this))
                                                  :result/adjudicator ~(:adjudicator/id (om/props this))})
-                                              :app/results])
-                                          )})))
+                                              :app/results]))})))
 
           (let [set-result-fn (fn [transform-fn]
                                 (om/transact!
@@ -264,6 +266,7 @@
                         (first (filter (fn [res] (= (:participant/id participant)
                                                     (:participant/id (:result/participant res))))
                                        results)))]
+      (log-trace "Render HeatComponent")
       (dom/div #js {:className "col-sm-6"}
         (dom/h3 nil "Heat : " (str (+ 1 heat)))
         (map #((om/factory HeatRowComponent)
@@ -287,6 +290,7 @@
           current-page (:heat-page (om/props this))
           page-start (* page-size current-page)
           page-end (+ page-start page-size)]
+      (log-trace "Render HeatsComponent")
       (dom/div nil
         (dom/div #js {:className "col-sm-12"}
           (dom/h3 nil (str "Heats : " heats))
@@ -308,6 +312,7 @@
   (render [this]
     (let [current-page (:heat-page (om/props this))
           last-page (:heat-last-page (om/props this))]
+      (log-trace "Render HeatsControll")
       (dom/div nil
         (dom/button #js {:disabled (= current-page 0)
                          :onClick #(om/transact! this `[(app/heat-page {:page ~(dec current-page)})
@@ -315,9 +320,6 @@
         (dom/button #js {:disabled (= current-page last-page)
                          :onClick #(om/transact! this `[(app/heat-page {:page ~(inc current-page)})
                                                         :app/heat-page])} "Next")))))
-
-;{:round/results
-; [{:result/id 1 :result/adjudicator 2 :result/participant 3 :result/mark-x}]}
 
 ;https://medium.com/@kovasb/om-next-the-reconciler-af26f02a6fb4#.kwq2t2jzr
 (defui MainComponent
@@ -357,25 +359,13 @@
           allow-marks? (< mark-count (int (:round/recall selected-activity)) )
           in-admin-mode? (:app/admin-mode (om/props this))
           ]
-      (log "Rendering MainComponent")
-      ;(log "Marks--------------------------------")
-      (log in-admin-mode?)
-      ;(log allow-marks?)
-      ;(log (int (:round/recall selected-activity)))
-      ;(log mark-count)
-      ;(log (:app/results (om/props this)))
-      ;(log app)
-      ;(log "--------------------------------------------")
-      ;(log (str selected-adjudicator))
+      (log-trace "Rendering MainComponent")
+
       (dom/div nil
         (dom/h3 nil (str "Selected Activity : " (:name (:app/selected-activity (om/props this)))))
         (dom/h3 nil "Adjudicator UI")
-        (dom/h3 nil (str "Status : " status))
+        (dom/h3 nil (str "Status : " status)))
 
-        )
-
-      (log "------------------------------")
-      (log selected-adjudicator)
       (dom/div nil
         (when-not selected-adjudicator
           ((om/factory AdjudicatorSelection) panel))
@@ -427,24 +417,18 @@
                   (dom/div nil
                     (dom/h3 nil (str "Marks " mark-count "/" (:round/recall selected-activity)))))
                 (dom/div nil
-                  (dom/h3 nil "Waiting for round.."))))
+                  (dom/h3 nil "Waiting for round.."))))))))))
 
-            ))
-        ;(dom/h3 nil (str "Example Participant " (:participant/number
-        ;                                          (first (:round/starting selected-activity)))))
-        ))))
-
-
+(log-trace "End Components")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Remote Posts
+(log-trace "Begin Remote Posts")
 
 ;http://jeremyraines.com/2015/11/16/getting-started-with-clojure-web-development.html
 
-;; example of a mark message
-;; [:set-result {:round/id 1 :adjudicator/id 1 :participant-id 1 :mark/x true}]
 (defn transit-post [url]
   (fn [edn cb]
-    ;(log edn)
+    (log-trace "Transit Post")
     (cond
       (:command edn) (.send XhrIo url
                            #()                              ;log  ;; TODO - Should do something with the response..
@@ -455,8 +439,8 @@
                                          (if (map? (first (:query edn)))
                                            (:query edn)
                                            (om/get-query MainComponent)))]
-                     (log "Query >>")
-                     (log edn)
+                     ;(log "Query >>")
+                     ;(log edn)
 
                      (go
                        (let [response (async/<! (http/get "/query"
@@ -499,9 +483,10 @@
                            (om/transact! reconciler `[(app/select-adjudicator ~current-adj)
                                                       :app/selected-adjudicator]))))))))
 
-; {:query [:app/selected-activity :app/results]}
+(log-trace "End Remote Posts")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Application
+(log-trace "Begin Application")
 
 ;; Init db etc if it has not been done
 (when-not (app-started? conn)
@@ -517,38 +502,4 @@
 (om/add-root! reconciler
               MainComponent (gdom/getElement "app"))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Test components
-;; Command Test
-;(dom/span nil
-;  (dom/label nil "Command Test : ")
-;  (dom/button #js {:onClick
-;                   #(do
-;                     (om/transact!
-;                       this
-;                       `[(app/status {:status ~next-status})
-;                         (app/online? {:online? true})])
-;                     (log "Command"))} "Command"))
-
-;; Query test
-;(dom/span nil
-;  (dom/label nil "Query Test : ")
-;  (dom/button #js {:onClick #(do
-;                              (log "Query")
-;                              (.send XhrIo "http://localhost:1337/query?a"
-;                                     (fn [e]
-;                                       (do
-;                                         (log "Query CB")
-;                                         (log e)))
-;                                     "GET"
-;                                     "Test"))}
-;              "Query"))
-
-;; Query 2 test
-;(dom/span nil
-;  (dom/label nil "Query Test 2: ")
-;  (dom/button #js {:onClick #(do
-;                              (log "Query")
-;                              (http/get "http://localhost:1337/query"
-;                                        {:query-params {:query (pr-str '[:find])}}))}
-;              "Query 2"))
+(log-trace "End Application")

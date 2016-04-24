@@ -53,6 +53,7 @@
 (defmethod mutate 'app/select-activity
   [{:keys [state] :as env} key params]
   {:action (fn []
+             (log/info "Select activity")
              (async/>!! state {:topic :command :sender :http :payload [key params]}))})
 
 (defmethod mutate 'participant/set-result
@@ -61,6 +62,17 @@
              (async/>!! state {:topic :command :sender :http :payload [key params]})
              (log/info (str "Set result " key " " params)))})
 
+(defmethod mutate 'app/log
+  [{:keys [state] :as env} key params]
+  {:action (fn []
+             (let [msg (:message params)
+                   log-msg (str "Client Log : " msg)]
+               (condp = (:level params)
+                 :debug (log/debug log-msg)
+                 :trace (log/trace log-msg)
+                 :error (log/error log-msg)
+                 :info (log/info log-msg))))})
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Read
 (defmulti reader (fn [env key params] key))
@@ -68,9 +80,8 @@
 (defmethod reader :app/selected-activity
   [{:keys [state query]} key params]
   {:value (do
-            (log/info (str "Selector " query))
-            (d/get-selected-activity state query)
-              )
+            (log/info (str "Selector in selected activity" query))
+            (d/get-selected-activity state query))
    ;(do (log/info (str "Reader Query Key Params " query key params)))
    })
 
@@ -115,7 +126,7 @@
 (defn handle-command [ch-out req]
   (do
     (parser {:state ch-out} (:command (:params req)))
-    (log/info "Command params " (:command (:params req)))
+    ;(log/info "Command params " (:command (:params req)))
     {:body req})
   ;(str (:remote (:params req)))
   ;(str (prn (t/read (t/reader (:body req) :json))))
