@@ -201,7 +201,7 @@
             (dom/p #js {:className "control-label"} (str (:participant/number (om/props this)))))
 
           ;; TODO - change on + and - should also send a result
-          (dom/div #js {:className "form-group"}
+          (dom/div #js {:className "form-group "}
             (dom/label nil
               (dom/input #js {:type     "checkbox"
                               :checked  (:result/mark-x (:result (om/props this)))
@@ -240,12 +240,19 @@
                                     :app/results]))]
             (dom/div #js {:className "form-group"}
               (dom/button #js {:type      "button"
-                               :className "btn btn-default"
+                               :className "btn btn-default btn-xlarge"
                                :onClick   #(set-result-fn inc)} "+")
 
               (dom/button #js {:type "button"
-                               :className "btn btn-default"
+                               :className "btn btn-default btn-xlarge"
                                :onClick #(set-result-fn dec)} "-")
+
+              (dom/button #js {:type "button"
+                               :className "btn btn-default btn-xlarge"
+                               :onClick #(set-result-fn dec)} "X")
+              (dom/button #js {:type "button"
+                               :className "btn btn-default btn-xlarge"
+                               :onClick #(set-result-fn dec)} "_")
 
               (when (not= 0 point)
                 (dom/label #js {:className "control-label"} (str point))))))))))
@@ -267,7 +274,7 @@
                                                     (:participant/id (:result/participant res))))
                                        results)))]
       (log-trace "Render HeatComponent")
-      (dom/div #js {:className "col-sm-6"}
+      (dom/div #js {:className "col-xs-6"}
         (dom/h3 nil "Heat : " (str (+ 1 heat)))
         (map #((om/factory HeatRowComponent)
                (merge % {:adjudicator/id adjudicator-id
@@ -292,7 +299,7 @@
           page-end (+ page-start page-size)]
       (log-trace "Render HeatsComponent")
       (dom/div nil
-        (dom/div #js {:className "col-sm-12"}
+        (dom/div #js {:className "col-xs-12"}
           (dom/h3 nil (str "Heats : " heats))
           (subvec
             (vec (map-indexed (fn [idx parts] ((om/factory HeatComponent)
@@ -425,7 +432,7 @@
 (log-trace "Begin Remote Posts")
 
 ;http://jeremyraines.com/2015/11/16/getting-started-with-clojure-web-development.html
-
+;http://code.tutsplus.com/tutorials/mobile-first-with-bootstrap-3--net-34808
 (defn transit-post [url]
   (fn [edn cb]
     (log-trace "Transit Post")
