@@ -29,3 +29,20 @@
        -moz-border-radius: 8px;
             border-radius: 8px;
     }
+
+/* Test */
+.mark {
+  background: #ffffa0;
+  border-radius: 15px;
+  padding: 2px;
+  width: 90px;
+  height: 80px;
+}
+
+.mark-text {
+  font-size: 78px;
+  margin: 0px 10px 6px 18px;
+  padding: 0px;
+  padding-top: 0px;
+  color: #000000;
+}

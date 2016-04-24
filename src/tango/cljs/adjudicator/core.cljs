@@ -203,6 +203,29 @@
           ;; TODO - change on + and - should also send a result
           (dom/div #js {:className "form-group "}
             (dom/label nil
+              (dom/div nil
+                (dom/div #js {:className "mark"
+                              :onClick #(let [mark-value (if (or (:allow-marks? (om/props this))
+                                                                  (and (not (:allow-marks? (om/props this)))
+                                                                       mark-x))
+                                                            (.. % -target -checked)
+                                                            mark-x)]
+                                          (om/transact!
+                                            reconciler
+                                            `[(participant/set-result
+                                                {:result/id          ~(if (:result/id (:result (om/props this)))
+                                                                        (:result/id (:result (om/props this)))
+                                                                        (random-uuid))
+                                                 :result/mark-x      ~mark-value
+                                                 :result/point       ~point
+                                                 :result/participant ~(:participant/id (om/props this))
+                                                 :result/activity    ~(:activity/id (om/props this))
+                                                 :result/adjudicator ~(:adjudicator/id (om/props this))})
+                                              :app/results]))}
+                  (dom/h1 #js {:className "mark-text"} (if (:result/mark-x (:result (om/props this)))
+                                                         "X"
+                                                         ""))))
+
               (dom/input #js {:type     "checkbox"
                               :checked  (:result/mark-x (:result (om/props this)))
                               :disabled (and (not (:allow-marks? (om/props this)))
@@ -223,7 +246,8 @@
                                                  :result/participant ~(:participant/id (om/props this))
                                                  :result/activity    ~(:activity/id (om/props this))
                                                  :result/adjudicator ~(:adjudicator/id (om/props this))})
-                                              :app/results]))})))
+                                              :app/results]))})
+              ))
 
           (let [set-result-fn (fn [transform-fn]
                                 (om/transact!
@@ -245,14 +269,15 @@
 
               (dom/button #js {:type "button"
                                :className "btn btn-default btn-xlarge"
-                               :onClick #(set-result-fn dec)} "-")
+                               :onClick #(set-result-fn dec)} "-" )
 
-              (dom/button #js {:type "button"
-                               :className "btn btn-default btn-xlarge"
-                               :onClick #(set-result-fn dec)} "X")
-              (dom/button #js {:type "button"
-                               :className "btn btn-default btn-xlarge"
-                               :onClick #(set-result-fn dec)} "_")
+              ;(dom/button #js {:type "button"
+              ;                 :className "btn btn-default btn-xlarge"
+              ;                 :onClick #(set-result-fn dec)} "X")
+              ;(dom/button #js {:type "button"
+              ;                 :className "btn btn-default btn-xlarge"
+              ;                 :onClick #(set-result-fn dec)} "_")
+
 
               (when (not= 0 point)
                 (dom/label #js {:className "control-label"} (str point))))))))))
