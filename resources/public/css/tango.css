@@ -22,8 +22,9 @@
  * Extra large button extensions. Extends `.btn`.
  */
 .btn-xlarge {
+    border-radius: 13px;
     padding: 18px 28px;
-    font-size: 22px;
+    font-size: 26px;
     line-height: normal;
     -webkit-border-radius: 8px;
        -moz-border-radius: 8px;
@@ -32,17 +33,34 @@
 
 /* Test */
 .mark {
-  background: #ffffa0;
-  border-radius: 15px;
+  background: #ffffff;
+  border-radius: 13px;
   padding: 2px;
-  width: 90px;
-  height: 80px;
+  width: 60px;
+  height: 60px;
+  border: 1px solid #000000
+
+
 }
 
 .mark-text {
-  font-size: 78px;
-  margin: 0px 10px 6px 18px;
+  font-size: 75px;
+  margin: -20px 0px 0px 6px;
   padding: 0px;
   padding-top: 0px;
   color: #000000;
+}
+
+.mark-disabled {
+   background: #d5d5e2;
+    border-radius: 13px;
+    padding: 2px;
+    width: 60px;
+    height: 60px;
+    border: 1px solid #000000
+}
+
+input[type='checkbox']
+{
+  visibility: hidden;
 }

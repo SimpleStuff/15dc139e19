@@ -198,36 +198,46 @@
       (dom/div nil
         (dom/form #js {:className "form-inline"}
           (dom/div #js {:className "form-group"}
-            (dom/p #js {:className "control-label"} (str (:participant/number (om/props this)))))
+            (dom/h3 #js {:className "control-label"} (str (:participant/number (om/props this)))))
 
           ;; TODO - change on + and - should also send a result
           (dom/div #js {:className "form-group "}
             (dom/label nil
               (dom/div nil
-                (dom/div #js {:className "mark"
-                              :onClick #(let [mark-value (if (or (:allow-marks? (om/props this))
-                                                                  (and (not (:allow-marks? (om/props this)))
-                                                                       mark-x))
-                                                            (.. % -target -checked)
-                                                            mark-x)]
-                                          (om/transact!
-                                            reconciler
-                                            `[(participant/set-result
-                                                {:result/id          ~(if (:result/id (:result (om/props this)))
-                                                                        (:result/id (:result (om/props this)))
-                                                                        (random-uuid))
-                                                 :result/mark-x      ~mark-value
-                                                 :result/point       ~point
-                                                 :result/participant ~(:participant/id (om/props this))
-                                                 :result/activity    ~(:activity/id (om/props this))
-                                                 :result/adjudicator ~(:adjudicator/id (om/props this))})
-                                              :app/results]))}
-                  (dom/h1 #js {:className "mark-text"} (if (:result/mark-x (:result (om/props this)))
+                (dom/div
+                  #js {:className (if (and (not (:allow-marks? (om/props this)))
+                                                (not mark-x))
+                                    "mark-disabled"
+                                    "mark")
+                       :disabled  true
+                       :onClick
+                                  #(if-not (and (not (:allow-marks? (om/props this)))
+                                            (not mark-x))
+                                    (let [mark-value (if (or (:allow-marks? (om/props this))
+                                                             (and (not (:allow-marks? (om/props this)))
+                                                                  mark-x))
+                                                       (.. % -target -checked)
+                                                       mark-x)]
+                                      (om/transact!
+                                        reconciler
+                                        `[(participant/set-result
+                                            {:result/id          ~(if (:result/id (:result (om/props this)))
+                                                                    (:result/id (:result (om/props this)))
+                                                                    (random-uuid))
+                                             :result/mark-x      ~mark-value
+                                             :result/point       ~point
+                                             :result/participant ~(:participant/id (om/props this))
+                                             :result/activity    ~(:activity/id (om/props this))
+                                             :result/adjudicator ~(:adjudicator/id (om/props this))})
+                                          :app/results])))}
+                  (dom/h1 #js {:className "mark-text"
+                               } (if (:result/mark-x (:result (om/props this)))
                                                          "X"
                                                          ""))))
 
               (dom/input #js {:type     "checkbox"
                               :checked  (:result/mark-x (:result (om/props this)))
+
                               :disabled (and (not (:allow-marks? (om/props this)))
                                              (not mark-x))
                               :onChange #(let [mark-value (if (or (:allow-marks? (om/props this))
@@ -264,11 +274,11 @@
                                     :app/results]))]
             (dom/div #js {:className "form-group"}
               (dom/button #js {:type      "button"
-                               :className "btn btn-default btn-xlarge"
+                               :className "btn btn-default btn-lg"
                                :onClick   #(set-result-fn inc)} "+")
 
               (dom/button #js {:type "button"
-                               :className "btn btn-default btn-xlarge"
+                               :className "btn btn-default btn-lg"
                                :onClick #(set-result-fn dec)} "-" )
 
               ;(dom/button #js {:type "button"
@@ -447,7 +457,54 @@
                                               (/ (int (:round/heats selected-activity))
                                                  (:app/heat-page-size (om/props this)))))}))
                   (dom/div nil
-                    (dom/h3 nil (str "Marks " mark-count "/" (:round/recall selected-activity)))))
+                    (dom/h3 nil (str "Marks " mark-count "/" (:round/recall selected-activity))))
+
+                  (dom/div #js {:className "container"}
+                    (dom/div #js {:className "row col-xs-6"}
+                      (dom/h1 #js {:className "col-xs-3"} "23")
+                      (dom/div #js {:className "mark col-xs-3"}
+                        (dom/h1 #js {:className "mark-text"} "X"))
+                      (dom/div #js {:className "mark col-xs-3"}
+                        (dom/h1 #js {:className "mark-text"} "+"))
+                      (dom/div #js {:className "mark col-xs-3"}
+                        (dom/h1 #js {:className "mark-text"} "-"))
+                      ))
+
+                  (dom/div #js {:className "container col-xs-6"}
+                    (dom/div #js {:className "row "}
+                      (dom/h1 #js {:className "col-xs-2"} "23")
+                      (dom/div #js {:className "col-xs-2"}
+                        (dom/button #js {:type      "button"
+                                         :className "btn btn-default btn-block btn-lg"} (dom/h1 nil "X"))
+                        )
+                      (dom/div #js {:className "col-xs-2"}
+                        (dom/button #js {:type      "button"
+                                         :className "btn btn-default btn-block btn-lg"} (dom/h1 nil "+"))
+                        )
+                      (dom/div #js {:className "col-xs-2"}
+                        (dom/button #js {:type      "button"
+                                         :className "btn btn-default  btn-lg"} (dom/h1 nil "-"))
+                        )
+                      (dom/h1 #js {:className "col-xs-2"} "2")))
+
+                  (dom/div #js {:className "container col-xs-6"}
+                    (dom/div #js {:className "row "}
+                      (dom/h3 #js {:className "col-xs-1"} "23")
+                      (dom/div #js {:className "col-xs-3"}
+                        (dom/button #js {:type      "button"
+                                         :className "btn btn-default btn-lg btn-block"} "_")
+                        )
+                      (dom/div #js {:className "col-xs-3"}
+                        (dom/button #js {:type      "button"
+                                         :className "btn btn-default btn-lg btn-block"} "+")
+                        )
+                      (dom/div #js {:className "col-xs-3"}
+                        (dom/button #js {:type      "button"
+                                         :className "btn btn-default btn-lg btn-block"} "-")
+                        )
+                      (dom/h3 #js {:className "col-xs-1"} "2")))
+
+                  )
                 (dom/div nil
                   (dom/h3 nil "Waiting for round.."))))))))))
 
