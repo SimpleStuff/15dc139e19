@@ -59,7 +59,8 @@
                      {:db/id -1 :app/new-competition {}
                       ;(domain/make-competition "New" "" "" {} {} {} {} {})
                       }
-                     {:db/id -1 :app/selected-activity {}}]))
+                     ;{:db/id -1 :app/selected-activity {}}
+                     ]))
 
 (defn app-started? [conn]
   (seq (d/q '[:find ?e
@@ -128,6 +129,8 @@
         (handle-query-result (second ?data))))
     (when (= topic :event-manager/transaction-result)
       (chsk-send! [:event-manager/query [[:competition/name :competition/location]]]))
+    (when (= topic :tx/accepted)
+      (log payload))
     ;(log "Exit event-msg-handler")
     ))
 
@@ -392,21 +395,26 @@
     (let [{:keys [time number name starting round heats recall panel type]}
           (presentation/make-time-schedule-activity-presenter
             (om/props this)
-            (first (:class/_rounds (:activity/source (om/props this)))))]
-      (dom/tr #js {:onClick #(om/transact!
-                              this
-                              `[(app/select-activity
-                                  {:activity/id    ~(:activity/id (om/props this))
-                                   :activity/name  ~name
-                                   :round/recall   ~(:round/recall (:activity/source
-                                                                     (om/props this)))
-                                   :round/name     ~round
-                                   :round/heats    ~(:round/heats (:activity/source
-                                                                    (om/props this)))
-                                   :round/starting ~(:round/starting (:activity/source
+            (first (:class/_rounds (:activity/source (om/props this)))))
+          is-selected? (seq (filter #(= (:activity/id (om/props this)) (:activity/id %))
+                                    (:selected-activity (om/props this))))]
+      ;(log (:selected-activity (om/props this)))
+      (dom/tr #js {:className (if is-selected? "info" "")
+                   :onClick   #(om/transact!
+                                this
+                                `[(app/select-activity
+                                    {:activity/id    ~(:activity/id (om/props this))
+                                     :activity/name  ~name
+                                     :round/recall   ~(:round/recall (:activity/source
                                                                        (om/props this)))
-                                   :round/panel    ~(:round/panel (:activity/source
-                                                                    (om/props this)))})])}
+                                     :round/name     ~round
+                                     :round/heats    ~(:round/heats (:activity/source
+                                                                      (om/props this)))
+                                     :round/starting ~(:round/starting (:activity/source
+                                                                         (om/props this)))
+                                     :round/panel    ~(:round/panel (:activity/source
+                                                                      (om/props this)))})
+                                  :app/selected-activity])}
         (dom/td nil time)
         (dom/td nil number)
         (dom/td nil name)
@@ -441,7 +449,9 @@
               (dom/th #js {:width "20"} "Recall")
               (dom/th #js {:width "20"} "Panel")
               (dom/th #js {:width "20"} "Type")))
-          (apply dom/tbody nil (map (om/factory ScheduleRow) activites)))))))
+          (apply dom/tbody nil (map #((om/factory ScheduleRow)
+                                      (merge % {:selected-activity (:selected-activity (om/props this))}))
+                                    activites)))))))
 
 ;;;;;;;;;;;;;;;;;;;;
 ;; Create Competition
@@ -538,6 +548,7 @@
     [:app/selected-page
      :app/import-status
      :app/status
+     :app/selected-activity
      :app/online?
      {:app/competitions (om/get-query Competition)}
      ;{:app/selected-competition (into [] (concat (om/get-query ClassesView)
@@ -601,7 +612,9 @@
                                 {:competitions  competitions
                                  :import-status (:app/import-status (om/props this))
                                  :status        (:app/status (om/props this))})
-                :schedule ((om/factory ScheduleView) selected-competition)
+                :schedule ((om/factory ScheduleView)
+                            (merge selected-competition
+                                   {:selected-activity (:app/selected-activity (om/props this))}))
                 :adjudicators ((om/factory AdjudicatorsView) selected-competition)
                 :adjudicator-panels ((om/factory AdjudicatorPanelsView) selected-competition)))))))))
 

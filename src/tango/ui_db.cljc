@@ -65,6 +65,9 @@
 
              :app/new-competition {:db/cardinality :db.cardinality/one
                                    :db/valueType :db.type/ref}
+
+             :app/selected-activites {:db/cardinality :db.cardinality/many
+                                      :db/valueType :db.type/ref}
              ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
              ;; Competition
              :competition/name {:db/unique :db.unique/identity}
