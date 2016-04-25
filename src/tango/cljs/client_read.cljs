@@ -2,6 +2,9 @@
   (:require [om.next :as om]
             [datascript.core :as d]))
 
+(defn log [m]
+  (.log js/console m))
+
 (defmulti read om/dispatch)
 
 (defmethod read :app/competitions
@@ -22,10 +25,14 @@
 
 (defmethod read :app/selected-competition
   [{:keys [state query]} _ _]
-  {:value (d/q '[:find (pull ?comp ?selector) .
-                 :in $ ?selector
-                 :where [[:app/id 1] :app/selected-competition ?comp]]
-               (d/db state) query)})
+  {:value (if query
+            (do
+              (log "Read Selected Comp")
+              (d/q '[:find (pull ?comp ?selector) .
+                     :in $ ?selector
+                     :where [[:app/id 1] :app/selected-competition ?comp]]
+                   (d/db state) query)))
+   :query true})
 
 (defmethod read :app/new-competition
   [{:keys [state query]} _ _]

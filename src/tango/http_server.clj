@@ -94,6 +94,12 @@
               (when selected-act
                 (d/query-results state query (:activity/id selected-act)))))})
 
+(defmethod reader :app/selected-competition
+  [{:keys [state query]} key params]
+  {:value (do
+            (log/info (str "app/selected-competition read"))
+            "Selected comp")})
+
 ;; TODO - hack fix
 (defmethod reader :app/selected-adjudicator
   [{:keys [state query]} key params]

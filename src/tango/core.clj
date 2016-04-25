@@ -75,7 +75,9 @@
 
      ;; Import handling
      :file-handler-channels (import/create-file-handler-channels)
-     :file-handler (component/using (import/create-file-handler id-gen-fn) [:file-handler-channels])
+     :file-handler (component/using (import/create-file-handler id-gen-fn
+                                                                "datomic:free://localhost:4334//competitions")
+                                    [:file-handler-channels])
 
      ;; Client channels
      :channel-connection-channels (channels/create-channel-connection-channels)
@@ -153,6 +155,6 @@
       (println "Port number missing")
       (do
         (component/start
-         (production-system {:port 1337 :log-file "loggs/production.log" :log-level :trace
+         (production-system {:port (Integer/parseInt port) :log-file "loggs/production.log" :log-level :trace
                              :client-connection :ws-connection-channels}))
         (log/report (str "Server started on port " port))))))

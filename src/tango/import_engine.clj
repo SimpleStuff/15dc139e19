@@ -3,10 +3,11 @@
             [com.stuartsierra.component :as component]
             [taoensso.timbre :as log]
             [tango.import :as import]
-            [clojure.core.match :refer [match]]))
+            [clojure.core.match :refer [match]]
+            [tango.datomic-storage :as d]))
 
 ;; TODO - default to #(java.util.UUID/randomUUID)
-(defn- start-message-handler [in-channel out-channel {:keys [id-generator-fn]}]
+(defn- start-message-handler [in-channel out-channel {:keys [id-generator-fn datomic-uri]}]
   {:pre [(some? in-channel)
          (some? out-channel)
          (some? id-generator-fn)]}
@@ -21,11 +22,17 @@
             (log/info (str "Received Topic: [" topic "]"))
             (match [topic payload]
                    [:file/import p]
-                   ;; TODO - verify all indata i.e. p needs a :content here
-                   (async/put! out-channel (merge message {:topic :file/imported
-                                                           :payload (import/import-file-stream
-                                                                     (:content p)
-                                                                     id-generator-fn)}))
+                   (do
+                     ;; TODO - HAXX, fix this for realz
+                     (d/delete-storage datomic-uri)
+                     (d/create-storage datomic-uri (into d/select-activity-schema
+                                                         (into d/application-schema
+                                                               d/result-schema)))
+                     ;; TODO - verify all indata i.e. p needs a :content here
+                     (async/put! out-channel (merge message {:topic   :file/imported
+                                                             :payload (import/import-file-stream
+                                                                        (:content p)
+                                                                        id-generator-fn)})))
                    [:file/ping p]
                    (async/put! out-channel (merge message {:topic :file/pong}))
                    :else (async/>!!
@@ -36,7 +43,7 @@
             (async/>! out-channel (str "Exception message: " (.getMessage e)))))
         (recur)))))
 
-(defrecord FileHandler [file-handler-channels message-handler id-generator-fn]
+(defrecord FileHandler [file-handler-channels message-handler id-generator-fn datomic-uri]
   component/Lifecycle
   (start [component]
     (log/report "Starting FileHandler")
@@ -45,14 +52,16 @@
       (let [message-handler
             (start-message-handler (:in-channel file-handler-channels)
                                    (:out-channel file-handler-channels)
-                                   {:id-generator-fn id-generator-fn})]
+                                   {:id-generator-fn id-generator-fn
+                                    :datomic-uri datomic-uri})]
         (assoc component :message-handler message-handler))))
   (stop [component]
     (log/report "Stopping FileHandler")
     (assoc component :message-handler nil :file-handler-channels nil)))
 
-(defn create-file-handler [id-generator-fn]
-  (map->FileHandler {:id-generator-fn id-generator-fn}))
+(defn create-file-handler [id-generator-fn datomic-uri]
+  (map->FileHandler {:id-generator-fn id-generator-fn
+                     :datomic-uri datomic-uri}))
 
 (defrecord FileHandlerChannels [in-channel out-channel]
   component/Lifecycle
