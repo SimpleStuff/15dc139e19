@@ -153,6 +153,6 @@
       (println "Port number missing")
       (do
         (component/start
-         (production-system {:port 1337 :log-file "loggs/production.log" :log-level :trace
+         (production-system {:port (Integer/parseInt port) :log-file "loggs/production.log" :log-level :trace
                              :client-connection :ws-connection-channels}))
         (log/report (str "Server started on port " port))))))
