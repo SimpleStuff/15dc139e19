@@ -71,42 +71,48 @@
           :ignore-ns #{}}
 
   :cljsbuild {:builds
-              [{:id "dev"
+              [{:id           "dev"
                 :source-paths ["src/tango/cljs" "src"]
 
-                :figwheel {:on-jsload "tango.cljs.client/on-js-reload"}
+                :figwheel     {:on-jsload "tango.cljs.client/on-js-reload"}
 
-                :compiler {:main tango.cljs.client
-                           :asset-path "js/out"
-                           :output-to     "resources/public/js/app.js"
-                           :output-dir    "resources/public/js/out"
-                           ;:source-map    "resources/public/js/out.js.map"
-                           :source-map true
-                           :optimizations :none
-                           :pretty-print  true}}
+                :compiler     {:main          tango.cljs.client
+                               :asset-path    "js/out"
+                               :output-to     "resources/public/js/app.js"
+                               :output-dir    "resources/public/js/out"
+                               ;:source-map    "resources/public/js/out.js.map"
+                               :source-map    true
+                               :optimizations :none
+                               :pretty-print  true}}
 
-               {:id "adj"
+               {:id           "adj"
                 :source-paths ["src/tango/cljs/adjudicator" "src"]
-                :figwheel {:on-jsload "tango.cljs.adjudicator.core/on-js-reload"}
-                :compiler {:main tango.cljs.adjudicator.core
-                           :asset-path "js/out/adj"
-                           :output-to     "resources/public/js/adj.js"
-                           :output-dir    "resources/public/js/out/adj"
-                           ;:source-map    "resources/public/js/out.js.map"
-                           ;:source-map true
-                           :optimizations :advanced
-                           :pretty-print  false}}
+                :figwheel     {:on-jsload "tango.cljs.adjudicator.core/on-js-reload"}
+                :compiler     {:main       tango.cljs.adjudicator.core
+                               :asset-path "js/out/adj"
+                               :output-to  "resources/public/js/adj.js"
+                               :output-dir "resources/public/js/out/adj"
+                               ;:source-map    "resources/public/js/out.js.map"
+                               ;; PROD
+                               :optimizations :advanced
+                               :pretty-print  false
+
+                               ;; DEV
+                               ;:source-map true
+                               ;:pretty-print  true
+                               ;:optimizations :none
+                               }}
 
                ;; This next build is an compressed minified build for
                ;; production. You can build this with:
                ;; lein cljsbuild once min
-               {:id "min"
+               {:id           "min"
                 :source-paths ["src"]
-                :compiler {:main tango.cljs.client
-                           :output-to "resources/public/js/app.js"
-                           :asset-path "js/out"
-                           :optimizations :advanced
-                           :pretty-print false}}]}
+                :compiler     {:main          tango.cljs.client
+                               :output-to     "resources/public/js/app.js"
+                               :asset-path    "js/out"
+                               :optimizations :advanced
+                               :pretty-print  false}}]}
   
   :figwheel {
              :css-dirs ["resources/public/css"]}
