@@ -129,6 +129,8 @@
         (handle-query-result (second ?data))))
     (when (= topic :event-manager/transaction-result)
       (chsk-send! [:event-manager/query [[:competition/name :competition/location]]]))
+    (when (= topic :tx/accepted)
+      (log payload))
     ;(log "Exit event-msg-handler")
     ))
 

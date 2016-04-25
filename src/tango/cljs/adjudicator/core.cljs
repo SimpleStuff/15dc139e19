@@ -515,7 +515,8 @@
                                                {:activity ~(:app/selected-activity edn-result)})
                                              (app/set-results
                                                {:results ~(:app/results edn-result)})
-                                             (app/heat-page ~{:page 0})]))
+                                             (app/heat-page ~{:page 0})
+                                             ]))
 
                            ;; Always set judge to the locally selected
                            (log "Real Adj")
