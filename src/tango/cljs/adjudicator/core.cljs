@@ -195,60 +195,93 @@
           point (if (:result/point result) (:result/point result) 0)
           mark-x (if (:result/mark-x result) (:result/mark-x result) false)]
       (log-trace "Render HeatRowComponent")
-      (dom/div nil
-        (dom/form #js {:className "form-inline"}
-          (dom/div #js {:className "form-group"}
-            (dom/p #js {:className "control-label"} (str (:participant/number (om/props this)))))
+      (dom/div #js {:className "row"}
+        (dom/div #js {:className "col-xs-1"}
+          (dom/h3 #js {:className "control-label"} (str (:participant/number (om/props this)))))
 
-          ;; TODO - change on + and - should also send a result
-          (dom/div #js {:className "form-group"}
-            (dom/label nil
-              (dom/input #js {:type     "checkbox"
-                              :checked  (:result/mark-x (:result (om/props this)))
-                              :disabled (and (not (:allow-marks? (om/props this)))
-                                             (not mark-x))
-                              :onChange #(let [mark-value (if (or (:allow-marks? (om/props this))
-                                                                  (and (not (:allow-marks? (om/props this)))
-                                                                       mark-x))
-                                                            (.. % -target -checked)
-                                                            mark-x)]
-                                          (om/transact!
-                                            reconciler
-                                            `[(participant/set-result
-                                                {:result/id          ~(if (:result/id (:result (om/props this)))
-                                                                        (:result/id (:result (om/props this)))
-                                                                        (random-uuid))
-                                                 :result/mark-x      ~mark-value
-                                                 :result/point       ~point
-                                                 :result/participant ~(:participant/id (om/props this))
-                                                 :result/activity    ~(:activity/id (om/props this))
-                                                 :result/adjudicator ~(:adjudicator/id (om/props this))})
-                                              :app/results]))})))
+        ;; TODO - change on + and - should also send a result
+        ;(dom/div #js {:className "form-group "})
+        (dom/label #js {:className "col-xs-3"}
+          (dom/div #js {:className ""}
+            (dom/div
+              #js {:className (if (and (not (:allow-marks? (om/props this)))
+                                       (not mark-x))
+                                "mark-disabled"
+                                "mark")
+                   :disabled  true
+                   :onClick
+                              #(if-not (and (not (:allow-marks? (om/props this)))
+                                            (not mark-x))
+                                (let [mark-value (if (or (:allow-marks? (om/props this))
+                                                         (and (not (:allow-marks? (om/props this)))
+                                                              mark-x))
+                                                   (.. % -target -checked)
+                                                   mark-x)]
+                                  (om/transact!
+                                    reconciler
+                                    `[(participant/set-result
+                                        {:result/id          ~(if (:result/id (:result (om/props this)))
+                                                                (:result/id (:result (om/props this)))
+                                                                (random-uuid))
+                                         :result/mark-x      ~mark-value
+                                         :result/point       ~point
+                                         :result/participant ~(:participant/id (om/props this))
+                                         :result/activity    ~(:activity/id (om/props this))
+                                         :result/adjudicator ~(:adjudicator/id (om/props this))})
+                                      :app/results])))}
+              (dom/h1 #js {:className "mark-text"
+                           } (if (:result/mark-x (:result (om/props this)))
+                               "X"
+                               ""))))
 
-          (let [set-result-fn (fn [transform-fn]
-                                (om/transact!
-                                  reconciler
-                                  `[(participant/set-result
-                                      {:result/id          ~(if (:result/id (:result (om/props this)))
-                                                              (:result/id (:result (om/props this)))
-                                                              (random-uuid))
-                                       :result/mark-x      ~mark-x
-                                       :result/point       ~(transform-fn point)
-                                       :result/participant ~(:participant/id (om/props this))
-                                       :result/activity    ~(:activity/id (om/props this))
-                                       :result/adjudicator ~(:adjudicator/id (om/props this))})
-                                    :app/results]))]
-            (dom/div #js {:className "form-group"}
-              (dom/button #js {:type      "button"
-                               :className "btn btn-default"
-                               :onClick   #(set-result-fn inc)} "+")
+          (dom/input #js {:type     "checkbox"
+                          :checked  (:result/mark-x (:result (om/props this)))
 
-              (dom/button #js {:type "button"
-                               :className "btn btn-default"
-                               :onClick #(set-result-fn dec)} "-")
+                          :disabled (and (not (:allow-marks? (om/props this)))
+                                         (not mark-x))
+                          :onChange #(let [mark-value (if (or (:allow-marks? (om/props this))
+                                                              (and (not (:allow-marks? (om/props this)))
+                                                                   mark-x))
+                                                        (.. % -target -checked)
+                                                        mark-x)]
+                                      (om/transact!
+                                        reconciler
+                                        `[(participant/set-result
+                                            {:result/id          ~(if (:result/id (:result (om/props this)))
+                                                                    (:result/id (:result (om/props this)))
+                                                                    (random-uuid))
+                                             :result/mark-x      ~mark-value
+                                             :result/point       ~point
+                                             :result/participant ~(:participant/id (om/props this))
+                                             :result/activity    ~(:activity/id (om/props this))
+                                             :result/adjudicator ~(:adjudicator/id (om/props this))})
+                                          :app/results]))})
+          )
 
-              (when (not= 0 point)
-                (dom/label #js {:className "control-label"} (str point))))))))))
+        (let [set-result-fn (fn [transform-fn]
+                              (om/transact!
+                                reconciler
+                                `[(participant/set-result
+                                    {:result/id          ~(if (:result/id (:result (om/props this)))
+                                                            (:result/id (:result (om/props this)))
+                                                            (random-uuid))
+                                     :result/mark-x      ~mark-x
+                                     :result/point       ~(transform-fn point)
+                                     :result/participant ~(:participant/id (om/props this))
+                                     :result/activity    ~(:activity/id (om/props this))
+                                     :result/adjudicator ~(:adjudicator/id (om/props this))})
+                                  :app/results]))]
+          (dom/div #js {:className "col-xs-7"}
+            (dom/button #js {:type      "button"
+                             :className "btn btn-default btn-lg col-xs-4"
+                             :onClick   #(set-result-fn inc)} "+")
+
+            (dom/button #js {:type      "button"
+                             :className "btn btn-default btn-lg col-xs-4"
+                             :onClick   #(set-result-fn dec)} "-")
+
+            (when (not= 0 point)
+              (dom/h3 #js {:className "col-xs-2"} (str point)))))))))
 
 (defui HeatComponent
   static om/IQuery
@@ -267,8 +300,8 @@
                                                     (:participant/id (:result/participant res))))
                                        results)))]
       (log-trace "Render HeatComponent")
-      (dom/div #js {:className "col-sm-6"}
-        (dom/h3 nil "Heat : " (str (+ 1 heat)))
+      (dom/div #js {:className "col-xs-6"}
+        (dom/h2 #js {:className "text-center"} "Heat " (str (+ 1 heat)))
         (map #((om/factory HeatRowComponent)
                (merge % {:adjudicator/id adjudicator-id
                          :activity/id    activity-id
@@ -292,8 +325,8 @@
           page-end (+ page-start page-size)]
       (log-trace "Render HeatsComponent")
       (dom/div nil
-        (dom/div #js {:className "col-sm-12"}
-          (dom/h3 nil (str "Heats : " heats))
+        (dom/div #js {:className ""}
+          ;(dom/h3 nil (str "Heats : " heats))
           (subvec
             (vec (map-indexed (fn [idx parts] ((om/factory HeatComponent)
                                                 {:heat           idx
@@ -313,13 +346,17 @@
     (let [current-page (:heat-page (om/props this))
           last-page (:heat-last-page (om/props this))]
       (log-trace "Render HeatsControll")
-      (dom/div nil
-        (dom/button #js {:disabled (= current-page 0)
-                         :onClick #(om/transact! this `[(app/heat-page {:page ~(dec current-page)})
-                                                        :app/heat-page])} "Previous")
-        (dom/button #js {:disabled (= current-page last-page)
-                         :onClick #(om/transact! this `[(app/heat-page {:page ~(inc current-page)})
-                                                        :app/heat-page])} "Next")))))
+      (dom/div #js {:className "row"}
+        (dom/div #js {:className "col-xs-4"}
+          (dom/button #js {:className "btn btn-primary btn-block btn-lg"
+                           :disabled (= current-page 0)
+                           :onClick  #(om/transact! this `[(app/heat-page {:page ~(dec current-page)})
+                                                           :app/heat-page])} "Previous"))
+        (dom/div #js {:className "col-xs-offset-4 col-xs-4"}
+          (dom/button #js {:className "btn btn-primary btn-block btn-lg"
+                           :disabled (= current-page last-page)
+                           :onClick  #(om/transact! this `[(app/heat-page {:page ~(inc current-page)})
+                                                           :app/heat-page])} "Next"))))))
 
 ;https://medium.com/@kovasb/om-next-the-reconciler-af26f02a6fb4#.kwq2t2jzr
 (defui MainComponent
@@ -366,36 +403,32 @@
         (dom/h3 nil "Adjudicator UI")
         (dom/h3 nil (str "Status : " status)))
 
-      (dom/div nil
+      (dom/div #js {:className "container-fluid"}
         (when-not selected-adjudicator
           ((om/factory AdjudicatorSelection) panel))
 
         (when selected-adjudicator
           (dom/div nil
-            (dom/div nil
-              (dom/button #js {:className "btn btn-default"
-                               :onClick #(om/transact! this `[(app/set-admin-mode
-                                                                {:in-admin ~(not in-admin-mode?)})])}
-                          (dom/span #js {:className "glyphicon glyphicon-cog"})))
             (when in-admin-mode?
               (let [pwd (atom "")]
                 (dom/div nil
                   (dom/h3 nil (str "Local Storage Says : " (:name @local-id)))
-                  (dom/button #js {:onClick #(when (= @pwd "1337")
+                  (dom/button #js {:className "btn btn-default"
+                                   :onClick #(when (= @pwd "1337")
                                               (ls/clear-local-storage!))} "Clear Storage")
                   (dom/input #js {:className "text" :value @pwd :onChange #(reset! pwd (.. % -target -value))})
                   (dom/p nil "Refresh after clearing storage!"))))
-            (dom/div nil
+            (dom/div #js {:className "col-xs-12"}
 
-              (dom/h3 nil (str "Judge : " (if selected-adjudicator
+              (dom/h3 #js {:className "text-center"} (str "Judge : " (if selected-adjudicator
                                             (:adjudicator/name selected-adjudicator)
                                             "None selected")))
 
               (if selected-activity
                 (dom/div nil
-                  (dom/h3 nil (:activity/name selected-activity))
-                  (dom/h3 nil (:round/name selected-activity))
-                  (dom/h3 nil (str "Mark " (:round/recall selected-activity) " of "
+                  (dom/h3 #js {:className "text-center"} (:activity/name selected-activity))
+                  (dom/h3 #js {:className "text-center"} (:round/name selected-activity))
+                  (dom/h3 #js {:className "text-center"} (str "Mark " (:round/recall selected-activity) " of "
                                    (count
                                      (:round/starting selected-activity))
                                    " to next round"))
@@ -414,8 +447,15 @@
                        :heat-last-page (int (Math/floor
                                               (/ (int (:round/heats selected-activity))
                                                  (:app/heat-page-size (om/props this)))))}))
-                  (dom/div nil
-                    (dom/h3 nil (str "Marks " mark-count "/" (:round/recall selected-activity)))))
+                  (dom/div #js {:className "row"}
+                    (dom/h1 #js {:className "col-xs-offset-4 col-xs-4 text-center"}
+                            (str "Marks " mark-count "/" (:round/recall selected-activity))))
+
+                  (dom/div #js {:className "col-xs-1 pull-right"}
+                    (dom/button #js {:className "btn btn-default"
+                                     :onClick   #(om/transact! this `[(app/set-admin-mode
+                                                                        {:in-admin ~(not in-admin-mode?)})])}
+                                (dom/span #js {:className "glyphicon glyphicon-cog"}))))
                 (dom/div nil
                   (dom/h3 nil "Waiting for round.."))))))))))
 
@@ -425,7 +465,7 @@
 (log-trace "Begin Remote Posts")
 
 ;http://jeremyraines.com/2015/11/16/getting-started-with-clojure-web-development.html
-
+;http://code.tutsplus.com/tutorials/mobile-first-with-bootstrap-3--net-34808
 (defn transit-post [url]
   (fn [edn cb]
     (log-trace "Transit Post")

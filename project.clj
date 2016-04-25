@@ -93,9 +93,9 @@
                            :output-to     "resources/public/js/adj.js"
                            :output-dir    "resources/public/js/out/adj"
                            ;:source-map    "resources/public/js/out.js.map"
-                           :source-map true
-                           :optimizations :none
-                           :pretty-print  true}}
+                           ;:source-map true
+                           :optimizations :advanced
+                           :pretty-print  false}}
 
                ;; This next build is an compressed minified build for
                ;; production. You can build this with:
