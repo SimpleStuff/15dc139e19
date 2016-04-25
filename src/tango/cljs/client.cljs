@@ -59,7 +59,8 @@
                      {:db/id -1 :app/new-competition {}
                       ;(domain/make-competition "New" "" "" {} {} {} {} {})
                       }
-                     {:db/id -1 :app/selected-activity {}}]))
+                     ;{:db/id -1 :app/selected-activity {}}
+                     ]))
 
 (defn app-started? [conn]
   (seq (d/q '[:find ?e
@@ -392,21 +393,27 @@
     (let [{:keys [time number name starting round heats recall panel type]}
           (presentation/make-time-schedule-activity-presenter
             (om/props this)
-            (first (:class/_rounds (:activity/source (om/props this)))))]
-      (dom/tr #js {:onClick #(om/transact!
-                              this
-                              `[(app/select-activity
-                                  {:activity/id    ~(:activity/id (om/props this))
-                                   :activity/name  ~name
-                                   :round/recall   ~(:round/recall (:activity/source
-                                                                     (om/props this)))
-                                   :round/name     ~round
-                                   :round/heats    ~(:round/heats (:activity/source
-                                                                    (om/props this)))
-                                   :round/starting ~(:round/starting (:activity/source
+            (first (:class/_rounds (:activity/source (om/props this)))))
+          is-selected? (seq (filter #(= (:activity/id (om/props this)) (:activity/id %))
+                                    (:selected-activity (om/props this))))]
+      (log "333333333333333333")
+      (log (:selected-activity (om/props this)))
+      (dom/tr #js {:className (if is-selected? "info" "")
+                   :onClick   #(om/transact!
+                                this
+                                `[(app/select-activity
+                                    {:activity/id    ~(:activity/id (om/props this))
+                                     :activity/name  ~name
+                                     :round/recall   ~(:round/recall (:activity/source
                                                                        (om/props this)))
-                                   :round/panel    ~(:round/panel (:activity/source
-                                                                    (om/props this)))})])}
+                                     :round/name     ~round
+                                     :round/heats    ~(:round/heats (:activity/source
+                                                                      (om/props this)))
+                                     :round/starting ~(:round/starting (:activity/source
+                                                                         (om/props this)))
+                                     :round/panel    ~(:round/panel (:activity/source
+                                                                      (om/props this)))})
+                                  :app/selected-activity])}
         (dom/td nil time)
         (dom/td nil number)
         (dom/td nil name)
@@ -426,6 +433,8 @@
     [this]
     (let [activites (sort-by :activity/position
                              (:competition/activities (om/props this)))]
+      (log "22222222222222222")
+      (log (:selected-activity (om/props this)))
       (dom/div nil
         (dom/h2 nil "Time Schedule")
         (dom/table
@@ -441,7 +450,9 @@
               (dom/th #js {:width "20"} "Recall")
               (dom/th #js {:width "20"} "Panel")
               (dom/th #js {:width "20"} "Type")))
-          (apply dom/tbody nil (map (om/factory ScheduleRow) activites)))))))
+          (apply dom/tbody nil (map #((om/factory ScheduleRow)
+                                      (merge % {:selected-activity (:selected-activity (om/props this))}))
+                                    activites)))))))
 
 ;;;;;;;;;;;;;;;;;;;;
 ;; Create Competition
@@ -538,6 +549,7 @@
     [:app/selected-page
      :app/import-status
      :app/status
+     :app/selected-activity
      :app/online?
      {:app/competitions (om/get-query Competition)}
      ;{:app/selected-competition (into [] (concat (om/get-query ClassesView)
@@ -557,6 +569,8 @@
           spage (:app/selected-page (om/props this))
           selected-competition (:app/selected-competition (om/props this))
           make-button (partial make-menu-button this spage)]
+      (log "111111111111111111111111")
+      (log (:app/selected-activity (om/props this)))
       (dom/div #js {:className "navbar-wrapper"}
         (dom/div #js {:className "container"}
 
@@ -590,6 +604,8 @@
                                     ["Adjudicators" :adjudicators]
                                     ["Adjudicator Panels" :adjudicator-panels]]))))))
 
+        ;
+        ;
         (dom/div #js {:className "container"}
           (dom/div #js {:className "row"}
             (dom/div #js {:className "col-lg-4"}
@@ -601,7 +617,9 @@
                                 {:competitions  competitions
                                  :import-status (:app/import-status (om/props this))
                                  :status        (:app/status (om/props this))})
-                :schedule ((om/factory ScheduleView) selected-competition)
+                :schedule ((om/factory ScheduleView)
+                            (merge selected-competition
+                                   {:selected-activity (:app/selected-activity (om/props this))}))
                 :adjudicators ((om/factory AdjudicatorsView) selected-competition)
                 :adjudicator-panels ((om/factory AdjudicatorPanelsView) selected-competition)))))))))
 

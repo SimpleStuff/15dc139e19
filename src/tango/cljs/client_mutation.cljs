@@ -57,11 +57,14 @@
                q))})
 
 (defmethod mutate 'app/select-activity
-  [{:keys [state]} _ {:keys [name]}]
-  {:value  {:keys [:app/selected-activity]}
+  [{:keys [state]} _ activity]
+  {:value   {:keys [:app/selected-activity]}
    :command true
-   :action (fn []
-             (d/transact! state [{:app/id 1 :app/selected-activity {:activity/name name}}]))})
+   :action  (fn []
+              (let [tx
+                    (d/transact! state [{:app/id 1 :app/selected-activity {:activity/id (:activity/id activity)}}])]
+                ;(log tx)
+                tx))})
 
 ;(d/transact! state [[:db/add 3 :competition/name "test 2"]])
 
