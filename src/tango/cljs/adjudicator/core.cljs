@@ -179,7 +179,7 @@
                                (do
                                  ;; Persist this adjudicator to storage
                                  (swap! local-id assoc :name (:adjudicator/name %))
-                                 (swap! local-id assoc :adjudicator %)
+                                 ;(swap! local-id assoc :adjudicator %)
                                  (om/transact! this `[(app/select-adjudicator ~%)
                                                       :app/selected-adjudicator])))}
                  (:adjudicator/name %)) (:adjudicator-panel/adjudicators panel)))))))
@@ -196,7 +196,7 @@
           mark-x (if (:result/mark-x result) (:result/mark-x result) false)]
       (log-trace "Render HeatRowComponent")
       (dom/div #js {:className "row"}
-        (dom/div #js {:className "col-xs-1"}
+        (dom/div #js {:className "col-xs-2"}
           (dom/h3 #js {:className "control-label"} (str (:participant/number (om/props this)))))
 
         ;; TODO - change on + and - should also send a result
@@ -325,7 +325,7 @@
           page-end (+ page-start page-size)]
       (log-trace "Render HeatsComponent")
       (dom/div nil
-        (dom/div #js {:className ""}
+        (dom/div #js {:className "col-xs-12"}
           ;(dom/h3 nil (str "Heats : " heats))
           (subvec
             (vec (map-indexed (fn [idx parts] ((om/factory HeatComponent)
@@ -499,17 +499,17 @@
                          (let [act (:app/selected-activity edn-result)
                                adjs (:adjudicator-panel/adjudicators (:round/panel act))
                                current-adj-name (:name @local-id)
-                               current-adj (:adjudicator @local-id)
+                               ;current-adj (:adjudicator @local-id)
                                should-judge? (seq (filter #(= current-adj-name (:adjudicator/name %))
                                                           adjs))
                                real-adj (first (filter #(= current-adj-name (:adjudicator/name %))
                                                        adjs))]
 
-                           (log current-adj)
+                           ;(log current-adj)
                            ;(log act)
                            ;(log adjs)
                            (log should-judge?)
-                           (when (or should-judge? (= nil current-adj))
+                           (when (or should-judge? (= nil current-adj-name))
                              (om/transact! reconciler
                                            `[(app/select-activity
                                                {:activity ~(:app/selected-activity edn-result)})
@@ -520,8 +520,12 @@
                            ;; Always set judge to the locally selected
                            (log "Real Adj")
                            (log real-adj)
-                           (om/transact! reconciler `[(app/select-adjudicator ~current-adj)
-                                                      :app/selected-adjudicator]))))))))
+                           (if real-adj
+                             (om/transact! reconciler `[(app/select-adjudicator ~real-adj)
+                                                        :app/selected-adjudicator]))
+                           ;(om/transact! reconciler `[(app/select-adjudicator ~current-adj)
+                           ;                           :app/selected-adjudicator])
+                           )))))))
 
 (log-trace "End Remote Posts")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
