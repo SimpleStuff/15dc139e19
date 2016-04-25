@@ -75,7 +75,9 @@
 
      ;; Import handling
      :file-handler-channels (import/create-file-handler-channels)
-     :file-handler (component/using (import/create-file-handler id-gen-fn) [:file-handler-channels])
+     :file-handler (component/using (import/create-file-handler id-gen-fn
+                                                                "datomic:free://localhost:4334//competitions")
+                                    [:file-handler-channels])
 
      ;; Client channels
      :channel-connection-channels (channels/create-channel-connection-channels)
