@@ -62,7 +62,7 @@
    :command true
    :action  (fn []
               (let [tx
-                    (d/transact! state [{:app/id 1 :app/selected-activity {:activity/id (:activity/id activity)}}])]
+                    (d/transact! state [{:app/id 1 :app/selected-activites {:activity/id (:activity/id activity)}}])]
                 ;(log tx)
                 tx))})
 

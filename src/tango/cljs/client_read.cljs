@@ -62,7 +62,7 @@
 (defmethod read :app/selected-activity
   [{:keys [state]} _ _]
   {:value (d/q '[:find [(pull ?a [:activity/id]) ...]
-                 :where [[:app/id 1] :app/selected-activity ?a]]
+                 :where [[:app/id 1] :app/selected-activites ?a]]
                (d/db state))})
 
 

@@ -398,8 +398,7 @@
             (first (:class/_rounds (:activity/source (om/props this)))))
           is-selected? (seq (filter #(= (:activity/id (om/props this)) (:activity/id %))
                                     (:selected-activity (om/props this))))]
-      (log "333333333333333333")
-      (log (:selected-activity (om/props this)))
+      ;(log (:selected-activity (om/props this)))
       (dom/tr #js {:className (if is-selected? "info" "")
                    :onClick   #(om/transact!
                                 this
@@ -435,8 +434,6 @@
     [this]
     (let [activites (sort-by :activity/position
                              (:competition/activities (om/props this)))]
-      (log "22222222222222222")
-      (log (:selected-activity (om/props this)))
       (dom/div nil
         (dom/h2 nil "Time Schedule")
         (dom/table
@@ -571,8 +568,6 @@
           spage (:app/selected-page (om/props this))
           selected-competition (:app/selected-competition (om/props this))
           make-button (partial make-menu-button this spage)]
-      (log "111111111111111111111111")
-      (log (:app/selected-activity (om/props this)))
       (dom/div #js {:className "navbar-wrapper"}
         (dom/div #js {:className "container"}
 
@@ -606,8 +601,6 @@
                                     ["Adjudicators" :adjudicators]
                                     ["Adjudicator Panels" :adjudicator-panels]]))))))
 
-        ;
-        ;
         (dom/div #js {:className "container"}
           (dom/div #js {:className "row"}
             (dom/div #js {:className "col-lg-4"}
