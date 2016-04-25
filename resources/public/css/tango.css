@@ -17,3 +17,50 @@
     cursor: inherit;
     display: block;
 }
+
+/**
+ * Extra large button extensions. Extends `.btn`.
+ */
+.btn-xlarge {
+    border-radius: 13px;
+    padding: 18px 28px;
+    font-size: 26px;
+    line-height: normal;
+    -webkit-border-radius: 8px;
+       -moz-border-radius: 8px;
+            border-radius: 8px;
+    }
+
+/* Test */
+.mark {
+  background: #ffffff;
+  border-radius: 6px;
+  padding: 2px;
+  width: 50px;
+  height: 50px;
+  border: 1px solid #000000
+
+
+}
+
+.mark-text {
+  font-size: 45px;
+  margin: 0px 0px 0px 8px;
+  padding: 0px;
+  padding-top: 0px;
+  color: #000000;
+}
+
+.mark-disabled {
+   background: #d5d5e2;
+    border-radius: 6px;
+    padding: 2px;
+    width: 50px;
+    height: 50px;
+    border: 1px solid #000000
+}
+
+input[type='checkbox']
+{
+  visibility: hidden;
+}
