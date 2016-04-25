@@ -487,9 +487,17 @@
                                                           {:query-params
                                                            {:query edn-query-str}}))
                              body (:body response)
-                             edn-result (second (cljs.reader/read-string body))]
-                         ;(log "Response")
-                         ;(log edn-result)
+                             edn-result (second (cljs.reader/read-string body))
+                             all-act (:app/selected-activity edn-result)
+                             awsome-act (first (filter (fn [act]
+                                                         (filter #(= (:name @local-id) (:adjudicator/name %))
+                                                                 (:adjudicator-panel/adjudicators (:round/panel act))))
+                                                       all-act))]
+                         (log "Response")
+                         (log awsome-act)
+                         ;; TODO - ska det vara en lista med ett element kanske?
+
+
                          ;; TODO - check if cb can be used with the transaction keys and after
                          ;; doing an explicit datalog transaction
                          ;(log "App RESULT")
@@ -497,7 +505,7 @@
 
                          ;; Only change round if this judge are in it
                          (let [act (:app/selected-activity edn-result)
-                               adjs (:adjudicator-panel/adjudicators (:round/panel act))
+                               adjs (:adjudicator-panel/adjudicators (:round/panel awsome-act))
                                current-adj-name (:name @local-id)
                                ;current-adj (:adjudicator @local-id)
                                should-judge? (seq (filter #(= current-adj-name (:adjudicator/name %))
@@ -509,10 +517,10 @@
                            ;(log act)
                            ;(log adjs)
                            (log should-judge?)
-                           (when (or should-judge? (= nil current-adj-name))
+                           (when (or should-judge? (= nil current-adj-name) awsome-act)
                              (om/transact! reconciler
                                            `[(app/select-activity
-                                               {:activity ~(:app/selected-activity edn-result)})
+                                               {:activity ~(:app/selected-activity awsome-act)})
                                              (app/set-results
                                                {:results ~(:app/results edn-result)})
                                              (app/heat-page ~{:page 0})

@@ -77,11 +77,14 @@
 ;; Read
 (defmulti reader (fn [env key params] key))
 
+;; TODO - clients should send query params instead of filtering on the client
 (defmethod reader :app/selected-activity
   [{:keys [state query]} key params]
   {:value (do
             (log/info (str "Selector in selected activity" query))
-            (d/get-selected-activity state query))
+            ;(d/get-selected-activity state query)
+            (d/get-selected-activites state query)
+            )
    ;(do (log/info (str "Reader Query Key Params " query key params)))
    })
 

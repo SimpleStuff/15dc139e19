@@ -41,25 +41,35 @@
       (is (= [:db-before :db-after :tx-data :tempids]
              (keys (ds/select-round conn select-round-data)))))))
 
-(deftest application-should-only-have-one-selected-round
-  (testing "The application should only be able to have one selected round at a time"
+;(deftest application-should-only-have-one-selected-round
+;  (testing "The application should only be able to have one selected round at a time"
+;    (let [deleted? (ds/delete-storage mem-uri)
+;          created? (ds/create-storage mem-uri (into ds/select-activity-schema ds/application-schema))
+;          conn (ds/create-connection mem-uri)]
+;      (ds/select-round conn (create-selected-round "One"))
+;      (ds/select-round conn (create-selected-round "Two"))
+;      (is (= (:activity/name (ds/get-selected-activity conn [:activity/name]))
+;             "Two")))))
+
+(deftest application-should-be-able-to-run-multiple-rounds
+  (testing "The application should be able to run multiple rounds at once"
     (let [deleted? (ds/delete-storage mem-uri)
           created? (ds/create-storage mem-uri (into ds/select-activity-schema ds/application-schema))
-          conn (ds/create-connection mem-uri)]
-      (ds/select-round conn (create-selected-round "One"))
-      (ds/select-round conn (create-selected-round "Two"))
-      (is (= (:activity/name (ds/get-selected-activity conn [:activity/name]))
-             "Two")))))
-
-(deftest selecting-the-same-activity-should-not-add-data
-  (testing "Selecting the same activity multiple times should add data"
-    (let [_ (ds/delete-storage mem-uri)
-          _ (ds/create-storage mem-uri (into ds/select-activity-schema ds/application-schema))
           conn (ds/create-connection mem-uri)
-          round (create-selected-round "One")]
-      (ds/select-round conn round)
-      (ds/select-round conn round)
-      (is (= 2 (count (:round/starting (ds/get-selected-activity conn ['*]))))))))
+          tx (ds/select-round conn (create-selected-round "One"))]
+      (ds/select-round conn (create-selected-round "Two"))
+      (is (= (mapv :activity/name (ds/get-selected-activites conn [:activity/name]))
+             ["One" "Two"])))))
+
+;(deftest selecting-the-same-activity-should-not-add-data
+;  (testing "Selecting the same activity multiple times should add data"
+;    (let [_ (ds/delete-storage mem-uri)
+;          _ (ds/create-storage mem-uri (into ds/select-activity-schema ds/application-schema))
+;          conn (ds/create-connection mem-uri)
+;          round (create-selected-round "One")]
+;      (ds/select-round conn round)
+;      (ds/select-round conn round)
+;      (is (= 2 (count (:round/starting (ds/get-selected-activity conn ['*]))))))))
 
 (deftest adjudicator-results-can-be-transacted
   (testing "Adjudicator result can be transacted to db"
