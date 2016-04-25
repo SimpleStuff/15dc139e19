@@ -209,26 +209,26 @@
                                 "mark-disabled"
                                 "mark")
                    :disabled  true
-                   :onClick
-                              #(if-not (and (not (:allow-marks? (om/props this)))
-                                            (not mark-x))
-                                (let [mark-value (if (or (:allow-marks? (om/props this))
-                                                         (and (not (:allow-marks? (om/props this)))
-                                                              mark-x))
-                                                   (.. % -target -checked)
-                                                   mark-x)]
-                                  (om/transact!
-                                    reconciler
-                                    `[(participant/set-result
-                                        {:result/id          ~(if (:result/id (:result (om/props this)))
-                                                                (:result/id (:result (om/props this)))
-                                                                (random-uuid))
-                                         :result/mark-x      ~mark-value
-                                         :result/point       ~point
-                                         :result/participant ~(:participant/id (om/props this))
-                                         :result/activity    ~(:activity/id (om/props this))
-                                         :result/adjudicator ~(:adjudicator/id (om/props this))})
-                                      :app/results])))}
+                   ;:onClick #(if-not (and (not (:allow-marks? (om/props this)))
+                   ;                         (not mark-x))
+                   ;             (let [mark-value (if (or (:allow-marks? (om/props this))
+                   ;                                      (and (not (:allow-marks? (om/props this)))
+                   ;                                           mark-x))
+                   ;                                (.. % -target -checked)
+                   ;                                mark-x)]
+                   ;               (om/transact!
+                   ;                 reconciler
+                   ;                 `[(participant/set-result
+                   ;                     {:result/id          ~(if (:result/id (:result (om/props this)))
+                   ;                                             (:result/id (:result (om/props this)))
+                   ;                                             (random-uuid))
+                   ;                      :result/mark-x      ~mark-value
+                   ;                      :result/point       ~point
+                   ;                      :result/participant ~(:participant/id (om/props this))
+                   ;                      :result/activity    ~(:activity/id (om/props this))
+                   ;                      :result/adjudicator ~(:adjudicator/id (om/props this))})
+                   ;                   :app/results])))
+                   }
               (dom/h1 #js {:className "mark-text"
                            } (if (:result/mark-x (:result (om/props this)))
                                "X"
