@@ -108,20 +108,34 @@
 
 
 (def raw-xml-2
-  (xml/parse (java.io.FileInputStream. "test/tango/examples/real-example-kungsor.xml")))
+  (xml/parse (java.io.FileInputStream. "test/tango/examples/real-example.xml")))
 
-(def new-stuff-2
+(defn fix-class [class]
+  (clojure.walk/postwalk
+    (fn [form]
+      (cond
+        (= (:tag form) :Results) (merge form {:attrs   {:Qty 997}
+                                              :content (conj (vec (:content form))
+                                                             (xml/element :Result {:Round "Awsome"}))
+                                              })
+        :else form))
+    class))
+
+(defn new-stuff-2 []
   (clojure.walk/postwalk
     (fn [form]
       (cond
         (= (:tag form) :Class) (if (= (:Name (:attrs form))
-                                      "Hiphop Singel Brons B1")
-                                 (xml/element :Class {:Name "Changed Class"})
+                                      "Disco Freestyle A-klass J Fl")
+                                 (fix-class form)
+                                 ;(xml/element :Class {:Name "Changed Class"})
                                  form)
         :else form))
     raw-xml-2))
 
-(spit "export4.xml" (xml/emit-str new-stuff-2))
+(xml/parse (java.io.FileInputStream. "test/tango/examples/real-example-kungsor.xml"))
+
+(spit "export4.xml" (xml/emit-str (new-stuff-2)))
 
 
 ;(defn sanitize [cmp]
