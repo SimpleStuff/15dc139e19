@@ -110,11 +110,13 @@
 (def raw-xml-2
   (xml/parse (java.io.FileInputStream. "test/tango/examples/real-example.xml")))
 
+
 (defn fix-class [class]
   (clojure.walk/postwalk
     (fn [form]
       (cond
         (= (:tag form) :Results) (merge form {:attrs   {:Qty 997}
+                                              ;; TODO - ML fixar och noterar saknad data
                                               :content (conj (vec (:content form))
                                                              (xml/element :Result {:Round "Awsome"}))
                                               })
