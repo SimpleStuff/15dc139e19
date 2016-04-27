@@ -69,14 +69,14 @@
              (log/info "Export " params)
              (when (= (:required (:status params)))
                ; (ds/get-selected-activity conn ['*])
-               ;; TODO - adjudicator/number must be added in import
-               ;; TODO - round dances
+               ;; X TODO - adjudicator/number must be added in import
+               ;; X TODO - round dances
                ;; X TODO - participant/number
                (let [conn (d/create-connection "datomic:free://localhost:4334//competitions")
                      selected-activity (d/get-selected-activity conn [:activity/name
                                                                       :activity/id
                                                                       {:round/panel
-                                                                       [{:adjudicator-panel/adjudicators ['*]}]}
+                                                                       [{:adjudicator-panel/adjudicators [:adjudicator/number]}]}
                                                                       {:round/dances [:dance/name]}])
                      result (d/query-results conn [:result/mark-x
                                                    {:result/adjudicator ['*]}

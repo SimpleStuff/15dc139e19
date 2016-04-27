@@ -392,7 +392,8 @@
                       :adjudicator-panel/id
                       {:adjudicator-panel/adjudicators
                        [:adjudicator/name
-                        :adjudicator/id]}]}
+                        :adjudicator/id
+                        :adjudicator/number]}]}
        {:class/_rounds
         [{:class/rounds
           [:round/type :round/index :round/status]}]}]}])

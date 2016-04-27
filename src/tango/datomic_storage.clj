@@ -207,6 +207,13 @@
     :db/cardinality        :db.cardinality/one
     :db/doc                "An adjudicators name"
     :db.install/_attribute :db.part/db}
+
+   {:db/id                 #db/id[:db.part/db]
+    :db/ident              :adjudicator/number
+    :db/valueType          :db.type/long
+    :db/cardinality        :db.cardinality/one
+    :db/doc                "An adjudicators number"
+    :db.install/_attribute :db.part/db}
    ])
 
 
