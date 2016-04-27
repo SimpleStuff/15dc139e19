@@ -110,12 +110,25 @@
 (def raw-xml-2
   (xml/parse (java.io.FileInputStream. "test/tango/examples/real-example.xml")))
 
+(def class-results [{:class-name "Disco Freestyle B-klass J Po"
+                     :result {:ajudicators [{:number 2}
+                                            {:number 4}
+                                            {:number 5}]
+                              :dances [{:name "X-Quick Forward"}
+                                       {:name "Quick"}]
+                              :result-array [{:dancer-number 30
+                                              :marks [true false true]}
+                                             {:dancer-number 31
+                                              :marks [true true true]}
+                                             {:dancer-number 32
+                                              :marks [false false true]}]}
+                       ])
 
 (defn fix-class [class]
   (clojure.walk/postwalk
     (fn [form]
       (cond
-        (= (:tag form) :Results) (merge form {:attrs   {:Qty 997}
+        (= (:tag form) :Results) (merge form {:attrs   {:Qty (inc (count (:content form)))}
                                               ;; TODO - ML fixar och noterar saknad data
                                               :content (conj (vec (:content form))
                                                              (xml/element :Result {:Round "Awsome"}))
@@ -128,7 +141,7 @@
     (fn [form]
       (cond
         (= (:tag form) :Class) (if (= (:Name (:attrs form))
-                                      "Disco Freestyle A-klass J Fl")
+                                      "Disco Freestyle B-klass J Po")
                                  (fix-class form)
                                  ;(xml/element :Class {:Name "Changed Class"})
                                  form)
