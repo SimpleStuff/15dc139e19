@@ -127,9 +127,6 @@
 (def a-result-array (get-in (first class-results) [:result :result-array] ))
 (def a-couple-data (first a-result-array))
 (def a-marks (:marks a-couple-data))
-(make-mark-list-node a-marks)
-(make-couple-node a-couple-data 7 3 6)
-(make-result-node a-result-array 1 3)
 
 (defn make-mark-node [mark seq]
   (xml/element :Mark
@@ -142,7 +139,7 @@
 (defn make-mark-list-node [marks]
   (xml/element :MarkList
                {}
-               :content (reduce #(conj %1 (make-mark-node %2 (count %1))) [] marks)))
+               (reduce #(conj %1 (make-mark-node %2 (count %1))) [] marks)))
 
 (defn make-couple-node [couple-data seq dance-qty adj-qty]
   (xml/element :Couple
@@ -151,14 +148,16 @@
                 :AdjQty adj-qty
                 :Number (:dancer-number couple-data)
                 :Recalled " "}
-               :content (make-mark-list-node (:marks couple-data))
+               (make-mark-list-node (:marks couple-data))
                ))
+
 (defn make-result-node [result-array seq adj-qty]
-  (xml/element :Result {:Seq seq
-                        :Round "Awsome3"
-                        :AdjQty adj-qty
-                        :D3 "0"}
-               :Content (make-couple-node (first result-array) 666 3 3)))
+  (xml/element :Result
+               {:Seq seq
+                :Round "Awsome3"
+                :AdjQty adj-qty
+                :D3 "0"}
+               (make-couple-node (first result-array) 666 3 3)))
 
 (defn fix-class [class class-result]
   (clojure.walk/postwalk
@@ -167,6 +166,7 @@
         (= (:tag form) :Results) (merge form {:attrs   {:Qty (inc (count (:content form)))}
                                               ;; TODO - ML fixar och noterar saknad data
                                               :content (conj (vec (:content form))
+                                                             ;(xml/element :Foo {})
                                                              (make-result-node (get-in class-result [:result :result-array] ) (count (:content form)) 3)
                                                              )
                                               })
@@ -188,8 +188,11 @@
 (xml/parse (java.io.FileInputStream. "test/tango/examples/real-example-kungsor.xml"))
 
 (def foo (xml/emit-str (new-stuff-2 (first class-results))))
-;; (spit "export4.xml" foo )
+(spit "export4.xml" foo )
 
+;(make-mark-list-node a-marks)
+;(make-couple-node a-couple-data 7 3 6)
+;(make-result-node a-result-array 1 3)
 
 ;(defn sanitize [cmp]
 ;  (let [index (participant-index cmp)]
