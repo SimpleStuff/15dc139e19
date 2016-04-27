@@ -309,6 +309,13 @@
                                                                                {:status :importing})])
                                                   (on-click-import-file %))}))
 
+            (dom/button #js {:className "btn btn-default"
+                             :onClick #(om/transact!
+                                        reconciler
+                                        `[(app/set-export-status {:status :requested})
+                                          :app/selected-competition])}
+                        "Exportera")
+
 
             ;(dom/button #js {:className "btn btn-default"
             ;                 :onClick   #(om/transact! reconciler
@@ -413,7 +420,9 @@
                                      :round/starting ~(:round/starting (:activity/source
                                                                          (om/props this)))
                                      :round/panel    ~(:round/panel (:activity/source
-                                                                      (om/props this)))})
+                                                                      (om/props this)))
+                                     :round/dances ~(:round/dances (:activity/source
+                                                                     (om/props this)))})
                                   :app/selected-activity])}
         (dom/td nil time)
         (dom/td nil number)
@@ -642,14 +651,18 @@
         (log env)
         (log (str "Sent to Tango Backend => " remote))
         (chsk-send! [:event-manager/query [[:competition/name :competition/location]]]))
-      (if query
-        (do
-          (log "QQQQQQQQQQQQQQQQQQQQQQQ")
-          (go
-            (let [response (async/<! (http/get "/query"
-                                               {:query-params
-                                                {:query (pr-str (:query env))}}))])))
-        ((transit-post "/commands") env cb)))))
+      (if command
+        ((transit-post "/commands") env cb))
+      ;(if query
+      ;  (do
+      ;    (log env)
+      ;    (log "QQQQQQQQQQQQQQQQQQQQQQQ")
+      ;    (go
+      ;      (let [response (async/<! (http/get "/query"
+      ;                                         {:query-params
+      ;                                          {:query (pr-str (:query env))}}))])))
+      ;  ((transit-post "/commands") env cb))
+      )))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Application

@@ -9,7 +9,8 @@
             [taoensso.timbre :as log]
             [cognitect.transit :as t]
             [om.next.server :as om]
-            [tango.datomic-storage :as d]))
+            [tango.datomic-storage :as d]
+            [tango.export2 :as exp]))
 
 ;; Provides useful Timbre aliases in this ns
 (log/refer-timbre)
@@ -61,6 +62,30 @@
   {:action (fn []
              (async/>!! state {:topic :command :sender :http :payload [key params]})
              (log/info (str "Set result " key " " params)))})
+
+(defmethod mutate 'app/set-export-status
+  [{:keys [state] :as env} key params]
+  {:action (fn []
+             (log/info "Export " params)
+             (when (= (:required (:status params)))
+               ; (ds/get-selected-activity conn ['*])
+               ;; TODO - adjudicator/number must be added in import
+               ;; TODO - round dances
+               ;; X TODO - participant/number
+               (let [conn (d/create-connection "datomic:free://localhost:4334//competitions")
+                     selected-activity (d/get-selected-activity conn [:activity/name
+                                                                      :activity/id
+                                                                      {:round/panel
+                                                                       [{:adjudicator-panel/adjudicators ['*]}]}
+                                                                      {:round/dances [:dance/name]}])
+                     result (d/query-results conn [:result/mark-x
+                                                   {:result/adjudicator ['*]}
+                                                   {:result/participant [:participant/number]}]
+                                             (:activity/id selected-activity))]
+                 (log/info "Export Started")
+                 (log/info "Selected Activity " selected-activity)
+                 (log/info "Results " result)
+                 (exp/export-results selected-activity))))})
 
 (defmethod mutate 'app/log
   [{:keys [state] :as env} key params]
