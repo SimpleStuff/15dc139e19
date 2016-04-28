@@ -70,9 +70,7 @@
     (fn [form]
       (cond
         (= (:tag form) :Results) (merge form {:attrs   {:Qty (inc (count (:content form)))}
-                                              ;; TODO - ML fixar och noterar saknad data
                                               :content (conj (vec (:content form))
-                                                             ;(xml/element :Foo {})
                                                              (make-result-node
                                                               (get-in class-result [:result :result-array] )
                                                               (get-in class-result [:result :round] )
@@ -89,7 +87,7 @@
     (fn [form]
       (cond
         (= (:tag form) :Class) (if (= (:Name (:attrs form))
-                                      "Disco Freestyle B-klass J Po")
+                                      (:class-name class-result))
                                  (fix-class form class-result)
                                  ;(xml/element :Class {:Name "Changed Class"})
                                  form)
