@@ -132,6 +132,10 @@
 (def a-couple-data (first a-result-array))
 (def a-marks (:marks a-couple-data))
 
+(defn get-dance-count-from-class-node [class-node]
+  (let [dance-list-node (first (filter #(= (:tag %) :DanceList) (:content class-node)))]
+    (count (:content dance-list-node))))
+
 (defn make-mark-node [mark seq]
   (xml/element :Mark
                {:Seq seq
@@ -155,13 +159,13 @@
                (make-mark-list-node (:marks couple-data))
                ))
 
-(defn make-result-node [result-array seq adj-qty]
+(defn make-result-node [result-array seq dance-qty adj-qty]
   (xml/element :Result
                {:Seq seq
                 :Round "Awsome3"
                 :AdjQty adj-qty
                 :D3 "0"}
-               (reduce #(conj %1 (make-couple-node %2 (count %1) 666 adj-qty)) [] result-array)))
+               (reduce #(conj %1 (make-couple-node %2 (count %1) dance-qty adj-qty)) [] result-array)))
 
 (defn fix-class [class class-result]
   (clojure.walk/postwalk
@@ -171,7 +175,11 @@
                                               ;; TODO - ML fixar och noterar saknad data
                                               :content (conj (vec (:content form))
                                                              ;(xml/element :Foo {})
-                                                             (make-result-node (get-in class-result [:result :result-array] ) (count (:content form)) 3)
+                                                             (make-result-node
+                                                              (get-in class-result [:result :result-array] )
+                                                              (count (:content form))
+                                                              (get-dance-count-from-class-node class)
+                                                              3)
                                                              )
                                               })
         :else form))
@@ -188,6 +196,19 @@
                                  form)
         :else form))
     raw-xml-2))
+
+(def class-node
+  (xml/element :Class {}
+               (xml/element :Foo {})
+               (xml/element :DanceList {}
+                            (xml/element :Dance {})
+                            (xml/element :Dance {})
+                            (xml/element :Dance {}))
+               (xml/element :Bar {})))
+
+(get-dance-count-from-class-node class-node)
+
+
 
 (xml/parse (java.io.FileInputStream. "test/tango/examples/real-example-kungsor.xml"))
 
