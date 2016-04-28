@@ -489,10 +489,16 @@
                              body (:body response)
                              edn-result (second (cljs.reader/read-string body))
                              all-act (:app/selected-activity edn-result)
-                             awsome-act (first (filter (fn [act]
-                                                         (filter #(= (:name @local-id) (:adjudicator/name %))
-                                                                 (:adjudicator-panel/adjudicators (:round/panel act))))
-                                                       all-act))]
+                             acts-for-this-adj (filter (fn [act]
+                                                         (seq (filter #(= (:name @local-id) (:adjudicator/name %))
+                                                                      (:adjudicator-panel/adjudicators (:round/panel act)))))
+                                                       all-act)
+                             awsome-act (first acts-for-this-adj)]
+
+                         (when (not= (count acts-for-this-adj) 1)
+                           (log "WARNING MULTIPLE RUNNING ACTIVITIES"))
+                         (log "Local Judge")
+                         (log (:name @local-id))
                          (log "Response")
                          (log awsome-act)
                          ;; TODO - ska det vara en lista med ett element kanske?
@@ -504,23 +510,19 @@
                          ;(log (:app/results edn-result))
 
                          ;; Only change round if this judge are in it
-                         (let [act (:app/selected-activity edn-result)
-                               adjs (:adjudicator-panel/adjudicators (:round/panel awsome-act))
+                         (let [adjs (:adjudicator-panel/adjudicators (:round/panel awsome-act))
                                current-adj-name (:name @local-id)
-                               ;current-adj (:adjudicator @local-id)
                                should-judge? (seq (filter #(= current-adj-name (:adjudicator/name %))
                                                           adjs))
                                real-adj (first (filter #(= current-adj-name (:adjudicator/name %))
                                                        adjs))]
 
-                           ;(log current-adj)
-                           ;(log act)
-                           ;(log adjs)
+                           (log "Should judge")
                            (log should-judge?)
-                           (when (or should-judge? (= nil current-adj-name) awsome-act)
+                           (when (or should-judge? (= nil current-adj-name))
                              (om/transact! reconciler
                                            `[(app/select-activity
-                                               {:activity ~(:app/selected-activity awsome-act)})
+                                               {:activity ~awsome-act})
                                              (app/set-results
                                                {:results ~(:app/results edn-result)})
                                              (app/heat-page ~{:page 0})
