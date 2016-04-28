@@ -114,26 +114,76 @@
 (def raw-xml-2
   (xml/parse (java.io.FileInputStream. "test/tango/examples/real-example.xml")))
 
+(def class-results [{:class-name "Disco Freestyle B-klass J Po"
+                     :result {:ajudicators [{:number 2}
+                                            {:number 4}
+                                            {:number 5}]
+                              :dances [{:name "X-Quick Forward"}
+                                       {:name "Quick"}]
+                              :result-array [{:dancer-number 30
+                                              :marks [true false true]}
+                                             {:dancer-number 31
+                                              :marks [true true true]}
+                                             {:dancer-number 32
+                                              :marks [false false true]}]}}
+                    ])
 
-(defn fix-class [class]
+(def a-result-array (get-in (first class-results) [:result :result-array] ))
+(def a-couple-data (first a-result-array))
+(def a-marks (:marks a-couple-data))
+
+(defn make-mark-node [mark seq]
+  (xml/element :Mark
+               {:Seq seq
+                :X (if mark "X" " ")
+                :D3 ""
+                :A ""
+                :B "Awesome4"}))
+
+(defn make-mark-list-node [marks]
+  (xml/element :MarkList
+               {}
+               (reduce #(conj %1 (make-mark-node %2 (count %1))) [] marks)))
+
+(defn make-couple-node [couple-data seq dance-qty adj-qty]
+  (xml/element :Couple
+               {:Seq seq
+                :DanceQty dance-qty
+                :AdjQty adj-qty
+                :Number (:dancer-number couple-data)
+                :Recalled " "}
+               (make-mark-list-node (:marks couple-data))
+               ))
+
+(defn make-result-node [result-array seq adj-qty]
+  (xml/element :Result
+               {:Seq seq
+                :Round "Awsome3"
+                :AdjQty adj-qty
+                :D3 "0"}
+               (make-couple-node (first result-array) 666 3 3)))
+
+(defn fix-class [class class-result]
   (clojure.walk/postwalk
     (fn [form]
       (cond
-        (= (:tag form) :Results) (merge form {:attrs   {:Qty 997}
+        (= (:tag form) :Results) (merge form {:attrs   {:Qty (inc (count (:content form)))}
                                               ;; TODO - ML fixar och noterar saknad data
                                               :content (conj (vec (:content form))
-                                                             (xml/element :Result {:Round "Awsome"}))
+                                                             ;(xml/element :Foo {})
+                                                             (make-result-node (get-in class-result [:result :result-array] ) (count (:content form)) 3)
+                                                             )
                                               })
         :else form))
     class))
 
-(defn new-stuff-2 []
+(defn new-stuff-2 [class-result]
   (clojure.walk/postwalk
     (fn [form]
       (cond
         (= (:tag form) :Class) (if (= (:Name (:attrs form))
-                                      "Disco Freestyle A-klass J Fl")
-                                 (fix-class form)
+                                      "Disco Freestyle B-klass J Po")
+                                 (fix-class form class-result)
                                  ;(xml/element :Class {:Name "Changed Class"})
                                  form)
         :else form))
@@ -141,8 +191,12 @@
 
 (xml/parse (java.io.FileInputStream. "test/tango/examples/real-example-kungsor.xml"))
 
-(spit "export4.xml" (xml/emit-str (new-stuff-2)))
+(def foo (xml/emit-str (new-stuff-2 (first class-results))))
+(spit "export4.xml" foo )
 
+;(make-mark-list-node a-marks)
+;(make-couple-node a-couple-data 7 3 6)
+;(make-result-node a-result-array 1 3)
 
 ;(defn sanitize [cmp]
 ;  (let [index (participant-index cmp)]
@@ -197,3 +251,4 @@
 ;; API
 (defn export-results [stuff]
   (log/info (str "Export Results with " stuff)))
+
