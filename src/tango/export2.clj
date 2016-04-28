@@ -161,7 +161,7 @@
                 :Round "Awsome3"
                 :AdjQty adj-qty
                 :D3 "0"}
-               (make-couple-node (first result-array) 666 3 3)))
+               (reduce #(conj %1 (make-couple-node %2 (count %1) 666 adj-qty)) [] result-array)))
 
 (defn fix-class [class class-result]
   (clojure.walk/postwalk
