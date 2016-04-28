@@ -118,7 +118,7 @@
   "Initializes a Production system with default values."
   []
   (alter-var-root 
-   #'system (constantly (production-system {:port 1337 :log-file "loggs/test.log" :log-level :trace
+   #'system (constantly (production-system {:port 1337 :log-file "loggs/test.log" :log-level :debug
                                             :client-connection :ws-connection-channels}))))
 
 (defn start
