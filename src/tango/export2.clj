@@ -102,6 +102,6 @@
 (smoke-test)
 
 ;; API
-(defn export-results [stuff]
-  (log/info (str "Export Results with " stuff)))
+(defn export-results [acts results]
+  (log/info (str "Export Results with " acts)))
 

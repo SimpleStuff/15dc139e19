@@ -74,19 +74,18 @@
                ;; X TODO - participant/number
                ;; TODO - round motsvarande "S"
                (let [conn (d/create-connection "datomic:free://localhost:4334//competitions")
-                     selected-activity (d/get-selected-activity conn [:activity/name
-                                                                      :activity/id
-                                                                      {:round/panel
-                                                                       [{:adjudicator-panel/adjudicators [:adjudicator/number]}]}
-                                                                      {:round/dances [:dance/name]}])
-                     result (d/query-results conn [:result/mark-x
-                                                   {:result/adjudicator ['*]}
-                                                   {:result/participant [:participant/number]}]
-                                             (:activity/id selected-activity))]
+                     selected-acts (d/get-selected-activites conn [:activity/name
+                                                                   :activity/id
+                                                                   {:round/panel
+                                                                    [{:adjudicator-panel/adjudicators [:adjudicator/number]}]}
+                                                                   {:round/dances [:dance/name]}])
+                     results (d/query-all-results conn [:result/mark-x
+                                                        {:result/adjudicator ['*]}
+                                                        {:result/participant [:participant/number]}])]
                  (log/info "Export Started")
-                 (log/info "Selected Activity " selected-activity)
-                 (log/info "Results " result)
-                 (exp/export-results selected-activity))))})
+                 (log/info "Selected Acts " selected-acts)
+                 (log/info "Results " results)
+                 (exp/export-results selected-acts results))))})
 
 (defmethod mutate 'app/log
   [{:keys [state] :as env} key params]
