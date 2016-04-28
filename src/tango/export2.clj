@@ -115,7 +115,7 @@
   (xml/parse (java.io.FileInputStream. "test/tango/examples/real-example.xml")))
 
 (def class-results [{:class-name "Disco Freestyle B-klass J Po"
-                     :result {:ajudicators [{:number 2}
+                     :result {:adjudicators [{:number 2}
                                             {:number 4}
                                             {:number 5}]
                               :dances [{:name "X-Quick Forward"}
@@ -179,7 +179,7 @@
                                                               (get-in class-result [:result :result-array] )
                                                               (count (:content form))
                                                               (get-dance-count-from-class-node class)
-                                                              3)
+                                                              (count  (get-in class-result [:result :adjudicators] )))
                                                              )
                                               })
         :else form))
