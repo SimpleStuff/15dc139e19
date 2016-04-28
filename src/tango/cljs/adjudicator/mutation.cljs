@@ -70,7 +70,11 @@
              ;(log (str "SET RESULTS "))
              ;(log results)
              ;(log (fix-result results))
-             (d/transact! state [{:app/id 1 :app/results (fix-result results)}]))})
+             (let [q
+                   (d/transact! state [{:app/id 1 :app/results (fix-result results)}])]
+               ;(log "Transaction Complete")
+               ;(log q)
+               q))})
 
 ;{:result/id 1 :result/adjudicator 2 :result/participant 3 :result/mark-x}
 (defmethod mutate 'participant/set-result

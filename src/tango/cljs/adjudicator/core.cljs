@@ -542,17 +542,24 @@
 
                            (log "Should judge")
                            (log should-judge?)
+
+                           (log "Results")
+                           (log (:app/results edn-result))
                            ;; TODO - need to make better handling of client adjudicator
                            ;; configuration
                            (when (or should-judge? (= nil current-adj-name))
                              (let [act-to-change-to (if (= nil current-adj-name)
                                                       (first all-act)
-                                                      awsome-act)]
+                                                      awsome-act)
+                                   results-for-this-adj
+                                   (filter #(= (:adjudicator/id real-adj)
+                                               (:adjudicator/id (:result/adjudicator %)))
+                                           (:app/results edn-result))]
                                (om/transact! reconciler
                                              `[(app/select-activity
                                                  {:activity ~act-to-change-to})
                                                (app/set-results
-                                                 {:results ~(:app/results edn-result)})
+                                                 {:results ~results-for-this-adj})
                                                (app/heat-page ~{:page 0})
                                                ])))
 

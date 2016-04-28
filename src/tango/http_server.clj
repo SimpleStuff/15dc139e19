@@ -72,6 +72,7 @@
                ;; X TODO - adjudicator/number must be added in import
                ;; X TODO - round dances
                ;; X TODO - participant/number
+               ;; TODO - round motsvarande "S"
                (let [conn (d/create-connection "datomic:free://localhost:4334//competitions")
                      selected-activity (d/get-selected-activity conn [:activity/name
                                                                       :activity/id
