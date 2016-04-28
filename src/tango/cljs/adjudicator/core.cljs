@@ -171,18 +171,22 @@
     (log-trace "Render AdjudicatorSelection")
     (let [panel (om/props this)]
       (dom/div nil
-        (dom/h3 nil (str "Panel for this round : " (:adjudicator-panel/name panel)))
-        (dom/h3 nil (str "Select judge for use in this client :"))
-        (dom/ul nil
-          (map #(dom/li #js {:onClick
-                             (fn [e]
-                               (do
-                                 ;; Persist this adjudicator to storage
-                                 (swap! local-id assoc :name (:adjudicator/name %))
-                                 ;(swap! local-id assoc :adjudicator %)
-                                 (om/transact! this `[(app/select-adjudicator ~%)
-                                                      :app/selected-adjudicator])))}
-                 (:adjudicator/name %)) (:adjudicator-panel/adjudicators panel)))))))
+        (if (:adjudicator-panel/name panel)
+          (dom/div nil
+            (dom/h3 nil (str "Panel for this round : " (:adjudicator-panel/name panel)))
+            (dom/h3 nil (str "Select judge for use in this client :"))
+            (dom/ul nil
+              (map #(dom/li #js {:onClick
+                                 (fn [e]
+                                   (do
+                                     ;; Persist this adjudicator to storage
+                                     (swap! local-id assoc :name (:adjudicator/name %))
+                                     ;(swap! local-id assoc :adjudicator %)
+                                     (om/transact! this `[(app/select-adjudicator ~%)
+                                                          :app/selected-adjudicator])))}
+                     (:adjudicator/name %)) (:adjudicator-panel/adjudicators panel))))
+          (dom/div nil
+            (dom/h3 nil "Waiting for Adjudicator Panel to select Adjudicator from..")))))))
 
 (defui HeatRowComponent
   static om/IQuery
@@ -404,7 +408,26 @@
         (dom/h3 nil (str "Status : " status)))
 
       (dom/div #js {:className "container-fluid"}
-        (when-not selected-adjudicator
+        (when (and (not selected-activity) (:name @local-id))
+          (dom/div nil
+            (dom/h3 nil (str "Client locked to " (:name @local-id)))
+            (dom/h3 nil "Waiting for round..")
+            (when in-admin-mode?
+              (let [pwd (atom "")]
+                (dom/div nil
+                  (dom/h3 nil (str "Local Storage Says : " (:name @local-id)))
+                  (dom/button #js {:className "btn btn-default"
+                                   :onClick #(when (= @pwd "1337")
+                                              (ls/clear-local-storage!))} "Clear Storage")
+                  (dom/input #js {:className "text" :value @pwd :onChange #(reset! pwd (.. % -target -value))})
+                  (dom/p nil "Refresh after clearing storage!"))))
+            (dom/div #js {:className "col-xs-1 pull-right"}
+              (dom/button #js {:className "btn btn-default"
+                               :onClick   #(om/transact! this `[(app/set-admin-mode
+                                                                  {:in-admin ~(not in-admin-mode?)})])}
+                          (dom/span #js {:className "glyphicon glyphicon-cog"})))))
+
+        (when (and (not selected-adjudicator) (not (:name @local-id)))
           ((om/factory AdjudicatorSelection) panel))
 
         (when selected-adjudicator
@@ -487,36 +510,58 @@
                                                           {:query-params
                                                            {:query edn-query-str}}))
                              body (:body response)
-                             edn-result (second (cljs.reader/read-string body))]
-                         ;(log "Response")
-                         ;(log edn-result)
+                             edn-result (second (cljs.reader/read-string body))
+                             all-act (:app/selected-activity edn-result)
+                             acts-for-this-adj (filter (fn [act]
+                                                         (seq (filter #(= (:name @local-id) (:adjudicator/name %))
+                                                                      (:adjudicator-panel/adjudicators (:round/panel act)))))
+                                                       all-act)
+                             awsome-act (first acts-for-this-adj)]
+
+                         (when (not= (count acts-for-this-adj) 1)
+                           (log "WARNING MULTIPLE RUNNING ACTIVITIES"))
+                         (log "Local Judge")
+                         (log (:name @local-id))
+                         (log "Response")
+                         (log awsome-act)
+                         ;; TODO - ska det vara en lista med ett element kanske?
+
+
                          ;; TODO - check if cb can be used with the transaction keys and after
                          ;; doing an explicit datalog transaction
                          ;(log "App RESULT")
                          ;(log (:app/results edn-result))
 
                          ;; Only change round if this judge are in it
-                         (let [act (:app/selected-activity edn-result)
-                               adjs (:adjudicator-panel/adjudicators (:round/panel act))
+                         (let [adjs (:adjudicator-panel/adjudicators (:round/panel awsome-act))
                                current-adj-name (:name @local-id)
-                               ;current-adj (:adjudicator @local-id)
                                should-judge? (seq (filter #(= current-adj-name (:adjudicator/name %))
                                                           adjs))
                                real-adj (first (filter #(= current-adj-name (:adjudicator/name %))
                                                        adjs))]
 
-                           ;(log current-adj)
-                           ;(log act)
-                           ;(log adjs)
+                           (log "Should judge")
                            (log should-judge?)
+
+                           (log "Results")
+                           (log (:app/results edn-result))
+                           ;; TODO - need to make better handling of client adjudicator
+                           ;; configuration
                            (when (or should-judge? (= nil current-adj-name))
-                             (om/transact! reconciler
-                                           `[(app/select-activity
-                                               {:activity ~(:app/selected-activity edn-result)})
-                                             (app/set-results
-                                               {:results ~(:app/results edn-result)})
-                                             (app/heat-page ~{:page 0})
-                                             ]))
+                             (let [act-to-change-to (if (= nil current-adj-name)
+                                                      (first all-act)
+                                                      awsome-act)
+                                   results-for-this-adj
+                                   (filter #(= (:adjudicator/id real-adj)
+                                               (:adjudicator/id (:result/adjudicator %)))
+                                           (:app/results edn-result))]
+                               (om/transact! reconciler
+                                             `[(app/select-activity
+                                                 {:activity ~act-to-change-to})
+                                               (app/set-results
+                                                 {:results ~results-for-this-adj})
+                                               (app/heat-page ~{:page 0})
+                                               ])))
 
                            ;; Always set judge to the locally selected
                            (log "Real Adj")

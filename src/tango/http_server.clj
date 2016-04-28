@@ -72,6 +72,7 @@
                ;; X TODO - adjudicator/number must be added in import
                ;; X TODO - round dances
                ;; X TODO - participant/number
+               ;; TODO - round motsvarande "S"
                (let [conn (d/create-connection "datomic:free://localhost:4334//competitions")
                      selected-activity (d/get-selected-activity conn [:activity/name
                                                                       :activity/id
@@ -102,22 +103,27 @@
 ;; Read
 (defmulti reader (fn [env key params] key))
 
+;; TODO - clients should send query params instead of filtering on the client
 (defmethod reader :app/selected-activity
   [{:keys [state query]} key params]
   {:value (do
             (log/info (str "Selector in selected activity" query))
-            (d/get-selected-activity state query))
+            ;(d/get-selected-activity state query)
+            (d/get-selected-activites state query)
+            )
    ;(do (log/info (str "Reader Query Key Params " query key params)))
    })
+
+;(let [selected-act (d/get-selected-activity state '[:activity/id])]
+;  (log/info (str "Selected act " selected-act))
+;  (when selected-act
+;    (d/query-results state query (:activity/id selected-act))))
 
 (defmethod reader :app/results
   [{:keys [state query]} key params]
   {:value (do
             (log/info (str "app/results read"))
-            (let [selected-act (d/get-selected-activity state '[:activity/id])]
-              (log/info (str "Selected act " selected-act))
-              (when selected-act
-                (d/query-results state query (:activity/id selected-act)))))})
+            (d/query-all-results state query))})
 
 (defmethod reader :app/selected-competition
   [{:keys [state query]} key params]

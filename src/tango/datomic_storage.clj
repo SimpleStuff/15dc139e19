@@ -24,6 +24,13 @@
     :db/valueType          :db.type/ref
     :db/cardinality        :db.cardinality/one
     :db/doc                "The applications selected activity"
+    :db.install/_attribute :db.part/db}
+
+   {:db/id                 #db/id[:db.part/db]
+    :db/ident              :app/selected-activites
+    :db/valueType          :db.type/ref
+    :db/cardinality        :db.cardinality/many
+    :db/doc                "The applications selected activites"
     :db.install/_attribute :db.part/db}])
 
 (def result-schema
@@ -243,7 +250,7 @@
   (d/connect uri))
 
 (defn select-round [conn round]
-  @(d/transact conn [(fix-id {:app/selected-activity round
+  @(d/transact conn [(fix-id {:app/selected-activites round
                               :app/id                1})]))
 
 (defn set-results [conn results]
@@ -262,6 +269,16 @@
              [?e :app/selected-activity ?a]]
            (d/db conn) query)))
 
+(defn get-selected-activites [conn query]
+  (do (log/info "Selected Activites " query)
+      (d/q '[:find [(pull ?a selector) ...]
+             ;:find ?a
+             :in $ selector
+             :where
+             [?e :app/id 1]
+             [?e :app/selected-activites ?a]]
+           (d/db conn) query)))
+
 ;; TODO - need to pull only for a specific activity
 ;; understand how to query for guid value
 (defn query-results [conn query activity-id]
@@ -273,6 +290,14 @@
          [?e :result/activity ?a]
          [?a :activity/id ?id]]
        (d/db conn) query activity-id))
+
+(defn query-all-results [conn query]
+  (d/q '[:find [(pull ?e selector) ...]
+         ;:find (pull ?a [*])
+         :in $ selector
+         :where
+         [?e :result/id]]
+       (d/db conn) query))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Examples
 
