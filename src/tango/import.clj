@@ -154,7 +154,8 @@
       (d/make-adjudicator
        (id-generator-fn)
        (get-name-attr adjudicator-loc)
-       (zx/attr adjudicator-loc :Country))
+       (zx/attr adjudicator-loc :Country)
+       (get-seq-attr-as-number adjudicator-loc))
     :dp/temp-id (get-seq-attr-as-number adjudicator-loc)))
 
 (defn- competition-data->map [xml-loc]

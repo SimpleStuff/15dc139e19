@@ -133,6 +133,22 @@
     :db/doc                "The adjudicator panel in a round"
     :db.install/_attribute :db.part/db}
 
+   {:db/id                 #db/id[:db.part/db]
+    :db/ident              :round/dances
+    :db/valueType          :db.type/ref
+    :db/cardinality        :db.cardinality/many
+    :db/doc                "The dances in a round"
+    :db.install/_attribute :db.part/db}
+
+   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+   ;; Dances
+   {:db/id                 #db/id[:db.part/db]
+    :db/ident              :dance/name
+    :db/valueType          :db.type/string
+    :db/cardinality        :db.cardinality/one
+    :db/doc                "A dance name"
+    :db.install/_attribute :db.part/db}
+
    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
    ;; Participant
 
@@ -190,6 +206,13 @@
     :db/valueType          :db.type/string
     :db/cardinality        :db.cardinality/one
     :db/doc                "An adjudicators name"
+    :db.install/_attribute :db.part/db}
+
+   {:db/id                 #db/id[:db.part/db]
+    :db/ident              :adjudicator/number
+    :db/valueType          :db.type/long
+    :db/cardinality        :db.cardinality/one
+    :db/doc                "An adjudicators number"
     :db.install/_attribute :db.part/db}
    ])
 

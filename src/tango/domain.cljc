@@ -22,10 +22,11 @@
    :competition/options options})
 
 (defn make-adjudicator
-  [id name country]
+  [id name country number]
   {:adjudicator/id id
    :adjudicator/name name
-   :adjudicator/country country})
+   :adjudicator/country country
+   :adjudicator/number number})
 
 (defn make-activity [name number comment id position source-id time]
   {:activity/name name

@@ -30,6 +30,15 @@
    :action (fn []
              (d/transact! state [{:app/id 1 :app/import-status status}]))})
 
+(defmethod mutate 'app/set-export-status
+  [{:keys [state]} _ {:keys [status]}]
+  (merge
+    {:value   {:keys [:app/import-status]}
+     :action  (fn []
+                (d/transact! state [{:app/id 1 :app/export-status status}]))
+     ;(when (= status :requested))
+     :command true}))
+
 (defmethod mutate 'app/status
   [{:keys [state]} _ {:keys [status]}]
   {:value  {:keys [:app/status]}

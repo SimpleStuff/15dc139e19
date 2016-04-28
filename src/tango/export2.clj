@@ -6,7 +6,11 @@
             [clojure.xml :as cxml]
             [clojure.zip :as zip]
             [clojure.data.zip.xml :as zx]
+            [taoensso.timbre :as log]
             ))
+
+;; Provides useful Timbre aliases in this ns
+(log/refer-timbre)
 
 (defn get-zip []
   (let [test-file
@@ -218,3 +222,33 @@
 ;
 ;          :else form))
 ;      cmp)))
+
+(def class-results [{:class-name "Disco Freestyle B-klass J Po"
+                     :result {:ajudicators [{:number 2}
+                                            {:number 4}
+                                            {:number 5}]
+                              :dances [{:name "X-Quick Forward"}
+                                       {:name "Quick"}]
+                              :result-array [{:dancer-number 30
+                                              :marks [true false true]}
+                                             {:dancer-number 31
+                                              :marks [true true true]}
+                                             {:dancer-number 32
+                                              :marks [false false true]}]}}
+                    {:class-name "Disco Freestyle B-klass J Fl"
+                     :result {:ajudicators [{:number 1}
+                                            {:number 2}
+                                            {:number 4}]
+                              :dances [{:name "X-Quick"}]
+                              :result-array [{:dancer-number 40
+                                              :marks [true false false]}
+                                             {:dancer-number 41
+                                              :marks [true true true]}
+                                             ]}}
+                    ])
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; API
+(defn export-results [stuff]
+  (log/info (str "Export Results with " stuff)))
+
