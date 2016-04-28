@@ -115,7 +115,8 @@
   (xml/parse (java.io.FileInputStream. "test/tango/examples/real-example.xml")))
 
 (def class-results [{:class-name "Disco Freestyle B-klass J Po"
-                     :result {:adjudicators [{:number 2}
+                     :result {:round "S"
+                              :adjudicators [{:number 2}
                                             {:number 4}
                                             {:number 5}]
                               :dances [{:name "X-Quick Forward"}
@@ -159,10 +160,10 @@
                (make-mark-list-node (:marks couple-data))
                ))
 
-(defn make-result-node [result-array seq dance-qty adj-qty]
+(defn make-result-node [result-array round seq dance-qty adj-qty]
   (xml/element :Result
                {:Seq seq
-                :Round "Awsome3"
+                :Round round
                 :AdjQty adj-qty
                 :D3 "0"}
                (reduce #(conj %1 (make-couple-node %2 (count %1) dance-qty adj-qty)) [] result-array)))
@@ -177,6 +178,7 @@
                                                              ;(xml/element :Foo {})
                                                              (make-result-node
                                                               (get-in class-result [:result :result-array] )
+                                                              (get-in class-result [:result :round] )
                                                               (count (:content form))
                                                               (get-dance-count-from-class-node class)
                                                               (count  (get-in class-result [:result :adjudicators] )))
