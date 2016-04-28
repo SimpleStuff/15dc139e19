@@ -290,6 +290,14 @@
          [?e :result/activity ?a]
          [?a :activity/id ?id]]
        (d/db conn) query activity-id))
+
+(defn query-all-results [conn query]
+  (d/q '[:find [(pull ?e selector) ...]
+         ;:find (pull ?a [*])
+         :in $ selector
+         :where
+         [?e :result/id]]
+       (d/db conn) query))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Examples
 
