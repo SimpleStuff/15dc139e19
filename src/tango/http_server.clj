@@ -68,24 +68,23 @@
   {:action (fn []
              (log/info "Export " params)
              (when (= (:required (:status params)))
-               ; (ds/get-selected-activity conn ['*])
-               ;; X TODO - adjudicator/number must be added in import
-               ;; X TODO - round dances
-               ;; X TODO - participant/number
-               ;; TODO - round motsvarande "S"
+               ;; TODO - this should be in its own service etc
                (let [conn (d/create-connection "datomic:free://localhost:4334//competitions")
-                     selected-acts (d/get-selected-activites conn [:activity/name
-                                                                   :activity/id
-                                                                   {:round/panel
-                                                                    [{:adjudicator-panel/adjudicators [:adjudicator/number]}]}
-                                                                   {:round/dances [:dance/name]}])
-                     results (d/query-all-results conn [:result/mark-x
-                                                        {:result/adjudicator ['*]}
-                                                        {:result/participant [:participant/number]}])]
+                     selected-acts-with-results
+                     (d/get-selected-activites
+                       conn
+                       [:activity/name
+                        :round/name
+                        {:round/panel
+                         [{:adjudicator-panel/adjudicators [:adjudicator/number]}]}
+                        {:round/dances [:dance/name]}
+                        {:result/_activity
+                         [:result/mark-x
+                          {:result/adjudicator [:adjudicator/number]}
+                          {:result/participant [:participant/number]}]}])]
                  (log/info "Export Started")
-                 (log/info "Selected Acts " selected-acts)
-                 (log/info "Results " results)
-                 (exp/export-results selected-acts results))))})
+                 (log/info "Selected Acts " selected-acts-with-results)
+                 (exp/export-results selected-acts-with-results "" ""))))})
 
 (defmethod mutate 'app/log
   [{:keys [state] :as env} key params]
