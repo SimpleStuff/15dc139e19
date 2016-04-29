@@ -4,22 +4,18 @@
             [clj-time.core :as t]
             [clojure.data.xml :as xml]
             [clojure.xml :as cxml]
+            [clojure.pprint :as cpp]
             [clojure.zip :as zip]
             [clojure.data.zip.xml :as zx]
             [taoensso.timbre :as log]
             ))
 
-;; Provides useful Timbre aliases in this ns
-(log/refer-timbre)
-
-(defn get-xml-from-file [xml-file-path]
-  (xml/parse (java.io.FileInputStream. xml-file-path)))
-
+;; Sample data
 (def class-results [{:class-name "Disco Freestyle B-klass J Po"
                      :result {:round "S"
                               :adjudicators [{:number 2}
-                                            {:number 4}
-                                            {:number 5}]
+                                             {:number 4}
+                                             {:number 5}]
                               :dances [{:name "X-Quick Forward"}
                                        {:name "Quick"}]
                               :result-array [{:dancer-number 30
@@ -29,6 +25,121 @@
                                              {:dancer-number 32
                                               :marks [false false true]}]}}
                     ])
+
+(def activities-with-result 
+[{:activity/name "Hiphop Singel Guld J1",
+  :round/name "Semifinal",
+  :round/panel
+  {:adjudicator-panel/adjudicators
+   [{:adjudicator/number 0}
+    {:adjudicator/number 1}
+    {:adjudicator/number 5}]},
+  :round/dances [{:dance/name "Medium"}],
+  :result/_activity
+  [{:result/mark-x true,
+    :result/adjudicator {:adjudicator/number 1},
+    :result/participant {:participant/number 143}}
+   {:result/mark-x true,
+    :result/adjudicator {:adjudicator/number 1},
+    :result/participant {:participant/number 141}}
+   {:result/mark-x true,
+    :result/adjudicator {:adjudicator/number 1},
+    :result/participant {:participant/number 144}}]}
+ {:activity/name "Hiphop Singel Brons J1",
+  :round/name "Direct Final",
+  :round/panel
+  {:adjudicator-panel/adjudicators
+   [{:adjudicator/number 2}
+    {:adjudicator/number 3}
+    {:adjudicator/number 4}]},
+  :round/dances [{:dance/name "Medium"}]}
+ {:activity/name "Hiphop Singel Brons U",
+  :round/name "Direct Final",
+  :round/panel
+  {:adjudicator-panel/adjudicators
+   [{:adjudicator/number 0}
+    {:adjudicator/number 1}
+    {:adjudicator/number 5}]},
+  :round/dances [{:dance/name "Medium"}]}
+ {:activity/name "Hiphop Singel Brons B2",
+  :round/name "Semifinal",
+  :round/panel
+  {:adjudicator-panel/adjudicators
+   [{:adjudicator/number 2}
+    {:adjudicator/number 3}
+    {:adjudicator/number 4}]},
+  :round/dances
+  [{:dance/name "Medium"}
+   {:dance/name "Medium"}
+   {:dance/name "Medium"}]}
+ {:activity/name "Hiphop Singel Silver B2",
+  :round/name "Semifinal",
+  :round/panel
+  {:adjudicator-panel/adjudicators
+   [{:adjudicator/number 0}
+    {:adjudicator/number 1}
+    {:adjudicator/number 5}]},
+  :round/dances
+  [{:dance/name "Medium"}
+   {:dance/name "Medium"}
+   {:dance/name "Medium"}
+   {:dance/name "Medium"}],
+  :result/_activity
+  [{:result/mark-x true,
+    :result/adjudicator {:adjudicator/number 0},
+    :result/participant {:participant/number 83}}
+   {:result/mark-x true,
+    :result/adjudicator {:adjudicator/number 0},
+    :result/participant {:participant/number 84}}
+
+   {:result/mark-x true,
+    :result/adjudicator {:adjudicator/number 0},
+    :result/participant {:participant/number 85}}
+   {:result/mark-x true,
+    :result/adjudicator {:adjudicator/number 0},
+    :result/participant {:participant/number 82}}
+   {:result/mark-x true,
+    :result/adjudicator {:adjudicator/number 0},
+    :result/participant {:participant/number 80}}
+   {:result/mark-x false,
+    :result/adjudicator {:adjudicator/number 0},
+    :result/participant {:participant/number 86}}
+   {:result/mark-x true,
+    :result/adjudicator {:adjudicator/number 0},
+    :result/participant {:participant/number 89}}
+   {:result/mark-x false,
+    :result/adjudicator {:adjudicator/number 1},
+    :result/participant {:participant/number 83}}
+   {:result/mark-x true,
+    :result/adjudicator {:adjudicator/number 1},
+    :result/participant {:participant/number 85}}
+   {:result/mark-x false,
+    :result/adjudicator {:adjudicator/number 1},
+    :result/participant {:participant/number 84}}
+   {:result/mark-x true,
+    :result/adjudicator {:adjudicator/number 1},
+    :result/participant {:participant/number 82}}
+   {:result/mark-x true,
+    :result/adjudicator {:adjudicator/number 1},
+    :result/participant {:participant/number 87}}
+   {:result/mark-x true,
+    :result/adjudicator {:adjudicator/number 1},
+    :result/participant {:participant/number 89}}]}
+ {:activity/name "Hiphop Singel Brons U",
+  :round/name "Presentation",
+  :round/panel
+  {:adjudicator-panel/adjudicators
+   [{:adjudicator/number 0}
+    {:adjudicator/number 1}
+    {:adjudicator/number 5}]},
+  :round/dances [{:dance/name "Medium"} {:dance/name "Medium"}]}]
+
+;; Provides useful Timbre aliases in this ns
+(log/refer-timbre)
+
+(defn get-xml-from-file [xml-file-path]
+  (xml/parse (java.io.FileInputStream. xml-file-path)))
+
 
 (defn get-dance-count-from-class-node [class-node]
   (let [dance-list-node (first (filter #(= (:tag %) :DanceList) (:content class-node)))]
