@@ -212,27 +212,7 @@
                                        (not mark-x))
                                 "mark-disabled"
                                 "mark")
-                   :disabled  true
-                   ;:onClick #(if-not (and (not (:allow-marks? (om/props this)))
-                   ;                         (not mark-x))
-                   ;             (let [mark-value (if (or (:allow-marks? (om/props this))
-                   ;                                      (and (not (:allow-marks? (om/props this)))
-                   ;                                           mark-x))
-                   ;                                (.. % -target -checked)
-                   ;                                mark-x)]
-                   ;               (om/transact!
-                   ;                 reconciler
-                   ;                 `[(participant/set-result
-                   ;                     {:result/id          ~(if (:result/id (:result (om/props this)))
-                   ;                                             (:result/id (:result (om/props this)))
-                   ;                                             (random-uuid))
-                   ;                      :result/mark-x      ~mark-value
-                   ;                      :result/point       ~point
-                   ;                      :result/participant ~(:participant/id (om/props this))
-                   ;                      :result/activity    ~(:activity/id (om/props this))
-                   ;                      :result/adjudicator ~(:adjudicator/id (om/props this))})
-                   ;                   :app/results])))
-                   }
+                   :disabled  true}
               (dom/h1 #js {:className "mark-text"
                            } (if (:result/mark-x (:result (om/props this)))
                                "X"
@@ -388,7 +368,6 @@
   (render
     [this]
     (let [app (om/props this)
-          status (:app/status app)
           selected-activity (:app/selected-activity (om/props this))
           panel (:round/panel selected-activity)
           selected-adjudicator (:app/selected-adjudicator (om/props this))
@@ -401,11 +380,6 @@
           in-admin-mode? (:app/admin-mode (om/props this))
           ]
       (log-trace "Rendering MainComponent")
-
-      (dom/div nil
-        (dom/h3 nil (str "Selected Activity : " (:name (:app/selected-activity (om/props this)))))
-        (dom/h3 nil "Adjudicator UI")
-        (dom/h3 nil (str "Status : " status)))
 
       (dom/div #js {:className "container-fluid"}
         (when (and (not selected-activity) (:name @local-id))
@@ -474,17 +448,14 @@
                     (dom/h1 #js {:className "col-xs-offset-4 col-xs-4 text-center"}
                             (str "Marks " mark-count "/" (:round/recall selected-activity))))
 
-                  ;(dom/div #js {:className "col-xs-offset-4 col-xs-4"}
-                  ;  (dom/button #js {:className "btn btn-primary btn-block btn-lg"
-                  ;                   :disabled (= current-page last-page)
-                  ;                   :onClick  #(om/transact! this `[(app/heat-page {:page ~(inc current-page)})
-                  ;                                                   :app/heat-page])} "Next"))
-
                   (dom/div #js {:className "row"}
                     (dom/div #js {:className "col-xs-offset-4 col-xs-4"}
                       (dom/button #js {:className "btn btn-primary btn-lg btn-block"
                                    :disabled  (not= mark-count (:round/recall selected-activity))
-                                   :onClick   #()}
+                                   :onClick   #(om/transact!
+                                                this
+                                                `[(app/confirm-marks
+                                                    ~{:results results-for-this-adjudicator})])}
                               "Confirm Marks")))
 
                   (dom/div #js {:className "col-xs-1 pull-right"}

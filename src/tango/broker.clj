@@ -19,6 +19,13 @@
 (defn selected-activity [conn]
   (log/info (str "Application selected round : " (d/get-selected-activity conn '[:activity/name]))))
 
+(defn fix-lookup-refs [result]
+  (merge
+    result
+    {:result/participant {:participant/id (:result/participant result)}
+     :result/activity {:activity/id (:result/activity result)}
+     :result/adjudicator {:adjudicator/id (:result/adjudicator result)}}))
+
 (defn set-result [conn result]
   (do
     (log/info (str "Set Result : " ) result)
@@ -28,6 +35,16 @@
                            {:result/participant {:participant/id (:result/participant result)}
                             :result/activity {:activity/id (:result/activity result)}
                             :result/adjudicator {:adjudicator/id (:result/adjudicator result)}})])))
+
+(defn confirm-results [conn results]
+  (do
+    (log/info (str "Confirm Results " results))
+    (log/debug (str "Results Count " (count (d/query-all-results conn ['*]))))
+    (let [tx
+          (d/set-results conn results)]
+      ;(log/info "Transaction " tx)
+      (log/debug (str "Results After Count " (count (d/query-all-results conn ['*])))))
+    ))
 
 (defn start-result-rules-engine [in-ch out-ch client-in-channel datomic-storage-uri]
   (async/go-loop []
@@ -49,6 +66,10 @@
                    (do
                      (log/info (str "Set Result"))
                      (set-result (d/create-connection datomic-storage-uri) payload))
+                   ['app/confirm-marks _]
+                   (do
+                     (log/info (str "Confirm Result"))
+                     (confirm-results (d/create-connection datomic-storage-uri) payload))
                    ;[:app/selected-activity _]
                    ;(do
                    ;  (log/info (str "Selected activity " (:app/selected-activity payload)))

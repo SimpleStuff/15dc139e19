@@ -76,6 +76,15 @@
                ;(log q)
                q))})
 
+(defmethod mutate 'app/confirm-marks
+  [{:keys [state]} _ {:keys [results]}]
+  {:value {:keys []}
+   :action (fn []
+             (d/transact! state [{:app/id 1 :app/status :confirming}]))
+   :command true})
+
+
+
 ;{:result/id 1 :result/adjudicator 2 :result/participant 3 :result/mark-x}
 (defmethod mutate 'participant/set-result
   [{:keys [state]} _ {:keys [result/mark-x participant/x] :as result}]
