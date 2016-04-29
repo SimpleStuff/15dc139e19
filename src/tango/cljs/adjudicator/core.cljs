@@ -474,6 +474,19 @@
                     (dom/h1 #js {:className "col-xs-offset-4 col-xs-4 text-center"}
                             (str "Marks " mark-count "/" (:round/recall selected-activity))))
 
+                  ;(dom/div #js {:className "col-xs-offset-4 col-xs-4"}
+                  ;  (dom/button #js {:className "btn btn-primary btn-block btn-lg"
+                  ;                   :disabled (= current-page last-page)
+                  ;                   :onClick  #(om/transact! this `[(app/heat-page {:page ~(inc current-page)})
+                  ;                                                   :app/heat-page])} "Next"))
+
+                  (dom/div #js {:className "row"}
+                    (dom/div #js {:className "col-xs-offset-4 col-xs-4"}
+                      (dom/button #js {:className "btn btn-primary btn-lg btn-block"
+                                   :disabled  (not= mark-count (:round/recall selected-activity))
+                                   :onClick   #()}
+                              "Confirm Marks")))
+
                   (dom/div #js {:className "col-xs-1 pull-right"}
                     (dom/button #js {:className "btn btn-default"
                                      :onClick   #(om/transact! this `[(app/set-admin-mode
