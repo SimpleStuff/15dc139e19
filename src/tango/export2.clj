@@ -101,7 +101,18 @@
 
 (smoke-test)
 
+;; TODO - should be the callers responsibillity to provide correct format
+(defn- transform-result [activities-with-result]
+  ;; TODO - perform transform and export
+  (if :export-is-awsome
+    true
+    false))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; API
-(defn export-results [acts results]
-  (log/info (str "Export Results with " acts)))
+
+;; TODO - provide paths for the correct files
+(defn export-results [activities-with-result export-path original-path]
+  (log/info (str "Export Results with " activities-with-result))
+  (transform-result activities-with-result))
 
