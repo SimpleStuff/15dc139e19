@@ -405,26 +405,29 @@
             (om/props this)
             (first (:class/_rounds (:activity/source (om/props this)))))
           is-selected? (seq (filter #(= (:activity/id (om/props this)) (:activity/id %))
-                                    (:selected-activity (om/props this))))]
+                                    (:selected-activity (om/props this))))
+
+          completed? (= (:round/status (:activity/source (om/props this))) :completed)]
       ;(log (:selected-activity (om/props this)))
       (dom/tr #js {:className (if is-selected? "info" "")
-                   :onClick   #(om/transact!
-                                this
-                                `[(app/select-activity
-                                    {:activity/id    ~(:activity/id (om/props this))
-                                     :activity/name  ~name
-                                     :round/recall   ~(:round/recall (:activity/source
-                                                                       (om/props this)))
-                                     :round/name     ~round
-                                     :round/heats    ~(:round/heats (:activity/source
-                                                                      (om/props this)))
-                                     :round/starting ~(:round/starting (:activity/source
+                   :onClick   #(when-not completed?
+                                (om/transact!
+                                  this
+                                  `[(app/select-activity
+                                      {:activity/id    ~(:activity/id (om/props this))
+                                       :activity/name  ~name
+                                       :round/recall   ~(:round/recall (:activity/source
                                                                          (om/props this)))
-                                     :round/panel    ~(:round/panel (:activity/source
-                                                                      (om/props this)))
-                                     :round/dances ~(:round/dances (:activity/source
-                                                                     (om/props this)))})
-                                  :app/selected-activity])}
+                                       :round/name     ~round
+                                       :round/heats    ~(:round/heats (:activity/source
+                                                                        (om/props this)))
+                                       :round/starting ~(:round/starting (:activity/source
+                                                                           (om/props this)))
+                                       :round/panel    ~(:round/panel (:activity/source
+                                                                        (om/props this)))
+                                       :round/dances   ~(:round/dances (:activity/source
+                                                                         (om/props this)))})
+                                    :app/selected-activity]))}
         (dom/td nil time)
         (dom/td nil number)
         (dom/td nil name)
