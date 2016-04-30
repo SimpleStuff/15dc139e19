@@ -1,11 +1,14 @@
 (ns tango.cljs.adjudicator.mutation
   (:require
     [om.next :as om]
-    [datascript.core :as d]))
+    [datascript.core :as d]
+    [alandipert.storage-atom :as ls]))
 
 
 (defn log [m]
   (.log js/console m))
+
+(def local-id (ls/local-storage (atom {}) :local-id))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Mutate
@@ -16,8 +19,8 @@
   [{:keys [state]} _ {:keys [status]}]
   {:value  {:keys [:app/status]}
    :action (fn []
-             (d/transact! state [{:app/id 1 :app/status status}]))
-   :remote true})
+             (swap! local-id assoc :app/status status)
+             (d/transact! state [{:app/id 1 :app/status status}]))})
 
 (defmethod mutate 'app/selected-activity-status
   [{:keys [state]} _ {:keys [status]}]

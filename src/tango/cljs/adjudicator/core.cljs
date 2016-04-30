@@ -58,6 +58,17 @@
 (log-trace "End Sente Socket Setup")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Local storage
+(log-trace "Begin Local Storage")
+
+(def local-id (ls/local-storage (atom {}) :local-id))
+
+(log-info (str "Local Adjudicator of Client : " (:name @local-id) " - "
+               (:adjudicator/id (:adjudicator @local-id))))
+
+(log-trace "End Local Storage")
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Init DB
 (log-trace "Begin Init DB")
 
@@ -82,7 +93,9 @@
     (log-trace "Init App")
     (d/transact! conn [{:db/id -1 :app/id 1}
                        {:db/id -1 :app/online? false}
-                       {:db/id -1 :app/status :judging}
+                       {:db/id -1 :app/status (if (:app/status @local-id)
+                                                (:app/status @local-id)
+                                                :judging)}
                        {:db/id -1 :app/selected-activity-status :in-sync}
                        {:db/id -1 :app/heat-page 0}
                        {:db/id -1 :app/heat-page-size 2}
@@ -99,17 +112,6 @@
          [_ :app/online? ?online]] (d/db conn)))
 
 (log-trace "End Init DB")
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Local storage
-(log-trace "Begin Local Storage")
-
-(def local-id (ls/local-storage (atom {}) :local-id))
-
-(log-info (str "Local Adjudicator of Client : " (:name @local-id) " - "
-               (:adjudicator/id (:adjudicator @local-id))))
-
-(log-trace "End Local Storage")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Sente message handling
@@ -146,13 +148,14 @@
         (do
           (log "Pre Reset")
           (d/reset-conn! conn (d/init-db #{} (merge adjudicator-ui-schema uidb/schema)))
-          (d/transact! conn [{:db/id -1 :app/id 1}
-                             {:db/id -1 :app/online? false}
-                             {:db/id -1 :app/status :judging}
-                             {:db/id -1 :app/selected-activity-status :in-sync}
-                             {:db/id -1 :app/heat-page 0}
-                             {:db/id -1 :app/heat-page-size 2}
-                             {:db/id -1 :app/admin-mode false}])
+          ;(d/transact! conn [{:db/id -1 :app/id 1}
+          ;                   {:db/id -1 :app/online? false}
+          ;                   {:db/id -1 :app/status :judging}
+          ;                   {:db/id -1 :app/selected-activity-status :in-sync}
+          ;                   {:db/id -1 :app/heat-page 0}
+          ;                   {:db/id -1 :app/heat-page-size 2}
+          ;                   {:db/id -1 :app/admin-mode false}])
+          (init-app)
           (log "Pos Reset")
           (om/transact! reconciler `[(app/selected-activity-status {:status :out-of-sync})
                                      (app/status {:status :judging})
@@ -439,7 +442,8 @@
                     (dom/button #js {:className "btn btn-primary"
                                      :onClick #(when (= @pwd "1337")
                                                 (om/transact! this `[(app/status {:status :judging})]))}
-                                "Show Confirmed Results")))))
+                                "Show Confirmed Results")
+                    (dom/h5 nil (str "Current State : " status))))))
 
             (dom/div #js {:className "col-xs-12"}
               (dom/h3 #js {:className "text-center"} (str "Judge : " (if selected-adjudicator
