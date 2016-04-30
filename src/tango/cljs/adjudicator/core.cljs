@@ -146,17 +146,6 @@
       (cond
         (= payload 'app/select-activity)
         (do
-          (log "Pre Reset")
-          (d/reset-conn! conn (d/init-db #{} (merge adjudicator-ui-schema uidb/schema)))
-          ;(d/transact! conn [{:db/id -1 :app/id 1}
-          ;                   {:db/id -1 :app/online? false}
-          ;                   {:db/id -1 :app/status :judging}
-          ;                   {:db/id -1 :app/selected-activity-status :in-sync}
-          ;                   {:db/id -1 :app/heat-page 0}
-          ;                   {:db/id -1 :app/heat-page-size 2}
-          ;                   {:db/id -1 :app/admin-mode false}])
-          (init-app)
-          (log "Pos Reset")
           (om/transact! reconciler `[(app/selected-activity-status {:status :out-of-sync})
                                      (app/status {:status :judging})
                                      :app/status
@@ -598,6 +587,13 @@
                                    (filter #(= (:adjudicator/id real-adj)
                                                (:adjudicator/id (:result/adjudicator %)))
                                            (:app/results edn-result))]
+
+                               ;; Time to judge another round, reset local db from previous round
+                               ;;  and set the new round as selected
+                               (log "Pre Reset")
+                               (d/reset-conn! conn (d/init-db #{} (merge adjudicator-ui-schema uidb/schema)))
+                               (init-app)
+                               (log "Pos Reset")
                                (om/transact! reconciler
                                              `[(app/select-activity
                                                  {:activity ~act-to-change-to})
