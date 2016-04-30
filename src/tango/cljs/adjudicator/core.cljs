@@ -147,13 +147,16 @@
         (= payload 'app/select-activity)
         (do
           (om/transact! reconciler `[(app/selected-activity-status {:status :out-of-sync})
-                                     (app/status {:status :judging})
-                                     :app/status
+                                     ;(app/status {:status :judging})
+                                     ;:app/status
                                      :app/selected-activity
                                      :app/results]))
 
-        (= payload 'app/confirm-marks)
-        (om/transact! reconciler `[(app/status {:status :confirmed})])))))
+        (= (:topic payload) 'app/confirm-marks)
+        (when (= (:name @local-id)
+                 (:adjudicator/name (:payload payload)))
+          ;; TODO - only confirm if it was this client
+          (om/transact! reconciler `[(app/status {:status :confirmed})]))))))
 
 (defmethod event-msg-handler :chsk/handshake
   [{:as ev-msg :keys [?data]}]
@@ -469,11 +472,12 @@
                   (dom/div #js {:className "row"}
                     (dom/div #js {:className "col-xs-offset-4 col-xs-4"}
                       (dom/button #js {:className "btn btn-primary btn-lg btn-block"
-                                       ;:disabled  (not= mark-count (:round/recall selected-activity))
+                                       :disabled  (not= mark-count (:round/recall selected-activity))
                                        :onClick   #(om/transact!
                                                     this
                                                     `[(app/confirm-marks
-                                                        ~{:results results-for-this-adjudicator})])}
+                                                        ~{:results results-for-this-adjudicator
+                                                          :adjudicator selected-adjudicator})])}
                                   "Confirm Marks")))
 
 
@@ -491,15 +495,9 @@
                   (dom/div nil
                     (condp = status
                       :confirming (dom/div nil
-                                    (dom/h3 nil "Confirming results, please wait..")
-                                    (dom/h5 nil (str (:app/status (om/props this))))
-                                    (dom/button #js {:className "btn btn-primary"
-                                                     :onClick   #(om/transact!
-                                                                  this
-                                                                  `[(app/status {:status :judging})])}
-                                                "Undo"))
+                                    (dom/h3 nil "Confirming results, please wait.."))
                       :confirmed (do
-                                   (go (let [time (<! (timeout 2000))]
+                                   (go (let [time (<! (timeout 3000))]
                                          (om/transact!
                                            this
                                            `[(app/status {:status :waiting-for-round})])))
@@ -600,6 +598,7 @@
                                                (app/set-results
                                                  {:results ~results-for-this-adj})
                                                (app/heat-page ~{:page 0})
+                                               (app/status ~{:status :judging})
                                                ])))
 
                            ;; Always set judge to the locally selected

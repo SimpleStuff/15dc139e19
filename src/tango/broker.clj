@@ -69,7 +69,8 @@
                    ['app/confirm-marks _]
                    (do
                      (log/info (str "Confirm Result"))
-                     (confirm-results (d/create-connection datomic-storage-uri) payload))
+                     (confirm-results (d/create-connection datomic-storage-uri)
+                                      (into [] (:results payload))))
                    ;[:app/selected-activity _]
                    ;(do
                    ;  (log/info (str "Selected activity " (:app/selected-activity payload)))
@@ -85,7 +86,9 @@
                                [[client-in-channel
                                  ;(merge message)
                                  {:topic   :tx/accepted
-                                  :payload topic}]
+                                  :payload (if (= topic 'app/confirm-marks)
+                                             {:topic topic :payload (:adjudicator payload)}
+                                             topic)}]
                                 (async/timeout 500)])]))
           (catch Exception e
             (log/error e "Exception in Broker message go loop")
