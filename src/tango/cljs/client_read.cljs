@@ -60,9 +60,10 @@
                (d/db state))})
 
 (defmethod read :app/selected-activity
-  [{:keys [state]} _ _]
-  {:value (d/q '[:find [(pull ?a [:activity/id]) ...]
+  [{:keys [state query]} _ _]
+  {:value (d/q '[:find [(pull ?a ?selector) ...]
+                 :in $ ?selector
                  :where [[:app/id 1] :app/selected-activites ?a]]
-               (d/db state))})
+               (d/db state) query)})
 
 

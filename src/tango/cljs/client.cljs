@@ -439,6 +439,53 @@
         (dom/td nil panel)
         (dom/td nil type)))))
 
+(defui RoundAdjudicatorView
+  static om/IQuery
+  (query [_])
+  Object
+  (render
+    [this]
+    (let [adj (om/props this)]
+      (log "ZZZZZZZZZZZZZZZzz")
+      (log adj)
+      (dom/tr nil
+        (dom/td nil (:adjudicator/name adj))))))
+
+(defui SelectedRoundsView
+  static om/IQuery
+  (query [_]
+    [:activity/id
+     :activity/name
+     {:activity/source
+      [{:round/panel
+        [{:adjudicator-panel/adjudicators [:adjudicator/name]}]}]}])
+  Object
+  (render
+    [this]
+    (let [sa (:selected-activity (om/props this))
+          class (:activity/source (om/props this))
+
+          test (:activity/source (first sa))]
+      (log "7777777777777777777777777777777")
+      (log sa)
+      (dom/div nil
+        (dom/h2 nil (str "Count " (count sa)))
+        (dom/div nil
+          (dom/h4 nil (str (:activity/name test)))
+          (dom/table
+            #js {:className "table table-hover table-condensed"}
+            (dom/thead nil
+              (dom/tr nil
+                (dom/th #js {:width "200"} "Adjudicator")
+                (dom/th #js {:width "200"} "# marks")
+                (dom/th #js {:width "200"} "Confirmed?")))
+            (apply dom/tbody nil (map #((om/factory RoundAdjudicatorView) %)
+                                      (:adjudicator-panel/adjudicators
+                                        (:round/panel test))))
+            )
+          )
+        ))))
+
 (defui ScheduleView
   static om/IQuery
   (query [_]
@@ -562,7 +609,7 @@
     [:app/selected-page
      :app/import-status
      :app/status
-     :app/selected-activity
+     {:app/selected-activity (om/get-query SelectedRoundsView)}
      :app/online?
      {:app/competitions (om/get-query Competition)}
      ;{:app/selected-competition (into [] (concat (om/get-query ClassesView)
@@ -613,7 +660,8 @@
                                     ["Classes" :classes]
                                     ["Time Schedule" :schedule]
                                     ["Adjudicators" :adjudicators]
-                                    ["Adjudicator Panels" :adjudicator-panels]]))))))
+                                    ["Adjudicator Panels" :adjudicator-panels]
+                                    ["Selected Rounds" :selected-rounds]]))))))
 
         (dom/div #js {:className "container"}
           (dom/div #js {:className "row"}
@@ -630,7 +678,9 @@
                             (merge selected-competition
                                    {:selected-activity (:app/selected-activity (om/props this))}))
                 :adjudicators ((om/factory AdjudicatorsView) selected-competition)
-                :adjudicator-panels ((om/factory AdjudicatorPanelsView) selected-competition)))))))))
+                :adjudicator-panels ((om/factory AdjudicatorPanelsView) selected-competition)
+                :selected-rounds ((om/factory SelectedRoundsView)
+                                   {:selected-activity (:app/selected-activity (om/props this))})))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Remote Posts
