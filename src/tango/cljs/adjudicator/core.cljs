@@ -143,11 +143,22 @@
       (log (str "Socket Payload: " payload))
       (cond
         (= payload 'app/select-activity)
-        (om/transact! reconciler `[(app/selected-activity-status {:status :out-of-sync})
-                                   (app/status {:status :judging})
-                                   :app/status
-                                   :app/selected-activity
-                                   :app/results])
+        (do
+          (log "Pre Reset")
+          (d/reset-conn! conn (d/init-db #{} (merge adjudicator-ui-schema uidb/schema)))
+          (d/transact! conn [{:db/id -1 :app/id 1}
+                             {:db/id -1 :app/online? false}
+                             {:db/id -1 :app/status :judging}
+                             {:db/id -1 :app/selected-activity-status :in-sync}
+                             {:db/id -1 :app/heat-page 0}
+                             {:db/id -1 :app/heat-page-size 2}
+                             {:db/id -1 :app/admin-mode false}])
+          (log "Pos Reset")
+          (om/transact! reconciler `[(app/selected-activity-status {:status :out-of-sync})
+                                     (app/status {:status :judging})
+                                     :app/status
+                                     :app/selected-activity
+                                     :app/results]))
 
         (= payload 'app/confirm-marks)
         (om/transact! reconciler `[(app/status {:status :confirmed})])))))
