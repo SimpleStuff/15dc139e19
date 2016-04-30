@@ -348,15 +348,15 @@ activity-result
 (defn export-results [activities-with-result export-path]
   (log/info (str "Export Results to " export-path " with " activities-with-result))
   (let [in-xml (get-xml-from-file export-path)
-        class-results (activity-result->class-result activities-with-result)
-        out-xml (add-results-to-dp-xml in-xml (first class-results))
-        ;out-xml (reduce add-results-to-dp-xml in-xml class-results)
+        class-results (map activity-result->class-result activities-with-result)
+        ;out-xml (add-results-to-dp-xml in-xml (first class-results))
+        out-xml (reduce add-results-to-dp-xml in-xml class-results)
         ]
-    (with-open [w (java.io.FileWriter. "foo.xml")]
+    (with-open [w (java.io.FileWriter. "bar.xml")]
       (xml/emit out-xml w)) 
     ))
-
-
+(map activity-result->class-result activities-with-result)
+(activity-result->class-result activities-with-result)
 
 (defn smoke-test [] (export-results activities-with-result "dp.xml"))
 
