@@ -63,6 +63,12 @@
              (async/>!! state {:topic :command :sender :http :payload [key params]})
              (log/info (str "Set result " key " " params)))})
 
+(defmethod mutate 'app/confirm-marks
+  [{:keys [state] :as env} key params]
+  {:action (fn []
+             (async/>!! state {:topic :command :sender :http :payload [key params]})
+             (log/info (str "Confirm Marks " key " " params)))})
+
 (defmethod mutate 'app/set-export-status
   [{:keys [state] :as env} key params]
   {:action (fn []
@@ -134,6 +140,12 @@
   [{:keys [state query]} key params]
   {:value (do
             (log/info (str "app/results read"))
+            nil)})
+
+(defmethod reader :app/status
+  [{:keys [state query]} key params]
+  {:value (do
+            (log/info (str "app/status read"))
             nil)})
 
 (defmethod reader :app/heat-page
