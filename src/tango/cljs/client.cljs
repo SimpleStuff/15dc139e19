@@ -449,7 +449,32 @@
       (log "ZZZZZZZZZZZZZZZzz")
       (log adj)
       (dom/tr nil
-        (dom/td nil (:adjudicator/name adj))))))
+        (dom/td nil (:adjudicator/name adj))
+        (dom/td nil "0/16")
+        (dom/td nil "X")))))
+
+(defui SelectedRoundView
+  static om/IQuery
+  (query [_])
+  Object
+  (render
+    [this]
+    (let [activity (om/props this)
+          round (:activity/source activity)]
+      (dom/div nil
+        (dom/h4 nil (str "Round: " (:activity/name activity)))
+        (dom/table
+          #js {:className "table table-hover table-condensed"}
+          (dom/thead nil
+            (dom/tr nil
+              (dom/th #js {:width "200"} "Adjudicator")
+              (dom/th #js {:width "200"} "# marks")
+              (dom/th #js {:width "200"} "Confirmed?")))
+          (apply dom/tbody nil (map #((om/factory RoundAdjudicatorView) %)
+                                    (:adjudicator-panel/adjudicators
+                                      (:round/panel round))))
+          )
+        ))))
 
 (defui SelectedRoundsView
   static om/IQuery
@@ -462,29 +487,8 @@
   Object
   (render
     [this]
-    (let [sa (:selected-activity (om/props this))
-          class (:activity/source (om/props this))
-
-          test (:activity/source (first sa))]
-      (log "7777777777777777777777777777777")
-      (log sa)
-      (dom/div nil
-        (dom/h2 nil (str "Count " (count sa)))
-        (dom/div nil
-          (dom/h4 nil (str (:activity/name test)))
-          (dom/table
-            #js {:className "table table-hover table-condensed"}
-            (dom/thead nil
-              (dom/tr nil
-                (dom/th #js {:width "200"} "Adjudicator")
-                (dom/th #js {:width "200"} "# marks")
-                (dom/th #js {:width "200"} "Confirmed?")))
-            (apply dom/tbody nil (map #((om/factory RoundAdjudicatorView) %)
-                                      (:adjudicator-panel/adjudicators
-                                        (:round/panel test))))
-            )
-          )
-        ))))
+    (dom/div nil
+      (map #((om/factory SelectedRoundView) %) (:selected-activity (om/props this))))))
 
 (defui ScheduleView
   static om/IQuery
