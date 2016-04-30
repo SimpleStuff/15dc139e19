@@ -142,6 +142,12 @@
             (log/info (str "app/results read"))
             nil)})
 
+(defmethod reader :app/status
+  [{:keys [state query]} key params]
+  {:value (do
+            (log/info (str "app/status read"))
+            nil)})
+
 (defmethod reader :app/heat-page
   [{:keys [state query]} key params]
   {:value (do

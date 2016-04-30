@@ -7,7 +7,7 @@
 
             [cognitect.transit :as t]
 
-            [cljs.core.async :as async :refer (<! >! put! chan)]
+            [cljs.core.async :as async :refer (<! >! put! chan timeout)]
             [cljs-http.client :as http]
 
             [taoensso.sente :as sente :refer (cb-success?)]
@@ -82,7 +82,7 @@
     (log-trace "Init App")
     (d/transact! conn [{:db/id -1 :app/id 1}
                        {:db/id -1 :app/online? false}
-                       {:db/id -1 :app/status :loading}
+                       {:db/id -1 :app/status :judging}
                        {:db/id -1 :app/selected-activity-status :in-sync}
                        {:db/id -1 :app/heat-page 0}
                        {:db/id -1 :app/heat-page-size 2}
@@ -141,10 +141,16 @@
     (when (= topic :tx/accepted)
       (log-debug (str "Socket Event from server: " topic))
       (log (str "Socket Payload: " payload))
-      (when (= payload 'app/select-activity)
+      (cond
+        (= payload 'app/select-activity)
         (om/transact! reconciler `[(app/selected-activity-status {:status :out-of-sync})
+                                   (app/status {:status :judging})
+                                   :app/status
                                    :app/selected-activity
-                                   :app/results])))))
+                                   :app/results])
+
+        (= payload 'app/confirm-marks)
+        (om/transact! reconciler `[(app/status {:status :confirmed})])))))
 
 (defmethod event-msg-handler :chsk/handshake
   [{:as ev-msg :keys [?data]}]
@@ -363,11 +369,13 @@
 
      :app/heat-page
      :app/heat-page-size
-     :app/admin-mode])
+     :app/admin-mode
+     :app/status])
   Object
   (render
     [this]
     (let [app (om/props this)
+          status (:app/status app)
           selected-activity (:app/selected-activity (om/props this))
           panel (:round/panel selected-activity)
           selected-adjudicator (:app/selected-adjudicator (om/props this))
@@ -391,8 +399,8 @@
                 (dom/div nil
                   (dom/h3 nil (str "Local Storage Says : " (:name @local-id)))
                   (dom/button #js {:className "btn btn-default"
-                                   :onClick #(when (= @pwd "1337")
-                                              (ls/clear-local-storage!))} "Clear Storage")
+                                   :onClick   #(when (= @pwd "1337")
+                                                (ls/clear-local-storage!))} "Clear Storage")
                   (dom/input #js {:className "text" :value @pwd :onChange #(reset! pwd (.. % -target -value))})
                   (dom/p nil "Refresh after clearing storage!"))))
             (dom/div #js {:className "col-xs-1 pull-right"}
@@ -409,26 +417,32 @@
             (when in-admin-mode?
               (let [pwd (atom "")]
                 (dom/div nil
-                  (dom/h3 nil (str "Local Storage Says : " (:name @local-id)))
-                  (dom/button #js {:className "btn btn-default"
-                                   :onClick #(when (= @pwd "1337")
-                                              (ls/clear-local-storage!))} "Clear Storage")
-                  (dom/input #js {:className "text" :value @pwd :onChange #(reset! pwd (.. % -target -value))})
-                  (dom/p nil "Refresh after clearing storage!"))))
-            (dom/div #js {:className "col-xs-12"}
+                  (dom/div nil
+                    (dom/h3 nil (str "Local Storage Says : " (:name @local-id)))
+                    (dom/button #js {:className "btn btn-default"
+                                     :onClick   #(when (= @pwd "1337")
+                                                  (ls/clear-local-storage!))} "Clear Storage")
+                    (dom/input #js {:className "text" :value @pwd :onChange #(reset! pwd (.. % -target -value))})
+                    (dom/p nil "Refresh after clearing storage!"))
+                  (dom/div nil
+                    (dom/button #js {:className "btn btn-primary"
+                                     :onClick #(when (= @pwd "1337")
+                                                (om/transact! this `[(app/status {:status :judging})]))}
+                                "Show Confirmed Results")))))
 
+            (dom/div #js {:className "col-xs-12"}
               (dom/h3 #js {:className "text-center"} (str "Judge : " (if selected-adjudicator
                                             (:adjudicator/name selected-adjudicator)
                                             "None selected")))
 
-              (if selected-activity
+              (if (and selected-activity (= status :judging))
                 (dom/div nil
                   (dom/h3 #js {:className "text-center"} (:activity/name selected-activity))
                   (dom/h3 #js {:className "text-center"} (:round/name selected-activity))
                   (dom/h3 #js {:className "text-center"} (str "Mark " (:round/recall selected-activity) " of "
-                                   (count
-                                     (:round/starting selected-activity))
-                                   " to next round"))
+                                                              (count
+                                                                (:round/starting selected-activity))
+                                                              " to next round"))
                   ((om/factory HeatsComponent) {:participants   (:round/starting selected-activity)
                                                 :heats          (:round/heats selected-activity)
                                                 :adjudicator/id (:adjudicator/id selected-adjudicator)
@@ -451,20 +465,50 @@
                   (dom/div #js {:className "row"}
                     (dom/div #js {:className "col-xs-offset-4 col-xs-4"}
                       (dom/button #js {:className "btn btn-primary btn-lg btn-block"
-                                   :disabled  (not= mark-count (:round/recall selected-activity))
-                                   :onClick   #(om/transact!
-                                                this
-                                                `[(app/confirm-marks
-                                                    ~{:results results-for-this-adjudicator})])}
-                              "Confirm Marks")))
+                                       ;:disabled  (not= mark-count (:round/recall selected-activity))
+                                       :onClick   #(om/transact!
+                                                    this
+                                                    `[(app/confirm-marks
+                                                        ~{:results results-for-this-adjudicator})])}
+                                  "Confirm Marks")))
+
+
 
                   (dom/div #js {:className "col-xs-1 pull-right"}
                     (dom/button #js {:className "btn btn-default"
                                      :onClick   #(om/transact! this `[(app/set-admin-mode
                                                                         {:in-admin ~(not in-admin-mode?)})])}
                                 (dom/span #js {:className "glyphicon glyphicon-cog"}))))
-                (dom/div nil
-                  (dom/h3 nil "Waiting for round.."))))))))))
+
+                (if (and (not selected-activity) (= status :judging))
+                  (dom/div nil
+                    (dom/h3 nil "Waiting for round.."))
+
+                  (dom/div nil
+                    (condp = status
+                      :confirming (dom/div nil
+                                    (dom/h3 nil "Confirming results, please wait..")
+                                    (dom/h5 nil (str (:app/status (om/props this))))
+                                    (dom/button #js {:className "btn btn-primary"
+                                                     :onClick   #(om/transact!
+                                                                  this
+                                                                  `[(app/status {:status :judging})])}
+                                                "Undo"))
+                      :confirmed (do
+                                   (go (let [time (<! (timeout 2000))]
+                                         (om/transact!
+                                           this
+                                           `[(app/status {:status :waiting-for-round})])))
+                                   (dom/div nil
+                                     (dom/h3 nil "Results have been confirmed!")))
+
+                      :waiting-for-round (dom/div nil
+                                           (dom/h3 nil "Waiting for next round..")))
+                    (dom/div #js {:className "col-xs-1 pull-right"}
+                      (dom/button #js {:className "btn btn-default"
+                                       :onClick   #(om/transact! this `[(app/set-admin-mode
+                                                                          {:in-admin ~(not in-admin-mode?)})])}
+                                  (dom/span #js {:className "glyphicon glyphicon-cog"})))))))))))))
 
 (log-trace "End Components")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
