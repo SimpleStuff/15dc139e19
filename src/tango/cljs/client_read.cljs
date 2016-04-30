@@ -32,7 +32,8 @@
                      :in $ ?selector
                      :where [[:app/id 1] :app/selected-competition ?comp]]
                    (d/db state) query)))
-   :query true})
+   ;:query true
+   })
 
 (defmethod read :app/new-competition
   [{:keys [state query]} _ _]
@@ -65,5 +66,31 @@
                  :in $ ?selector
                  :where [[:app/id 1] :app/selected-activites ?a]]
                (d/db state) query)})
+
+(defmethod read :app/results
+  [{:keys [state query]} _ _]
+  (do
+    (log "Read results ")
+
+    ;; TODO - make sure that results are only for this round
+    {:value (do
+              (if query
+                (let [res
+                      (d/q '[:find [(pull ?r [*]) ...]
+                             :in $ selector
+                             :where
+                             [[:app/id 1] :app/results ?r]
+                             ;[[:app/id 1] :app/selected-activites ?a]
+                             ;[?a :activity/id ?id]
+                             ;[?r :result/activity ?ra]
+                             ;[?ra :activity/id ?id]
+                             ]
+                           (d/db state) query)]
+                  (log query)
+                  (log "//////////////////////////////////////////")
+                  (log res)
+                  res)))
+     :query true
+     }))
 
 

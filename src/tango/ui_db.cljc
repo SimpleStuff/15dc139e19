@@ -68,6 +68,13 @@
 
              :app/selected-activites {:db/cardinality :db.cardinality/many
                                       :db/valueType :db.type/ref}
+
+             :app/results {:db/cardinality :db.cardinality/many
+                           :db/valueType :db.type/ref}
+
+
+
+
              ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
              ;; Competition
              :competition/name {:db/unique :db.unique/identity}
@@ -138,6 +145,7 @@
              :result/judgings {:db/cardinality :db.cardinality/many
                                :db/valueType :db.type/ref}
 
+             :result/id {:db/unique :db.unique/identity}
              ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
              ;; Judgings
              :judging/adjudicator {:db/cardinality :db.cardinality/one

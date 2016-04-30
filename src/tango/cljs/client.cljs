@@ -487,8 +487,12 @@
   Object
   (render
     [this]
+    (log "SelectedRoundsView")
+    (log (:results (om/props this)))
     (dom/div nil
-      (map #((om/factory SelectedRoundView) %) (:selected-activity (om/props this))))))
+      (map #((om/factory SelectedRoundView) %
+             (:results (om/props this)))
+           (:selected-activity (om/props this))))))
 
 (defui ScheduleView
   static om/IQuery
@@ -624,7 +628,14 @@
                        (om/get-query AdjudicatorPanelsView)
                        (om/get-query AdjudicatorsView)
                        (om/get-query PropertiesView)))}
-     {:app/new-competition (om/get-query PropertiesView)}])
+     {:app/new-competition (om/get-query PropertiesView)}
+
+     {:app/results [:result/mark-x
+                    :result/point
+                    :result/id
+                    ;{:result/participant [:participant/id]}
+                    {:result/adjudicator [:adjudicator/id]}
+                    {:result/activity [:activity/id]}]}])
   Object
   (render
     [this]
@@ -633,6 +644,8 @@
           spage (:app/selected-page (om/props this))
           selected-competition (:app/selected-competition (om/props this))
           make-button (partial make-menu-button this spage)]
+      (log "8888888888888888888888888")
+      (log (:app/results (om/props this)))
       (dom/div #js {:className "navbar-wrapper"}
         (dom/div #js {:className "container"}
 
@@ -684,7 +697,8 @@
                 :adjudicators ((om/factory AdjudicatorsView) selected-competition)
                 :adjudicator-panels ((om/factory AdjudicatorPanelsView) selected-competition)
                 :selected-rounds ((om/factory SelectedRoundsView)
-                                   {:selected-activity (:app/selected-activity (om/props this))})))))))))
+                                   {:selected-activity (:app/selected-activity (om/props this))
+                                    :results (:app/results (om/props this))})))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Remote Posts
@@ -711,16 +725,19 @@
         (log (str "Sent to Tango Backend => " remote))
         (chsk-send! [:event-manager/query [[:competition/name :competition/location]]]))
       (if command
-        ((transit-post "/commands") env cb))
-      ;(if query
-      ;  (do
-      ;    (log env)
-      ;    (log "QQQQQQQQQQQQQQQQQQQQQQQ")
-      ;    (go
-      ;      (let [response (async/<! (http/get "/query"
-      ;                                         {:query-params
-      ;                                          {:query (pr-str (:query env))}}))])))
-      ;  ((transit-post "/commands") env cb))
+        ((transit-post "/commands") env cb)
+        (if query
+          (do
+            (log env)
+            (log "QQQQQQQQQQQQQQQQQQQQQQQ")
+            (go
+              (let [response (async/<! (http/get "/query"
+                                                 {:query-params
+                                                  {:query (pr-str (:query env))}}))
+                    body (:body response)
+                    edn-result (second (cljs.reader/read-string body))]
+                (om/transact! reconciler
+                              `[(app/set-results {:results ~(:app/results edn-result)})]))))))
       )))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
