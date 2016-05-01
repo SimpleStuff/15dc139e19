@@ -148,4 +148,5 @@
              (log activity)
              (log "Start Transaction")
              (d/transact! state [{:app/id 1 :app/speaker-activites {:activity/id (:activity/id activity)}}])
-             (log "End Transaction"))})
+             (log "End Transaction"))
+   :command true})

@@ -57,6 +57,12 @@
              (log/info "Select activity")
              (async/>!! state {:topic :command :sender :http :payload [key params]}))})
 
+(defmethod mutate 'app/set-speaker-activity
+  [{:keys [state] :as env} key params]
+  {:action (fn []
+             (log/info "Set Speacker activity")
+             (async/>!! state {:topic :command :sender :http :payload [key params]}))})
+
 (defmethod mutate 'participant/set-result
   [{:keys [state] :as env} key params]
   {:action (fn []

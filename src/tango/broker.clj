@@ -19,6 +19,11 @@
 (defn selected-activity [conn]
   (log/info (str "Application selected round : " (d/get-selected-activity conn '[:activity/name]))))
 
+(defn set-speaker-activity [conn activity]
+  (do
+    (d/set-speaker-activity conn activity)
+    (log/info (str "Speaker activity set"))))
+
 (defn fix-lookup-refs [result]
   (merge
     result
@@ -82,6 +87,10 @@
                                       (into [] (:results payload))
                                       (:adjudicator payload)
                                       (:activity payload)))
+                   ['app/set-speaker-activity _]
+                   (do
+                     (log/info (str "Set Speaker Activity"))
+                     (set-speaker-activity (d/create-connection datomic-storage-uri) payload))
                    ;[:app/selected-activity _]
                    ;(do
                    ;  (log/info (str "Selected activity " (:app/selected-activity payload)))
