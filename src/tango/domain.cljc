@@ -36,3 +36,34 @@
    :activity/position position
    :activity/source-id source-id
    :activity/time time})
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Utils
+
+(defn distrubution-counts [c n]
+  (let [m (int (/ c n))
+        k (mod c n)
+        big-counts (repeat k (inc m))
+        small-counts (repeat (- n k) m)]
+    (vec (concat big-counts small-counts))
+    )
+  )
+
+(defn distrubution-counts [coll n]
+  ;; Distributes the elements in n vectors as evenly as possible
+  ;; Each vector will have m or m+1 elements, where m is (/ (count coll n))
+  ;; The order of the elements is preserved in each group.
+  (let [c (count coll)
+        m (int (/ c n))
+        k (mod c n)
+        big-counts (repeat k (inc m))
+        small-counts (repeat (- n k) m)]
+    (vec (concat big-counts small-counts))
+    )
+  )
+
+(int (/ 8 3))
+(mod 8 3)
+
+(distrubute [1 2 3 4 5 6 7 8] 3)
+(distrubute [1 2 3 4 5 6 7 8] 3)
