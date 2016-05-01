@@ -345,8 +345,10 @@
   (log/info (str "Export Results to " export-path " with " activities-with-result))
   (let [in-xml (get-xml-from-file export-path)
         class-results (map activity-result->class-result activities-with-result)
-        out-xml (reduce add-results-to-dp-xml in-xml class-results)]
+        out-xml (reduce add-results-to-dp-xml in-xml class-results)
+        out-xml-orig (reduce add-results-to-dp-xml in-xml [])]
     (make-copy-with-timestamp export-path)
+    (spit (str "orig_" export-path) (ppxml (xml/emit-str out-xml-orig)))
     (spit export-path (ppxml (xml/emit-str out-xml)))))
 
 (defn smoke-test [] (export-results (activities-with-result) "dp.xml"))
