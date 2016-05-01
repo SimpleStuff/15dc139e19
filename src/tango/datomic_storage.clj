@@ -115,6 +115,12 @@
     :db/doc                "The adjudicators that have confirmed results for this activity"
     :db.install/_attribute :db.part/db}
 
+   {:db/id                 #db/id[:db.part/db]
+    :db/ident              :activity/number
+    :db/valueType          :db.type/string
+    :db/cardinality        :db.cardinality/one
+    :db/doc                "An activitys number"
+    :db.install/_attribute :db.part/db}
    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
    ;; Round
 

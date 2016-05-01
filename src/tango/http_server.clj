@@ -124,6 +124,12 @@
    ;(do (log/info (str "Reader Query Key Params " query key params)))
    })
 
+(defmethod reader :app/speaker-activites
+  [{:keys [state query]} key params]
+  {:value (do
+            (log/info (str "Selector in speaker activites " query))
+            (d/get-speaker-activites state query))})
+
 ;(let [selected-act (d/get-selected-activity state '[:activity/id])]
 ;  (log/info (str "Selected act " selected-act))
 ;  (when selected-act

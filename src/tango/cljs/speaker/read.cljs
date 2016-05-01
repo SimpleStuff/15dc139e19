@@ -7,6 +7,11 @@
 
 (defmulti read om/dispatch)
 
+(defmethod read :app/speaker-activites
+  [{:keys [state]} _ _]
+  {:value (get @state :app/speaker-activites [])
+   :query true})
+
 ;(defmethod read :app/selected-page
 ;  [{:keys [state]} _ _]
 ;  {:value (d/q '[:find ?page .

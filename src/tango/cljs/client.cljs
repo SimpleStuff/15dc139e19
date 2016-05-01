@@ -457,7 +457,17 @@
                                                   this
                                                   `[(app/set-speaker-activity
                                                       {:activity/id   ~(:activity/id (om/props this))
-                                                       :activity/name ~name})
+                                                       :activity/name ~name
+                                                       :activity/number ~number
+
+                                                       :round/recall   ~(:round/recall (:activity/source
+                                                                                         (om/props this)))
+                                                       :round/heats    ~(:round/heats (:activity/source
+                                                                                        (om/props this)))
+                                                       :round/starting ~(:round/starting (:activity/source
+                                                                                           (om/props this)))
+                                                       :round/panel    ~(:round/panel (:activity/source
+                                                                                        (om/props this)))})
                                                     :app/speaker-activites])}
                                 (dom/span #js {:className "glyphicon glyphicon-volume-up"})))))))))
 
