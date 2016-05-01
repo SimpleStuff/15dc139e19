@@ -211,7 +211,10 @@
    (POST "/commands" params (partial handle-command (:out-channel http-server-channels))        ;(fn [req] (str "Command: " req))
      )
    (GET "/adjudicator" req {:body (slurp (clojure.java.io/resource "public/adjudicator.html"))
-                            :session {:uid (rand-int 100)}
+                            :session {:uid (rand-int 10000)}
+                            :headers {"Content-Type" "text/html"}})
+   (GET "/speaker" req {:body (slurp (clojure.java.io/resource "public/speaker.html"))
+                            :session {:uid (rand-int 10000)}
                             :headers {"Content-Type" "text/html"}})
    (GET "/query" req (partial handle-query (:out-channel http-server-channels) datomic-storage-uri))
    ;; Sente channel routes

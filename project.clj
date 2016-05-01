@@ -103,6 +103,24 @@
                                ;:optimizations :none
                                }}
 
+               {:id           "speaker"
+                :source-paths ["src/tango/cljs/speaker" "src"]
+                :figwheel     {:on-jsload "tango.cljs.speaker.core/on-js-reload"}
+                :compiler     {:main       tango.cljs.speaker.core
+                               :asset-path "js/out/speaker"
+                               :output-to  "resources/public/js/speaker.js"
+                               :output-dir "resources/public/js/out/speaker"
+
+                               ;; PROD
+                               ;:optimizations :advanced
+                               ;:pretty-print  false
+
+                               ;; DEV
+                               :source-map true
+                               :pretty-print  true
+                               :optimizations :none
+                               }}
+
                ;; This next build is an compressed minified build for
                ;; production. You can build this with:
                ;; lein cljsbuild once min
