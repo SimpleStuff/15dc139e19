@@ -75,6 +75,8 @@
              :app/confirmed {:db/cardinality :db.cardinality/many
                              :db/valueType :db.type/ref}
 
+             :app/speaker-activites {:db/cardinality :db.cardinality/many
+                                     :db/valueType :db.type/ref}
 
              ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
              ;; Competition

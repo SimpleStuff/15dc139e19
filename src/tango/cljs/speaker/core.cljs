@@ -28,13 +28,23 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; MainComponent
 
+;; Activity name       Round 1
+;; type? (medium)
+
+;; Heat 1: 1880
+;; Heat 2: 1888
+
+;; Total 31
+;; Recall 18
+;; Judges A, B, C      Event 3A
+
 (defui MainComponent
   static om/IQuery
   (query [_])
   Object
   (render
     [this]
-    (dom/div nil "SPEAK")))
+    (dom/div nil "SPEAKe")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Application

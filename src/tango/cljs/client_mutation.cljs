@@ -139,3 +139,13 @@
                ;(log "Transaction Complete")
                ;(log q)
                q))})
+
+(defmethod mutate 'app/set-speaker-activity
+  [{:keys [state]} _ activity]
+  {:value {:keys [:app/speaker-activites]}
+   :action (fn []
+             (log "Set Speaker activity")
+             (log activity)
+             (log "Start Transaction")
+             (d/transact! state [{:app/id 1 :app/speaker-activites {:activity/id (:activity/id activity)}}])
+             (log "End Transaction"))})
