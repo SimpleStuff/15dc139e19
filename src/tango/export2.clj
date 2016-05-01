@@ -12,22 +12,23 @@
             ))
 
 ;; Sample data
-(def class-results [{:class-name "Disco Freestyle B-klass J Po"
-                     :result {:round "S"
-                              :adjudicators [{:number 2}
-                                             {:number 4}
-                                             {:number 5}]
-                              :dances [{:name "X-Quick Forward"}
-                                       {:name "Quick"}]
-                              :result-array [{:dancer-number 30
-                                              :marks [true false true]}
-                                             {:dancer-number 31
-                                              :marks [true true true]}
-                                             {:dancer-number 32
-                                              :marks [false false true]}]}}
+(defn class-results[]
+  [{:class-name              "Disco Freestyle B-klass J Po"
+    :result {:round        "S"
+             :adjudicators [{:number 2}
+                            {:number 4}
+                            {:number 5}]
+             :dances       [{:name "X-Quick Forward"}
+                            {:name "Quick"}]
+             :result-array [{:dancer-number 30
+                             :marks         [true false true]}
+                            {:dancer-number 31
+                             :marks         [true true true]}
+                            {:dancer-number 32
+                             :marks         [false false true]}]}}
                     ])
 
-(def activities-with-result 
+(defn activities-with-result []
 [{:activity/name "Hiphop Singel Guld J1",
   :round/name "Semifinal",
   :round/panel
@@ -144,9 +145,31 @@
     {:adjudicator/number 5}]},
   :round/dances [{:dance/name "Medium"} {:dance/name "Medium"}]}])
 
-(def activity-result (first activities-with-result))
+(defn activity-result [] ()first )
 
-activity-result
+
+(defn make-file-name-with-timestamp [file-name]
+
+  )
+
+(defn make-file-name-with-timestamp
+  ;; Adds the current time at the end
+  ;; of the filename
+  [file-name]
+  (let [time-now (t/now)
+        time-formatter (tf/formatters :hour-minute-second)
+        time-now-formatted (tf/unparse time-formatter time-now)
+        new-file-name (str file-name "." time-now-formatted)]
+    new-file-name
+    ))
+
+(defn make-copy-with-timestamp
+ ;; Copies the file and adds current time at the end
+ ;; of the filename.
+ [file-name]
+ (let [file-contents (slurp file-name)
+       new-file-name (make-file-name-with-timestamp file-name)]
+   (spit new-file-name file-contents)))
 
 (defn short-round-name [round-name]
   (condp = round-name
@@ -201,13 +224,6 @@ activity-result
             :result-array (result-facts->result-array (:result/_activity activity-result))
             }})
 
-
-(get-marks result-facts)
-(get-dancers result-facts)
-(get-results-for-dancer result-facts 141)
-(apply hash-set [:a :b :b :c])
-(activity-result->class-result activity-result)
-activity-result
 ;; Provides useful Timbre aliases in this ns
 (log/refer-timbre)
 
@@ -303,9 +319,6 @@ activity-result
         out-xml (add-results-to-dp-xml in-xml (first class-results))]
     (spit "export5.xml" (xml/emit-str out-xml))))
 
-(smoke-test)
-(smoke-test2)
-
 ;; TODO - should be the callers responsibillity to provide correct format
 (defn- transform-result [activities-with-result]
   
@@ -332,33 +345,18 @@ activity-result
     (-> out .getWriter .toString)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; API
-
-(defn tango-xml-encode [xml-str]
-  (cstr/escape xml-str {
-                        \Ö "&#214;"
-                        \ö "&#246;"
-                        \ä "&#228;"
-                        \å "&#229;"
-                        \é "&#233;"
-                        })
-  )
-
-(tango-xml-encode "<Couple Seq=10\" Number=\"1090\" Name=\"Ebba Hellsten - Emmy Rapp\" Club=\"ND/ÖDT\" License=\"\"/>")
-
 (defn export-results [activities-with-result export-path]
   (log/info (str "Export Results to " export-path " with " activities-with-result))
   (let [in-xml (get-xml-from-file export-path)
         class-results (map activity-result->class-result activities-with-result)
-        ;out-xml (add-results-to-dp-xml in-xml (first class-results))
-        out-xml (reduce add-results-to-dp-xml in-xml class-results)
-        ]
-    (with-open [w (java.io.FileWriter. "bar.xml")]
-      (xml/emit out-xml w)) 
-    ))
+        out-xml (reduce add-results-to-dp-xml in-xml class-results)]
+    (make-copy-with-timestamp export-path)
+    (spit export-path (ppxml (xml/emit-str out-xml)))))
+
 (map activity-result->class-result activities-with-result)
 (activity-result->class-result activities-with-result)
 
-(defn smoke-test [] (export-results activities-with-result "dp.xml"))
+(defn smoke-test [] (export-results (activities-with-result) "dp.xml"))
 
 (smoke-test)
 
