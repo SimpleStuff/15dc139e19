@@ -76,21 +76,27 @@
     {:value (do
               (if query
                 (let [res
-                      (d/q '[:find [(pull ?r [*]) ...]
+                      (d/q '[:find [(pull ?r selector) ...]
                              :in $ selector
                              :where
                              [[:app/id 1] :app/results ?r]
-                             ;[[:app/id 1] :app/selected-activites ?a]
-                             ;[?a :activity/id ?id]
-                             ;[?r :result/activity ?ra]
-                             ;[?ra :activity/id ?id]
+                             [[:app/id 1] :app/selected-activites ?a]
+                             [?a :activity/id ?id]
+                             [?r :result/activity ?ra]
+                             [?ra :activity/id ?id]
                              ]
                            (d/db state) query)]
-                  (log query)
-                  (log "//////////////////////////////////////////")
-                  (log res)
+                  ;(log query)
+                  ;(log "//////////////////////////////////////////")
+                  ;(log res)
                   res)))
-     :query true
+     :query (let [q (d/q '[:find ?a
+                           :where [[:app/id 1] :app/selected-activites ?a]]
+                         (d/db state))]
+              ;(log "666666666666666")
+              (if (empty? q)
+                false
+                true))
      }))
 
 

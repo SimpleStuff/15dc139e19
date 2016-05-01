@@ -130,7 +130,10 @@
     (when (= topic :event-manager/transaction-result)
       (chsk-send! [:event-manager/query [[:competition/name :competition/location]]]))
     (when (= topic :tx/accepted)
-      (log payload))
+      (log payload)
+      (cond
+        (= payload 'participant/set-result)
+        (om/transact! reconciler `[:app/results])))
     ;(log "Exit event-msg-handler")
     ))
 
@@ -445,12 +448,16 @@
   Object
   (render
     [this]
-    (let [adj (om/props this)]
+    (let [adj (:adjudicator (om/props this))
+          results (:result (om/props this))
+          recall (:recall (om/props this))
+          marked (filter :result/mark-x results)]
       (log "ZZZZZZZZZZZZZZZzz")
       (log adj)
+      (log (:adjudicator/id adj))
       (dom/tr nil
         (dom/td nil (:adjudicator/name adj))
-        (dom/td nil "0/16")
+        (dom/td nil (str (count marked) "/" recall))
         (dom/td nil "X")))))
 
 (defui SelectedRoundView
@@ -459,8 +466,12 @@
   Object
   (render
     [this]
-    (let [activity (om/props this)
-          round (:activity/source activity)]
+    (let [activity (:activity (om/props this))
+          round (:activity/source activity)
+          recall (:round/recall round)
+          results (:results (om/props this))
+          results-for-adj-fn (fn [adj] (filter #(= (:adjudicator/id adj)
+                                                   (:adjudicator/id (:result/adjudicator %))) results))]
       (dom/div nil
         (dom/h4 nil (str "Round: " (:activity/name activity)))
         (dom/table
@@ -470,11 +481,12 @@
               (dom/th #js {:width "200"} "Adjudicator")
               (dom/th #js {:width "200"} "# marks")
               (dom/th #js {:width "200"} "Confirmed?")))
-          (apply dom/tbody nil (map #((om/factory RoundAdjudicatorView) %)
+          (apply dom/tbody nil (map #((om/factory RoundAdjudicatorView)
+                                      {:adjudicator %
+                                       :result      (into [] (results-for-adj-fn %))
+                                       :recall recall})
                                     (:adjudicator-panel/adjudicators
-                                      (:round/panel round))))
-          )
-        ))))
+                                      (:round/panel round)))))))))
 
 (defui SelectedRoundsView
   static om/IQuery
@@ -483,15 +495,18 @@
      :activity/name
      {:activity/source
       [{:round/panel
-        [{:adjudicator-panel/adjudicators [:adjudicator/name]}]}]}])
+        [{:adjudicator-panel/adjudicators [:adjudicator/name :adjudicator/id]}]}
+       :round/recall]}])
   Object
   (render
     [this]
     (log "SelectedRoundsView")
-    (log (:results (om/props this)))
     (dom/div nil
-      (map #((om/factory SelectedRoundView) %
-             (:results (om/props this)))
+      (map #((om/factory SelectedRoundView)
+             {:activity %
+              :results  (filter (fn [result] (= (:activity/id %)
+                                                (:activity/id (:result/activity result))))
+                                (:results (om/props this)))})
            (:selected-activity (om/props this))))))
 
 (defui ScheduleView
@@ -644,8 +659,7 @@
           spage (:app/selected-page (om/props this))
           selected-competition (:app/selected-competition (om/props this))
           make-button (partial make-menu-button this spage)]
-      (log "8888888888888888888888888")
-      (log (:app/results (om/props this)))
+      ;(log (:app/results (om/props this)))
       (dom/div #js {:className "navbar-wrapper"}
         (dom/div #js {:className "container"}
 
@@ -728,14 +742,25 @@
         ((transit-post "/commands") env cb)
         (if query
           (do
-            (log env)
+            ;(log env)
             (log "QQQQQQQQQQQQQQQQQQQQQQQ")
             (go
-              (let [response (async/<! (http/get "/query"
+              (let [query-str (pr-str [{:app/results [:result/mark-x
+                                                      :result/point
+                                                      :result/id
+                                                      ;{:result/participant [:participant/id]}
+                                                      {:result/adjudicator [:adjudicator/id]}
+                                                      {:result/activity [:activity/id]}]}])
+                    query-to-send (if (= :app/results (first (:query env)))
+                                    query-str
+                                    (pr-str (:query env)))
+                    response (async/<! (http/get "/query"
                                                  {:query-params
-                                                  {:query (pr-str (:query env))}}))
+                                                  {:query query-to-send}}))
                     body (:body response)
                     edn-result (second (cljs.reader/read-string body))]
+                ;(log query)
+
                 (om/transact! reconciler
                               `[(app/set-results {:results ~(:app/results edn-result)})]))))))
       )))

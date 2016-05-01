@@ -107,11 +107,11 @@
   [{:keys [state]} _ {:keys [results]}]
   {:value  {:keys [:app/results]}
    :action (fn []
-             (log (str "SET RESULTS "))
-             (log results)
-             (log (fix-result results))
+             ;(log (str "SET RESULTS "))
+             ;(log results)
+             ;(log (fix-result results))
              (let [q
                    (d/transact! state [{:app/id 1 :app/results (fix-result results)}])]
-               (log "Transaction Complete")
-               (log q)
+               ;(log "Transaction Complete")
+               ;(log q)
                q))})
