@@ -90,7 +90,7 @@
                           {:result/participant [:participant/number]}]}])]
                  (log/info "Export Started")
                  (log/info "Selected Acts " selected-acts-with-results)
-                 (exp/export-results selected-acts-with-results "" ""))))})
+                 (exp/export-results selected-acts-with-results "dp.xml"))))})
 
 (defmethod mutate 'app/log
   [{:keys [state] :as env} key params]

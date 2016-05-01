@@ -4,10 +4,225 @@
             [clj-time.core :as t]
             [clojure.data.xml :as xml]
             [clojure.xml :as cxml]
+            [clojure.string :as cstr]
+            [clojure.pprint :as cpp]
             [clojure.zip :as zip]
             [clojure.data.zip.xml :as zx]
             [taoensso.timbre :as log]
             ))
+
+;; Sample data
+(defn class-results[]
+  [{:class-name              "Disco Freestyle B-klass J Po"
+    :result {:round        "S"
+             :adjudicators [{:number 2}
+                            {:number 4}
+                            {:number 5}]
+             :dances       [{:name "X-Quick Forward"}
+                            {:name "Quick"}]
+             :result-array [{:dancer-number 30
+                             :marks         [true false true]}
+                            {:dancer-number 31
+                             :marks         [true true true]}
+                            {:dancer-number 32
+                             :marks         [false false true]}]}}
+                    ])
+
+(defn activities-with-result []
+[{:activity/name "Hiphop Singel Guld J1",
+  :round/name "Semifinal",
+  :round/panel
+  {:adjudicator-panel/adjudicators
+   [{:adjudicator/number 0}
+    {:adjudicator/number 1}
+    {:adjudicator/number 5}]},
+  :round/dances [{:dance/name "Medium"}],
+  :result/_activity
+  [{:result/mark-x true,
+    :result/adjudicator {:adjudicator/number 1},
+    :result/participant {:participant/number 143}}
+   {:result/mark-x true,
+    :result/adjudicator {:adjudicator/number 1},
+    :result/participant {:participant/number 141}}
+   {:result/mark-x false,
+    :result/adjudicator {:adjudicator/number 2},
+    :result/participant {:participant/number 141}}
+   {:result/mark-x false,
+    :result/adjudicator {:adjudicator/number 3},
+    :result/participant {:participant/number 141}}
+   {:result/mark-x true,
+    :result/adjudicator {:adjudicator/number 4},
+    :result/participant {:participant/number 141}}
+   {:result/mark-x true,
+    :result/adjudicator {:adjudicator/number 1},
+    :result/participant {:participant/number 144}}]}
+ {:activity/name "Hiphop Singel Brons J1",
+  :round/name "Direct Final",
+  :round/panel
+  {:adjudicator-panel/adjudicators
+   [{:adjudicator/number 2}
+    {:adjudicator/number 3}
+    {:adjudicator/number 4}]},
+  :round/dances [{:dance/name "Medium"}]}
+ {:activity/name "Hiphop Singel Brons U",
+  :round/name "Direct Final",
+  :round/panel
+  {:adjudicator-panel/adjudicators
+   [{:adjudicator/number 0}
+    {:adjudicator/number 1}
+    {:adjudicator/number 5}]},
+  :round/dances [{:dance/name "Medium"}]}
+ {:activity/name "Hiphop Singel Brons B2",
+  :round/name "Semifinal",
+  :round/panel
+  {:adjudicator-panel/adjudicators
+   [{:adjudicator/number 2}
+    {:adjudicator/number 3}
+    {:adjudicator/number 4}]},
+  :round/dances
+  [{:dance/name "Medium"}
+   {:dance/name "Medium"}
+   {:dance/name "Medium"}]}
+ {:activity/name "Hiphop Singel Silver B2",
+  :round/name "Semifinal",
+  :round/panel
+  {:adjudicator-panel/adjudicators
+   [{:adjudicator/number 0}
+    {:adjudicator/number 1}
+    {:adjudicator/number 5}]},
+  :round/dances
+  [{:dance/name "Medium"}
+   {:dance/name "Medium"}
+   {:dance/name "Medium"}
+   {:dance/name "Medium"}],
+  :result/_activity
+  [{:result/mark-x true,
+    :result/adjudicator {:adjudicator/number 0},
+    :result/participant {:participant/number 83}}
+   {:result/mark-x true,
+    :result/adjudicator {:adjudicator/number 0},
+    :result/participant {:participant/number 84}}
+
+   {:result/mark-x true,
+    :result/adjudicator {:adjudicator/number 0},
+    :result/participant {:participant/number 85}}
+   {:result/mark-x true,
+    :result/adjudicator {:adjudicator/number 0},
+    :result/participant {:participant/number 82}}
+   {:result/mark-x true,
+    :result/adjudicator {:adjudicator/number 0},
+    :result/participant {:participant/number 80}}
+   {:result/mark-x false,
+    :result/adjudicator {:adjudicator/number 0},
+    :result/participant {:participant/number 86}}
+   {:result/mark-x true,
+    :result/adjudicator {:adjudicator/number 0},
+    :result/participant {:participant/number 89}}
+   {:result/mark-x false,
+    :result/adjudicator {:adjudicator/number 1},
+    :result/participant {:participant/number 83}}
+   {:result/mark-x true,
+    :result/adjudicator {:adjudicator/number 1},
+    :result/participant {:participant/number 85}}
+   {:result/mark-x false,
+    :result/adjudicator {:adjudicator/number 1},
+    :result/participant {:participant/number 84}}
+   {:result/mark-x true,
+    :result/adjudicator {:adjudicator/number 1},
+    :result/participant {:participant/number 82}}
+   {:result/mark-x true,
+    :result/adjudicator {:adjudicator/number 1},
+    :result/participant {:participant/number 87}}
+   {:result/mark-x true,
+    :result/adjudicator {:adjudicator/number 1},
+    :result/participant {:participant/number 89}}]}
+ {:activity/name "Hiphop Singel Brons U",
+  :round/name "Presentation",
+  :round/panel
+  {:adjudicator-panel/adjudicators
+   [{:adjudicator/number 0}
+    {:adjudicator/number 1}
+    {:adjudicator/number 5}]},
+  :round/dances [{:dance/name "Medium"} {:dance/name "Medium"}]}])
+
+(defn activity-result [] ()first )
+
+
+(defn make-file-name-with-timestamp [file-name]
+
+  )
+
+(defn make-file-name-with-timestamp
+  ;; Adds the current time at the end
+  ;; of the filename
+  [file-name]
+  (let [time-now (t/now)
+        time-formatter (tf/formatters :hour-minute-second)
+        time-now-formatted (tf/unparse time-formatter time-now)
+        new-file-name (str file-name "." time-now-formatted)]
+    new-file-name
+    ))
+
+(defn make-copy-with-timestamp
+ ;; Copies the file and adds current time at the end
+ ;; of the filename.
+ [file-name]
+ (let [file-contents (slurp file-name)
+       new-file-name (make-file-name-with-timestamp file-name)]
+   (spit new-file-name file-contents)))
+
+(defn short-round-name [round-name]
+  (condp = round-name
+    "Semifinal" "S"
+    round-name))
+
+(:result/_activity activity-result)
+
+(def result-facts 
+  [{:result/mark-x true,
+    :result/adjudicator {:adjudicator/number 1},
+    :result/participant {:participant/number 143}}
+   {:result/mark-x true,
+    :result/adjudicator {:adjudicator/number 2},
+    :result/participant {:participant/number 141}}
+   {:result/mark-x false,
+    :result/adjudicator {:adjudicator/number 1},
+    :result/participant {:participant/number 141}}
+   {:result/mark-x true,
+    :result/adjudicator {:adjudicator/number 3},
+    :result/participant {:participant/number 141}}
+   {:result/mark-x true,
+    :result/adjudicator {:adjudicator/number 1},
+    :result/participant {:participant/number 144}}])
+
+(defn get-marks [result-facts]
+  (vec (map #(:result/mark-x %) result-facts)))
+
+(defn get-dancers [result-facts]
+  (apply hash-set (map #(get-in % [:result/participant :participant/number]) result-facts)))
+
+
+(defn get-results-for-dancer [result-facts dancer-number]
+  (let [dancer-result-facts (filter
+                             #(= dancer-number (get-in % [:result/participant :participant/number]))
+                             result-facts)]
+    {:dancer-number dancer-number
+     :marks (get-marks dancer-result-facts)}))
+
+(defn result-facts->result-array [result-facts]
+  (let [dancer-numbers (get-dancers result-facts)]
+    (vec (map #(get-results-for-dancer result-facts %) dancer-numbers ))))
+
+(defn activity-result->class-result [activity-result]
+  {:class-name (:activity/name activity-result)
+   :result {:round (short-round-name (:round/name activity-result))
+            :adjudicators (vec (map
+                                #(hash-map :number (:adjudicator/number %))
+                                (get-in activity-result [:round/panel :adjudicator-panel/adjudicators])))
+            :dances (vec (map #(hash-map :name (:dance/name %))
+                                (get-in activity-result [:round/dances])))
+            :result-array (result-facts->result-array (:result/_activity activity-result))
+            }})
 
 ;; Provides useful Timbre aliases in this ns
 (log/refer-timbre)
@@ -15,20 +230,6 @@
 (defn get-xml-from-file [xml-file-path]
   (xml/parse (java.io.FileInputStream. xml-file-path)))
 
-(def class-results [{:class-name "Disco Freestyle B-klass J Po"
-                     :result {:round "S"
-                              :adjudicators [{:number 2}
-                                            {:number 4}
-                                            {:number 5}]
-                              :dances [{:name "X-Quick Forward"}
-                                       {:name "Quick"}]
-                              :result-array [{:dancer-number 30
-                                              :marks [true false true]}
-                                             {:dancer-number 31
-                                              :marks [true true true]}
-                                             {:dancer-number 32
-                                              :marks [false false true]}]}}
-                    ])
 
 (defn get-dance-count-from-class-node [class-node]
   (let [dance-list-node (first (filter #(= (:tag %) :DanceList) (:content class-node)))]
@@ -57,13 +258,32 @@
                (make-mark-list-node (:marks couple-data))
                ))
 
-(defn make-result-node [result-array round seq dance-qty adj-qty]
-  (xml/element :Result
-               {:Seq seq
-                :Round round
-                :AdjQty adj-qty
-                :D3 "0"}
-               (reduce #(conj %1 (make-couple-node %2 (count %1) dance-qty adj-qty)) [] result-array)))
+(defn make-adj-list-node [adjudicators]
+  (xml/element :AdjList {} (reduce #(conj %1 (xml/element :Adjudicator {:Seq (count %1) :Number (:number %2)})) [] adjudicators)))
+
+(defn make-dance-list-node [dances]
+  (xml/element :DanceList {} (reduce #(conj %1 (xml/element :Dance {:Seq (count %1) :Name (:name %2)})) [] dances)))
+
+(defn make-result-node [result round seq]
+  (let [result-array (:result-array result)
+        dances (:dances result)
+        dance-qty (count dances)
+        adjudicators (:adjudicators result)
+        adj-qty (count adjudicators)]
+    (xml/element :Result {:Seq seq
+                          :Round round
+                          :AdjQty adj-qty
+                          :D3 "0"}
+                 
+                 (make-adj-list-node (:adjudicators result))
+                 (make-dance-list-node (:dances result))
+                 (xml/element :ResultArray {} 
+                              (reduce #(conj %1 (make-couple-node %2 (count %1) dance-qty adj-qty))
+                                      []
+                                      result-array))
+                 ))
+  )
+
 
 (defn fix-class [class class-result]
   (clojure.walk/postwalk
@@ -72,13 +292,9 @@
         (= (:tag form) :Results) (merge form {:attrs   {:Qty (inc (count (:content form)))}
                                               :content (conj (vec (:content form))
                                                              (make-result-node
-                                                              (get-in class-result [:result :result-array] )
+                                                              (get-in class-result [:result] )
                                                               (get-in class-result [:result :round] )
-                                                              (count (:content form))
-                                                              (get-dance-count-from-class-node class)
-                                                              (count  (get-in class-result [:result :adjudicators] )))
-                                                             )
-                                              })
+                                                              (count (:content form))))})
         :else form))
     class))
 
@@ -89,30 +305,54 @@
         (= (:tag form) :Class) (if (= (:Name (:attrs form))
                                       (:class-name class-result))
                                  (fix-class form class-result)
-                                 ;(xml/element :Class {:Name "Changed Class"})
                                  form)
         :else form))
     xml-data))
 
+(defn smoke-test2 []
+  (let [in-xml (get-xml-from-file "test/tango/examples/real-example-kungsor.xml")
+        cl-res (activity-result->class-result activity-result)
+        out-xml (add-results-to-dp-xml in-xml cl-res)]
+    (spit "export6.xml" (xml/emit-str out-xml))))
 (defn smoke-test []
   (let [in-xml (get-xml-from-file "test/tango/examples/real-example.xml")
         out-xml (add-results-to-dp-xml in-xml (first class-results))]
     (spit "export5.xml" (xml/emit-str out-xml))))
 
-(smoke-test)
-
 ;; TODO - should be the callers responsibillity to provide correct format
 (defn- transform-result [activities-with-result]
+  
   ;; TODO - perform transform and export
   (if :export-is-awsome
     true
     false))
 
+;; http://nakkaya.com/2010/03/27/pretty-printing-xml-with-clojure/
+(defn ppxml [xml]
+  (let [in (javax.xml.transform.stream.StreamSource.
+            (java.io.StringReader. xml))
+        writer (java.io.StringWriter.)
+        out (javax.xml.transform.stream.StreamResult. writer)
+        transformer (.newTransformer 
+                     (javax.xml.transform.TransformerFactory/newInstance))]
+    (.setOutputProperty transformer 
+                        javax.xml.transform.OutputKeys/INDENT "yes")
+    (.setOutputProperty transformer 
+                        "{http://xml.apache.org/xslt}indent-amount" "2")
+    (.setOutputProperty transformer 
+                        javax.xml.transform.OutputKeys/METHOD "xml")
+    (.transform transformer in out)
+    (-> out .getWriter .toString)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; API
+(defn export-results [activities-with-result export-path]
+  (log/info (str "Export Results to " export-path " with " activities-with-result))
+  (let [in-xml (get-xml-from-file export-path)
+        class-results (map activity-result->class-result activities-with-result)
+        out-xml (reduce add-results-to-dp-xml in-xml class-results)]
+    (make-copy-with-timestamp export-path)
+    (spit export-path (ppxml (xml/emit-str out-xml)))))
 
-;; TODO - provide paths for the correct files
-(defn export-results [activities-with-result export-path original-path]
-  (log/info (str "Export Results with " activities-with-result))
-  (transform-result activities-with-result))
+(defn smoke-test [] (export-results (activities-with-result) "dp.xml"))
 
+;; (smoke-test)
