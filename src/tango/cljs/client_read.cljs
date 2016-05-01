@@ -27,12 +27,13 @@
   [{:keys [state query]} _ _]
   {:value (if query
             (do
-              (log "Read Selected Comp")
+              ;(log "Read Selected Comp")
               (d/q '[:find (pull ?comp ?selector) .
                      :in $ ?selector
                      :where [[:app/id 1] :app/selected-competition ?comp]]
                    (d/db state) query)))
-   :query true})
+   ;:query true
+   })
 
 (defmethod read :app/new-competition
   [{:keys [state query]} _ _]
@@ -60,9 +61,67 @@
                (d/db state))})
 
 (defmethod read :app/selected-activity
-  [{:keys [state]} _ _]
-  {:value (d/q '[:find [(pull ?a [:activity/id]) ...]
+  [{:keys [state query]} _ _]
+  {:value (d/q '[:find [(pull ?a ?selector) ...]
+                 :in $ ?selector
                  :where [[:app/id 1] :app/selected-activites ?a]]
-               (d/db state))})
+               (d/db state) query)})
+
+(defmethod read :app/results
+  [{:keys [state query]} _ _]
+  (do
+    ;(log "Read results ")
+
+    ;; TODO - make sure that results are only for this round
+    {:value (do
+              (if query
+                (let [res
+                      (d/q '[:find [(pull ?r selector) ...]
+                             :in $ selector
+                             :where
+                             [[:app/id 1] :app/results ?r]
+                             [[:app/id 1] :app/selected-activites ?a]
+                             [?a :activity/id ?id]
+                             [?r :result/activity ?ra]
+                             [?ra :activity/id ?id]
+                             ]
+                           (d/db state) query)]
+                  ;(log query)
+                  ;(log "//////////////////////////////////////////")
+                  ;(log res)
+                  res)))
+     :query (let [q (d/q '[:find ?a
+                           :where [[:app/id 1] :app/selected-activites ?a]]
+                         (d/db state))]
+              (if (empty? q)
+                false
+                true))
+     }))
+
+(defmethod read :app/confirmed
+  [{:keys [state query]} _ _]
+  (do
+    ;(log "Read Confirmed")
+    {:value (do
+              (if query
+                (let [res
+                      (d/q '[:find [(pull ?c selector) ...]
+                             :in $ selector
+                             :where
+                             [[:app/id 1] :app/confirmed ?c]
+                             ;[?c :activity/id ?id]
+                             ;[?a :activity/confirmed-by ?adj]
+                             ]
+                           (d/db state) query)]
+                  ;(log query)
+                  ;(log "//////////////////////////////////////////")
+                  ;(log res)
+                  res)))
+     :query (let [q (d/q '[:find ?a
+                           :where [[:app/id 1] :app/selected-activites ?a]]
+                         (d/db state))]
+              (if (empty? q)
+                false
+                true))}))
 
 

@@ -135,6 +135,12 @@
             (log/info (str "app/selected-competition read"))
             "Selected comp")})
 
+(defmethod reader :app/confirmed
+  [{:keys [state query]} key params]
+  {:value (do
+            (log/info (str "app/confirmed read"))
+            (d/query-confirmation state query))})
+
 ;; TODO - hack fix
 (defmethod reader :app/selected-adjudicator
   [{:keys [state query]} key params]

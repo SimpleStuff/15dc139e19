@@ -36,13 +36,22 @@
                             :result/activity {:activity/id (:result/activity result)}
                             :result/adjudicator {:adjudicator/id (:result/adjudicator result)}})])))
 
-(defn confirm-results [conn results]
+(defn confirm-results [conn results adjudicator activity]
   (do
-    (log/info (str "Confirm Results " results))
+    (log/info (str "Confirm Results " results " - " adjudicator " - " activity))
     (log/debug (str "Results Count " (count (d/query-all-results conn ['*]))))
     (let [tx
-          (d/set-results conn results)]
-      ;(log/info "Transaction " tx)
+          (d/set-results conn results)
+          id (:activity/id activity)
+          adj-id (:adjudicator/id adjudicator)
+          conf {:activity/id id
+                :activity/confirmed-by adjudicator}
+          ]
+      (log/info id)
+      (log/info adj-id)
+      (log/info conf)
+      (d/confirm-activity conn [conf])
+      ;(log/info "Transaction " tx-2)
       (log/debug (str "Results After Count " (count (d/query-all-results conn ['*])))))
     ))
 
@@ -68,9 +77,11 @@
                      (set-result (d/create-connection datomic-storage-uri) payload))
                    ['app/confirm-marks _]
                    (do
-                     (log/info (str "Confirm Result"))
+                     (log/info (str "Confirm Result " payload))
                      (confirm-results (d/create-connection datomic-storage-uri)
-                                      (into [] (:results payload))))
+                                      (into [] (:results payload))
+                                      (:adjudicator payload)
+                                      (:activity payload)))
                    ;[:app/selected-activity _]
                    ;(do
                    ;  (log/info (str "Selected activity " (:app/selected-activity payload)))

@@ -68,6 +68,14 @@
 
              :app/selected-activites {:db/cardinality :db.cardinality/many
                                       :db/valueType :db.type/ref}
+
+             :app/results {:db/cardinality :db.cardinality/many
+                           :db/valueType :db.type/ref}
+
+             :app/confirmed {:db/cardinality :db.cardinality/many
+                             :db/valueType :db.type/ref}
+
+
              ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
              ;; Competition
              :competition/name {:db/unique :db.unique/identity}
@@ -114,6 +122,9 @@
              :activity/source {:db/cardinality :db.cardinality/one
                                :db/valueType :db.type/ref}
 
+             :activity/confirmed-by {:db/cardinality :db.cardinality/many
+                                     :db/valueType :db.type/ref}
+
              ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
              ;; Rounds
              :round/id {:db/unique :db.unique/identity}
@@ -138,6 +149,7 @@
              :result/judgings {:db/cardinality :db.cardinality/many
                                :db/valueType :db.type/ref}
 
+             :result/id {:db/unique :db.unique/identity}
              ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
              ;; Judgings
              :judging/adjudicator {:db/cardinality :db.cardinality/one

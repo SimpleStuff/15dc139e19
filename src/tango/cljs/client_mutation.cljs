@@ -53,8 +53,8 @@
   {:value  {:keys [:app/online?]}
    :action (fn []
              (do
-               (log "Mutate online")
-               (log online?)
+               ;(log "Mutate online")
+               ;(log online?)
                (d/transact! state [{:app/id 1 :app/online? online?}])))})
 
 (defmethod mutate 'app/select-competition
@@ -89,5 +89,53 @@
   [{:keys [state]} _ {:keys [competition/name] :as competition}]
   {:value  {:keys []}
    :action (fn [] (do
-                    (log competition)
+                    ;(log competition)
                     (d/transact! state [competition])))})
+
+(defn fix-result [results]
+  (mapv #(hash-map
+          :result/id (:result/id %)
+          :result/mark-x (:result/mark-x %)                 ;(if (:result/mark-x %) (:result/mark-x %) false)
+          :result/point       (if (:result/point %) (:result/point %) 0)
+          ;:result/participant [:participant/id (:participant/id (:result/participant %))]
+          :result/activity    [:activity/id (:activity/id (:result/activity %))]
+          :result/adjudicator [:adjudicator/id (:adjudicator/id (:result/adjudicator %))]
+          )
+        results))
+
+(defmethod mutate 'app/set-results
+  [{:keys [state]} _ {:keys [results]}]
+  {:value  {:keys [:app/results]}
+   :action (fn []
+             ;(log (str "SET RESULTS "))
+             ;(log results)
+             ;(log (fix-result results))
+             (let [q
+                   (d/transact! state [{:app/id 1 :app/results (fix-result results)}])]
+               ;(log "Transaction Complete")
+               ;(log q)
+               q))})
+
+(defn fix-confirmed [confirmed]
+  (mapv #(hash-map
+          :activity/id (:activity/id %)
+          :activity/confirmed-by (mapv (fn [adj] [:adjudicator/id
+                                                  (:adjudicator/id adj)])
+                                       (:activity/confirmed-by %)))
+        confirmed))
+
+(defmethod mutate 'app/confirm
+  [{:keys [state]} _ {:keys [confirmations]}]
+  {:value  {:keys [:app/confirmed]}
+   :action (fn []
+             ;(log (str "SET CONFIRMATIONS "))
+             ;(log results)
+             ;(log (fix-confirmed confirmations))
+             ;(log confirmations)
+             (let [is-ok (:activity/id (first confirmations))
+                   q
+                   (when is-ok
+                     (d/transact! state [{:app/id 1 :app/confirmed (fix-confirmed confirmations)}]))]
+               ;(log "Transaction Complete")
+               ;(log q)
+               q))})

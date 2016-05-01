@@ -3,8 +3,7 @@
     [datomic.api :as d]
     [datascript.core :as ds]
     [taoensso.timbre :as log]
-    [tango.ui-db :as ui]
-    ))
+    [tango.ui-db :as ui]))
 
 ;; Provides useful Timbre aliases in this ns
 (log/refer-timbre)
@@ -100,6 +99,13 @@
     :db/valueType          :db.type/string
     :db/cardinality        :db.cardinality/one
     :db/doc                "An activity name"
+    :db.install/_attribute :db.part/db}
+
+   {:db/id                 #db/id[:db.part/db]
+    :db/ident              :activity/confirmed-by
+    :db/valueType          :db.type/ref
+    :db/cardinality        :db.cardinality/many
+    :db/doc                "The adjudicators that have confirmed results for this activity"
     :db.install/_attribute :db.part/db}
 
    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -251,10 +257,20 @@
 
 (defn select-round [conn round]
   @(d/transact conn [(fix-id {:app/selected-activites round
-                              :app/id                1})]))
+                              :app/id                 1})]))
 
 (defn set-results [conn results]
   @(d/transact conn (mapv fix-id results)))
+
+(defn confirm-activity [conn confirmation]
+  @(d/transact conn (mapv fix-id confirmation)))
+
+(defn query-confirmation [conn query]
+  (d/q '[:find [(pull ?e selector) ...]
+         :in $ selector
+         :where
+         [?e :activity/confirmed-by]]
+       (d/db conn) query))
 
 (defn transform-competition [db update-fn]
   (let [tx-data (update-fn)]
