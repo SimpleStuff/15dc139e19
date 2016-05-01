@@ -27,7 +27,7 @@
   [{:keys [state query]} _ _]
   {:value (if query
             (do
-              (log "Read Selected Comp")
+              ;(log "Read Selected Comp")
               (d/q '[:find (pull ?comp ?selector) .
                      :in $ ?selector
                      :where [[:app/id 1] :app/selected-competition ?comp]]
@@ -70,7 +70,7 @@
 (defmethod read :app/results
   [{:keys [state query]} _ _]
   (do
-    (log "Read results ")
+    ;(log "Read results ")
 
     ;; TODO - make sure that results are only for this round
     {:value (do
@@ -93,10 +93,35 @@
      :query (let [q (d/q '[:find ?a
                            :where [[:app/id 1] :app/selected-activites ?a]]
                          (d/db state))]
-              ;(log "666666666666666")
               (if (empty? q)
                 false
                 true))
      }))
+
+(defmethod read :app/confirmed
+  [{:keys [state query]} _ _]
+  (do
+    ;(log "Read Confirmed")
+    {:value (do
+              (if query
+                (let [res
+                      (d/q '[:find [(pull ?c selector) ...]
+                             :in $ selector
+                             :where
+                             [[:app/id 1] :app/confirmed ?c]
+                             ;[?c :activity/id ?id]
+                             ;[?a :activity/confirmed-by ?adj]
+                             ]
+                           (d/db state) query)]
+                  ;(log query)
+                  ;(log "//////////////////////////////////////////")
+                  ;(log res)
+                  res)))
+     :query (let [q (d/q '[:find ?a
+                           :where [[:app/id 1] :app/selected-activites ?a]]
+                         (d/db state))]
+              (if (empty? q)
+                false
+                true))}))
 
 

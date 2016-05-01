@@ -133,7 +133,10 @@
       (log payload)
       (cond
         (= payload 'participant/set-result)
-        (om/transact! reconciler `[:app/results])))
+        (om/transact! reconciler `[:app/results])
+
+        (= (:topic payload) 'app/confirm-marks)
+        (om/transact! reconciler `[:app/confirmed])))
     ;(log "Exit event-msg-handler")
     ))
 
@@ -242,7 +245,6 @@
   (render
     [this]
     (let [panels (sort-by :adjudicator-panel/name (:competition/panels (om/props this)))]
-      (log panels)
       (dom/div nil
         (dom/h2 {:className "sub-header"} "Domarpaneler")
         (dom/table
@@ -411,7 +413,6 @@
                                     (:selected-activity (om/props this))))
 
           completed? (= (:round/status (:activity/source (om/props this))) :completed)]
-      ;(log (:selected-activity (om/props this)))
       (dom/tr #js {:className (if selected? "info" "")
                    :onClick   #(when-not completed?
                                 (when-not selected?
@@ -451,14 +452,12 @@
     (let [adj (:adjudicator (om/props this))
           results (:result (om/props this))
           recall (:recall (om/props this))
-          marked (filter :result/mark-x results)]
-      (log "ZZZZZZZZZZZZZZZzz")
-      (log adj)
-      (log (:adjudicator/id adj))
+          marked (filter :result/mark-x results)
+          confirmed-by (:confirmed (om/props this))]
       (dom/tr nil
         (dom/td nil (:adjudicator/name adj))
         (dom/td nil (str (count marked) "/" recall))
-        (dom/td nil "X")))))
+        (dom/td nil (if confirmed-by "X" ""))))))
 
 (defui SelectedRoundView
   static om/IQuery
@@ -470,8 +469,12 @@
           round (:activity/source activity)
           recall (:round/recall round)
           results (:results (om/props this))
+          confirmed (:confirmed (om/props this))
           results-for-adj-fn (fn [adj] (filter #(= (:adjudicator/id adj)
-                                                   (:adjudicator/id (:result/adjudicator %))) results))]
+                                                   (:adjudicator/id (:result/adjudicator %))) results))
+          confirmed-for-adj (fn [adj] (first (filter #(= (:adjudicator/id adj)
+                                                         (:adjudicator/id %))
+                                                     (:activity/confirmed-by confirmed))))]
       (dom/div nil
         (dom/h4 nil (str "Round: " (:activity/name activity)))
         (dom/table
@@ -484,7 +487,8 @@
           (apply dom/tbody nil (map #((om/factory RoundAdjudicatorView)
                                       {:adjudicator %
                                        :result      (into [] (results-for-adj-fn %))
-                                       :recall recall})
+                                       :recall      recall
+                                       :confirmed   (confirmed-for-adj %)})
                                     (:adjudicator-panel/adjudicators
                                       (:round/panel round)))))))))
 
@@ -500,13 +504,15 @@
   Object
   (render
     [this]
-    (log "SelectedRoundsView")
     (dom/div nil
       (map #((om/factory SelectedRoundView)
-             {:activity %
-              :results  (filter (fn [result] (= (:activity/id %)
-                                                (:activity/id (:result/activity result))))
-                                (:results (om/props this)))})
+             {:activity  %
+              :results   (filter (fn [result] (= (:activity/id %)
+                                                 (:activity/id (:result/activity result))))
+                                 (:results (om/props this)))
+              :confirmed (first (filter (fn [confirmed] (= (:activity/id %)
+                                                           (:activity/id confirmed)))
+                                        (:confirmed (om/props this))))})
            (:selected-activity (om/props this))))))
 
 (defui ScheduleView
@@ -556,10 +562,6 @@
                                                  :value (value-fn e)}) ])))
           update-competition-fn (update-fn entity #(.. % -target -value))
           update-competition-options-fn (update-fn options #(.. % -target -checked))]
-      (log "Render Properties")
-      (log "Entity >")
-      (log (:db/id entity))
-      (log (:competition/id entity))
       (dom/div nil
         (dom/h3 nil "Competition Information")
         (dom/form nil
@@ -650,16 +652,18 @@
                     :result/id
                     ;{:result/participant [:participant/id]}
                     {:result/adjudicator [:adjudicator/id]}
-                    {:result/activity [:activity/id]}]}])
+                    {:result/activity [:activity/id]}]}
+
+     {:app/confirmed [:activity/id
+                      {:activity/confirmed-by [:adjudicator/id]}]}])
+
   Object
   (render
     [this]
-    (log (:app/online? (om/props this)))
     (let [competitions (:app/competitions (om/props this))
           spage (:app/selected-page (om/props this))
           selected-competition (:app/selected-competition (om/props this))
           make-button (partial make-menu-button this spage)]
-      ;(log (:app/results (om/props this)))
       (dom/div #js {:className "navbar-wrapper"}
         (dom/div #js {:className "container"}
 
@@ -712,7 +716,8 @@
                 :adjudicator-panels ((om/factory AdjudicatorPanelsView) selected-competition)
                 :selected-rounds ((om/factory SelectedRoundsView)
                                    {:selected-activity (:app/selected-activity (om/props this))
-                                    :results (:app/results (om/props this))})))))))))
+                                    :results (:app/results (om/props this))
+                                    :confirmed (:app/confirmed (om/props this))})))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Remote Posts
@@ -721,7 +726,7 @@
   (fn [edn cb]
     (log edn)
     (.send XhrIo url
-           log
+           #() ;log
            ;(this-as this
            ;  (log (t/read (t/reader :json)
            ;               (.getResponseText this)))
@@ -734,26 +739,33 @@
   (fn [{:keys [remote query command] :as env} cb]
     (if remote
       (do
-        (log "Env > ")
-        (log env)
-        (log (str "Sent to Tango Backend => " remote))
+        ;(log "Env > ")
+        ;(log env)
+        ;(log (str "Sent to Tango Backend => " remote))
         (chsk-send! [:event-manager/query [[:competition/name :competition/location]]]))
       (if command
         ((transit-post "/commands") env cb)
         (if query
           (do
             ;(log env)
-            (log "QQQQQQQQQQQQQQQQQQQQQQQ")
+            ;(log "QQQQQQQQQQQQQQQQQQQQQQQ")
             (go
-              (let [query-str (pr-str [{:app/results [:result/mark-x
+              (let [result-query-str (pr-str [{:app/results [:result/mark-x
                                                       :result/point
                                                       :result/id
                                                       ;{:result/participant [:participant/id]}
                                                       {:result/adjudicator [:adjudicator/id]}
                                                       {:result/activity [:activity/id]}]}])
-                    query-to-send (if (= :app/results (first (:query env)))
-                                    query-str
-                                    (pr-str (:query env)))
+                    query-to-send (cond
+                                    (= :app/results (first (:query env)))
+                                    result-query-str
+
+                                    (= :app/confirmed (first (:query env)))
+                                     (pr-str [{:app/confirmed
+                                               [:activity/id
+                                                {:activity/confirmed-by [:adjudicator/id]}]}])
+
+                                    :else (pr-str (:query env)))
                     response (async/<! (http/get "/query"
                                                  {:query-params
                                                   {:query query-to-send}}))
@@ -761,9 +773,22 @@
                     edn-result (second (cljs.reader/read-string body))]
                 ;(log query)
 
-                (om/transact! reconciler
-                              `[(app/set-results {:results ~(:app/results edn-result)})]))))))
-      )))
+                (cond
+                  (= :app/results (first (:query env)))
+                  (om/transact! reconciler
+                                `[(app/set-results {:results ~(:app/results edn-result)})])
+
+                  (= :app/confirmed (first (:query env)))
+                  (om/transact! reconciler
+                                `[(app/confirm {:confirmations ~(:app/confirmed edn-result)})])
+
+                  :else
+                  (if (:app/confirmed edn-result)
+                    (om/transact! reconciler
+                                  `[(app/set-results {:results ~(:app/results edn-result)})
+                                    (app/confirm {:confirmations ~(:app/confirmed edn-result)})])
+                    (om/transact! reconciler
+                                  `[(app/set-results {:results ~(:app/results edn-result)})])))))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Application

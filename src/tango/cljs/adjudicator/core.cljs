@@ -394,7 +394,7 @@
           in-admin-mode? (:app/admin-mode (om/props this))
           ]
       (log-trace "Rendering MainComponent")
-
+      (log selected-activity)
       (dom/div #js {:className "container-fluid"}
         (when (and (not selected-activity) (:name @local-id))
           (dom/div nil
@@ -476,8 +476,10 @@
                                        :onClick   #(om/transact!
                                                     this
                                                     `[(app/confirm-marks
-                                                        ~{:results results-for-this-adjudicator
-                                                          :adjudicator selected-adjudicator})])}
+                                                        ~{:results     results-for-this-adjudicator
+                                                          :adjudicator selected-adjudicator
+                                                          :activity (select-keys selected-activity
+                                                                                 [:activity/id])})])}
                                   "Confirm Marks")))
 
 

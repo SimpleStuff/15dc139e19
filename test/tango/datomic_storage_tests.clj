@@ -89,6 +89,19 @@
                                                     :result/activity    [:activity/id]}]
                                              (:activity/id (:result/activity result)))))))))
 
+(deftest result-confirmations-should-be-stored
+  (testing "Adjudicator result confirmation should be stored"
+    (let [_ (ds/delete-storage mem-uri)
+          _ (ds/create-storage mem-uri (into ds/select-activity-schema ds/result-schema))
+          conn (ds/create-connection mem-uri)
+          confirmation {:activity/id           #uuid "60edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"
+                        :activity/confirmed-by [{:adjudicator/id #uuid "1ace2915-42dc-4f58-8017-dcb79f958463"}
+                                                {:adjudicator/id #uuid "2ace2915-42dc-4f58-8017-dcb79f958463"}]}]
+      (ds/confirm-activity conn [confirmation])
+      (is (= confirmation (first (ds/query-confirmation
+                                   conn [:activity/id
+                                         {:activity/confirmed-by [:adjudicator/id]}])))))))
+
 (deftest adjudicator-results-should-filter-on-given-activity
   (testing "Adjudicator result can be transacted to db"
     (let [_ (ds/delete-storage mem-uri)

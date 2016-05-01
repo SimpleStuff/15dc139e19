@@ -72,7 +72,8 @@
              :app/results {:db/cardinality :db.cardinality/many
                            :db/valueType :db.type/ref}
 
-
+             :app/confirmed {:db/cardinality :db.cardinality/many
+                             :db/valueType :db.type/ref}
 
 
              ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -120,6 +121,9 @@
 
              :activity/source {:db/cardinality :db.cardinality/one
                                :db/valueType :db.type/ref}
+
+             :activity/confirmed-by {:db/cardinality :db.cardinality/many
+                                     :db/valueType :db.type/ref}
 
              ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
              ;; Rounds
