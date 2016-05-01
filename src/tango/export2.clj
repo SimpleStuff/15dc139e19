@@ -148,17 +148,13 @@
 (defn activity-result [] ()first )
 
 
-(defn make-file-name-with-timestamp [file-name]
-
-  )
-
 (defn make-file-name-with-timestamp
   ;; Adds the current time at the end
   ;; of the filename
   [file-name]
   (let [time-now (t/now)
         time-formatter (tf/formatters :hour-minute-second)
-        time-now-formatted (tf/unparse time-formatter time-now)
+        time-now-formatted (cstr/replace (tf/unparse time-formatter time-now) \: \_)
         new-file-name (str file-name "." time-now-formatted)]
     new-file-name
     ))
