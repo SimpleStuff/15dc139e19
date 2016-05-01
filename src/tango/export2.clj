@@ -353,14 +353,6 @@
     (make-copy-with-timestamp export-path)
     (spit export-path (ppxml (xml/emit-str out-xml)))))
 
-(map activity-result->class-result activities-with-result)
-(activity-result->class-result activities-with-result)
-
 (defn smoke-test [] (export-results (activities-with-result) "dp.xml"))
 
-(smoke-test)
-
-(defn smoke-test-old []
-  (let [in-xml (get-xml-from-file "test/tango/examples/real-example.xml")
-        out-xml (add-results-to-dp-xml in-xml (first class-results))]
-    (spit "export5.xml" (xml/emit-str out-xml))))
+;; (smoke-test)
