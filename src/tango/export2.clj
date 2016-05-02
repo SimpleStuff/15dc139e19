@@ -152,7 +152,7 @@
     {:adjudicator/number 5}]},
   :round/dances [{:dance/name "Medium"} {:dance/name "Medium"}]}])
 
-(defn activity-result [] ()first )
+(defn activity-result [] (first (activities-with-result) ) )
 
 
 (defn make-file-name-with-timestamp
@@ -198,23 +198,25 @@
     :result/adjudicator {:adjudicator/number 1},
     :result/participant {:participant/number 144}}])
 
-(defn get-marks [result-facts]
-  (vec (map #(:result/mark-x %) result-facts)))
-
 (defn get-dancers [result-facts]
-  (apply hash-set (map #(get-in % [:result/participant :participant/number]) result-facts)))
+  (vec (sort  (apply hash-set (map #(get-in % [:result/participant :participant/number]) result-facts)))))
 
+(defn get-mark [result-facts dancer-number adjudicator-number]
+  (let [marks (filterv #(= dancer-number (get-in % [:result/participant :participant/number]))
+                       (filter #(= adjudicator-number (get-in % [:result/adjudicator :adjudicator/number])) result-facts))]
+    (if (empty? marks)
+      false
+      (get (first marks) :result/mark-x false))))
 
-(defn get-results-for-dancer [result-facts dancer-number]
-  (let [dancer-result-facts (filter
-                             #(= dancer-number (get-in % [:result/participant :participant/number]))
-                             result-facts)]
-    {:dancer-number dancer-number
-     :marks (get-marks dancer-result-facts)}))
+(defn get-marks-for-dancer [result-facts adjudicator-numbers dancer-number]
+  (mapv (partial get-mark result-facts dancer-number) adjudicator-numbers))
 
-(defn result-facts->result-array [result-facts]
-  (let [dancer-numbers (get-dancers result-facts)]
-    (vec (map #(get-results-for-dancer result-facts %) dancer-numbers ))))
+(defn result-facts->result-array [result-facts adjudicators]
+  (let [adjudicator-numbers (map :adjudicator/number adjudicators)
+        dancer-numbers (get-dancers result-facts)]
+    (mapv #(hash-map :dancer-number %
+                     :marks (get-marks-for-dancer result-facts adjudicator-numbers %))
+          dancer-numbers)))
 
 (defn activity-result->class-result [activity-result]
   {:class-name (:activity/name activity-result)
@@ -225,8 +227,37 @@
                                 (get-in activity-result [:round/panel :adjudicator-panel/adjudicators])))
             :dances (vec (map #(hash-map :name (:dance/name %))
                                 (get-in activity-result [:round/dances])))
-            :result-array (result-facts->result-array (:result/_activity activity-result))
-            }})
+            :result-array (result-facts->result-array (:result/_activity activity-result)
+                                                      (get-in activity-result
+                                                              [:round/panel
+                                                               :adjudicator-panel/adjudicators]))}})
+
+(def adjudicators
+  [{:adjudicator/number 1}
+   {:adjudicator/number 2}
+   {:adjudicator/number 3}
+   {:adjudicator/number 4}])
+
+(def result-facts
+  [{:result/mark-x true,
+    :result/adjudicator {:adjudicator/number 1},
+    :result/participant {:participant/number 143}}
+   {:result/mark-x true,
+    :result/adjudicator {:adjudicator/number 1},
+    :result/participant {:participant/number 141}}
+   {:result/mark-x false,
+    :result/adjudicator {:adjudicator/number 2},
+    :result/participant {:participant/number 141}}
+   {:result/mark-x false,
+    :result/adjudicator {:adjudicator/number 3},
+    :result/participant {:participant/number 141}}
+   {:result/mark-x true,
+    :result/adjudicator {:adjudicator/number 4},
+    :result/participant {:participant/number 141}}
+   {:result/mark-x true,
+    :result/adjudicator {:adjudicator/number 1},
+    :result/participant {:participant/number 144}}])
+
 
 ;; Provides useful Timbre aliases in this ns
 (log/refer-timbre)
