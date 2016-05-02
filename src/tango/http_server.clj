@@ -86,6 +86,7 @@
                      (d/get-selected-activites
                        conn
                        [:activity/name
+                        :activity/number
                         :round/name
                         {:round/panel
                          [{:adjudicator-panel/adjudicators [:adjudicator/number]}]}

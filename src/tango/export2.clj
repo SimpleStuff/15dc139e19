@@ -14,6 +14,7 @@
 ;; Sample data
 (defn class-results[]
   [{:class-name              "Disco Freestyle B-klass J Po"
+    :event-number "3A"
     :result {:round        "S"
              :adjudicators [{:number 2}
                             {:number 4}
@@ -30,6 +31,7 @@
 
 (defn activities-with-result []
 [{:activity/name "Hiphop Singel Guld J1",
+  :activity/number "3A"
   :round/name "Semifinal",
   :round/panel
   {:adjudicator-panel/adjudicators
@@ -57,6 +59,7 @@
     :result/adjudicator {:adjudicator/number 1},
     :result/participant {:participant/number 144}}]}
  {:activity/name "Hiphop Singel Brons J1",
+  :activity/number "4A"
   :round/name "Direct Final",
   :round/panel
   {:adjudicator-panel/adjudicators
@@ -65,6 +68,7 @@
     {:adjudicator/number 4}]},
   :round/dances [{:dance/name "Medium"}]}
  {:activity/name "Hiphop Singel Brons U",
+  :activity/number "4A",
   :round/name "Direct Final",
   :round/panel
   {:adjudicator-panel/adjudicators
@@ -73,6 +77,7 @@
     {:adjudicator/number 5}]},
   :round/dances [{:dance/name "Medium"}]}
  {:activity/name "Hiphop Singel Brons B2",
+  :activity/number "4A"
   :round/name "Semifinal",
   :round/panel
   {:adjudicator-panel/adjudicators
@@ -84,6 +89,7 @@
    {:dance/name "Medium"}
    {:dance/name "Medium"}]}
  {:activity/name "Hiphop Singel Silver B2",
+  :activity/number "4A"
   :round/name "Semifinal",
   :round/panel
   {:adjudicator-panel/adjudicators
@@ -137,6 +143,7 @@
     :result/adjudicator {:adjudicator/number 1},
     :result/participant {:participant/number 89}}]}
  {:activity/name "Hiphop Singel Brons U",
+  :activity/number "4A"
   :round/name "Presentation",
   :round/panel
   {:adjudicator-panel/adjudicators
@@ -148,17 +155,13 @@
 (defn activity-result [] ()first )
 
 
-(defn make-file-name-with-timestamp [file-name]
-
-  )
-
 (defn make-file-name-with-timestamp
   ;; Adds the current time at the end
   ;; of the filename
   [file-name]
   (let [time-now (t/now)
         time-formatter (tf/formatters :hour-minute-second)
-        time-now-formatted (tf/unparse time-formatter time-now)
+        time-now-formatted (cstr/replace (tf/unparse time-formatter time-now) \: \_)
         new-file-name (str file-name "." time-now-formatted)]
     new-file-name
     ))
@@ -215,6 +218,7 @@
 
 (defn activity-result->class-result [activity-result]
   {:class-name (:activity/name activity-result)
+   :event-number (:activity/number activity-result)
    :result {:round (short-round-name (:round/name activity-result))
             :adjudicators (vec (map
                                 #(hash-map :number (:adjudicator/number %))
@@ -285,6 +289,9 @@
   )
 
 
+(defn fix-event [form class-result]
+  (merge form {:attrs {:Status 1}}))
+
 (defn fix-class [class class-result]
   (clojure.walk/postwalk
     (fn [form]
@@ -306,6 +313,10 @@
                                       (:class-name class-result))
                                  (fix-class form class-result)
                                  form)
+        (= (:tag form) :Event) (if (= (:EventNumber (:attrs form))
+                                     (:event-number class-result))
+                                (fix-event form class-result)
+                                form)
         :else form))
     xml-data))
 
@@ -349,10 +360,29 @@
   (log/info (str "Export Results to " export-path " with " activities-with-result))
   (let [in-xml (get-xml-from-file export-path)
         class-results (map activity-result->class-result activities-with-result)
-        out-xml (reduce add-results-to-dp-xml in-xml class-results)]
+        out-xml (reduce add-results-to-dp-xml in-xml class-results)
+        out-xml-orig (reduce add-results-to-dp-xml in-xml [])]
     (make-copy-with-timestamp export-path)
+    (spit (str "orig_" export-path) (ppxml (xml/emit-str out-xml-orig)))
     (spit export-path (ppxml (xml/emit-str out-xml)))))
 
 (defn smoke-test [] (export-results (activities-with-result) "dp.xml"))
 
 ;; (smoke-test)
+
+
+
+
+;; :activity/number -> 3A -> <Event EventNumber="3A" ... Status="1" />
+;; 
+
+
+
+
+
+
+
+
+
+
+
