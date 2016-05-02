@@ -437,6 +437,8 @@
                                                       `[(app/select-activity
                                                           {:activity/id    ~(:activity/id (om/props this))
                                                            :activity/name  ~name
+                                                           :activity/number ~number
+
                                                            :round/recall   ~(:round/recall (:activity/source
                                                                                              (om/props this)))
                                                            :round/name     ~round
