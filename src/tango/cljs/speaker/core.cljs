@@ -38,6 +38,19 @@
 ;; Recall 18
 ;; Judges A, B, C      Event 3A
 
+(defui HeatRow
+  static om/IQuery
+  (query [_]
+    [])
+  Object
+  (render
+    [this]
+    (let [{:keys [heat-number starting]} (om/props this)]
+      (dom/div #js {:className "Row"}
+        (dom/h4 #js {:className "col-xs-2"} (str "Heat " heat-number ":"))
+        (dom/div #js {:className "col-xs-10"}
+          (map #(dom/h4 #js {:className "col-xs-1"} (:participant/number %)) starting))))))
+
 (defui HeatsComponent
   static om/IQuery
   (query [_]
@@ -45,7 +58,13 @@
   Object
   (render
     [this]
-    (dom/div nil "Heats")))
+    (let [{:keys [heats starting]} (om/props this)
+          heat-dist (domain/create-distribution starting heats)]
+      (log heat-dist)
+      (dom/div nil
+        (map-indexed #((om/factory HeatRow) {:heat-number (inc %1)
+                                             :starting    %2})
+                     heat-dist)))))
 
 (defui ActivityComponent
   static om/IQuery
@@ -75,9 +94,8 @@
           (dom/h4 #js {:className "col-xs-12"} (clojure.string/join "," (map :dance/name (:round/dances activity)))))
 
         ;; TODO - fix heats
-        (map-indexed #((om/factory HeatsComponent) %)
-                     (partition (:round/heats activity)
-                                (:round/starting (om/props this))))
+        ((om/factory HeatsComponent) {:heats (:round/heats activity)
+                                      :starting (:round/starting activity)})
 
         (dom/div #js {:className "Row"}
           (dom/h3 #js {:className "col-xs-12"} (str "Total: " (count starting))))
@@ -116,7 +134,7 @@
         (let [response (async/<! (http/get "/query" {:query-params
                                                      {:query (pr-str (:query edn))}}))
               edn-response (second (cljs.reader/read-string (:body response)))]
-          (log edn-response)
+          ;(log edn-response)
           ;; TODO - why is the response a vec?
           (cb edn-response))
         ))))
