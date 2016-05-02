@@ -450,8 +450,8 @@
                                                                                              (om/props this)))})
                                                         :app/selected-activity])))}
                                 (dom/span #js {:className "glyphicon glyphicon-play"}))
-                    (dom/button #js {:className "btn btn-default"}
-                                (dom/span #js {:className "glyphicon glyphicon-stop"}))
+                    ;(dom/button #js {:className "btn btn-default"}
+                    ;            (dom/span #js {:className "glyphicon glyphicon-stop"}))
                     (dom/button #js {:className (str "btn" (if speaker? " btn-success" " btn-default"))
                                      :onClick   #(om/transact!
                                                   this
@@ -460,6 +460,8 @@
                                                        :activity/name ~name
                                                        :activity/number ~number
 
+                                                       :round/index ~(:round/index (:activity/source
+                                                                                      (om/props this)))
                                                        :round/recall   ~(:round/recall (:activity/source
                                                                                          (om/props this)))
                                                        :round/heats    ~(:round/heats (:activity/source
@@ -467,7 +469,9 @@
                                                        :round/starting ~(:round/starting (:activity/source
                                                                                            (om/props this)))
                                                        :round/panel    ~(:round/panel (:activity/source
-                                                                                        (om/props this)))})
+                                                                                        (om/props this)))
+                                                       :round/dances   ~(:round/dances (:activity/source
+                                                                                         (om/props this)))})
                                                     :app/speaker-activites])}
                                 (dom/span #js {:className "glyphicon glyphicon-volume-up"})))))))))
 

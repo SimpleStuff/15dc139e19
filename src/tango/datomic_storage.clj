@@ -139,6 +139,13 @@
     :db.install/_attribute :db.part/db}
 
    {:db/id                 #db/id[:db.part/db]
+    :db/ident              :round/index
+    :db/valueType          :db.type/long
+    :db/cardinality        :db.cardinality/one
+    :db/doc                "A rounds index in its class"
+    :db.install/_attribute :db.part/db}
+
+   {:db/id                 #db/id[:db.part/db]
     :db/ident              :round/heats
     :db/valueType          :db.type/long
     :db/cardinality        :db.cardinality/one

@@ -54,6 +54,8 @@
      :activity/number
      :round/recall
      :round/heats
+     :round/index
+     {:round/dances [:dance/name]}
      {:round/starting [:participant/number]}
      {:round/panel [{:adjudicator-panel/adjudicators [:adjudicator/name]}]}])
   Object
@@ -63,15 +65,33 @@
           panel (:adjudicator-panel/adjudicators (:round/panel (om/props this)))
           starting (:round/starting activity)]
       (dom/div nil
-        (dom/h3 nil (:activity/name activity))
+        (dom/div #js {:className "Row"}
+
+          (dom/h1 #js {:className "col-xs-8"} (:activity/name activity))
+
+          (dom/h1 #js {:className "col-xs-offset-1 col-xs-3 pull-right"}
+                  (str "Round " (inc (:round/index activity)))))
+        (dom/div #js {:className "Row"}
+          (dom/h4 #js {:className "col-xs-12"} (clojure.string/join "," (map :dance/name (:round/dances activity)))))
+
+        ;; TODO - fix heats
         (map-indexed #((om/factory HeatsComponent) %)
                      (partition (:round/heats activity)
                                 (:round/starting (om/props this))))
-        (dom/h3 nil (str "Total: " (count starting)))
-        (dom/h3 nil (str "Recall: " (:round/recall (om/props this))))
-        (dom/h3 nil (str "Judges: "
-                         (clojure.string/join "," (map :adjudicator/name panel))))
-        (dom/h3 nil (str "Event: " (:activity/number activity)))))))
+
+        (dom/div #js {:className "Row"}
+          (dom/h3 #js {:className "col-xs-12"} (str "Total: " (count starting))))
+
+        (dom/div #js {:className "Row"}
+          (dom/h3 #js {:className "col-xs-12"} (str "Recall: " (:round/recall (om/props this)))))
+
+        (dom/div #js {:className "Row"}
+          (dom/h3 #js {:className "col-xs-8 "}
+                  (str "Judges: "
+                       (clojure.string/join "," (map :adjudicator/name panel))))
+
+          (dom/h3 #js {:className "col-xs-offset-2 col-xs-2 pull-right"}
+                  (str "Event: " (:activity/number activity))))))))
 
 (defui MainComponent
   static om/IQuery
@@ -81,7 +101,7 @@
   (render
     [this]
     (let [activites (:app/speaker-activites (om/props this))]
-      (dom/div nil
+      (dom/div #js {:className "container-fluid"}
         (map #((om/factory ActivityComponent) %) activites)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
