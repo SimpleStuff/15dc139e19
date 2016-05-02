@@ -81,9 +81,15 @@
                                :output-to     "resources/public/js/app.js"
                                :output-dir    "resources/public/js/out"
                                ;:source-map    "resources/public/js/out.js.map"
-                               :source-map    true
-                               :optimizations :none
-                               :pretty-print  true}}
+                               ;; PROD
+                               :optimizations :advanced
+                               :pretty-print  false
+
+                               ;; DEV
+                               ;:source-map true
+                               ;:pretty-print  true
+                               ;:optimizations :none
+                               }}
 
                {:id           "adj"
                 :source-paths ["src/tango/cljs/adjudicator" "src"]
@@ -112,13 +118,13 @@
                                :output-dir "resources/public/js/out/speaker"
 
                                ;; PROD
-                               ;:optimizations :advanced
-                               ;:pretty-print  false
+                               :optimizations :advanced
+                               :pretty-print  false
 
                                ;; DEV
-                               :source-map true
-                               :pretty-print  true
-                               :optimizations :none
+                               ;:source-map true
+                               ;:pretty-print  true
+                               ;:optimizations :none
                                }}
 
                ;; This next build is an compressed minified build for
