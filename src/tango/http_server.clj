@@ -57,6 +57,12 @@
              (log/info "Select activity")
              (async/>!! state {:topic :command :sender :http :payload [key params]}))})
 
+(defmethod mutate 'app/set-speaker-activity
+  [{:keys [state] :as env} key params]
+  {:action (fn []
+             (log/info "Set Speacker activity")
+             (async/>!! state {:topic :command :sender :http :payload [key params]}))})
+
 (defmethod mutate 'participant/set-result
   [{:keys [state] :as env} key params]
   {:action (fn []
@@ -118,6 +124,12 @@
             )
    ;(do (log/info (str "Reader Query Key Params " query key params)))
    })
+
+(defmethod reader :app/speaker-activites
+  [{:keys [state query]} key params]
+  {:value (do
+            (log/info (str "Selector in speaker activites " query))
+            (d/get-speaker-activites state query))})
 
 ;(let [selected-act (d/get-selected-activity state '[:activity/id])]
 ;  (log/info (str "Selected act " selected-act))
@@ -212,7 +224,10 @@
    (POST "/commands" params (partial handle-command (:out-channel http-server-channels))        ;(fn [req] (str "Command: " req))
      )
    (GET "/adjudicator" req {:body (slurp (clojure.java.io/resource "public/adjudicator.html"))
-                            :session {:uid (rand-int 100)}
+                            :session {:uid (rand-int 10000)}
+                            :headers {"Content-Type" "text/html"}})
+   (GET "/speaker" req {:body (slurp (clojure.java.io/resource "public/speaker.html"))
+                            :session {:uid (rand-int 10000)}
                             :headers {"Content-Type" "text/html"}})
    (GET "/query" req (partial handle-query (:out-channel http-server-channels) datomic-storage-uri))
    ;; Sente channel routes

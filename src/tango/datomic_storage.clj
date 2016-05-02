@@ -30,6 +30,13 @@
     :db/valueType          :db.type/ref
     :db/cardinality        :db.cardinality/many
     :db/doc                "The applications selected activites"
+    :db.install/_attribute :db.part/db}
+
+   {:db/id                 #db/id[:db.part/db]
+    :db/ident              :app/speaker-activites
+    :db/valueType          :db.type/ref
+    :db/cardinality        :db.cardinality/many
+    :db/doc                "The applications selected speaker activites"
     :db.install/_attribute :db.part/db}])
 
 (def result-schema
@@ -108,6 +115,12 @@
     :db/doc                "The adjudicators that have confirmed results for this activity"
     :db.install/_attribute :db.part/db}
 
+   {:db/id                 #db/id[:db.part/db]
+    :db/ident              :activity/number
+    :db/valueType          :db.type/string
+    :db/cardinality        :db.cardinality/one
+    :db/doc                "An activitys number"
+    :db.install/_attribute :db.part/db}
    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
    ;; Round
 
@@ -123,6 +136,13 @@
     :db/valueType          :db.type/string
     :db/cardinality        :db.cardinality/one
     :db/doc                "A rounds name"
+    :db.install/_attribute :db.part/db}
+
+   {:db/id                 #db/id[:db.part/db]
+    :db/ident              :round/index
+    :db/valueType          :db.type/long
+    :db/cardinality        :db.cardinality/one
+    :db/doc                "A rounds index in its class"
     :db.install/_attribute :db.part/db}
 
    {:db/id                 #db/id[:db.part/db]
@@ -259,6 +279,10 @@
   @(d/transact conn [(fix-id {:app/selected-activites round
                               :app/id                 1})]))
 
+(defn set-speaker-activity [conn activity]
+  @(d/transact conn [(fix-id {:app/speaker-activites activity
+                              :app/id 1})]))
+
 (defn set-results [conn results]
   @(d/transact conn (mapv fix-id results)))
 
@@ -283,6 +307,16 @@
              :where
              [?e :app/id 1]
              [?e :app/selected-activity ?a]]
+           (d/db conn) query)))
+
+
+(defn get-speaker-activites [conn query]
+  (do (log/info "Selected Speaker Activites " query)
+      (d/q '[:find [(pull ?a selector) ...]
+             :in $ selector
+             :where
+             [?e :app/id 1]
+             [?e :app/speaker-activites ?a]]
            (d/db conn) query)))
 
 (defn get-selected-activites [conn query]

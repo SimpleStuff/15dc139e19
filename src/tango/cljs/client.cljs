@@ -410,29 +410,13 @@
             (om/props this)
             (first (:class/_rounds (:activity/source (om/props this)))))
           selected? (seq (filter #(= (:activity/id (om/props this)) (:activity/id %))
-                                    (:selected-activity (om/props this))))
+                                 (:selected-activity (om/props this))))
 
-          completed? (= (:round/status (:activity/source (om/props this))) :completed)]
-      (dom/tr #js {:className (if selected? "info" "")
-                   :onClick   #(when-not completed?
-                                (when-not selected?
-                                  (om/transact!
-                                    this
-                                    `[(app/select-activity
-                                        {:activity/id    ~(:activity/id (om/props this))
-                                         :activity/name  ~name
-                                         :round/recall   ~(:round/recall (:activity/source
-                                                                           (om/props this)))
-                                         :round/name     ~round
-                                         :round/heats    ~(:round/heats (:activity/source
-                                                                          (om/props this)))
-                                         :round/starting ~(:round/starting (:activity/source
-                                                                             (om/props this)))
-                                         :round/panel    ~(:round/panel (:activity/source
-                                                                          (om/props this)))
-                                         :round/dances   ~(:round/dances (:activity/source
-                                                                           (om/props this)))})
-                                      :app/selected-activity])))}
+          completed? (= (:round/status (:activity/source (om/props this))) :completed)
+          speaker-activies (:speaker-activites (om/props this))
+          speaker? (seq (filter #(= (:activity/id (om/props this)) (:activity/id %))
+                                speaker-activies))]
+      (dom/tr #js {:className (if selected? "success" "")}
         (dom/td nil time)
         (dom/td nil number)
         (dom/td nil name)
@@ -441,7 +425,72 @@
         (dom/td nil heats)
         (dom/td nil recall)
         (dom/td nil panel)
-        (dom/td nil type)))))
+        (dom/td nil type)
+        (when-not (= name "")
+          (dom/td nil
+                  (dom/div #js {:className "control-group"}
+                    (dom/button #js {:className (str "btn" (if selected? " btn-success" " btn-default"))
+                                     :onClick   #(when-not completed?
+                                                  (when-not selected?
+                                                    (om/transact!
+                                                      this
+                                                      `[(app/select-activity
+                                                          {:activity/id    ~(:activity/id (om/props this))
+                                                           :activity/name  ~name
+                                                           :round/recall   ~(:round/recall (:activity/source
+                                                                                             (om/props this)))
+                                                           :round/name     ~round
+                                                           :round/heats    ~(:round/heats (:activity/source
+                                                                                            (om/props this)))
+                                                           :round/starting ~(:round/starting (:activity/source
+                                                                                               (om/props this)))
+                                                           :round/panel    ~(:round/panel (:activity/source
+                                                                                            (om/props this)))
+                                                           :round/dances   ~(:round/dances (:activity/source
+                                                                                             (om/props this)))})
+                                                        :app/selected-activity])))}
+                                (dom/span #js {:className "glyphicon glyphicon-play"}))
+                    ;(dom/button #js {:className "btn btn-default"}
+                    ;            (dom/span #js {:className "glyphicon glyphicon-stop"}))
+                    (dom/button #js {:className (str "btn" (if speaker? " btn-success" " btn-default"))
+                                     :onClick   #(om/transact!
+                                                  this
+                                                  `[(app/set-speaker-activity
+                                                      {:activity/id   ~(:activity/id (om/props this))
+                                                       :activity/name ~name
+                                                       :activity/number ~number
+
+                                                       :round/index ~(:round/index (:activity/source
+                                                                                      (om/props this)))
+                                                       :round/recall   ~(:round/recall (:activity/source
+                                                                                         (om/props this)))
+                                                       :round/heats    ~(:round/heats (:activity/source
+                                                                                        (om/props this)))
+                                                       :round/starting ~(:round/starting (:activity/source
+                                                                                           (om/props this)))
+                                                       :round/panel    ~(:round/panel (:activity/source
+                                                                                        (om/props this)))
+                                                       :round/dances   ~(:round/dances (:activity/source
+                                                                                         (om/props this)))})
+                                                    :app/speaker-activites])}
+                                (dom/span #js {:className "glyphicon glyphicon-volume-up"})))))))))
+
+;(dom/button #js {:className "btn btn-default"
+;                 :onClick   #(om/transact! this `[(app/set-admin-mode
+;                                                    {:in-admin ~(not in-admin-mode?)})])}
+;            (dom/span #js {:className "glyphicon glyphicon-cog"}))
+
+;(dom/div #js {:className "col-xs-7"}
+;  (dom/button #js {:type      "button"
+;                   :className "btn btn-default btn-lg col-xs-4"
+;                   :onClick   #(set-result-fn inc)} "+")
+;
+;  (dom/button #js {:type      "button"
+;                   :className "btn btn-default btn-lg col-xs-4"
+;                   :onClick   #(set-result-fn dec)} "-")
+;
+;  (when (not= 0 point)
+;    (dom/h3 #js {:className "col-xs-2"} (str point))))
 
 (defui RoundAdjudicatorView
   static om/IQuery
@@ -538,9 +587,11 @@
               (dom/th #js {:width "20"} "Heats")
               (dom/th #js {:width "20"} "Recall")
               (dom/th #js {:width "20"} "Panel")
-              (dom/th #js {:width "20"} "Type")))
+              (dom/th #js {:width "20"} "Type")
+              (dom/th #js {:width "400"} "")))
           (apply dom/tbody nil (map #((om/factory ScheduleRow)
-                                      (merge % {:selected-activity (:selected-activity (om/props this))}))
+                                      (merge % {:selected-activity (:selected-activity (om/props this))
+                                                :speaker-activites (:speaker-activites (om/props this))}))
                                     activites)))))))
 
 ;;;;;;;;;;;;;;;;;;;;
@@ -655,7 +706,9 @@
                     {:result/activity [:activity/id]}]}
 
      {:app/confirmed [:activity/id
-                      {:activity/confirmed-by [:adjudicator/id]}]}])
+                      {:activity/confirmed-by [:adjudicator/id]}]}
+
+     {:app/speaker-activites [:activity/id :activity/name]}])
 
   Object
   (render
@@ -664,6 +717,9 @@
           spage (:app/selected-page (om/props this))
           selected-competition (:app/selected-competition (om/props this))
           make-button (partial make-menu-button this spage)]
+
+      (log "SPeaker Act")
+      (log (:app/speaker-activites (om/props this)))
       (dom/div #js {:className "navbar-wrapper"}
         (dom/div #js {:className "container"}
 
@@ -711,7 +767,8 @@
                                  :status        (:app/status (om/props this))})
                 :schedule ((om/factory ScheduleView)
                             (merge selected-competition
-                                   {:selected-activity (:app/selected-activity (om/props this))}))
+                                   {:selected-activity (:app/selected-activity (om/props this))
+                                    :speaker-activites (:app/speaker-activites (om/props this))}))
                 :adjudicators ((om/factory AdjudicatorsView) selected-competition)
                 :adjudicator-panels ((om/factory AdjudicatorPanelsView) selected-competition)
                 :selected-rounds ((om/factory SelectedRoundsView)

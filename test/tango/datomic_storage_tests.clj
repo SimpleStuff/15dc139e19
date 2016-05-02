@@ -61,6 +61,18 @@
       (is (= (mapv :activity/name (ds/get-selected-activites conn [:activity/name]))
              ["One" "Two"])))))
 
+(deftest application-should-be-able-to-run-speaker-rounds
+  (testing "The application should be able to run multiple speaker rounds at once"
+    (let [deleted? (ds/delete-storage mem-uri)
+          created? (ds/create-storage mem-uri (into ds/select-activity-schema ds/application-schema))
+          conn (ds/create-connection mem-uri)
+          tx (ds/set-speaker-activity conn {:activity/id #uuid "967d051d-ea8b-43d4-9dba-35fb51aedda9"
+                                            :activity/name "One"})]
+      (ds/set-speaker-activity conn {:activity/id #uuid "867d051d-ea8b-43d4-9dba-35fb51aedda9"
+                                     :activity/name "Two"})
+      (is (= (mapv :activity/name (ds/get-speaker-activites conn [:activity/name]))
+             ["One" "Two"])))))
+
 ;(deftest selecting-the-same-activity-should-not-add-data
 ;  (testing "Selecting the same activity multiple times should add data"
 ;    (let [_ (ds/delete-storage mem-uri)

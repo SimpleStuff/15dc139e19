@@ -67,6 +67,13 @@
                  :where [[:app/id 1] :app/selected-activites ?a]]
                (d/db state) query)})
 
+(defmethod read :app/speaker-activites
+  [{:keys [state query]} _ _]
+  {:value (d/q '[:find [(pull ?a ?selector) ...]
+                 :in $ ?selector
+                 :where [[:app/id 1] :app/speaker-activites ?a]]
+               (d/db state) query)})
+
 (defmethod read :app/results
   [{:keys [state query]} _ _]
   (do
