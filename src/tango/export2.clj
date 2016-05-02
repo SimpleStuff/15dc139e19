@@ -288,9 +288,9 @@
                  ))
   )
 
-
-(defn fix-event [form class-result]
-  (merge form {:attrs {:Status 1}}))
+(defn fix-event [form]
+  (let [new-attrs (merge (:attrs form) {:Status 1})]
+    (merge form {:attrs new-attrs})))
 
 (defn fix-class [class class-result]
   (clojure.walk/postwalk
@@ -314,8 +314,8 @@
                                  (fix-class form class-result)
                                  form)
         (= (:tag form) :Event) (if (= (:EventNumber (:attrs form))
-                                     (:event-number class-result))
-                                (fix-event form class-result)
+                                      (:event-number class-result))
+                                (fix-event form)
                                 form)
         :else form))
     xml-data))
