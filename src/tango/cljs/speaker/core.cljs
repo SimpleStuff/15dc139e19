@@ -25,6 +25,65 @@
 (defn log [m]
   (.log js/console m))
 
+(declare reconciler)
+(declare app-state)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Sente Socket setup
+(let [{:keys [chsk ch-recv send-fn state]}
+      (sente/make-channel-socket! "/chsk"
+                                  {:type :auto})]
+  (def chsk chsk)
+  (def ch-chsk ch-recv)                                     ; ChannelSocket's receive channel
+  (def chsk-send! send-fn)                                  ; ChannelSocket's send API fn
+  (def chsk-state state)                                    ; Watchable, read-only atom
+  )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Sente message handling
+
+; Dispatch on event-id
+(defmulti event-msg-handler :id)
+
+;; Wrap for logging, catching, etc.:
+(defn event-msg-handler* [{:keys [id ?data event] :as ev-msg}]
+  (event-msg-handler {:id    (first ev-msg)
+                      :?data (second ev-msg)}))
+
+(defmethod event-msg-handler :default
+  [ev-msg]
+  (log (str "Unhandled socket event: " ev-msg)))
+
+(defmethod event-msg-handler :chsk/state
+  [{:as ev-msg :keys [?data]}]
+  (do
+    (log (str "Channel socket state change: " ?data))
+    (when (:first-open? ?data)
+      (log "Channel socket successfully established!"))))
+
+;; TODO - Cleaning when respons type can be separated
+(defmethod event-msg-handler :chsk/recv
+  [{:as ev-msg :keys [?data]}]
+  (let [[topic payload] ?data]
+    (when (= topic :tx/accepted)
+      (log (str "Socket Event from server: " topic))
+      (log (str "Socket Payload: " payload))
+      (cond
+        (= payload 'app/set-speaker-activity)
+        (do
+          (log "select")
+          (om/transact! reconciler `[:app/speaker-activites]))
+
+        (= (:topic payload) 'app/confirm-marks)
+        (log "confirm")))))
+
+(defmethod event-msg-handler :chsk/handshake
+  [{:as ev-msg :keys [?data]}]
+  (let [[?uid ?csrf-token ?handshake-data] ?data]
+    (log (str "Socket Handshake: " ?data))))
+
+(defonce chsk-router
+         (sente/start-chsk-router-loop! event-msg-handler* ch-chsk))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; MainComponent
 
@@ -134,16 +193,23 @@
       (:query edn)
       (go
         (let [response (async/<! (http/get "/query" {:query-params
-                                                     {:query (pr-str (:query edn))}}))
-              edn-response (second (cljs.reader/read-string (:body response)))]
+                                                     {:query (pr-str (if (map? (first (:query edn)))
+                                                                       (:query edn)
+                                                                       (om/get-query MainComponent)))}}))
+              edn-response (second (cljs.reader/read-string (:body response)))
+              known-numbers (set (map :activity/number (:app/speaker-activites @app-state)))
+              new-acts (filterv #(not (contains? known-numbers (:activity/number %)))
+                                (:app/speaker-activites edn-response))]
+          (log known-numbers)
+          (log new-acts)
           ;(log edn-response)
           ;; TODO - why is the response a vec?
-          (cb edn-response))
-        ))))
+          (cb {:app/speaker-activites (into (:app/speaker-activites @app-state)
+                                            new-acts)}))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Application
-(defonce app-state (atom {:app/speaker-activites [{:activity/name "Test"}]}))
+(defonce app-state (atom {:app/speaker-activites []}))
 
 (def reconciler
   (om/reconciler
