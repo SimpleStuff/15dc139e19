@@ -387,7 +387,7 @@
 (defui ScheduleRow
   static om/IQuery
   (query [_]
-    [:activity/comment :activity/number :activity/time :activity/name :activity/id
+    [:activity/comment :activity/number :activity/time :activity/name :activity/id :activity/position
      {:activity/source
       [:round/class-id :round/type :round/index :round/status
        {:round/starting [:participant/number :participant/id]}
@@ -463,7 +463,8 @@
                                                           {:activity/id          ~(:activity/id (om/props this))
                                                            :activity/name        ~name
                                                            :activity/number      ~number
-
+                                                           :activity/position    ~(:activity/position
+                                                                                    (om/props this))
                                                            :round/index          ~(:round/index (:activity/source
                                                                                                   (om/props this)))
                                                            :round/recall         ~(:round/recall (:activity/source
