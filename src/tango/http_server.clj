@@ -60,7 +60,7 @@
 (defmethod mutate 'app/set-speaker-activity
   [{:keys [state] :as env} key params]
   {:action (fn []
-             (log/info "Set Speacker activity")
+             (log/info "Set Speaker activity")
              (async/>!! state {:topic :command :sender :http :payload [key params]}))})
 
 (defmethod mutate 'participant/set-result

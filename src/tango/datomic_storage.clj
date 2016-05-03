@@ -87,6 +87,15 @@
     :db/cardinality        :db.cardinality/one
     :db/doc                "The adjudicator these result is associated with"
     :db.install/_attribute :db.part/db}
+
+   ;;;;;;;;; HAAAAAAAAAAAACKKK
+   ;;:round/speaker-dances
+   {:db/id                 #db/id[:db.part/db]
+    :db/ident              :round/speaker-dances
+    :db/valueType          :db.type/ref
+    :db/cardinality        :db.cardinality/many
+    :db/doc                "The dances for this speaker round"
+    :db.install/_attribute :db.part/db}
    ])
 
 (def select-activity-schema

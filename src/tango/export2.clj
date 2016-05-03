@@ -387,6 +387,7 @@
     (-> out .getWriter .toString)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; API
+;; TODO - need all participants
 (defn export-results [activities-with-result export-path]
   (log/info (str "Export Results to " export-path " with " activities-with-result))
   (let [in-xml (get-xml-from-file export-path)
