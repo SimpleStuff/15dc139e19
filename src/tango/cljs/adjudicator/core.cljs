@@ -313,8 +313,11 @@
   (render [this]
     (let [participants (:participants (om/props this))
           heats (:heats (om/props this))
-          heat-parts (partition-all (int (Math/ceil (/ (count participants) heats)))
-                                    (sort-by :participant/number participants))
+          ;heat-parts (partition-all (int (Math/ceil (/ (count participants) heats)))
+          ;                          (sort-by :participant/number participants))
+          heat-parts (domain/create-distribution
+                       (sort-by :participant/number participants)
+                       heats)
           page-size (:heat-page-size (om/props this))
           current-page (:heat-page (om/props this))
           page-start (* page-size current-page)
