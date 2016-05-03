@@ -313,8 +313,11 @@
   (render [this]
     (let [participants (:participants (om/props this))
           heats (:heats (om/props this))
-          heat-parts (partition-all (int (Math/ceil (/ (count participants) heats)))
-                                    (sort-by :participant/number participants))
+          ;heat-parts (partition-all (int (Math/ceil (/ (count participants) heats)))
+          ;                          (sort-by :participant/number participants))
+          heat-parts (domain/create-distribution
+                       (sort-by :participant/number participants)
+                       heats)
           page-size (:heat-page-size (om/props this))
           current-page (:heat-page (om/props this))
           page-start (* page-size current-page)
@@ -350,9 +353,9 @@
                                                            :app/heat-page])} "Previous"))
         (dom/div #js {:className "col-xs-offset-4 col-xs-4"}
           (dom/button #js {:className "btn btn-primary btn-block btn-lg"
-                           :disabled (= current-page last-page)
-                           :onClick  #(om/transact! this `[(app/heat-page {:page ~(inc current-page)})
-                                                           :app/heat-page])} "Next"))))))
+                           :disabled  (= current-page (dec last-page))
+                           :onClick   #(om/transact! this `[(app/heat-page {:page ~(inc current-page)})
+                                                            :app/heat-page])} "Next"))))))
 
 ;https://medium.com/@kovasb/om-next-the-reconciler-af26f02a6fb4#.kwq2t2jzr
 (defui MainComponent
