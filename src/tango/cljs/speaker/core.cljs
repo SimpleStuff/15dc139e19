@@ -71,6 +71,7 @@
   (query [_]
     [:activity/name
      :activity/number
+     :activity/position
      :round/recall
      :round/heats
      :round/index
@@ -120,7 +121,8 @@
     [this]
     (let [activites (:app/speaker-activites (om/props this))]
       (dom/div #js {:className "container-fluid"}
-        (map #((om/factory ActivityComponent) %) activites)))))
+        (map #((om/factory ActivityComponent) %)
+             (sort-by :activity/position activites))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Remote com
