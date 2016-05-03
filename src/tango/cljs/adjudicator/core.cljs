@@ -353,9 +353,9 @@
                                                            :app/heat-page])} "Previous"))
         (dom/div #js {:className "col-xs-offset-4 col-xs-4"}
           (dom/button #js {:className "btn btn-primary btn-block btn-lg"
-                           :disabled (= current-page last-page)
-                           :onClick  #(om/transact! this `[(app/heat-page {:page ~(inc current-page)})
-                                                           :app/heat-page])} "Next"))))))
+                           :disabled  (= current-page (dec last-page))
+                           :onClick   #(om/transact! this `[(app/heat-page {:page ~(inc current-page)})
+                                                            :app/heat-page])} "Next"))))))
 
 ;https://medium.com/@kovasb/om-next-the-reconciler-af26f02a6fb4#.kwq2t2jzr
 (defui MainComponent
