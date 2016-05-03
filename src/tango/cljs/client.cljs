@@ -472,8 +472,11 @@
                                                                                            (om/props this)))
                                                        :round/panel    ~(:round/panel (:activity/source
                                                                                         (om/props this)))
-                                                       :round/dances   ~(:round/dances (:activity/source
-                                                                                         (om/props this)))})
+                                                       ;:round/dances   ~(:round/dances (:activity/source
+                                                       ;                                  (om/props this)))
+                                                       :round/speaker-dances ~(:round/dances (:activity/source
+                                                                                               (om/props this)))
+                                                       })
                                                     :app/speaker-activites])}
                                 (dom/span #js {:className "glyphicon glyphicon-volume-up"})))))))))
 

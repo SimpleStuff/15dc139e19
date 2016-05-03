@@ -74,7 +74,7 @@
      :round/recall
      :round/heats
      :round/index
-     {:round/dances [:dance/name]}
+     {:round/speaker-dances [:dance/name]}
      {:round/starting [:participant/number]}
      {:round/panel [{:adjudicator-panel/adjudicators [:adjudicator/name]}]}])
   Object
@@ -91,7 +91,7 @@
           (dom/h1 #js {:className "col-xs-offset-1 col-xs-3 pull-right"}
                   (str "Round " (inc (:round/index activity)))))
         (dom/div #js {:className "Row"}
-          (dom/h4 #js {:className "col-xs-12"} (clojure.string/join "," (map :dance/name (:round/dances activity)))))
+          (dom/h4 #js {:className "col-xs-12"} (clojure.string/join "," (map :dance/name (:round/speaker-dances activity)))))
 
         ;; TODO - fix heats
         ((om/factory HeatsComponent) {:heats (:round/heats activity)
