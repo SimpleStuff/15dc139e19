@@ -59,7 +59,7 @@
   (render
     [this]
     (let [{:keys [heats starting]} (om/props this)
-          heat-dist (domain/create-distribution starting heats)]
+          heat-dist (domain/create-distribution (sort-by :participant/number starting) heats)]
       (log heat-dist)
       (dom/div nil
         (map-indexed #((om/factory HeatRow) {:heat-number (inc %1)
