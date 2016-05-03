@@ -93,17 +93,17 @@
                            (not= (:round/type round) :presentation))
                 
         last-completed-round-index (:round/index (last (get-completed-rounds (:class/rounds class))))]
-    {:time (str (if (:activity/time activity)
-                  (let [t (tc/from-long (.getTime (:activity/time activity)))
-                        formatter (tf/formatter "HH:mm")]
-                    ;(str (time/hour t) ":" (time/minute t))
-                    (tf/unparse formatter t)
-                    ))
-                (if (= (:round/status round) :completed) "*" ""))
+    {:time     (str (if (:activity/time activity)
+                      (let [t (tc/from-long (.getTime (:activity/time activity)))
+                            formatter (tf/formatter "HH:mm")]
+                        ;(str (time/hour t) ":" (time/minute t))
+                        (tf/unparse formatter t)
+                        ))
+                    (if (= (:round/status round) :completed) "*" ""))
 
-     :number (if (= (:activity/number activity) -1) "" (:activity/number activity))
+     :number   (str (if (= (:activity/number activity) -1) "" (:activity/number activity)))
 
-     :name (if comment? (:activity/comment activity) (:activity/name activity))
+     :name     (if comment? (:activity/comment activity) (:activity/name activity))
 
      ;; 'Qual' is when a greater number of participants where recalled than asked for,
      ;; then a 'Qual' round will be done to eliminate down to the requested recall number
@@ -114,44 +114,44 @@
      :starting (if comment?
                  ""
                  (cond
-                  ;; First round will show the number of starters
-                  (zero? (:round/index round)) (str "Start " (count (:round/starting round)))
+                   ;; First round will show the number of starters
+                   (zero? (:round/index round)) (str "Start " (count (:round/starting round)))
 
-                  ;; Direct finals will show starters
-                  direct-final? (str "Start " (count (:round/starting round)))
+                   ;; Direct finals will show starters
+                   direct-final? (str "Start " (count (:round/starting round)))
 
-                  ;; No starters yet
-                  (zero? (count (:round/starting round))) ""
+                   ;; No starters yet
+                   (zero? (count (:round/starting round))) ""
 
-                  ;; if the last completed round, was the round before this, this is 'Qual'
-                  (= (dec (:round/index round)) last-completed-round-index)
-                  (str "Qual " (count (:round/starting round)))
-                  :else ""))
+                   ;; if the last completed round, was the round before this, this is 'Qual'
+                   (= (dec (:round/index round)) last-completed-round-index)
+                   (str "Qual " (count (:round/starting round)))
+                   :else ""))
 
-     :round (if comment?
-              ""
-              (if direct-final?
-                "Direct Final"
-                (make-event-round-presentation (:round/type round))))
+     :round    (if comment?
+                 ""
+                 (if direct-final?
+                   "Direct Final"
+                   (make-event-round-presentation (:round/type round))))
 
-     :heats (if (or comment? direct-final? (= (:round/type round) :final-x))
-              ""
-              (let [heats (:round/heats round)
-                    suffix (if (= 1 heats) "" "s")]
-                (str  heats " heat" suffix)))
+     :heats    (if (or comment? direct-final? (= (:round/type round) :final-x))
+                 ""
+                 (let [heats (:round/heats round)
+                       suffix (if (= 1 heats) "" "s")]
+                   (str heats " heat" suffix)))
 
-     :recall (if (or (zero? (get round :round/recall 0)) comment?)
-               ""
-               (str "Recall " (:round/recall round)))
+     :recall   (if (or (zero? (get round :round/recall 0)) comment?)
+                 ""
+                 (str "Recall " (:round/recall round)))
 
-     :panel (if (or comment? (= (:round/type round) :presentation))
-              ""
-              (let [panel (:adjudicator-panel/name (:round/panel round))]
-                (if (= panel "All adjudicators")
-                  "All adj"
-                  (str "Panel " panel))))
+     :panel    (if (or comment? (= (:round/type round) :presentation))
+                 ""
+                 (let [panel (:adjudicator-panel/name (:round/panel round))]
+                   (if (= panel "All adjudicators")
+                     "All adj"
+                     (str "Panel " panel))))
 
-     :type (if comment?
-              ""
-              (make-dance-type-presentation (:round/dances round)))}))
+     :type     (if comment?
+                 ""
+                 (make-dance-type-presentation (:round/dances round)))}))
 
