@@ -25,6 +25,8 @@
 (defn log [m]
   (.log js/console m))
 
+(declare reconciler)
+(declare app-state)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Sente Socket setup
 (let [{:keys [chsk ch-recv send-fn state]}
@@ -66,8 +68,10 @@
       (log (str "Socket Event from server: " topic))
       (log (str "Socket Payload: " payload))
       (cond
-        (= payload 'app/select-activity)
-        (log "select")
+        (= payload 'app/set-speaker-activity)
+        (do
+          (log "select")
+          (om/transact! reconciler `[:app/speaker-activites]))
 
         (= (:topic payload) 'app/confirm-marks)
         (log "confirm")))))
@@ -189,16 +193,23 @@
       (:query edn)
       (go
         (let [response (async/<! (http/get "/query" {:query-params
-                                                     {:query (pr-str (:query edn))}}))
-              edn-response (second (cljs.reader/read-string (:body response)))]
+                                                     {:query (pr-str (if (map? (first (:query edn)))
+                                                                       (:query edn)
+                                                                       (om/get-query MainComponent)))}}))
+              edn-response (second (cljs.reader/read-string (:body response)))
+              known-numbers (set (map :activity/number (:app/speaker-activites @app-state)))
+              new-acts (filterv #(not (contains? known-numbers (:activity/number %)))
+                                (:app/speaker-activites edn-response))]
+          (log known-numbers)
+          (log new-acts)
           ;(log edn-response)
           ;; TODO - why is the response a vec?
-          (cb edn-response))
-        ))))
+          (cb {:app/speaker-activites (into (:app/speaker-activites @app-state)
+                                            new-acts)}))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Application
-(defonce app-state (atom {:app/speaker-activites [{:activity/name "Test"}]}))
+(defonce app-state (atom {:app/speaker-activites []}))
 
 (def reconciler
   (om/reconciler
