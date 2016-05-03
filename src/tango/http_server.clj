@@ -91,6 +91,7 @@
                         {:round/panel
                          [{:adjudicator-panel/adjudicators [:adjudicator/number]}]}
                         {:round/dances [:dance/name]}
+                        {:round/starting [:participant/number]}
                         {:result/_activity
                          [:result/mark-x
                           {:result/adjudicator [:adjudicator/number]}
