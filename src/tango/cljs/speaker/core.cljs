@@ -25,6 +25,61 @@
 (defn log [m]
   (.log js/console m))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Sente Socket setup
+(let [{:keys [chsk ch-recv send-fn state]}
+      (sente/make-channel-socket! "/chsk"
+                                  {:type :auto})]
+  (def chsk chsk)
+  (def ch-chsk ch-recv)                                     ; ChannelSocket's receive channel
+  (def chsk-send! send-fn)                                  ; ChannelSocket's send API fn
+  (def chsk-state state)                                    ; Watchable, read-only atom
+  )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Sente message handling
+
+; Dispatch on event-id
+(defmulti event-msg-handler :id)
+
+;; Wrap for logging, catching, etc.:
+(defn event-msg-handler* [{:keys [id ?data event] :as ev-msg}]
+  (event-msg-handler {:id    (first ev-msg)
+                      :?data (second ev-msg)}))
+
+(defmethod event-msg-handler :default
+  [ev-msg]
+  (log (str "Unhandled socket event: " ev-msg)))
+
+(defmethod event-msg-handler :chsk/state
+  [{:as ev-msg :keys [?data]}]
+  (do
+    (log (str "Channel socket state change: " ?data))
+    (when (:first-open? ?data)
+      (log "Channel socket successfully established!"))))
+
+;; TODO - Cleaning when respons type can be separated
+(defmethod event-msg-handler :chsk/recv
+  [{:as ev-msg :keys [?data]}]
+  (let [[topic payload] ?data]
+    (when (= topic :tx/accepted)
+      (log (str "Socket Event from server: " topic))
+      (log (str "Socket Payload: " payload))
+      (cond
+        (= payload 'app/select-activity)
+        (log "select")
+
+        (= (:topic payload) 'app/confirm-marks)
+        (log "confirm")))))
+
+(defmethod event-msg-handler :chsk/handshake
+  [{:as ev-msg :keys [?data]}]
+  (let [[?uid ?csrf-token ?handshake-data] ?data]
+    (log (str "Socket Handshake: " ?data))))
+
+(defonce chsk-router
+         (sente/start-chsk-router-loop! event-msg-handler* ch-chsk))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; MainComponent
 
