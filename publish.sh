@@ -9,7 +9,7 @@ git pull
 cd -
 
 echo "Copying uberjar"
-cp target/uberjar/tango-0.1.0-SNAPSHOT-standalone.jar ../tango-pub
+cp target/uberjar/tango-0.1.1-SNAPSHOT-standalone.jar ../tango-pub
 cd ../tango-pub
 git add tango-0.1.1-SNAPSHOT-standalone.jar
 
