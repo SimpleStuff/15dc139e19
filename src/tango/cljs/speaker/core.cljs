@@ -65,12 +65,12 @@
   [{:as ev-msg :keys [?data]}]
   (let [[topic payload] ?data]
     (when (= topic :tx/accepted)
-      (log (str "Socket Event from server: " topic))
-      (log (str "Socket Payload: " payload))
+      ;(log (str "Socket Event from server: " topic))
+      ;(log (str "Socket Payload: " payload))
       (cond
         (= payload 'app/set-speaker-activity)
         (do
-          (log "select")
+          ;(log "select")
           (om/transact! reconciler `[:app/speaker-activites]))
 
         (= (:topic payload) 'app/confirm-marks)
@@ -119,7 +119,6 @@
     [this]
     (let [{:keys [heats starting]} (om/props this)
           heat-dist (domain/create-distribution (sort-by :participant/number starting) heats)]
-      (log heat-dist)
       (dom/div nil
         (map-indexed #((om/factory HeatRow) {:heat-number (inc %1)
                                              :starting    %2})
@@ -187,8 +186,6 @@
 ;; Remote com
 (defn remote-send []
   (fn [edn cb]
-    (log "Remote Send")
-    (log edn)
     (cond
       (:query edn)
       (go
@@ -200,8 +197,8 @@
               known-numbers (set (map :activity/number (:app/speaker-activites @app-state)))
               new-acts (filterv #(not (contains? known-numbers (:activity/number %)))
                                 (:app/speaker-activites edn-response))]
-          (log known-numbers)
-          (log new-acts)
+          ;(log known-numbers)
+          ;(log new-acts)
           ;(log edn-response)
           ;; TODO - why is the response a vec?
           (cb {:app/speaker-activites (into (:app/speaker-activites @app-state)
