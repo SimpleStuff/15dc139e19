@@ -590,10 +590,10 @@
 
                                ;; Time to judge another round, reset local db from previous round
                                ;;  and set the new round as selected
-                               ;(log "Pre Reset")
+                               (log "Pre Reset")
                                (d/reset-conn! conn (d/init-db #{} (merge adjudicator-ui-schema uidb/schema)))
                                (init-app)
-                               ;(log "Pos Reset")
+                               (log "Pos Reset")
                                (om/transact! reconciler
                                              `[(app/select-activity
                                                  {:activity ~act-to-change-to})
