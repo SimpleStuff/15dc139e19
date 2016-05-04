@@ -305,6 +305,15 @@
             (apply dom/tbody nil (map competition competitions)))
 
           (dom/div nil
+            (dom/h4 nil "Instruktion:")
+            (dom/ol nil
+                    (dom/li nil "Refresha Browsern")
+                    (dom/li nil "Importera den nya filen")
+                    (dom/li nil "Klicka på namnet ovan för att ladda in tävlingen")
+                    (dom/li nil "Välj Time Schedule")
+                    (dom/li nil "Välj en runda per panel")
+                    (dom/li nil "Välj rundor för speaker")))
+          (dom/div nil
             (dom/span #js {:className (str "btn btn-default btn-file"
                                            (when (= import-status :importing) " disabled"))}
                       "Importera.."
