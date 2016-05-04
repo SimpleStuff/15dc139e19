@@ -353,7 +353,7 @@
                                                            :app/heat-page])} "Previous"))
         (dom/div #js {:className "col-xs-offset-4 col-xs-4"}
           (dom/button #js {:className "btn btn-primary btn-block btn-lg"
-                           :disabled  (= current-page (dec last-page))
+                           :disabled  (= current-page last-page)
                            :onClick   #(om/transact! this `[(app/heat-page {:page ~(inc current-page)})
                                                             :app/heat-page])} "Next"))))))
 
