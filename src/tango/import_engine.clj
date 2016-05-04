@@ -24,10 +24,12 @@
                    [:file/import p]
                    (do
                      ;; TODO - HAXX, fix this for realz
+                     (log/info "Clear DB")
                      (d/delete-storage datomic-uri)
                      (d/create-storage datomic-uri (into d/select-activity-schema
                                                          (into d/application-schema
                                                                d/result-schema)))
+                     (log/info "DB Clear")
                      ;; TODO - verify all indata i.e. p needs a :content here
                      (async/put! out-channel (merge message {:topic   :file/imported
                                                              :payload (import/import-file-stream

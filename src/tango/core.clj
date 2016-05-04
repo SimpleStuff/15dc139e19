@@ -118,7 +118,7 @@
   "Initializes a Production system with default values."
   []
   (alter-var-root 
-   #'system (constantly (production-system {:port 1337 :log-file "loggs/test.log" :log-level :debug
+   #'system (constantly (production-system {:port 1337 :log-file "loggs/test.log" :log-level :info
                                             :client-connection :ws-connection-channels}))))
 
 (defn start
@@ -155,6 +155,6 @@
       (println "Port number missing")
       (do
         (component/start
-         (production-system {:port (Integer/parseInt port) :log-file "loggs/production.log" :log-level :trace
+         (production-system {:port (Integer/parseInt port) :log-file "loggs/production.log" :log-level :error
                              :client-connection :ws-connection-channels}))
         (log/report (str "Server started on port " port))))))

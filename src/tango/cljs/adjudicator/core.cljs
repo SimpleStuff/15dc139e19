@@ -44,7 +44,7 @@
 (declare reconciler)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Sente Socket setup
-(log-trace "Begin Sente Socket Setup")
+;(log-trace "Begin Sente Socket Setup")
 
 (let [{:keys [chsk ch-recv send-fn state]}
       (sente/make-channel-socket! "/chsk"
@@ -55,22 +55,22 @@
   (def chsk-state state)                                    ; Watchable, read-only atom
   )
 
-(log-trace "End Sente Socket Setup")
+;(log-trace "End Sente Socket Setup")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Local storage
-(log-trace "Begin Local Storage")
+;(log-trace "Begin Local Storage")
 
 (def local-id (ls/local-storage (atom {}) :local-id))
 
-(log-info (str "Local Adjudicator of Client : " (:name @local-id) " - "
-               (:adjudicator/id (:adjudicator @local-id))))
+;(log-info (str "Local Adjudicator of Client : " (:name @local-id) " - "
+;               (:adjudicator/id (:adjudicator @local-id))))
 
-(log-trace "End Local Storage")
+;(log-trace "End Local Storage")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Init DB
-(log-trace "Begin Init DB")
+;(log-trace "Begin Init DB")
 
 (def adjudicator-ui-schema {:app/selected-activity {:db/cardinality :db.cardinality/one
                                                     :db/valueType :db.type/ref}
@@ -90,7 +90,7 @@
 
 (defn init-app []
   (do
-    (log-trace "Init App")
+    ;(log-trace "Init App")
     (d/transact! conn [{:db/id -1 :app/id 1}
                        {:db/id -1 :app/online? false}
                        {:db/id -1 :app/status (if (:app/status @local-id)
@@ -111,11 +111,11 @@
          :where
          [_ :app/online? ?online]] (d/db conn)))
 
-(log-trace "End Init DB")
+;(log-trace "End Init DB")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Sente message handling
-(log-trace "Begin Sente message handling")
+;(log-trace "Begin Sente message handling")
 
 ; Dispatch on event-id
 (defmulti event-msg-handler :id)
@@ -127,22 +127,21 @@
 
 (defmethod event-msg-handler :default
   [ev-msg]
-  (log-debug (str "Unhandled socket event: " ev-msg)))
+  (log (str "Unhandled socket event: " ev-msg)))
 
 (defmethod event-msg-handler :chsk/state
   [{:as ev-msg :keys [?data]}]
   (do
-    (log-debug (str "Channel socket state change: " ?data))
+    (log (str "Channel socket state change: " ?data))
     (when (:first-open? ?data)
-      (log-debug "Channel socket successfully established!"))))
+      (log "Channel socket successfully established!"))))
 
 ;; TODO - Cleaning when respons type can be separated
 (defmethod event-msg-handler :chsk/recv
   [{:as ev-msg :keys [?data]}]
   (let [[topic payload] ?data]
     (when (= topic :tx/accepted)
-      (log-debug (str "Socket Event from server: " topic))
-      (log (str "Socket Payload: " payload))
+      ;(log (str "Socket Payload: " payload))
       (cond
         (= payload 'app/select-activity)
         (do
@@ -161,15 +160,15 @@
 (defmethod event-msg-handler :chsk/handshake
   [{:as ev-msg :keys [?data]}]
   (let [[?uid ?csrf-token ?handshake-data] ?data]
-    (log-debug (str "Socket Handshake: " ?data))))
+    (log (str "Socket Handshake: " ?data))))
 
 (defonce chsk-router
          (sente/start-chsk-router-loop! event-msg-handler* ch-chsk))
 
-(log-trace "End Sente message handling")
+;(log-trace "End Sente message handling")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Components
-(log-trace "Begin Components")
+;(log-trace "Begin Components")
 
 (defui AdjudicatorSelection
   static om/IQuery
@@ -180,7 +179,7 @@
                                        :adjudicator/id]}])
   Object
   (render [this]
-    (log-trace "Render AdjudicatorSelection")
+    ;(log-trace "Render AdjudicatorSelection")
     (let [panel (om/props this)]
       (dom/div nil
         (if (:adjudicator-panel/name panel)
@@ -210,7 +209,7 @@
     (let [result (:result (om/props this))
           point (if (:result/point result) (:result/point result) 0)
           mark-x (if (:result/mark-x result) (:result/mark-x result) false)]
-      (log-trace "Render HeatRowComponent")
+      ;(log-trace "Render HeatRowComponent")
       (dom/div #js {:className "row"}
         (dom/div #js {:className "col-xs-2"}
           (dom/h3 #js {:className "control-label"} (str (:participant/number (om/props this)))))
@@ -295,7 +294,7 @@
                         (first (filter (fn [res] (= (:participant/id participant)
                                                     (:participant/id (:result/participant res))))
                                        results)))]
-      (log-trace "Render HeatComponent")
+      ;(log-trace "Render HeatComponent")
       (dom/div #js {:className "col-xs-6"}
         (dom/h2 #js {:className "text-center"} "Heat " (str (+ 1 heat)))
         (map #((om/factory HeatRowComponent)
@@ -313,8 +312,6 @@
   (render [this]
     (let [participants (:participants (om/props this))
           heats (:heats (om/props this))
-          ;heat-parts (partition-all (int (Math/ceil (/ (count participants) heats)))
-          ;                          (sort-by :participant/number participants))
           heat-parts (domain/create-distribution
                        (sort-by :participant/number participants)
                        heats)
@@ -322,7 +319,7 @@
           current-page (:heat-page (om/props this))
           page-start (* page-size current-page)
           page-end (+ page-start page-size)]
-      (log-trace "Render HeatsComponent")
+      ;(log-trace "Render HeatsComponent")
       (dom/div nil
         (dom/div #js {:className "col-xs-12"}
           ;(dom/h3 nil (str "Heats : " heats))
@@ -344,7 +341,7 @@
   (render [this]
     (let [current-page (:heat-page (om/props this))
           last-page (:heat-last-page (om/props this))]
-      (log-trace "Render HeatsControll")
+      ;(log-trace "Render HeatsControll")
       (dom/div #js {:className "row"}
         (dom/div #js {:className "col-xs-4"}
           (dom/button #js {:className "btn btn-primary btn-block btn-lg"
@@ -396,8 +393,8 @@
           allow-marks? (< mark-count (int (:round/recall selected-activity)) )
           in-admin-mode? (:app/admin-mode (om/props this))
           ]
-      (log-trace "Rendering MainComponent")
-      (log selected-activity)
+      ;(log-trace "Rendering MainComponent")
+      ;(log selected-activity)
       (dom/div #js {:className "container-fluid"}
         (when (and (not selected-activity) (:name @local-id))
           (dom/div nil
@@ -517,16 +514,16 @@
                                                                           {:in-admin ~(not in-admin-mode?)})])}
                                   (dom/span #js {:className "glyphicon glyphicon-cog"})))))))))))))
 
-(log-trace "End Components")
+;(log-trace "End Components")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Remote Posts
-(log-trace "Begin Remote Posts")
+;(log-trace "Begin Remote Posts")
 
 ;http://jeremyraines.com/2015/11/16/getting-started-with-clojure-web-development.html
 ;http://code.tutsplus.com/tutorials/mobile-first-with-bootstrap-3--net-34808
 (defn transit-post [url]
   (fn [edn cb]
-    (log-trace "Transit Post")
+    ;(log-trace "Transit Post")
     (cond
       (:command edn) (.send XhrIo url
                            #()                              ;log  ;; TODO - Should do something with the response..
@@ -555,10 +552,10 @@
 
                          (when (not= (count acts-for-this-adj) 1)
                            (log "WARNING MULTIPLE RUNNING ACTIVITIES"))
-                         (log "Local Judge")
-                         (log (:name @local-id))
-                         (log "Response")
-                         (log awsome-act)
+                         ;(log "Local Judge")
+                         ;(log (:name @local-id))
+                         ;(log "Response")
+                         ;(log awsome-act)
                          ;; TODO - ska det vara en lista med ett element kanske?
 
 
@@ -575,11 +572,11 @@
                                real-adj (first (filter #(= current-adj-name (:adjudicator/name %))
                                                        adjs))]
 
-                           (log "Should judge")
-                           (log should-judge?)
+                           ;(log "Should judge")
+                           ;(log should-judge?)
 
-                           (log "Results")
-                           (log (:app/results edn-result))
+                           ;(log "Results")
+                           ;(log (:app/results edn-result))
                            ;; TODO - need to make better handling of client adjudicator
                            ;; configuration
                            (when (or should-judge? (= nil current-adj-name))
@@ -607,8 +604,8 @@
                                                ])))
 
                            ;; Always set judge to the locally selected
-                           (log "Real Adj")
-                           (log real-adj)
+                           ;(log "Real Adj")
+                           ;(log real-adj)
                            (if real-adj
                              (om/transact! reconciler `[(app/select-adjudicator ~real-adj)
                                                         :app/selected-adjudicator]))
@@ -616,10 +613,10 @@
                            ;                           :app/selected-adjudicator])
                            )))))))
 
-(log-trace "End Remote Posts")
+;(log-trace "End Remote Posts")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Application
-(log-trace "Begin Application")
+;(log-trace "Begin Application")
 
 ;; Init db etc if it has not been done
 (when-not (app-started? conn)
@@ -635,4 +632,4 @@
 (om/add-root! reconciler
               MainComponent (gdom/getElement "app"))
 
-(log-trace "End Application")
+;(log-trace "End Application")

@@ -39,15 +39,15 @@
   [{:keys [state query]} _ _]
   {:value                                                   ;{:adjudicator/name "Bob"}
    (do
-     (log "Read Adjudicator ")
-     (log query)
+     ;(log "Read Adjudicator ")
+     ;(log query)
      (if query
        (let [q
              (d/q '[:find (pull ?a selector) .
                     :in $ selector
                     :where [[:app/id 1] :app/selected-adjudicator ?a]]
                   (d/db state) query)]
-         (log "Read Done")
+         ;(log "Read Done")
          q)))})
 
 (defn loading? [conn]
@@ -61,7 +61,7 @@
 (defmethod read :app/results
   [{:keys [state query]} _ _]
   (do
-    (log "Read results ")
+    ;(log "Read results ")
     ;(log query)
     ;(if loading?)
     ;{:query true}
@@ -83,8 +83,8 @@
                              [?ra :activity/id ?id]
                              ]
                            (d/db state) query)]
-                  (log "//////////////////////////////////////////")
-                  (log res)
+                  ;(log "//////////////////////////////////////////")
+                  ;(log res)
                   res)))
      :query true
      }))

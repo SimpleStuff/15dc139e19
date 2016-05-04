@@ -81,7 +81,7 @@
 ;; Need to make difference between query for all comps. vs query for details for a comp.
 (defn handle-query-result [d]
   (do
-    (log "Handle Q R")
+    ;(log "Handle Q R")
     (if (vector? d)
       (let [clean-data {:competitions d}]
         (om/transact! reconciler `[(app/add-competition ~clean-data) :app/competitions]))
@@ -122,7 +122,7 @@
 (defmethod event-msg-handler :chsk/recv
   [{:as ev-msg :keys [?data]}]
   (let [[topic payload] ?data]
-    (log (str "Push event from server: " topic))
+    ;(log (str "Push event from server: " topic))
     (when (= topic :event-manager/query-result)
       (if (vector? payload)
         (handle-query-result payload)
@@ -130,7 +130,7 @@
     (when (= topic :event-manager/transaction-result)
       (chsk-send! [:event-manager/query [[:competition/name :competition/location]]]))
     (when (= topic :tx/accepted)
-      (log payload)
+      ;(log payload)
       (cond
         (= payload 'participant/set-result)
         (om/transact! reconciler `[:app/results])
@@ -734,8 +734,8 @@
           selected-competition (:app/selected-competition (om/props this))
           make-button (partial make-menu-button this spage)]
 
-      (log "SPeaker Act")
-      (log (:app/speaker-activites (om/props this)))
+      ;(log "SPeaker Act")
+      ;(log (:app/speaker-activites (om/props this)))
       (dom/div #js {:className "navbar-wrapper"}
         (dom/div #js {:className "container"}
 
@@ -797,7 +797,7 @@
 
 (defn transit-post [url]
   (fn [edn cb]
-    (log edn)
+    ;(log edn)
     (.send XhrIo url
            #() ;log
            ;(this-as this
