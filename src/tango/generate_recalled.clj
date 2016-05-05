@@ -27,9 +27,10 @@
     temp-result))
 
 (defn generate-html [recalled-info]
-  (h/html [:head
-           [:title "Last Recalled"]
-           [:style {:type "text/css"} "#stor { Font-size: 54px; } #liten { Font-size: 36px; }"]]
+  (h/html [:html
+           [:head
+                  [:title "Last Recalled"]
+                  [:style {:type "text/css"} "#stor { Font-size: 54px; } #liten { Font-size: 36px; }"]]]
 
           [:body
            [:h1 [:font {:id "stor"} (str "Event " (:activity/number recalled-info))]]
