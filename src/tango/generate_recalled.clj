@@ -136,7 +136,7 @@
   (let [completed (find-completed competition)
         recall-datas (mapv #(make-completed % competition) completed)]
     (mapv #(hash-map :activity/number (:activity/number %)
-                     :html (generate-html %)
+                     :html (generate-string %)
                      ;:html-re (generate-re-html %)
                      ;:text (generate-string %)
                      )
