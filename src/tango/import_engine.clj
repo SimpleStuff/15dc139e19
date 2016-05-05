@@ -46,6 +46,7 @@
                          ;; Insert code here for now
                          ;; use (log/info to find problems, check that core.clj :log-level is
                          ;; as expected
+                         (spit "recalled-html.txt" recalled-html)
                          (log/info recalled-html)
                          (async/put! out-channel (merge message {:topic   :file/imported
                                                                  :payload import-result})))))
@@ -58,6 +59,7 @@
             (log/error e "Exception in Files message go loop")
             (async/>! out-channel (str "Exception message: " (.getMessage e)))))
         (recur)))))
+
 
 (defrecord FileHandler [file-handler-channels message-handler id-generator-fn datomic-uri]
   component/Lifecycle

@@ -16,6 +16,19 @@
                :html            result-html}]
              (gen/generate-recalled-html import-data))))))
 
+(defn mock-spit [f content]
+  (testing "-> Valid html file name"
+    (is (= "nv_re_3b.htm" f)))
+  (testing "-> Valid html content"
+    (is (= result-html content))))
+
+(deftest write-recalled
+  (testing "Write recalled html"
+    (let [recalled-htmls (gen/generate-recalled-html test-data)]
+      (is (< 0 (count recalled-htmls)))
+      (is (= #{"3A"}
+             (gen/write-recalled-html #{"3A"} recalled-htmls mock-spit))))))
+
 ;"5A"
 
 ;(gen/generate-html (gen/find-last-completed test-data))

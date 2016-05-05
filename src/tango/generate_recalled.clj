@@ -55,3 +55,18 @@
     (mapv #(hash-map :activity/number (:activity/number %)
                      :html (generate-html %))
           recall-datas)))
+
+(get #{:a :b} :c)
+
+(defn write-recalled-html
+  ;; Writes html files named 'ny_re_<round>.htm using data in the recalled-htmls and the write-fn
+  ;; with the same api as spit.
+  ;; collection, exluding any round included in exluded-rounds hash-set
+  ;; Returns an updated hash-set to be supplied the next time this function is invoked.
+  [exluded-rounds recalled-htmls write-fn]
+  (let [new-htmls (filter #(nil? (get exluded-rounds (:activity/number %))) recalled-htmls)]
+    (reduce #(do (write-fn (str "nv_re_" (:activity/number %2)) (:html %2))
+                 (conj %1 (:activity/number %2)))
+            exluded-rounds
+            new-htmls))
+  )
