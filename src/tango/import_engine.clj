@@ -4,7 +4,8 @@
             [taoensso.timbre :as log]
             [tango.import :as import]
             [clojure.core.match :refer [match]]
-            [tango.datomic-storage :as d]))
+            [tango.datomic-storage :as d]
+            [tango.generate-recalled :as gen]))
 
 ;; TODO - default to #(java.util.UUID/randomUUID)
 (defn- start-message-handler [in-channel out-channel {:keys [id-generator-fn datomic-uri]}]
@@ -33,9 +34,20 @@
                      ;; TODO - verify all indata i.e. p needs a :content here
                      (let [import-result (import/import-file-stream
                                            (:content p)
-                                           id-generator-fn)]
-                       (async/put! out-channel (merge message {:topic   :file/imported
-                                                               :payload import-result}))))
+                                           id-generator-fn)
+                           recalled-html (gen/generate-recalled-html import-result)
+                           ;; TODO - filter known
+                           ;; - read filtered from file
+                           ;; - filter recalled-html on activity number
+                           ;; - conj and save new known generated numbers
+                           ;; - map spit on filtered recalled
+                           ]
+                       (do
+                         ;; Insert code here for now
+                         ;; use (log/info to find problems, check that core.clj :log-level is
+                         ;; as expected
+                         (async/put! out-channel (merge message {:topic   :file/imported
+                                                                 :payload import-result})))))
                    [:file/ping p]
                    (async/put! out-channel (merge message {:topic :file/pong}))
                    :else (async/>!!
