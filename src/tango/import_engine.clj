@@ -31,10 +31,11 @@
                                                                d/result-schema)))
                      (log/info "DB Clear")
                      ;; TODO - verify all indata i.e. p needs a :content here
-                     (async/put! out-channel (merge message {:topic   :file/imported
-                                                             :payload (import/import-file-stream
-                                                                        (:content p)
-                                                                        id-generator-fn)})))
+                     (let [import-result (import/import-file-stream
+                                           (:content p)
+                                           id-generator-fn)]
+                       (async/put! out-channel (merge message {:topic   :file/imported
+                                                               :payload import-result}))))
                    [:file/ping p]
                    (async/put! out-channel (merge message {:topic :file/pong}))
                    :else (async/>!!
