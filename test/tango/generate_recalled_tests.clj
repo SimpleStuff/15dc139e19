@@ -16,18 +16,42 @@
                :html            result-html}]
              (gen/generate-recalled-html import-data))))))
 
+(defn mock-spit-succsess[f content]
+  (testing "-> Always ok"
+    (is true)))
+
+(defn mock-spit-fail [f content]
+  (testing "-> Not to be invoked"
+    (is false)))
+
 (defn mock-spit [f content]
   (testing "-> Valid html file name"
-    (is (= "nv_re_3b.htm" f)))
+    (is (= "nv_re_3A.htm" f)))
   (testing "-> Valid html content"
     (is (= result-html content))))
 
-(deftest write-recalled
-  (testing "Write recalled html"
+
+
+(deftest write-recalled-0-new-round
+  (testing "Write recalled html 0 new sounds"
     (let [recalled-htmls (gen/generate-recalled-html test-data)]
-      (is (< 0 (count recalled-htmls)))
       (is (= #{"3A"}
-             (gen/write-recalled-html #{"3A"} recalled-htmls mock-spit))))))
+             (gen/write-recalled-html #{"3A"} recalled-htmls mock-spit-fail))))))
+
+(deftest write-recalled-1-new-round
+  (testing "Write recalled html 1 new round"
+    (let [recalled-htmls (gen/generate-recalled-html test-data)]
+      (is (= #{"3A"}
+             (gen/write-recalled-html #{} recalled-htmls mock-spit))))))
+
+(deftest write-recalled-2-new-round
+  (testing "Write recalled html 2 new rounds"
+    (let [recalled-htmls (gen/generate-recalled-html test-data)]
+      (is (= #{"3A" "3B"}
+             (gen/write-recalled-html #{} [{:activity/number "3A"
+                                            :html "aaa"}
+                                           {:activity/number "3B"
+                                            :html "aaa"}] mock-spit-succsess))))))
 
 ;"5A"
 

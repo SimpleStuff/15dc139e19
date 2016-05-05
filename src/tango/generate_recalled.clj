@@ -65,7 +65,7 @@
   ;; Returns an updated hash-set to be supplied the next time this function is invoked.
   [exluded-rounds recalled-htmls write-fn]
   (let [new-htmls (filter #(nil? (get exluded-rounds (:activity/number %))) recalled-htmls)]
-    (reduce #(do (write-fn (str "nv_re_" (:activity/number %2)) (:html %2))
+    (reduce #(do (write-fn (str "nv_re_" (:activity/number %2) ".htm") (:html %2))
                  (conj %1 (:activity/number %2)))
             exluded-rounds
             new-htmls))
