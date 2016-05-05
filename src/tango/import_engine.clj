@@ -7,6 +7,14 @@
             [tango.datomic-storage :as d]
             [tango.generate-recalled :as gen]))
 
+(defn read-excluded-rounds []
+  (try (slurp "excluded-rounds.txt")
+       (catch java.io.FileNotFoundException e
+         #{})))
+
+(defn write-excluded-rounds [excluded-rounds]
+  (spit "excluded-rounds.txt" excluded-rounds))
+
 ;; TODO - default to #(java.util.UUID/randomUUID)
 (defn- start-message-handler [in-channel out-channel {:keys [id-generator-fn datomic-uri]}]
   {:pre [(some? in-channel)
@@ -46,7 +54,12 @@
                          ;; Insert code here for now
                          ;; use (log/info to find problems, check that core.clj :log-level is
                          ;; as expected
-                         (spit "recalled-html.txt" recalled-html)
+                         (let [excluded-rounds (read-excluded-rounds)
+                               new-excluded-rounds (gen/write-recalled-html
+                                                    excluded-rounds
+                                                    recalled-html
+                                                    spit)]
+                           (write-excluded-rounds excluded-rounds))
                          (log/info recalled-html)
                          (async/put! out-channel (merge message {:topic   :file/imported
                                                                  :payload import-result})))))
@@ -59,7 +72,6 @@
             (log/error e "Exception in Files message go loop")
             (async/>! out-channel (str "Exception message: " (.getMessage e)))))
         (recur)))))
-
 
 (defrecord FileHandler [file-handler-channels message-handler id-generator-fn datomic-uri]
   component/Lifecycle
