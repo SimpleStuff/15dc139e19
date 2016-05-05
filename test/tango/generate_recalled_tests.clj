@@ -9,26 +9,29 @@
 (def result-html
   "<head><title> Last Recalled </title><style type=\"text/css\">#stor { Font-size: 54px; } #liten { Font-size: 36px; }</style></head><body><h1><font id=\"stor\">Event 3A</font></h1><h1><font id=\"stor\">Disco Par Silver B1 / B2</font></h1><h1><font id=\"liten\">Recalled from Round 1</font></h1><h1><font id=\"stor\">1880, 1881, 1882, 1883, 1884, 1885, 1886, 1887, 1888, 1889, 1890, 1891, 1892, 1893, 1894, 1895, 1896, 1897, 1907, 1909</font></h1><br /><br /><br /><br /><br /></body>")
 
+(def text-result
+  "<html><head><title> Last Recalled </title><style type=\"text/css\">#stor { Font-size: 54px; } #liten { Font-size: 36px; }</style></head><body><h1><font id=\"stor\">Event 3A</font></h1><h1><font id=\"stor\">Disco Par Silver B1 / B2</font></h1><h1><font id=\"liten\">Recalled from Round 1</font></h1><h1><font id=\"stor\">1880, 1881, 1882, 1883, 1884, 1885, 1886, 1887, 1888, 1889, 1890, 1891, 1892, 1893, 1894, 1895, 1896, 1897, 1907, 1909</font></h1><br /><br /><br /><br /><br /></body></html>")
+
 (deftest generate-recalled
   (testing "Genereate recalled html from imported data"
     (let [import-data test-data]
-      (is (= {:activity/number "3A"
-              :html            result-html}
-             (dissoc (first (gen/generate-recalled-html import-data)) :html-re))))))
+      (is (= [{:activity/number "3A"
+               :html            text-result}]
+             (gen/generate-recalled-html import-data))))))
 
-(deftest generate-re-activity-html
-  (testing "Genereate recalled html from imported data"
-    (let [import-data test-data]
-      (is (= {:activity/number "3A"
-              ;:html            result-html
-              :html-re         ""}
-             (dissoc (first (gen/generate-recalled-html import-data))
-                     :html))))))
+;(deftest generate-re-activity-html
+;  (testing "Genereate recalled html from imported data"
+;    (let [import-data test-data]
+;      (is (= {:activity/number "3A"
+;              ;:html            result-html
+;              :html-re         ""}
+;             (dissoc (first (gen/generate-recalled-html import-data))
+;                     :html))))))
 
-(spit "re-test.html" (:html-re (first (gen/generate-recalled-html test-data))))
-(spit "re-text.html" (:text (first (gen/generate-recalled-html test-data))))
+;(spit "re-test.html" (:html-re (first (gen/generate-recalled-html test-data))))
+;(spit "re-text.html" (:text (first (gen/generate-recalled-html test-data))))
 
-(:text (first (gen/generate-recalled-html test-data)))
+;(:html (first (gen/generate-recalled-html test-data)))
 
 (defn mock-spit-succsess[f content]
   (testing "-> Always ok"

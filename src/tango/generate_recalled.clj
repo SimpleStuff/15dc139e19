@@ -100,27 +100,6 @@
       [:br]
       [:br]]]))
 
-"<html>
-<head>
-<title> Last Recalled </title>
-</head>
-<body>
-<h1><font size=7>Event 4C</font></h1>
-<h1><font size=7>Disco Par Guld B2</font></h1>
-<h1><font size=7>Recalled from Semifinal</font></h1><br>
-<table border=0 cellpadding=8 cellspacing=0>
-</table>
-<p><h1><font size=7>7 couples recalled</font></p>
-<br><br><br><br>
-<h1><font size=7>Event 4C</font></h1>
-<h1><font size=7>Disco Par Guld B2</font></h1>
-<h1><font size=6>Recalled from Semifinal</font></h1><br>
-<h1><font size=7>
-2090,  2092,  2094,  2095,  2097,  2098,  2100</font></h1><br><br><br><br><br><br>
-
-</body>
-</html>
-"
 (defn generate-string [recalled-info]
   (let [pres (:round
                (:round/presentation recalled-info))
@@ -152,88 +131,15 @@
 </html>
 ")))
 
-"<html>
-<head>
-<title> Last Recalled </title>
-</head>
-<body>
-<h1><font size=7>Event 4A</font></h1>
-<h1><font size=7>Disco Par Guld B2</font>< /h1>
-<h1><font size=7>Recalled from Semifinal</font>< /h1><br>
-<table border=0 cellpadding=8 cellspacing=0>
-<tr><td width=15%><h1><font size=7>2090</font>< /td><td width=65%><h1><font size=6>Miranda Nordheden - Thea Ergon</font>< /h1></td><td width=20%><h1><font size=6>Kindahls</font>< /h1></td>< /tr>
-<tr><td width=15%><h1><font size=7>2092</font>< /td><td width=65%><h1><font size=6>Natalie Wallén - Tuja von Troil</font>< /h1></td><td width=20%><h1><font size=6>FLEX</font>< /h1></td>< /tr>
-<tr><td width=15%><h1><font size=7>2094</font>< /td><td width=65%><h1><font size=6>Moa Norström - Nathalie Jireteg</font>< /h1></td><td width=20%><h1><font size=6>WAD/VDC< /font></h1>< /td></tr>
-<tr><td width=15%><h1><font size=7>2095</font>< /td><td width=65%><h1><font size=6>Lovis Brask - Wilma Kritz</font>< /h1></td><td width=20%><h1><font size=6>RGDT</font>< /h1></td>< /tr>
-<tr><td width=15%><h1><font size=7>2097</font>< /td><td width=65%><h1><font size=6>Elise Morling - Victoria Linder</font>< /h1></td><td width=20%><h1><font size=6>FLEX</font>< /h1></td>< /tr>
-<tr><td width=15%><h1><font size=7>2098</font>< /td><td width=65%><h1><font size=6>Amanda Tidstål - Nowa Florinus</font>< /h1></td><td width=20%><h1><font size=6>WAD/VDC< /font></h1>< /td></tr>
-<tr><td width=15%><h1><font size=7>2100</font>< /td><td width=65%><h1><font size=6>Clara Persson - Hanna Knutsson</font>< /h1></td><td width=20%><h1><font size=6>WAD/VDC< /font></h1>< /td></tr>
-</table>
-<p><h1><font size=7>7 couples recalled</font>< /p>
-<br><br><br><br>
-<h1><font size=7>Event 4A</font>< /h1>
-<h1><font size=7>Disco Par Guld B2</font>< /h1>
-<h1><font size=6>Recalled from Semifinal</font>< /h1><br>
-<h1><font size=7>
-2090,  2092,  2094,  2095,  2097,  2098,  2100</font>< /h1><br><br><br><br><br><br>
-
-</body>
-</html>"
-
-"<html>
-<head>
-<title> Last Recalled </title>
-</head>
-<body>
-<h1><font size=7>Event 4A</font>< / h1>
-<h1><font size=7>Disco Par Guld B2</font>< / h1>
-<h1><font size=7>Recalled from Semifinal</font>< / h1><br>
-<table border=0 cellpadding=8 cellspacing=0>
-<tr><td width=15%><h1><font size=7>2090</font>< / td><td width=65%><h1><font size=6>Miranda Nordheden - Thea Ergon</font>< / h1></td><td width=20%><h1><font size=6>Kindahls</font>< / h1></td>< / tr>
-<tr><td width=15%><h1><font size=7>2092</font>< / td><td width=65%><h1><font size=6>Natalie Wallén - Tuja von Troil</font>< / h1></td><td width=20%><h1><font size=6>FLEX</font>< / h1></td>< / tr>
-<tr><td width=15%><h1><font size=7>2094</font>< / td><td width=65%><h1><font size=6>Moa Norström - Nathalie Jireteg</font>< / h1></td><td width=20%><h1><font size=6>WAD/VDC< / font></h1>< / td></tr>
-<tr><td width=15%><h1><font size=7>2095</font>< / td><td width=65%><h1><font size=6>Lovis Brask - Wilma Kritz</font>< / h1></td><td width=20%><h1><font size=6>RGDT</font>< / h1></td>< / tr>
-<tr><td width=15%><h1><font size=7>2097</font>< / td><td width=65%><h1><font size=6>Elise Morling - Victoria Linder</font>< / h1></td><td width=20%><h1><font size=6>FLEX</font>< / h1></td>< / tr>
-<tr><td width=15%><h1><font size=7>2098</font>< / td><td width=65%><h1><font size=6>Amanda Tidstål - Nowa Florinus</font>< / h1></td><td width=20%><h1><font size=6>WAD/VDC< / font></h1>< / td></tr>
-<tr><td width=15%><h1><font size=7>2100</font>< / td><td width=65%><h1><font size=6>Clara Persson - Hanna Knutsson</font>< / h1></td><td width=20%><h1><font size=6>WAD/VDC< / font></h1>< / td></tr>
-</table>
-<p><h1><font size=7>7 couples recalled</font>< / p>
-<br><br><br><br>
-<h1><font size=7>Event 4A</font>< / h1>
-<h1><font size=7>Disco Par Guld B2</font>< / h1>
-<h1><font size=6>Recalled from Semifinal</font>< / h1><br>
-<h1><font size=7>
-2090,  2092,  2094,  2095,  2097,  2098,  2100</font>< / h1><br><br><br><br><br><br>
-
-</body>
-</html>"
-
-(defn ppxml [xml]
-  (let [in (javax.xml.transform.stream.StreamSource.
-             (java.io.StringReader. xml))
-        writer (java.io.StringWriter.)
-        out (javax.xml.transform.stream.StreamResult. writer)
-        transformer (.newTransformer
-                      (javax.xml.transform.TransformerFactory/newInstance))]
-    (.setOutputProperty transformer
-                        javax.xml.transform.OutputKeys/INDENT "yes")
-    (.setOutputProperty transformer
-                        "{http://xml.apache.org/xslt}indent-amount" "2")
-    (.setOutputProperty transformer
-                        javax.xml.transform.OutputKeys/METHOD "xml")
-    (.transform transformer in out)
-    (-> out .getWriter .toString)))
-
-
-
 ;; API
 (defn generate-recalled-html [competition]
   (let [completed (find-completed competition)
         recall-datas (mapv #(make-completed % competition) completed)]
     (mapv #(hash-map :activity/number (:activity/number %)
                      :html (generate-html %)
-                     :html-re (generate-re-html %)
-                     :text (generate-string %))
+                     ;:html-re (generate-re-html %)
+                     ;:text (generate-string %)
+                     )
           recall-datas)
     ;recall-datas
     ))
@@ -245,7 +151,7 @@
   ;; Returns an updated hash-set to be supplied the next time this function is invoked.
   [exluded-rounds recalled-htmls write-fn]
   (let [new-htmls (filter #(nil? (get exluded-rounds (:activity/number %))) recalled-htmls)]
-    (reduce #(do (write-fn (str "nv_re_" (:activity/number %2) ".htm") (:html %2))
+    (reduce #(do (write-fn (str "re_" (:activity/number %2) ".htm") (:html %2))
                  (conj %1 (:activity/number %2)))
             exluded-rounds
             new-htmls)))
