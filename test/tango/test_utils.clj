@@ -22,6 +22,11 @@
   (parse-examples "small-example.xml"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; generate example
+(def generate-example
+  (parse-examples "dp-with-recalled.xml"))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Real example
 
 (def real-example

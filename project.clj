@@ -35,6 +35,8 @@
                  [ring/ring-defaults        "0.2.0"]
                  [ring-transit "0.1.4"]
 
+                 [hiccup "1.0.5"]
+
                  [compojure "1.5.0"]
 
                  ; Code cleaness tools
