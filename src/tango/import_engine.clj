@@ -8,12 +8,16 @@
             [tango.generate-recalled :as gen]))
 
 (defn read-excluded-rounds []
-  (try (slurp "excluded-rounds.txt")
+  (try (first (read-string (slurp "excluded-rounds.txt")))
        (catch java.io.FileNotFoundException e
          #{})))
 
 (defn write-excluded-rounds [excluded-rounds]
-  (spit "excluded-rounds.txt" excluded-rounds))
+  (spit "excluded-rounds.txt" (with-out-str (pr [excluded-rounds]))))
+
+(hash-set (read-excluded-rounds))
+(get  (read-excluded-rounds) "b")
+
 
 ;; TODO - default to #(java.util.UUID/randomUUID)
 (defn- start-message-handler [in-channel out-channel {:keys [id-generator-fn datomic-uri]}]
