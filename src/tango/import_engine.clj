@@ -59,7 +59,7 @@
                                                     excluded-rounds
                                                     recalled-html
                                                     spit)]
-                           (write-excluded-rounds excluded-rounds))
+                           (write-excluded-rounds new-excluded-rounds))
                          (log/info recalled-html)
                          (async/put! out-channel (merge message {:topic   :file/imported
                                                                  :payload import-result})))))
