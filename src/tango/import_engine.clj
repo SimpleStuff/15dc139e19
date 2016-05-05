@@ -46,6 +46,7 @@
                          ;; Insert code here for now
                          ;; use (log/info to find problems, check that core.clj :log-level is
                          ;; as expected
+                         (log/info recalled-html)
                          (async/put! out-channel (merge message {:topic   :file/imported
                                                                  :payload import-result})))))
                    [:file/ping p]
