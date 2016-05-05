@@ -2,30 +2,23 @@
   (:require [tango.presentation :as p]
             [hiccup.core :as h]))
 
-;(defn generate-recalled [competition]
-;  ;; TODO - koppla actvity name till class?
-;  (let [rounds (mapcat :class/rounds (:competition/classes competition))
-;        test-round "5A"
-;        a-rounds-results (:round/results
-;                           (first (filter (fn [x] (= (:round/number x) test-round))
-;                                          (filter #(= (:round/status %) :completed) rounds))))]
-;    (filter #(not= (:result/recalled %) "") a-rounds-results)))
-
-(defn find-last-completed [competition]
+(defn find-completed [competition]
   (let [non-comment-acts (filter #(not= (:activity/number %) -1)
                                  (:competition/activities competition))
         sorted (sort-by :activity/position non-comment-acts)
         all-completed (filter #(= :completed
-                                  (:round/status (:activity/source %))) sorted)
-        last-completed (last all-completed)
-        round (:activity/source last-completed)
+                                  (:round/status (:activity/source %))) sorted)]
+    all-completed))
+
+(defn make-completed [completed classes]
+  (let [round (:activity/source completed)
         class-for-round (first (filter #(= (:class/name %)
-                                           (:activity/name last-completed))
-                                       (:competition/classes competition)))
-        presentation (p/make-time-schedule-activity-presenter last-completed
+                                           (:activity/name completed))
+                                       classes))
+        presentation (p/make-time-schedule-activity-presenter completed
                                                               class-for-round)
-        temp-result {:activity/name  (:activity/name last-completed)
-                     :activity/number (:activity/number last-completed)
+        temp-result {:activity/name  (:activity/name completed)
+                     :activity/number (:activity/number completed)
                      :round/recalled (map :result/participant-number
                                           (filter #(not= (:result/recalled %) "")
                                                   (:round/results round)))
@@ -54,3 +47,11 @@
            [:br]
            [:br]
            [:br]]))
+
+;; API
+(defn generate-recalled-html [competition]
+  (let [completed (find-completed competition)
+        recall-datas (mapv #(make-completed % competition) completed)]
+    (mapv #(hash-map :activity/number (:activity/number %)
+                     :html (generate-html %))
+          recall-datas)))
