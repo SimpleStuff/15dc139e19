@@ -26,6 +26,9 @@
                      :html))))))
 
 (spit "re-test.html" (:html-re (first (gen/generate-recalled-html test-data))))
+(spit "re-text.html" (:text (first (gen/generate-recalled-html test-data))))
+
+(:text (first (gen/generate-recalled-html test-data)))
 
 (defn mock-spit-succsess[f content]
   (testing "-> Always ok"
