@@ -30,8 +30,6 @@
   (testing "-> Valid html content"
     (is (= result-html content))))
 
-
-
 (deftest write-recalled-0-new-round
   (testing "Write recalled html 0 new sounds"
     (let [recalled-htmls (gen/generate-recalled-html test-data)]

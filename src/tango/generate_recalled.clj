@@ -56,8 +56,6 @@
                      :html (generate-html %))
           recall-datas)))
 
-(get #{:a :b} :c)
-
 (defn write-recalled-html
   ;; Writes html files named 'ny_re_<round>.htm using data in the recalled-htmls and the write-fn
   ;; with the same api as spit.
@@ -68,5 +66,4 @@
     (reduce #(do (write-fn (str "nv_re_" (:activity/number %2) ".htm") (:html %2))
                  (conj %1 (:activity/number %2)))
             exluded-rounds
-            new-htmls))
-  )
+            new-htmls)))

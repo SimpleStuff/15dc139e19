@@ -15,10 +15,6 @@
 (defn write-excluded-rounds [excluded-rounds]
   (spit "excluded-rounds.txt" (with-out-str (pr [excluded-rounds]))))
 
-(hash-set (read-excluded-rounds))
-(get  (read-excluded-rounds) "b")
-
-
 ;; TODO - default to #(java.util.UUID/randomUUID)
 (defn- start-message-handler [in-channel out-channel {:keys [id-generator-fn datomic-uri]}]
   {:pre [(some? in-channel)
@@ -48,22 +44,13 @@
                                            (:content p)
                                            id-generator-fn)
                            recalled-html (gen/generate-recalled-html import-result)
-                           ;; TODO - filter known
-                           ;; - read filtered from file
-                           ;; - filter recalled-html on activity number
-                           ;; - conj and save new known generated numbers
-                           ;; - map spit on filtered recalled
-                           ]
+                           excluded-rounds (read-excluded-rounds)
+                           new-excluded-rounds (gen/write-recalled-html
+                                                 excluded-rounds
+                                                 recalled-html
+                                                 spit)]
                        (do
-                         ;; Insert code here for now
-                         ;; use (log/info to find problems, check that core.clj :log-level is
-                         ;; as expected
-                         (let [excluded-rounds (read-excluded-rounds)
-                               new-excluded-rounds (gen/write-recalled-html
-                                                    excluded-rounds
-                                                    recalled-html
-                                                    spit)]
-                           (write-excluded-rounds new-excluded-rounds))
+                         (write-excluded-rounds new-excluded-rounds)
                          (log/info recalled-html)
                          (async/put! out-channel (merge message {:topic   :file/imported
                                                                  :payload import-result})))))
