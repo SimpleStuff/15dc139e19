@@ -173,14 +173,31 @@
 (defui MainComponent
   static om/IQuery
   (query [_]
-    [{:app/speaker-activites (om/get-query ActivityComponent)}])
+    [{:app/speaker-activites (om/get-query ActivityComponent)}
+     :app/filter])
   Object
   (render
     [this]
     (let [activites (:app/speaker-activites (om/props this))]
-      (dom/div #js {:className "container-fluid"}
-        (map #((om/factory ActivityComponent) %)
-             (sort-by :activity/position activites))))))
+      (let [filter-str (:app/filter (om/props this))
+            filtered-acts (if filter-str
+                            (filter #(clojure.string/includes?
+                                      (:activity/number %)
+                                      filter-str) activites)
+                            activites)]
+        (dom/div #js {:className "container-fluid"}
+          (dom/div nil
+            (dom/button #js {:className (str "btn btn-default " (when (= filter-str "A") "btn-primary"))
+                             :onClick   #(om/transact! this `[(app/set-filter {:filter "A"})])} "A")
+
+            (dom/button #js {:className (str "btn btn-default " (when (= filter-str "B") "btn-primary"))
+                             :onClick   #(om/transact! this `[(app/set-filter {:filter "B"})])} "B")
+
+            (dom/button #js {:className (str "btn btn-default " (when-not filter-str "btn-primary"))
+                             :onClick   #(om/transact! this `[(app/set-filter {:filter nil})])} "All"))
+
+          (map #((om/factory ActivityComponent) %)
+               (sort-by :activity/position filtered-acts)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Remote com
