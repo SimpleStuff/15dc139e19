@@ -445,7 +445,7 @@
               (if (and selected-activity (= status :judging))
                 (dom/div nil
                   (dom/h3 #js {:className "text-center"} (:activity/name selected-activity))
-                  (dom/h3 #js {:className "text-center"} (:round/name selected-activity))
+                  (dom/h3 #js {:className "text-center"} (str  (:round/name selected-activity) " (" (:round/heats selected-activity) " heats)"))
                   (dom/h3 #js {:className "text-center"} (str "Mark " (:round/recall selected-activity) " of "
                                                               (count
                                                                 (:round/starting selected-activity))
