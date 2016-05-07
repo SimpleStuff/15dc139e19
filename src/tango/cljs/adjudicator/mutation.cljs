@@ -105,7 +105,8 @@
                                    :result/adjudicator [:adjudicator/id (:result/adjudicator result)]}
                                   {:app/id 1 :app/results -1}])]
                 ))
-   :command true})
+   ;:command true
+   })
 
 (defmethod mutate 'app/heat-page
   [{:keys [state]} _ {:keys [page]}]

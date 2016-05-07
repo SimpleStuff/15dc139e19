@@ -86,7 +86,7 @@
                   ;(log "//////////////////////////////////////////")
                   ;(log res)
                   res)))
-     :query true
+     ;:query true
      }))
 
 (defmethod read :app/heat-page
