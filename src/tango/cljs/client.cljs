@@ -739,7 +739,7 @@
       (dom/div #js {:className "navbar-wrapper"}
         (dom/div #js {:className "container"}
 
-          (dom/nav #js {:className "navbar navbar-inverse navbar-static-top"}
+                 (dom/nav #js {:className "navbar navbar-inverse navbar-static-top tango-fixed"}
                    (dom/div #js {:className "container"}
 
                      ;; Header
@@ -770,7 +770,7 @@
                                     ["Adjudicator Panels" :adjudicator-panels]
                                     ["Selected Rounds" :selected-rounds]]))))))
 
-        (dom/div #js {:className "container"}
+        (dom/div #js {:className "container tango-padding"}
           (dom/div #js {:className "row"}
             (dom/div #js {:className "col-lg-4"}
               (condp = spage
