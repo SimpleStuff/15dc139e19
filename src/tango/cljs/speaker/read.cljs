@@ -12,8 +12,6 @@
   {:value (get @state :app/speaker-activites [])
    :query true})
 
-;(defmethod read :app/selected-page
-;  [{:keys [state]} _ _]
-;  {:value (d/q '[:find ?page .
-;                 :where [[:app/id 1] :selected-page ?page]]
-;               (d/db state))})
+(defmethod read :app/filter
+  [{:keys [state]} _ _]
+  {:value (get @state :app/filter [])})
