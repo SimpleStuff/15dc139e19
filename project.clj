@@ -1,4 +1,4 @@
-(defproject tango "0.1.3-SNAPSHOT"
+(defproject tango "0.1.4-SNAPSHOT"
   :description "Tango"
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"
