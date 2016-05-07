@@ -425,7 +425,7 @@
           speaker-activies (:speaker-activites (om/props this))
           speaker? (seq (filter #(= (:activity/id (om/props this)) (:activity/id %))
                                 speaker-activies))]
-      (dom/tr #js {:className (if selected? "success" "")}
+      (dom/tr #js {:className (if selected? "success" (if completed? "info" ""))}
         (dom/td nil time)
         (dom/td nil number)
         (dom/td nil name)
