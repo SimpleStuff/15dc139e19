@@ -106,7 +106,7 @@
     [this]
     (let [{:keys [heat-number starting]} (om/props this)]
       (dom/div #js {:className "Row"}
-        (dom/h4 #js {:className "col-xs-2"} (str "Heat " heat-number " (" (count starting) "):"))
+        (dom/h4 #js {:className "col-xs-2"} (str "Heat " heat-number ":"))
         (dom/div #js {:className "col-xs-10"}
                  (map #(dom/h4 #js {:className "col-xs-1"} (:participant/number %)) starting))))))
 
