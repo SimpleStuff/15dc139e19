@@ -107,8 +107,9 @@
     (let [{:keys [heat-number starting]} (om/props this)]
       (dom/div #js {:className "Row"}
         (dom/h4 #js {:className "col-xs-2"} (str "Heat " heat-number ":"))
-        (dom/div #js {:className "col-xs-10"}
-          (map #(dom/h4 #js {:className "col-xs-1"} (:participant/number %)) starting))))))
+        (dom/div #js {:className "col-xs-8"}
+                 (map #(dom/h4 #js {:className "col-xs-1"} (:participant/number %)) starting))
+        (dom/h4 #js {:className "col-xs-2"} (str "(" (count starting) " couples)"))))))
 
 (defui HeatsComponent
   static om/IQuery
