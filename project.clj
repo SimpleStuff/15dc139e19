@@ -61,6 +61,7 @@
   :clean-targets ^{:protect false} ["resources/public/js/out"
                                     "resources/public/js/app.js"
                                     "resources/public/js/adj.js"
+                                    "resources/public/js/speaker.js"
                                     "target"]
 
   :test-paths ["test" "test/services"]
