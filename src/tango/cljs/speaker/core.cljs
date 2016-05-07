@@ -186,15 +186,17 @@
                                       filter-str) activites)
                             activites)]
         (dom/div #js {:className "container-fluid"}
-          (dom/div nil
-            (dom/button #js {:className (str "btn btn-default " (when (= filter-str "A") "btn-primary"))
-                             :onClick   #(om/transact! this `[(app/set-filter {:filter "A"})])} "A")
+          (dom/div #js {:className "row"}
+            (dom/h4 #js {:className "col-xs-2"} "Event Filter: ")
+            (dom/div #js {:className "btn-toolbar"}
+              (dom/button #js {:className (str "col-xs-1 btn btn-default " (when (= filter-str "A") "btn-primary"))
+                               :onClick   #(om/transact! this `[(app/set-filter {:filter "A"})])} "A")
 
-            (dom/button #js {:className (str "btn btn-default " (when (= filter-str "B") "btn-primary"))
-                             :onClick   #(om/transact! this `[(app/set-filter {:filter "B"})])} "B")
+              (dom/button #js {:className (str "col-xs-1 btn btn-default " (when (= filter-str "B") "btn-primary"))
+                               :onClick   #(om/transact! this `[(app/set-filter {:filter "B"})])} "B")
 
-            (dom/button #js {:className (str "btn btn-default " (when-not filter-str "btn-primary"))
-                             :onClick   #(om/transact! this `[(app/set-filter {:filter nil})])} "All"))
+              (dom/button #js {:className (str "col-xs-1 btn btn-default " (when-not filter-str "btn-primary"))
+                               :onClick   #(om/transact! this `[(app/set-filter {:filter nil})])} "All")))
 
           (map #((om/factory ActivityComponent) %)
                (sort-by :activity/position filtered-acts)))))))
@@ -223,7 +225,8 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Application
-(defonce app-state (atom {:app/speaker-activites []}))
+(defonce app-state (atom {:app/speaker-activites []
+                          :app/filter nil}))
 
 (def reconciler
   (om/reconciler
