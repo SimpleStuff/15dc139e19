@@ -462,6 +462,9 @@
      (make-activities (mapv :temp/activity dp-rounds) classes (mapcat :class/rounds classes))
      classes)))
 
+(defn competition-xml->datoms [xml id-generator-fn]
+  (competition-data-xml->map xml))
+
 (defn import-file-stream
   [file-stream id-generator-fn]
   {:pre [(not (nil? file-stream))
