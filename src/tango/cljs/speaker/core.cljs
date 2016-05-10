@@ -139,15 +139,27 @@
   Object
   (render
     [this]
-    (let [activity (om/props this)
+    (let [activity (:activity (om/props this))
           panel (:adjudicator-panel/adjudicators (:round/panel (om/props this)))
-          starting (:round/starting activity)]
-      (dom/div nil
+          starting (:round/starting activity)
+          ;; TODO - guess this would be better places on the item itself?
+          ;marked (:marked (om/props this))
+          ]
+      (dom/div #js {:className  "container-fluid"      ;(when marked " alert alert-success")
+                    }
         (dom/div #js {:className "Row"}
 
           (dom/h1 #js {:className "col-xs-8"} (:activity/name activity))
 
-          (dom/h1 #js {:className "col-xs-offset-1 col-xs-3 pull-right"}
+          (dom/button #js {:className "col-xs-1 btn btn-default"
+                           :onClick #(om/transact!
+                                      this
+                                      `[(app/mark-activity
+                                          ~{:activity/number (:activity/number activity)})
+                                        :app/marked-activites])}
+                      "Done")
+
+          (dom/h1 #js {:className "col-xs-3 pull-right"}
                   (str "Round " (inc (:round/index activity)))))
         (dom/div #js {:className "Row"}
           (dom/h4 #js {:className "col-xs-12"} (clojure.string/join "," (map :dance/name (:round/speaker-dances activity)))))
@@ -174,17 +186,28 @@
   static om/IQuery
   (query [_]
     [{:app/speaker-activites (om/get-query ActivityComponent)}
-     :app/filter])
+     :app/filter
+     :app/marked-activites])
   Object
   (render
     [this]
-    (let [activites (:app/speaker-activites (om/props this))]
+    (let [activites (:app/speaker-activites (om/props this))
+          ; marked (:app/marked-activites (om/props this))
+          ]
       (let [filter-str (:app/filter (om/props this))
             filtered-acts (if filter-str
                             (filter #(clojure.string/includes?
                                       (:activity/number %)
                                       filter-str) activites)
                             activites)]
+        (log "TTTTTTTTTTTt")
+        ;(log marked)
+        (log "AAAAAAAAAAAAAAAAA")
+        ;(log (str (some #{"12A"}
+        ;                marked)))
+
+        ;(log (str (seq (filter (fn [mar] (= mar "12A"))
+        ;                       marked))))
         (dom/div #js {:className "container-fluid"}
           (dom/div #js {:className "row"}
             (dom/h4 #js {:className "col-xs-2"} "Event Filter: ")
@@ -198,7 +221,12 @@
               (dom/button #js {:className (str "col-xs-1 btn btn-default " (when-not filter-str "btn-primary"))
                                :onClick   #(om/transact! this `[(app/set-filter {:filter nil})])} "All")))
 
-          (map #((om/factory ActivityComponent) %)
+
+          (map #((om/factory ActivityComponent) {:activity %
+                                                 ;:marked true
+                                                           ;(first (filter (fn [mar] (= mar (:activity/number %)))
+                                                           ;             marked))
+                                                 })
                (sort-by :activity/position filtered-acts)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -226,7 +254,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Application
 (defonce app-state (atom {:app/speaker-activites []
-                          :app/filter nil}))
+                          :app/filter            nil
+                          :app/marked-activites  []}))
 
 (def reconciler
   (om/reconciler

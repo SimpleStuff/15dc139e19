@@ -121,13 +121,13 @@
                                :output-dir "resources/public/js/out/speaker"
 
                                ;; PROD
-                               :optimizations :advanced
-                               :pretty-print  false
+                               ;:optimizations :advanced
+                               ;:pretty-print  false
 
                                ;; DEV
-                               ;:source-map true
-                               ;:pretty-print  true
-                               ;:optimizations :none
+                               :source-map true
+                               :pretty-print  true
+                               :optimizations :none
                                }}
 
                ;; This next build is an compressed minified build for
