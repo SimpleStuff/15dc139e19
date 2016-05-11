@@ -291,13 +291,25 @@
 (defn create-connection [uri]
   (d/connect uri))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defn transact-competition [conn tx]
+  @(d/transact conn (mapv fix-id tx)))
+
+(defn query-adjudicators [conn query]
+  (d/q '[:find [(pull ?e selector) ...]
+         :in $ selector
+         :where
+         [?e :adjudicator/id]]
+       (d/db conn) query))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn select-round [conn round]
   @(d/transact conn [(fix-id {:app/selected-activites round
                               :app/id                 1})]))
 
 (defn set-speaker-activity [conn activity]
   @(d/transact conn [(fix-id {:app/speaker-activites activity
-                              :app/id 1})]))
+                              :app/id                1})]))
 
 (defn set-results [conn results]
   @(d/transact conn (mapv fix-id results)))

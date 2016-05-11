@@ -463,7 +463,7 @@
      classes)))
 
 (defn competition-xml->datoms [xml id-generator-fn]
-  (competition-data-xml->map xml))
+  (mapv #(dissoc % :dp/temp-id) (adjudicators-xml->map xml id-generator-fn)))
 
 (defn import-file-stream
   [file-stream id-generator-fn]
