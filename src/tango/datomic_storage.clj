@@ -302,6 +302,20 @@
          [?e :adjudicator/id]]
        (d/db conn) query))
 
+(defn query-adjudicator-panels [conn query]
+  (d/q '[:find [(pull ?e selector) ...]
+         :in $ selector
+         :where
+         [?e :adjudicator-panel/id]]
+       (d/db conn) query))
+
+(defn query-classes [conn query]
+  (d/q '[:find [(pull ?e selector) ...]
+         :in $ selector
+         :where
+         [?e :class/id]]
+       (d/db conn) query))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn select-round [conn round]
   @(d/transact conn [(fix-id {:app/selected-activites round
