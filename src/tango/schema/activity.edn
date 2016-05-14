@@ -84,12 +84,12 @@
   :db.install/_attribute :db.part/db}
 
  ;; TODO - does this make sense or should it be derived?
- {:db/id                 #db/id[:db.part/db]
-  :db/ident              :class/remaining
-  :db/valueType          :db.type/ref
-  :db/cardinality        :db.cardinality/many
-  :db/doc                "The remaining participants of a class"
-  :db.install/_attribute :db.part/db}
+ ;{:db/id                 #db/id[:db.part/db]
+ ; :db/ident              :class/remaining
+ ; :db/valueType          :db.type/ref
+ ; :db/cardinality        :db.cardinality/many
+ ; :db/doc                "The remaining participants of a class"
+ ; :db.install/_attribute :db.part/db}
 
  {:db/id                 #db/id[:db.part/db]
   :db/ident              :class/starting
@@ -101,11 +101,33 @@
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  ;; Round
 
+ ; Enums
+ {:db/id #db/id[:db.part/user]
+  :db/ident :status/not-started}
+
+ {:db/id #db/id[:db.part/user]
+  :db/ident :status/completed}
+
  {:db/id                 #db/id[:db.part/db]
-  :db/ident              :round/recall
+  :db/ident              :round/id
+  :db/unique             :db.unique/identity
+  :db/valueType          :db.type/uuid
+  :db/cardinality        :db.cardinality/one
+  :db/doc                "A rounds id"
+  :db.install/_attribute :db.part/db}
+
+ {:db/id                 #db/id[:db.part/db]
+  :db/ident              :round/number-to-recall
   :db/valueType          :db.type/long
   :db/cardinality        :db.cardinality/one
   :db/doc                "The number of participants to be recalled from a round"
+  :db.install/_attribute :db.part/db}
+
+ {:db/id                 #db/id[:db.part/db]
+  :db/ident              :round/status
+  :db/valueType          :db.type/ref
+  :db/cardinality        :db.cardinality/one
+  :db/doc                "The status of a round"
   :db.install/_attribute :db.part/db}
 
  {:db/id                 #db/id[:db.part/db]
@@ -123,7 +145,7 @@
   :db.install/_attribute :db.part/db}
 
  {:db/id                 #db/id[:db.part/db]
-  :db/ident              :round/heats
+  :db/ident              :round/number-of-heats
   :db/valueType          :db.type/long
   :db/cardinality        :db.cardinality/one
   :db/doc                "A rounds number of heats"
@@ -148,6 +170,55 @@
   :db/valueType          :db.type/ref
   :db/cardinality        :db.cardinality/many
   :db/doc                "The dances in a round"
+  :db.install/_attribute :db.part/db}
+
+ {:db/id                 #db/id[:db.part/db]
+  :db/ident              :round/results
+  :db/valueType          :db.type/ref
+  :db/cardinality        :db.cardinality/many
+  :db/doc                "The results of a round"
+  :db.install/_attribute :db.part/db}
+
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ ;; Results
+
+ {:db/id                 #db/id[:db.part/db]
+  :db/ident              :result/id
+  :db/valueType          :db.type/uuid
+  :db/unique             :db.unique/identity
+  :db/cardinality        :db.cardinality/one
+  :db/doc                "The results id"
+  :db.install/_attribute :db.part/db}
+
+ ;; mark-x
+ {:db/id                 #db/id[:db.part/db]
+  :db/ident              :result/mark-x
+  :db/valueType          :db.type/boolean
+  :db/cardinality        :db.cardinality/one
+  :db/doc                "Determines if a X has been marked in this result"
+  :db.install/_attribute :db.part/db}
+
+ ;; point
+ {:db/id                 #db/id[:db.part/db]
+  :db/ident              :result/point
+  :db/valueType          :db.type/long
+  :db/cardinality        :db.cardinality/one
+  :db/doc                "The number of points given a participant (can be neg.)"
+  :db.install/_attribute :db.part/db}
+
+ ;; result/participant
+ {:db/id                 #db/id[:db.part/db]
+  :db/ident              :result/participant
+  :db/valueType          :db.type/ref
+  :db/cardinality        :db.cardinality/one
+  :db/doc                "The participant these result is associated with"
+  :db.install/_attribute :db.part/db}
+
+ {:db/id                 #db/id[:db.part/db]
+  :db/ident              :result/adjudicator
+  :db/valueType          :db.type/ref
+  :db/cardinality        :db.cardinality/one
+  :db/doc                "The adjudicator these result is associated with"
   :db.install/_attribute :db.part/db}
 
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

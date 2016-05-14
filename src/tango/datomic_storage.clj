@@ -295,6 +295,58 @@
 (defn transact-competition [conn tx]
   @(d/transact conn (mapv fix-id tx)))
 
+(defn participant-index
+  "Return map of index number -> id"
+  [cmp]
+  (reduce
+    (fn [index participant]
+      (assoc index (:participant/number participant) (:participant/id participant)))
+    {}
+    (mapcat :class/starting (:competition/classes cmp))))
+
+(defn make-result [id participant-id point adjudicator-id mark-x]
+  {:result/id          id
+   :result/participant participant-id
+   :result/point       point
+   :result/adjudicator {:adjudicator/id adjudicator-id}
+   :result/mark-x mark-x})
+
+(defn transform-result [old-result number-to-id-index]
+  (let [participant-id {:participant/id
+                        (get number-to-id-index (:result/participant-number old-result))}
+        old-judgings (:result/judgings old-result)]
+    (mapv #(make-result
+           (java.util.UUID/randomUUID)
+           participant-id
+           0
+           (:judging/adjudicator %)
+           (:mark/x (first (:judging/marks %))))
+         old-judgings)))
+
+(defn clean-import-data [import-data]
+  (let [index (participant-index import-data)]
+    (clojure.walk/postwalk
+      (fn [form]
+        (cond
+          ;; replace participant-number with participant id in results
+          ;(:result/participant-number form) (transform-result form index)
+          (:round/id form)
+          (dissoc
+            (merge form
+                   {:round/results
+                    (vec (mapcat #(transform-result % index) (:round/results form)))})
+            :round/class-id)
+
+          ;; remove class/remaining, it should be derived
+          (:class/remaining form) (dissoc form :class/remaining)
+
+          ;; remove round/class-id, a round has a ref to its class
+          ;(:round/class-id form) (dissoc form :round/class-id)
+
+          :else form
+          ))
+      import-data)))
+
 (defn query-adjudicators [conn query]
   (d/q '[:find [(pull ?e selector) ...]
          :in $ selector

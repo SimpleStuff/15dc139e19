@@ -202,7 +202,7 @@
   (for [mark marks-loc]
     {:dp/temp-local-adjudicator (get-seq-attr-as-number mark)
      :judging/adjudicator :todo
-     :juding/marks [{:mark/x (= (zx/attr mark :X) "X")}]}))
+     :judging/marks [{:mark/x (= (zx/attr mark :X) "X")}]}))
 
 (defn- mark-list->map [result-couple-loc adjudicators]
   (for [couple result-couple-loc]
