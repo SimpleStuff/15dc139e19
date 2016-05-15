@@ -21,6 +21,7 @@
                  [org.clojure/data.xml "0.0.8"]
                  [org.clojure/data.zip "0.1.1"]
                  [clj-time "0.11.0"]
+                 [prismatic/schema "1.1.1"]
                  
                  ;; Logging
                  [com.taoensso/timbre "4.3.1"]

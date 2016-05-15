@@ -4,12 +4,36 @@
             [tango.test-utils :as u]
             [tango.expected.expected-small-result :as esr]
             [tango.datomic-storage :as ds]
-            [clojure.edn :as edn]))
+            [clojure.edn :as edn]
+
+            [schema.core :as s]))
 
 
 (def mem-uri "datomic:mem://localhost:4334//competitions")
 
 (def schema-tx (read-string (slurp "./src/tango/schema/activity.edn")))
+
+(def adjudicator-schema
+  "A schema describing an adjudicator"
+  {:adjudicator/name s/Str
+   :adjudicator/id s/Uuid
+   :adjudicator/country s/Str
+   :adjudicator/number s/Int})
+
+(def test-competition (atom nil))
+(def conn (atom nil))
+
+(defn setup-db [test-fn]
+  (ds/delete-storage mem-uri)
+  (ds/create-storage mem-uri schema-tx)
+  (reset! test-competition (ds/clean-import-data
+                             (imp/competition-xml->map
+                               u/real-example
+                               #(java.util.UUID/randomUUID))))
+  (reset! conn (ds/create-connection mem-uri))
+  (test-fn))
+
+(use-fixtures :each setup-db)
 
 (deftest create-connection
   (testing "Create a connection to db"
@@ -29,83 +53,47 @@
       (is (= (count (ds/query-adjudicators conn ['*]))
              6)))))
 
-;; TODO - validate on schema
-;; TODO - testa att anv'nda sanitize from ui db
 (deftest import-adjudicators
   (testing "Import of adjudicator data"
-    (let [competition-data (:competition/adjudicators
-                             (imp/competition-xml->map
-                               u/real-example
-                               #(java.util.UUID/randomUUID)))
-          _ (ds/delete-storage mem-uri)
-          _ (ds/create-storage mem-uri schema-tx)
-          conn (ds/create-connection mem-uri)
-          _ (ds/transact-competition conn competition-data)]
-      (is (= (count (ds/query-adjudicators conn ['*]))
-             6)))))
+    (let [competition-data (:competition/adjudicators @test-competition)
+          _ (ds/transact-competition @conn competition-data)]
+      (is (seq (mapv #(s/validate adjudicator-schema (dissoc % :db/id))
+                     (ds/query-adjudicators @conn ['*])))))))
 
 (deftest import-adjudicator-panels
   (testing "Import of adjudicator panels data"
-    (let [competition-data (:competition/panels
-                             (imp/competition-xml->map
-                               u/real-example
-                               #(java.util.UUID/randomUUID)))
-          _ (ds/delete-storage mem-uri)
-          _ (ds/create-storage mem-uri schema-tx)
-          conn (ds/create-connection mem-uri)
-          _ (ds/transact-competition conn competition-data)]
-      (is (= (count (ds/query-adjudicator-panels conn ['*]))
+    (let [competition-data (:competition/panels @test-competition)
+          _ (ds/transact-competition @conn competition-data)]
+      (is (= (count (ds/query-adjudicator-panels @conn ['*]))
              4)))))
 
 ;; TODO - more tests of rounds etc
 (deftest import-classes
   (testing "Import of classes data"
-    (let [competition-data (:competition/classes
-                             (ds/clean-import-data
-                               (imp/competition-xml->map
-                                 u/real-example
-                                 #(java.util.UUID/randomUUID))))
-          _ (ds/delete-storage mem-uri)
-          _ (ds/create-storage mem-uri schema-tx)
-          conn (ds/create-connection mem-uri)
-          _ (ds/transact-competition conn competition-data)]
-      (is (= (count (ds/query-classes conn ['*]))
+    (let [competition-data (:competition/classes @test-competition)
+          _ (ds/transact-competition @conn competition-data)]
+      (is (= (count (ds/query-classes @conn ['*]))
              48)))))
 
 (deftest import-activities
   (testing "Import of activities data"
-    (let [competition-data (:competition/activities
-                             (ds/clean-import-data
-                               (imp/competition-xml->map
-                                 u/real-example
-                                 #(java.util.UUID/randomUUID))))
-          _ (ds/delete-storage mem-uri)
-          _ (ds/create-storage mem-uri schema-tx)
-          conn (ds/create-connection mem-uri)
-          _ (ds/transact-competition conn competition-data)]
-      (is (= (count (ds/query-activities conn ['*]))
+    (let [competition-data (:competition/activities @test-competition)
+          _ (ds/transact-competition @conn competition-data)]
+      (is (= (count (ds/query-activities @conn ['*]))
              140)))))
 
 (deftest import-competition-data
   (testing "Import of competition data"
-    (let [competition-data (select-keys
-                             (ds/clean-import-data
-                               (imp/competition-xml->map
-                                 u/real-example
-                                 #(java.util.UUID/randomUUID)))
+    (let [competition-data (select-keys @test-competition
                              [:competition/name
                               :competition/id
                               :competition/date
                               :competition/location
-                              :competition/options
-                              ])
-          _ (ds/delete-storage mem-uri)
-          _ (ds/create-storage mem-uri schema-tx)
-          conn (ds/create-connection mem-uri)
-          _ (ds/transact-competition conn [competition-data])
+                              :competition/options])
+          _ (ds/transact-competition @conn [competition-data])
           query-result (first
                          (mapv #(dissoc % :competition/id)
-                               (ds/query-competition conn ['* {:competition/options ['*]}])))]
+                               (ds/query-competition @conn ['* {:competition/options ['*]}])))]
       (is (= (:competition/date query-result)
              #inst "2015-09-26T00:00:00.000-00:00"))
       (is (= (:competition/name query-result)
