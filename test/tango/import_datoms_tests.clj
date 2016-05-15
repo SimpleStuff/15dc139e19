@@ -16,12 +16,25 @@
     (is (not= nil (ds/create-storage mem-uri schema-tx)))
     (is (not= nil (ds/create-connection mem-uri)))))
 
+(deftest import-competition
+  (testing "Import of complete competition"
+    (let [competition-data (ds/clean-import-data
+                             (imp/competition-xml->map
+                               u/real-example
+                               #(java.util.UUID/randomUUID)))
+          _ (ds/delete-storage mem-uri)
+          _ (ds/create-storage mem-uri schema-tx)
+          conn (ds/create-connection mem-uri)
+          _ (ds/transact-competition conn [competition-data])]
+      (is (= (count (ds/query-adjudicators conn ['*]))
+             6)))))
+
 ;; TODO - validate on schema
 ;; TODO - testa att anv'nda sanitize from ui db
 (deftest import-adjudicators
   (testing "Import of adjudicator data"
     (let [competition-data (:competition/adjudicators
-                             (imp/competition-xml->datoms
+                             (imp/competition-xml->map
                                u/real-example
                                #(java.util.UUID/randomUUID)))
           _ (ds/delete-storage mem-uri)
@@ -142,11 +155,6 @@
 
 (def old-data (ds/clean-import-data (imp/competition-xml->map u/real-example #(java.util.UUID/randomUUID))))
 
-(select-keys old-data [:competition/name
-                       ;:competition/date
-                       ;:competition/location
-                       ; :competition/options
-                       ])
 
 
 

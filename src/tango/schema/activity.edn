@@ -42,6 +42,38 @@
   :db/doc                "The options for a competition"
   :db.install/_attribute :db.part/db}
 
+ ;; panels
+ {:db/id                 #db/id[:db.part/db]
+  :db/ident              :competition/panels
+  :db/valueType          :db.type/ref
+  :db/cardinality        :db.cardinality/many
+  :db/doc                "The adjudicator panels for a competition"
+  :db.install/_attribute :db.part/db}
+
+ ;; adjudicators
+ {:db/id                 #db/id[:db.part/db]
+  :db/ident              :competition/adjudicators
+  :db/valueType          :db.type/ref
+  :db/cardinality        :db.cardinality/many
+  :db/doc                "The adjudicators for a competition"
+  :db.install/_attribute :db.part/db}
+
+ ;; activities
+ {:db/id                 #db/id[:db.part/db]
+  :db/ident              :competition/activities
+  :db/valueType          :db.type/ref
+  :db/cardinality        :db.cardinality/many
+  :db/doc                "The activities for a competition"
+  :db.install/_attribute :db.part/db}
+
+ ;; classes
+ {:db/id                 #db/id[:db.part/db]
+  :db/ident              :competition/classes
+  :db/valueType          :db.type/ref
+  :db/cardinality        :db.cardinality/many
+  :db/doc                "The classes for a competition"
+  :db.install/_attribute :db.part/db}
+
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  ;; Dance competition options
 
