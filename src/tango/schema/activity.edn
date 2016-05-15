@@ -1,4 +1,13 @@
 [;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ ;; Competition
+ {:db/id                 #db/id[:db.part/db]
+  :db/ident              :competition/name
+  :db/valueType          :db.type/string
+  :db/cardinality        :db.cardinality/one
+  :db/doc                "A competitions name"
+  :db.install/_attribute :db.part/db}
+
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  ;; Activity
 
  {:db/id                 #db/id[:db.part/db]
@@ -35,6 +44,27 @@
   :db/valueType          :db.type/string
   :db/cardinality        :db.cardinality/one
   :db/doc                "An activitys number"
+  :db.install/_attribute :db.part/db}
+
+ {:db/id                 #db/id[:db.part/db]
+  :db/ident              :activity/comment
+  :db/valueType          :db.type/string
+  :db/cardinality        :db.cardinality/one
+  :db/doc                "An activitys comment"
+  :db.install/_attribute :db.part/db}
+
+ {:db/id                 #db/id[:db.part/db]
+  :db/ident              :activity/time
+  :db/valueType          :db.type/instant
+  :db/cardinality        :db.cardinality/one
+  :db/doc                "An activitys associated time"
+  :db.install/_attribute :db.part/db}
+
+ {:db/id                 #db/id[:db.part/db]
+  :db/ident              :activity/source
+  :db/valueType          :db.type/ref
+  :db/cardinality        :db.cardinality/one
+  :db/doc                "The source that this activity is meta data for"
   :db.install/_attribute :db.part/db}
 
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -101,13 +131,36 @@
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  ;; Round
 
- ; Enums
+ ;; Status Enums
  {:db/id #db/id[:db.part/user]
   :db/ident :status/not-started}
 
  {:db/id #db/id[:db.part/user]
   :db/ident :status/completed}
 
+ ;; Type Enums
+ {:db/id #db/id[:db.part/user]
+  :db/ident :round-type/normal-x}
+
+ {:db/id #db/id[:db.part/user]
+  :db/ident :round-type/semifinal-x}
+
+ {:db/id #db/id[:db.part/user]
+  :db/ident :round-type/final-x}
+
+ {:db/id #db/id[:db.part/user]
+  :db/ident :round-type/b-final-x}
+
+ {:db/id #db/id[:db.part/user]
+  :db/ident :round-type/retry-x}
+
+ {:db/id #db/id[:db.part/user]
+  :db/ident :round-type/second-try-x}
+
+ {:db/id #db/id[:db.part/user]
+  :db/ident :round-type/presentation}
+
+ ;; id
  {:db/id                 #db/id[:db.part/db]
   :db/ident              :round/id
   :db/unique             :db.unique/identity
@@ -131,10 +184,24 @@
   :db.install/_attribute :db.part/db}
 
  {:db/id                 #db/id[:db.part/db]
+  :db/ident              :round/type
+  :db/valueType          :db.type/ref
+  :db/cardinality        :db.cardinality/one
+  :db/doc                "The type of a round"
+  :db.install/_attribute :db.part/db}
+
+ {:db/id                 #db/id[:db.part/db]
   :db/ident              :round/name
   :db/valueType          :db.type/string
   :db/cardinality        :db.cardinality/one
   :db/doc                "A rounds name"
+  :db.install/_attribute :db.part/db}
+
+ {:db/id                 #db/id[:db.part/db]
+  :db/ident              :round/number
+  :db/valueType          :db.type/string
+  :db/cardinality        :db.cardinality/one
+  :db/doc                "A rounds number"
   :db.install/_attribute :db.part/db}
 
  {:db/id                 #db/id[:db.part/db]
@@ -177,6 +244,13 @@
   :db/valueType          :db.type/ref
   :db/cardinality        :db.cardinality/many
   :db/doc                "The results of a round"
+  :db.install/_attribute :db.part/db}
+
+ {:db/id                 #db/id[:db.part/db]
+  :db/ident              :round/start-time
+  :db/valueType          :db.type/instant
+  :db/cardinality        :db.cardinality/one
+  :db/doc                "The starting time of a round"
   :db.install/_attribute :db.part/db}
 
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

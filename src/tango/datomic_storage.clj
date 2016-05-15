@@ -323,25 +323,49 @@
            (:mark/x (first (:judging/marks %))))
          old-judgings)))
 
+(def status-convertion
+  {:completed :status/completed
+   :not-started :status/not-started})
+
+(defn round-type-convertion [old-type]
+  (keyword "round-type" (name old-type)))
+
+(defn remove-nil-values [m]
+  (let [new-m (into {} (remove (comp nil? second) m))]
+    (when (seq new-m)
+      new-m)))
+
 (defn clean-import-data [import-data]
   (let [index (participant-index import-data)]
     (clojure.walk/postwalk
       (fn [form]
         (cond
           ;; replace participant-number with participant id in results
-          ;(:result/participant-number form) (transform-result form index)
           (:round/id form)
-          (dissoc
-            (merge form
+          (apply
+            dissoc
+            (merge (remove-nil-values form)
                    {:round/results
-                    (vec (mapcat #(transform-result % index) (:round/results form)))})
-            :round/class-id)
+                                            (vec (mapcat #(transform-result % index) (:round/results form)))
+                    :round/number-of-heats  (:round/heats form)
+                    :round/number-to-recall (:round/recall form)
+                    :round/status           (get status-convertion (:round/status form))
+                    :round/type             (round-type-convertion (:round/type form))
+                    :round/number           (str (:round/number form))})
+            [:round/class-id
+             :round/heats
+             :round/recall])
 
           ;; remove class/remaining, it should be derived
           (:class/remaining form) (dissoc form :class/remaining)
 
-          ;; remove round/class-id, a round has a ref to its class
-          ;(:round/class-id form) (dissoc form :round/class-id)
+          ;; activity/numer should always be a string value
+          (:activity/number form)
+          (assoc (remove-nil-values form)
+            :activity/number (str (:activity/number form)))
+
+          ;; Competition should have id
+          (:competition/name form) (assoc form :competition/id (java.util.UUID/randomUUID))
 
           :else form
           ))
@@ -367,6 +391,21 @@
          :where
          [?e :class/id]]
        (d/db conn) query))
+
+(defn query-activities [conn query]
+  (d/q '[:find [(pull ?e selector) ...]
+         :in $ selector
+         :where
+         [?e :activity/id]]
+       (d/db conn) query))
+
+(defn query-competition [conn query]
+  (d/q '[:find [(pull ?e selector) ...]
+         :in $ selector
+         :where
+         [?e :competition/id]]
+       (d/db conn) query))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn select-round [conn round]
