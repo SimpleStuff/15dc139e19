@@ -1,10 +1,158 @@
 [;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  ;; Competition
+
+ ;; id
+ {:db/id                 #db/id[:db.part/db]
+  :db/ident              :competition/id
+  :db/unique             :db.unique/identity
+  :db/valueType          :db.type/uuid
+  :db/cardinality        :db.cardinality/one
+  :db/doc                "Competitions id"
+  :db.install/_attribute :db.part/db}
+
+ ;; name
  {:db/id                 #db/id[:db.part/db]
   :db/ident              :competition/name
   :db/valueType          :db.type/string
   :db/cardinality        :db.cardinality/one
   :db/doc                "A competitions name"
+  :db.install/_attribute :db.part/db}
+
+ ;; location
+ {:db/id                 #db/id[:db.part/db]
+  :db/ident              :competition/location
+  :db/valueType          :db.type/string
+  :db/cardinality        :db.cardinality/one
+  :db/doc                "A competitions location"
+  :db.install/_attribute :db.part/db}
+
+ ;; date
+ {:db/id                 #db/id[:db.part/db]
+  :db/ident              :competition/date
+  :db/valueType          :db.type/instant
+  :db/cardinality        :db.cardinality/one
+  :db/doc                "A competitions date"
+  :db.install/_attribute :db.part/db}
+
+ ;; options
+ {:db/id                 #db/id[:db.part/db]
+  :db/ident              :competition/options
+  :db/valueType          :db.type/ref
+  :db/cardinality        :db.cardinality/many
+  :db/doc                "The options for a competition"
+  :db.install/_attribute :db.part/db}
+
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ ;; Dance competition options
+
+ ;; same-heat-all-dances
+ {:db/id                 #db/id[:db.part/db]
+  :db/ident              :dance-competition/same-heat-all-dances
+  :db/valueType          :db.type/boolean
+  :db/cardinality        :db.cardinality/one
+  :db/doc                "Same heat for all dances"
+  :db.install/_attribute :db.part/db}
+
+ ;; heat-text-on-adjudicator-sheet
+ {:db/id                 #db/id[:db.part/db]
+  :db/ident              :dance-competition/heat-text-on-adjudicator-sheet
+  :db/valueType          :db.type/boolean
+  :db/cardinality        :db.cardinality/one
+  :db/doc                "Use heat text on adjudicator sheet"
+  :db.install/_attribute :db.part/db}
+
+ ;; name-on-number-sign
+ {:db/id                 #db/id[:db.part/db]
+  :db/ident              :dance-competition/name-on-number-sign
+  :db/valueType          :db.type/boolean
+  :db/cardinality        :db.cardinality/one
+  :db/doc                "Use name on number sign"
+  :db.install/_attribute :db.part/db}
+
+ ;; skip-adjudicator-letter
+ {:db/id                 #db/id[:db.part/db]
+  :db/ident              :dance-competition/skip-adjudicator-letter
+  :db/valueType          :db.type/boolean
+  :db/cardinality        :db.cardinality/one
+  :db/doc                "Skip adjudicator letter"
+  :db.install/_attribute :db.part/db}
+
+ ;; adjudicator-order-final
+ {:db/id                 #db/id[:db.part/db]
+  :db/ident              :dance-competition/adjudicator-order-final
+  :db/valueType          :db.type/boolean
+  :db/cardinality        :db.cardinality/one
+  :db/doc                "Adjudicator order final"
+  :db.install/_attribute :db.part/db}
+
+ ;; random-order-in-heats
+ {:db/id                 #db/id[:db.part/db]
+  :db/ident              :dance-competition/random-order-in-heats
+  :db/valueType          :db.type/boolean
+  :db/cardinality        :db.cardinality/one
+  :db/doc                "Use random order in heats"
+  :db.install/_attribute :db.part/db}
+
+ ;; club-on-number-sign
+ {:db/id                 #db/id[:db.part/db]
+  :db/ident              :dance-competition/club-on-number-sign
+  :db/valueType          :db.type/boolean
+  :db/cardinality        :db.cardinality/one
+  :db/doc                "Use club on number sign"
+  :db.install/_attribute :db.part/db}
+
+ ;; adjudicator order other
+ {:db/id                 #db/id[:db.part/db]
+  :db/ident              :dance-competition/adjudicator-order-other
+  :db/valueType          :db.type/boolean
+  :db/cardinality        :db.cardinality/one
+  :db/doc                "Use other adjudicator order"
+  :db.install/_attribute :db.part/db}
+
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ ;; Presentation options
+
+ ;; chinese-fonts
+ {:db/id                 #db/id[:db.part/db]
+  :db/ident              :presentation/chinese-fonts
+  :db/valueType          :db.type/boolean
+  :db/cardinality        :db.cardinality/one
+  :db/doc                "Use chinese fonts"
+  :db.install/_attribute :db.part/db}
+
+ ;; courier-font
+ {:db/id                 #db/id[:db.part/db]
+  :db/ident              :presentation/courier-font
+  :db/valueType          :db.type/string
+  :db/cardinality        :db.cardinality/one
+  :db/doc                "Name of courier font"
+  :db.install/_attribute :db.part/db}
+
+ ;; arial-font
+ {:db/id                 #db/id[:db.part/db]
+  :db/ident              :presentation/arial-font
+  :db/valueType          :db.type/string
+  :db/cardinality        :db.cardinality/one
+  :db/doc                "Name of arial font"
+  :db.install/_attribute :db.part/db}
+
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ ;; Printer options
+
+ ;; preview
+ {:db/id                 #db/id[:db.part/db]
+  :db/ident              :printer/preview
+  :db/valueType          :db.type/boolean
+  :db/cardinality        :db.cardinality/one
+  :db/doc                "Use preview"
+  :db.install/_attribute :db.part/db}
+
+ ;; printer-select-paper
+ {:db/id                 #db/id[:db.part/db]
+  :db/ident              :printer/printer-select-paper
+  :db/valueType          :db.type/boolean
+  :db/cardinality        :db.cardinality/one
+  :db/doc                "Select printer paper"
   :db.install/_attribute :db.part/db}
 
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

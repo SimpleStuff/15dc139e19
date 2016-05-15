@@ -81,21 +81,38 @@
                                  u/real-example
                                  #(java.util.UUID/randomUUID)))
                              [:competition/name
-                              ;:competition/date
-                              ;:competition/location
-                              ;:competition/options
+                              :competition/id
+                              :competition/date
+                              :competition/location
+                              :competition/options
                               ])
           _ (ds/delete-storage mem-uri)
           _ (ds/create-storage mem-uri schema-tx)
           conn (ds/create-connection mem-uri)
-          _ (ds/transact-competition conn competition-data)]
-      (is (= (count (ds/query-competition conn ['*]))
-             140)))))
-
-;:competition/name name
-;:competition/date date
-;:competition/location location
-;:competition/options options
+          _ (ds/transact-competition conn [competition-data])
+          query-result (first
+                         (mapv #(dissoc % :competition/id)
+                               (ds/query-competition conn ['* {:competition/options ['*]}])))]
+      (is (= (:competition/date query-result)
+             #inst "2015-09-26T00:00:00.000-00:00"))
+      (is (= (:competition/name query-result)
+             "Rikstävling disco"))
+      (is (= (:competition/location query-result)
+             "VÄSTERÅS"))
+      (is (= (dissoc (first (:competition/options query-result)) :db/id)
+             {:dance-competition/same-heat-all-dances false,
+              :presentation/chinese-fonts false,
+              :dance-competition/heat-text-on-adjudicator-sheet true,
+              :dance-competition/name-on-number-sign false,
+              :dance-competition/skip-adjudicator-letter false,
+              :presentation/courier-font "Courier New",
+              :dance-competition/adjudicator-order-final true,
+              :dance-competition/random-order-in-heats false,
+              :dance-competition/club-on-number-sign false,
+              :dance-competition/adjudicator-order-other false,
+              :presentation/arial-font "Arial",
+              :printer/preview true,
+              :printer/printer-select-paper false})))))
 
 (deftest transform-old-result
   (testing "Transform old result format to new"
