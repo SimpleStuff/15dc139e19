@@ -7,7 +7,7 @@
             [clojure.edn :as edn]
     [tango.domain :as dom]
 
-    ;[schema.core :as s]
+    [schema.core :as s]
             ))
 
 
@@ -46,6 +46,7 @@
     (is (not= nil (ds/create-storage mem-uri schema-tx)))
     (is (not= nil (ds/create-connection mem-uri)))))
 
+;; TODO factor out pulls
 ;; TODO : schema
 (deftest import-competition
   (testing "Import of complete competition"
@@ -75,8 +76,6 @@
                      (clean-test-data
                        (ds/query-adjudicator-panels @conn ['* {:adjudicator-panel/adjudicators ['*]}]))))))))
 
-;; TODO - more tests of rounds etc
-;; TODO : schema
 (deftest import-classes
   (testing "Import of classes data"
     (let [competition-data (:competition/classes @test-competition)
@@ -95,17 +94,28 @@
                                                       :round/type ['*]
                                                       :round/panel ['* {:adjudicator-panel/adjudicators ['*]}]
                                                       :round/dances ['* ]
-                                                      :round/starting ['*]}]}]))))))))
+                                                      :round/starting ['*]
+                                                      :round/results ['* {:result/participant ['*]
+                                                                          :result/adjudicator ['*]}]}]}]))))))))
 
-;; TODO : schema
 (deftest import-activities
   (testing "Import of activities data"
     (let [competition-data (:competition/activities @test-competition)
           _ (ds/transact-competition @conn competition-data)]
       (is (= (count (ds/query-activities @conn ['*]))
-             140)))))
+             140))
 
-;; TODO : schema
+      (is (seq (mapv #(s/validate dom/activity-schema %)
+                     (clean-test-data
+                       (ds/query-activities @conn ['* {:activity/source
+                                                       ['* {:round/status ['*]
+                                                            :round/type ['*]
+                                                            :round/panel ['* {:adjudicator-panel/adjudicators ['*]}]
+                                                            :round/dances ['* ]
+                                                            :round/starting ['*]
+                                                            :round/results ['* {:result/participant ['*]
+                                                                                :result/adjudicator ['*]}]}]}]))))))))
+
 (deftest import-competition-data
   (testing "Import of competition data"
     (let [competition-data (select-keys @test-competition
@@ -115,16 +125,14 @@
                               :competition/location
                               :competition/options])
           _ (ds/transact-competition @conn [competition-data])
-          query-result (first
-                         (mapv #(dissoc % :competition/id)
-                               (ds/query-competition @conn ['* {:competition/options ['*]}])))]
+          query-result (first (ds/query-competition @conn ['* {:competition/options ['*]}]))]
       (is (= (:competition/date query-result)
              #inst "2015-09-26T00:00:00.000-00:00"))
       (is (= (:competition/name query-result)
              "Rikstävling disco"))
       (is (= (:competition/location query-result)
              "VÄSTERÅS"))
-      (is (= (dissoc (first (:competition/options query-result)) :db/id)
+      (is (= (dissoc (:competition/options query-result) :db/id)
              {:dance-competition/same-heat-all-dances false,
               :presentation/chinese-fonts false,
               :dance-competition/heat-text-on-adjudicator-sheet true,
@@ -137,7 +145,11 @@
               :dance-competition/adjudicator-order-other false,
               :presentation/arial-font "Arial",
               :printer/preview true,
-              :printer/printer-select-paper false})))))
+              :printer/printer-select-paper false}))
+
+      (is (seq (mapv #(s/validate dom/competition-data-schema %)
+                     (clean-test-data
+                       (ds/query-competition @conn ['* {:competition/options ['*]}]))))))))
 
 (deftest transform-old-result
   (testing "Transform old result format to new"

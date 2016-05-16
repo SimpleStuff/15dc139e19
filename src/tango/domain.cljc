@@ -28,17 +28,38 @@
    :participant/number s/Int})
 
 (def result
-  {:result/id s/Uuid})
+  {:result/mark-x      s/Bool
+   :result/point       s/Int
+   :result/participant participant
+   :result/adjudicator adjudicator
+   (s/optional-key :result/id) s/Uuid})
+
+;; TODO - round-types should be consolidated with import
+(def round-types
+  [:round-type/none :round-type/normal-x :round-type/semifinal-x
+   :round-type/final-x :round-type/b-final-x :round-type/retry-x
+   :round-type/second-try-x
+   :round-type/presentation])
+
+(def round-types-enum
+  (apply s/enum round-types))
+
+(def statuses
+  [:status/not-started
+   :status/completed])
+
+(def status-enum
+  (apply s/enum statuses))
 
 (def round
   {:round/id                          s/Uuid
-   :round/status                      s/Keyword
+   :round/status                      status-enum
    :round/number-to-recall            s/Int
    :round/panel                       adjudicator-panel
    :round/dances                      [dance]
    :round/index                       s/Int
    (s/optional-key :round/starting)   [participant]
-   :round/type                        s/Keyword
+   :round/type                        round-types-enum
    :round/number                      s/Str
    (s/optional-key :round/start-time) s/Inst
    :round/number-of-heats             s/Int
@@ -52,6 +73,41 @@
    (s/optional-key :class/dances)   [dance]
    (s/optional-key :class/starting) [participant]
    (s/optional-key :class/rounds)   [round]})
+
+(def activity-schema
+  {:activity/id                      s/Uuid
+   :activity/position                s/Int
+   :activity/name                    s/Str
+   :activity/number                  s/Str
+   :activity/comment                 s/Str
+   (s/optional-key :activity/time)   s/Inst
+   (s/optional-key :activity/source) round})
+
+(def printer-options
+  {:printer/preview s/Bool
+   :printer/printer-select-paper s/Bool})
+
+(def presentation-options
+  {:presentation/chinese-fonts s/Bool
+   :presentation/courier-font s/Str
+   :presentation/arial-font s/Str})
+
+(def dance-competition-options
+  {:dance-competition/same-heat-all-dances s/Bool
+   :dance-competition/heat-text-on-adjudicator-sheet s/Bool
+   :dance-competition/name-on-number-sign s/Bool
+   :dance-competition/skip-adjudicator-letter s/Bool
+   :dance-competition/adjudicator-order-final s/Bool
+   :dance-competition/random-order-in-heats s/Bool
+   :dance-competition/club-on-number-sign s/Bool
+   :dance-competition/adjudicator-order-other s/Bool})
+
+(def competition-data-schema
+  {:competition/id       s/Uuid
+   :competition/name     s/Str
+   :competition/location s/Str
+   :competition/date     s/Inst
+   :competition/options  (merge printer-options presentation-options dance-competition-options)})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Makers

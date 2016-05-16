@@ -38,7 +38,7 @@
  {:db/id                 #db/id[:db.part/db]
   :db/ident              :competition/options
   :db/valueType          :db.type/ref
-  :db/cardinality        :db.cardinality/many
+  :db/cardinality        :db.cardinality/one
   :db/doc                "The options for a competition"
   :db.install/_attribute :db.part/db}
 
