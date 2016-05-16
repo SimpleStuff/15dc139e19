@@ -1,4 +1,57 @@
-(ns tango.domain)
+(ns tango.domain
+  (:require [schema.core :as s]))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Domain entities
+;(s/defrecord Adjudicator
+;  [name :- s/Str])
+
+(def adjudicator
+  "A schema describing an adjudicator"
+  {:adjudicator/name s/Str
+   :adjudicator/id s/Uuid
+   :adjudicator/country s/Str
+   :adjudicator/number s/Int})
+
+(def adjudicator-panel
+  {:adjudicator-panel/id s/Uuid
+   :adjudicator-panel/name s/Str
+   :adjudicator-panel/adjudicators [adjudicator]})
+
+(def dance
+  {:dance/name s/Str})
+
+(def participant
+  {:participant/id s/Uuid
+   :participant/name s/Str
+   :participant/club s/Str
+   :participant/number s/Int})
+
+(def result
+  {:result/id s/Uuid})
+
+(def round
+  {:round/id                          s/Uuid
+   :round/status                      s/Keyword
+   :round/number-to-recall            s/Int
+   :round/panel                       adjudicator-panel
+   :round/dances                      [dance]
+   :round/index                       s/Int
+   (s/optional-key :round/starting)   [participant]
+   :round/type                        s/Keyword
+   :round/number                      s/Str
+   (s/optional-key :round/start-time) s/Inst
+   :round/number-of-heats             s/Int
+   (s/optional-key :round/results)    [result]})
+
+(def class-schema
+  {:class/name                      s/Str
+   :class/id                        s/Uuid
+   :class/position                  s/Int
+   :class/adjudicator-panel         adjudicator-panel
+   (s/optional-key :class/dances)   [dance]
+   (s/optional-key :class/starting) [participant]
+   (s/optional-key :class/rounds)   [round]})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Makers

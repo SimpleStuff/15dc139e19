@@ -5,23 +5,29 @@
             [tango.expected.expected-small-result :as esr]
             [tango.datomic-storage :as ds]
             [clojure.edn :as edn]
+    [tango.domain :as dom]
 
-            [schema.core :as s]))
+    ;[schema.core :as s]
+            ))
 
 
 (def mem-uri "datomic:mem://localhost:4334//competitions")
 
 (def schema-tx (read-string (slurp "./src/tango/schema/activity.edn")))
 
-(def adjudicator-schema
-  "A schema describing an adjudicator"
-  {:adjudicator/name s/Str
-   :adjudicator/id s/Uuid
-   :adjudicator/country s/Str
-   :adjudicator/number s/Int})
-
 (def test-competition (atom nil))
 (def conn (atom nil))
+
+(defn clean-test-data [test-data]
+  (clojure.walk/postwalk
+    (fn [form]
+      (cond
+        ;; Competition should have id
+        (:db/id form) (if (:db/ident form)
+                        (:db/ident form)
+                        (dissoc form :db/id))
+        :else form))
+    test-data))
 
 (defn setup-db [test-fn]
   (ds/delete-storage mem-uri)
@@ -40,6 +46,7 @@
     (is (not= nil (ds/create-storage mem-uri schema-tx)))
     (is (not= nil (ds/create-connection mem-uri)))))
 
+;; TODO : schema
 (deftest import-competition
   (testing "Import of complete competition"
     (let [competition-data (ds/clean-import-data
@@ -57,24 +64,40 @@
   (testing "Import of adjudicator data"
     (let [competition-data (:competition/adjudicators @test-competition)
           _ (ds/transact-competition @conn competition-data)]
-      (is (seq (mapv #(s/validate adjudicator-schema (dissoc % :db/id))
-                     (ds/query-adjudicators @conn ['*])))))))
+      (is (seq (mapv #(s/validate dom/adjudicator %)
+                     (clean-test-data (ds/query-adjudicators @conn ['*]))))))))
 
 (deftest import-adjudicator-panels
   (testing "Import of adjudicator panels data"
     (let [competition-data (:competition/panels @test-competition)
           _ (ds/transact-competition @conn competition-data)]
-      (is (= (count (ds/query-adjudicator-panels @conn ['*]))
-             4)))))
+      (is (seq (mapv #(s/validate dom/adjudicator-panel %)
+                     (clean-test-data
+                       (ds/query-adjudicator-panels @conn ['* {:adjudicator-panel/adjudicators ['*]}]))))))))
 
 ;; TODO - more tests of rounds etc
+;; TODO : schema
 (deftest import-classes
   (testing "Import of classes data"
     (let [competition-data (:competition/classes @test-competition)
           _ (ds/transact-competition @conn competition-data)]
       (is (= (count (ds/query-classes @conn ['*]))
-             48)))))
+             48))
 
+      (is (seq (mapv #(s/validate dom/class-schema %)
+                     (clean-test-data
+                       (ds/query-classes @conn ['* {:class/adjudicator-panel
+                                                    ['* {:adjudicator-panel/adjudicators ['*]}]}
+                                                {:class/dances ['*]}
+                                                {:class/starting ['*]}
+                                                {:class/rounds
+                                                 ['* {:round/status ['*]
+                                                      :round/type ['*]
+                                                      :round/panel ['* {:adjudicator-panel/adjudicators ['*]}]
+                                                      :round/dances ['* ]
+                                                      :round/starting ['*]}]}]))))))))
+
+;; TODO : schema
 (deftest import-activities
   (testing "Import of activities data"
     (let [competition-data (:competition/activities @test-competition)
@@ -82,6 +105,7 @@
       (is (= (count (ds/query-activities @conn ['*]))
              140)))))
 
+;; TODO : schema
 (deftest import-competition-data
   (testing "Import of competition data"
     (let [competition-data (select-keys @test-competition
