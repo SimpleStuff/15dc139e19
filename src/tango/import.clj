@@ -202,7 +202,7 @@
   (for [mark marks-loc]
     {:dp/temp-local-adjudicator (get-seq-attr-as-number mark)
      :judging/adjudicator :todo
-     :juding/marks [{:mark/x (= (zx/attr mark :X) "X")}]}))
+     :judging/marks [{:mark/x (= (zx/attr mark :X) "X")}]}))
 
 (defn- mark-list->map [result-couple-loc adjudicators]
   (for [couple result-couple-loc]
@@ -461,6 +461,13 @@
      (mapv #(dissoc % :dp/temp-id) dp-adjudicators)
      (make-activities (mapv :temp/activity dp-rounds) classes (mapcat :class/rounds classes))
      classes)))
+
+(defn competition-xml->datoms [xml id-generator-fn]
+  (d/make-competition
+    "" "" "" "" ""
+    (mapv #(dissoc % :dp/temp-id) (adjudicators-xml->map xml id-generator-fn))
+    ""
+    ""))
 
 (defn import-file-stream
   [file-stream id-generator-fn]

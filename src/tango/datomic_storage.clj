@@ -291,13 +291,130 @@
 (defn create-connection [uri]
   (d/connect uri))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defn transact-competition [conn tx]
+  @(d/transact conn (mapv fix-id tx)))
+
+(defn participant-index
+  "Return map of index number -> id"
+  [cmp]
+  (reduce
+    (fn [index participant]
+      (assoc index (:participant/number participant) (:participant/id participant)))
+    {}
+    (mapcat :class/starting (:competition/classes cmp))))
+
+(defn make-result [id participant-id point adjudicator-id mark-x]
+  {:result/id          id
+   :result/participant participant-id
+   :result/point       point
+   :result/adjudicator {:adjudicator/id adjudicator-id}
+   :result/mark-x mark-x})
+
+(defn transform-result [old-result number-to-id-index]
+  (let [participant-id {:participant/id
+                        (get number-to-id-index (:result/participant-number old-result))}
+        old-judgings (:result/judgings old-result)]
+    (mapv #(make-result
+           (java.util.UUID/randomUUID)
+           participant-id
+           0
+           (:judging/adjudicator %)
+           (:mark/x (first (:judging/marks %))))
+         old-judgings)))
+
+(def status-convertion
+  {:completed :status/completed
+   :not-started :status/not-started})
+
+(defn round-type-convertion [old-type]
+  (keyword "round-type" (name old-type)))
+
+(defn remove-nil-values [m]
+  (let [new-m (into {} (remove (comp nil? second) m))]
+    (when (seq new-m)
+      new-m)))
+
+(defn clean-import-data [import-data]
+  (let [index (participant-index import-data)]
+    (clojure.walk/postwalk
+      (fn [form]
+        (cond
+          ;; replace participant-number with participant id in results
+          (:round/id form)
+          (apply
+            dissoc
+            (merge (remove-nil-values form)
+                   {:round/results
+                                            (vec (mapcat #(transform-result % index) (:round/results form)))
+                    :round/number-of-heats  (:round/heats form)
+                    :round/number-to-recall (:round/recall form)
+                    :round/status           (get status-convertion (:round/status form))
+                    :round/type             (round-type-convertion (:round/type form))
+                    :round/number           (str (:round/number form))})
+            [:round/class-id
+             :round/heats
+             :round/recall])
+
+          ;; remove class/remaining, it should be derived
+          (:class/remaining form) (dissoc form :class/remaining)
+
+          ;; activity/numer should always be a string value
+          (:activity/number form)
+          (assoc (remove-nil-values form)
+            :activity/number (str (:activity/number form)))
+
+          ;; Competition should have id
+          (:competition/name form) (assoc form :competition/id (java.util.UUID/randomUUID))
+
+          :else form
+          ))
+      import-data)))
+
+(defn query-adjudicators [conn query]
+  (d/q '[:find [(pull ?e selector) ...]
+         :in $ selector
+         :where
+         [?e :adjudicator/id]]
+       (d/db conn) query))
+
+(defn query-adjudicator-panels [conn query]
+  (d/q '[:find [(pull ?e selector) ...]
+         :in $ selector
+         :where
+         [?e :adjudicator-panel/id]]
+       (d/db conn) query))
+
+(defn query-classes [conn query]
+  (d/q '[:find [(pull ?e selector) ...]
+         :in $ selector
+         :where
+         [?e :class/id]]
+       (d/db conn) query))
+
+(defn query-activities [conn query]
+  (d/q '[:find [(pull ?e selector) ...]
+         :in $ selector
+         :where
+         [?e :activity/id]]
+       (d/db conn) query))
+
+(defn query-competition [conn query]
+  (d/q '[:find [(pull ?e selector) ...]
+         :in $ selector
+         :where
+         [?e :competition/id]]
+       (d/db conn) query))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defn select-round [conn round]
   @(d/transact conn [(fix-id {:app/selected-activites round
                               :app/id                 1})]))
 
 (defn set-speaker-activity [conn activity]
   @(d/transact conn [(fix-id {:app/speaker-activites activity
-                              :app/id 1})]))
+                              :app/id                1})]))
 
 (defn set-results [conn results]
   @(d/transact conn (mapv fix-id results)))
