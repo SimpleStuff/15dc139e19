@@ -1,1350 +1,1350 @@
-[{:starting "",
-  :number "",
-  :name "HIPHOP SINGEL",
-  :time "",
-  :heats "",
-  :type "",
-  :recall "",
-  :round "",
-  :panel ""}
- {:starting "",
-  :number "",
-  :name "",
-  :time "",
-  :heats "",
-  :type "",
-  :recall "",
-  :round "",
-  :panel ""}
- {:starting "Start 6",
-  :number "1A",
-  :name "Hiphop Singel Brons B1",
-  :time "10:00*",
-  :heats "1 heat",
-  :type "M",
-  :recall "",
-  :round "Presentation",
-  :panel ""}
- {:starting "Start 11",
-  :number "1B",
-  :name "Hiphop Singel Brons B2",
-  :time "*",
-  :heats "1 heat",
-  :type "M",
-  :recall "Recall 3",
-  :round "Semifinal",
-  :panel "Panel 2"}
- {:starting "Start 5",
-  :number "2A",
-  :name "Hiphop Singel Brons U",
-  :time "10:03*",
-  :heats "1 heat",
-  :type "M",
-  :recall "",
-  :round "Presentation",
-  :panel ""}
- {:starting "Start 7",
-  :number "2B",
-  :name "Hiphop Singel Brons J1",
-  :time "*",
-  :heats "1 heat",
-  :type "M",
-  :recall "",
-  :round "Presentation",
-  :panel ""}
- {:starting "Start 8",
-  :number "3A",
-  :name "Hiphop Singel Silver B2",
-  :time "10:07*",
-  :heats "1 heat",
-  :type "M",
-  :recall "Recall 6",
-  :round "Semifinal",
-  :panel "Panel 1"}
- {:starting "Start 5",
-  :number "3B",
-  :name "Hiphop Singel Brons J2",
-  :time "*",
-  :heats "1 heat",
-  :type "M",
-  :recall "",
-  :round "Presentation",
-  :panel ""}
- {:starting "Start 8",
-  :number "4A",
-  :name "Hiphop Singel Silver J2 / U / V",
-  :time "10:10*",
-  :heats "1 heat",
-  :type "M",
-  :recall "Recall 6",
-  :round "Semifinal",
-  :panel "Panel 1"}
- {:starting "",
-  :number "4B",
-  :name "Hiphop Singel Brons B2",
-  :time "*",
-  :heats "1 heat",
-  :type "M",
-  :recall "Recall 4",
-  :round "2nd try",
-  :panel "Panel 2"}
- {:starting "Start 8",
-  :number "5A",
-  :name "Hiphop Singel Guld J1",
-  :time "10:14*",
-  :heats "1 heat",
-  :type "M",
-  :recall "Recall 6",
-  :round "Semifinal",
-  :panel "Panel 1"}
- {:starting "Start 6",
-  :number "5B",
-  :name "Hiphop Singel Brons V",
-  :time "*",
-  :heats "1 heat",
-  :type "M",
-  :recall "",
-  :round "Presentation",
-  :panel ""}
- {:starting "Start 5",
-  :number "6A",
-  :name "Hiphop Singel Brons U",
-  :time "10:17*",
-  :heats "",
-  :type "M",
-  :recall "",
-  :round "Direct Final",
-  :panel "Panel 1"}
- {:starting "Start 7",
-  :number "6B",
-  :name "Hiphop Singel Brons J1",
-  :time "*",
-  :heats "",
-  :type "M",
-  :recall "",
-  :round "Direct Final",
-  :panel "Panel 2"}
- {:starting "",
-  :number "7A",
-  :name "STRUKEN!!! \"Guld U\" semi",
-  :time "10:21",
-  :heats "",
-  :type "",
-  :recall "",
-  :round "",
-  :panel ""}
- {:starting "",
-  :number "7B",
-  :name "Hiphop Singel Brons B2",
-  :time "*",
-  :heats "",
-  :type "M",
-  :recall "",
-  :round "Final",
-  :panel "Panel 2"}
- {:starting "",
-  :number "8A",
-  :name "Hiphop Singel Silver B2",
-  :time "10:24*",
-  :heats "",
-  :type "M",
-  :recall "",
-  :round "Final",
-  :panel "Panel 1"}
- {:starting "Start 6",
-  :number "8B",
-  :name "Hiphop Singel Brons V",
-  :time "*",
-  :heats "",
-  :type "M",
-  :recall "",
-  :round "Direct Final",
-  :panel "Panel 2"}
- {:starting "Start 6",
-  :number "9A",
-  :name "Hiphop Singel Brons B1",
-  :time "10:28*",
-  :heats "",
-  :type "M",
-  :recall "",
-  :round "Direct Final",
-  :panel "Panel 1"}
- {:starting "Start 5",
-  :number "9B",
-  :name "Hiphop Singel Brons J2",
-  :time "*",
-  :heats "",
-  :type "M",
-  :recall "",
-  :round "Direct Final",
-  :panel "Panel 2"}
- {:starting "Start 3",
-  :number "9C",
-  :name "Hiphop Singel Silver B1",
-  :time "*",
-  :heats "",
-  :type "M",
-  :recall "",
-  :round "Direct Final",
-  :panel "Panel 1"}
- {:starting "",
-  :number "10A",
-  :name "Hiphop Singel Guld J1",
-  :time "10:31*",
-  :heats "",
-  :type "M",
-  :recall "",
-  :round "Final",
-  :panel "Panel 1"}
- {:starting "Start 4",
-  :number "10B",
-  :name "Hiphop Singel Silver J1",
-  :time "*",
-  :heats "",
-  :type "M",
-  :recall "",
-  :round "Direct Final",
-  :panel "Panel 2"}
- {:starting "",
-  :number "11A",
-  :name "Hiphop Singel Silver J2 / U / V",
-  :time "10:35*",
-  :heats "",
-  :type "M",
-  :recall "",
-  :round "Final",
-  :panel "Panel 1"}
- {:starting "Start 3",
-  :number "11B",
-  :name "Hiphop Singel Guld B1 / B2",
-  :time "*",
-  :heats "",
-  :type "M",
-  :recall "",
-  :round "Direct Final",
-  :panel "Panel 2"}
- {:starting "Start 5",
-  :number "12A",
-  :name "Hiphop Singel Guld U",
-  :time "10:38*",
-  :heats "",
-  :type "M",
-  :recall "",
-  :round "Direct Final",
-  :panel "Panel 1"}
- {:starting "Start 7",
-  :number "12B",
-  :name "Hiphop Singel Guld J2",
-  :time "*",
-  :heats "",
-  :type "M",
-  :recall "",
-  :round "Direct Final",
-  :panel "Panel 2"}
- {:starting "Start 3",
-  :number "12C",
-  :name "Hiphop Singel Guld V",
-  :time "*",
-  :heats "",
-  :type "M",
-  :recall "",
-  :round "Direct Final",
-  :panel "Panel 1"}
- {:starting "",
-  :number "",
-  :name "",
-  :time "",
-  :heats "",
-  :type "",
-  :recall "",
-  :round "",
-  :panel ""}
- {:starting "",
-  :number "",
-  :name "HIPHOP SINGEL PRISUTDELNING",
-  :time "10:42",
-  :heats "",
-  :type "",
-  :recall "",
-  :round "",
-  :panel ""}
- {:starting "",
-  :number "",
-  :name "",
-  :time "",
-  :heats "",
-  :type "",
-  :recall "",
-  :round "",
-  :panel ""}
- {:starting "",
-  :number "",
-  :name "HIPHOP PAR",
-  :time "",
-  :heats "",
-  :type "",
-  :recall "",
-  :round "",
-  :panel ""}
- {:starting "",
-  :number "",
-  :name "",
-  :time "",
-  :heats "",
-  :type "",
-  :recall "",
-  :round "",
-  :panel ""}
- {:starting "Start 8",
-  :number "13A",
-  :name "Hiphop Par Brons U / V",
-  :time "11:10*",
-  :heats "1 heat",
-  :type "M",
-  :recall "Recall 3",
-  :round "Semifinal",
-  :panel "Panel 1"}
- {:starting "",
-  :number "13B",
-  :name "TOMT GOLV",
-  :time "",
-  :heats "",
-  :type "",
-  :recall "",
-  :round "",
-  :panel ""}
- {:starting "Start 3",
-  :number "14A",
-  :name "Hiphop Par Brons B1",
-  :time "11:13*",
-  :heats "1 heat",
-  :type "M",
-  :recall "",
-  :round "Presentation",
-  :panel ""}
- {:starting "Start 5",
-  :number "14B",
-  :name "Hiphop Par Brons B2 / J1 / J2",
-  :time "*",
-  :heats "1 heat",
-  :type "M",
-  :recall "",
-  :round "Presentation",
-  :panel ""}
- {:starting "Start 3",
-  :number "15A",
-  :name "Hiphop Par Silver J2 / U / V",
-  :time "11:17*",
-  :heats "",
-  :type "M",
-  :recall "",
-  :round "Direct Final",
-  :panel "Panel 1"}
- {:starting "Start 4",
-  :number "15B",
-  :name "Hiphop Par Silver B2 / J1",
-  :time "*",
-  :heats "",
-  :type "M",
-  :recall "",
-  :round "Direct Final",
-  :panel "Panel 2"}
- {:starting "",
-  :number "16A",
-  :name "Hiphop Par Brons U / V",
-  :time "11:20*",
-  :heats "1 heat",
-  :type "M",
-  :recall "Recall 2",
-  :round "2nd try",
-  :panel "Panel 1"}
- {:starting "",
-  :number "16B",
-  :name "TOMT GOLV",
-  :time "",
-  :heats "",
-  :type "",
-  :recall "",
-  :round "",
-  :panel ""}
- {:starting "Start 3",
-  :number "17A",
-  :name "Hiphop Par Brons B1",
-  :time "11:24*",
-  :heats "",
-  :type "M",
-  :recall "",
-  :round "Direct Final",
-  :panel "Panel 1"}
- {:starting "Start 5",
-  :number "17B",
-  :name "Hiphop Par Brons B2 / J1 / J2",
-  :time "*",
-  :heats "",
-  :type "M",
-  :recall "",
-  :round "Direct Final",
-  :panel "Panel 2"}
- {:starting "",
-  :number "18A",
-  :name "Hiphop Par Brons U / V",
-  :time "11:27*",
-  :heats "",
-  :type "M",
-  :recall "",
-  :round "Final",
-  :panel "Panel 1"}
- {:starting "Start 4",
-  :number "18B",
-  :name "Hiphop Par Guld B2 / J1 / J2",
-  :time "*",
-  :heats "",
-  :type "M",
-  :recall "",
-  :round "Direct Final",
-  :panel "Panel 2"}
- {:starting "Start 4",
-  :number "19A",
-  :name "Hiphop Par Guld U / V",
-  :time "11:31*",
-  :heats "",
-  :type "M",
-  :recall "",
-  :round "Direct Final",
-  :panel "Panel 1"}
- {:starting "",
-  :number "19B",
-  :name "TOMT GOLV",
-  :time "",
-  :heats "",
-  :type "",
-  :recall "",
-  :round "",
-  :panel ""}
- {:starting "",
-  :number "",
-  :name "",
-  :time "",
-  :heats "",
-  :type "",
-  :recall "",
-  :round "",
-  :panel ""}
- {:starting "",
-  :number "",
-  :name "HIPHOP PAR PRISUTDELNING",
-  :time "11:34",
-  :heats "",
-  :type "",
-  :recall "",
-  :round "",
-  :panel ""}
- {:starting "",
-  :number "",
-  :name "",
-  :time "",
-  :heats "",
-  :type "",
-  :recall "",
-  :round "",
-  :panel ""}
- {:starting "",
-  :number "",
-  :name "HIPHOP GRUPP",
-  :time "",
-  :heats "",
-  :type "",
-  :recall "",
-  :round "",
-  :panel ""}
- {:starting "",
-  :number "",
-  :name "",
-  :time "",
-  :heats "",
-  :type "",
-  :recall "",
-  :round "",
-  :panel ""}
- {:starting "Start 1",
-  :number 20,
-  :name "Hiphop Grupp B-klass V",
-  :time "12:00*",
-  :heats "",
-  :type "M",
-  :recall "",
-  :round "Direct Final",
-  :panel "Panel 3"}
- {:starting "",
-  :number "",
-  :name "",
-  :time "",
-  :heats "",
-  :type "",
-  :recall "",
-  :round "",
-  :panel ""}
- {:starting "",
-  :number "",
-  :name "HIPHOP GRUPP PRISUTDELNING",
-  :time "12:04",
-  :heats "",
-  :type "",
-  :recall "",
-  :round "",
-  :panel ""}
- {:starting "",
-  :number "",
-  :name "",
-  :time "",
-  :heats "",
-  :type "",
-  :recall "",
-  :round "",
-  :panel ""}
- {:starting "",
-  :number "",
-  :name "DISCO SINGEL",
-  :time "",
-  :heats "",
-  :type "",
-  :recall "",
-  :round "",
-  :panel ""}
- {:starting "",
-  :number "",
-  :name "",
-  :time "",
-  :heats "",
-  :type "",
-  :recall "",
-  :round "",
-  :panel ""}
- {:starting "Start 35",
-  :number "21A",
-  :name "Disco Singel Brons J1",
-  :time "12:15*",
-  :heats "3 heats",
-  :type "M",
-  :recall "Recall 9",
-  :round "Normal",
-  :panel "Panel 1"}
- {:starting "Start 35",
-  :number "21B",
-  :name "Disco Singel Brons B2",
-  :time "*",
-  :heats "3 heats",
-  :type "M",
-  :recall "Recall 9",
-  :round "Normal",
-  :panel "Panel 2"}
- {:starting "",
-  :number "22A",
-  :name "TOMT GOLV",
-  :time "12:25",
-  :heats "",
-  :type "",
-  :recall "",
-  :round "",
-  :panel ""}
- {:starting "Start 20",
-  :number "22B",
-  :name "Disco Singel Brons J2",
-  :time "*",
-  :heats "2 heats",
-  :type "M",
-  :recall "Recall 6",
-  :round "Normal",
-  :panel "Panel 2"}
- {:starting "Start 21",
-  :number "23A",
-  :name "Disco Singel Silver J1",
-  :time "12:31*",
-  :heats "2 heats",
-  :type "M",
-  :recall "Recall 12",
-  :round "Normal",
-  :panel "Panel 1"}
- {:starting "Start 20",
-  :number "23B",
-  :name "Disco Singel Silver B2",
-  :time "*",
-  :heats "2 heats",
-  :type "M",
-  :recall "Recall 12",
-  :round "Normal",
-  :panel "Panel 2"}
- {:starting "",
-  :number "24A",
-  :name "Disco Singel Brons J1",
-  :time "12:36*",
-  :heats "3 heats",
-  :type "M",
-  :recall "Recall 9",
-  :round "2nd try",
-  :panel "Panel 1"}
- {:starting "",
-  :number "24B",
-  :name "Disco Singel Brons B2",
-  :time "*",
-  :heats "3 heats",
-  :type "M",
-  :recall "Recall 9",
-  :round "2nd try",
-  :panel "Panel 2"}
- {:starting "",
-  :number "25A",
-  :name "TOMT GOLV",
-  :time "12:44",
-  :heats "",
-  :type "",
-  :recall "",
-  :round "",
-  :panel ""}
- {:starting "Start 16",
-  :number "25B",
-  :name "Disco Singel Silver J2",
-  :time "*",
-  :heats "2 heats",
-  :type "M",
-  :recall "Recall 12",
-  :round "Normal",
-  :panel "Panel 2"}
- {:starting "Start 14",
-  :number "26A",
-  :name "Disco Singel Brons B1",
-  :time "12:50*",
-  :heats "2 heats",
-  :type "M",
-  :recall "Recall 3",
-  :round "Semifinal",
-  :panel "Panel 1"}
- {:starting "",
-  :number "26B",
-  :name "Disco Singel Brons J2",
-  :time "*",
-  :heats "2 heats",
-  :type "M",
-  :recall "Recall 6",
-  :round "2nd try",
-  :panel "Panel 2"}
- {:starting "",
-  :number "27A",
-  :name "Disco Singel Brons J1",
-  :time "12:56*",
-  :heats "2 heats",
-  :type "M",
-  :recall "Recall 12",
-  :round "Normal",
-  :panel "Panel 1"}
- {:starting "",
-  :number "27B",
-  :name "Disco Singel Brons B2",
-  :time "*",
-  :heats "2 heats",
-  :type "M",
-  :recall "Recall 12",
-  :round "Normal",
-  :panel "Panel 2"}
- {:starting "Start 6",
-  :number "28A",
-  :name "Disco Singel Brons U",
-  :time "13:02*",
-  :heats "1 heat",
-  :type "M",
-  :recall "",
-  :round "Presentation",
-  :panel ""}
- {:starting "Start 6",
-  :number "28B",
-  :name "Disco Singel Brons V",
-  :time "*",
-  :heats "1 heat",
-  :type "M",
-  :recall "",
-  :round "Presentation",
-  :panel ""}
- {:starting "",
-  :number "29A",
-  :name "Disco Singel Brons B1",
-  :time "13:05*",
-  :heats "1 heat",
-  :type "M",
-  :recall "Recall 3",
-  :round "2nd try",
-  :panel "Panel 1"}
- {:starting "",
-  :number "29B",
-  :name "Disco Singel Brons J2",
-  :time "*",
-  :heats "1 heat",
-  :type "M",
-  :recall "Recall 6",
-  :round "Semifinal",
-  :panel "Panel 2"}
- {:starting "",
-  :number "30A",
-  :name "Disco Singel Brons J1",
-  :time "13:09*",
-  :heats "1 heat",
-  :type "M",
-  :recall "Recall 6",
-  :round "Semifinal",
-  :panel "Panel 1"}
- {:starting "",
-  :number "30B",
-  :name "Disco Singel Brons B2",
-  :time "*",
-  :heats "1 heat",
-  :type "M",
-  :recall "Recall 6",
-  :round "Semifinal",
-  :panel "Panel 2"}
- {:starting "",
-  :number "31A",
-  :name "Disco Singel Silver J1",
-  :time "13:12*",
-  :heats "1 heat",
-  :type "M",
-  :recall "Recall 6",
-  :round "Semifinal",
-  :panel "Panel 1"}
- {:starting "",
-  :number "31B",
-  :name "Disco Singel Silver B2",
-  :time "*",
-  :heats "1 heat",
-  :type "M",
-  :recall "Recall 6",
-  :round "Semifinal",
-  :panel "Panel 2"}
- {:starting "",
-  :number "31C",
-  :name "Disco Singel Brons J1",
-  :time "*",
-  :heats "1 heat",
-  :type "M",
-  :recall "Recall 2",
-  :round "Retry",
-  :panel "Panel 1"}
- {:starting "",
-  :number "32A",
-  :name "TOMT GOLV",
-  :time "13:16",
-  :heats "",
-  :type "",
-  :recall "",
-  :round "",
-  :panel ""}
- {:starting "",
-  :number "32B",
-  :name "Disco Singel Silver J2",
-  :time "*",
-  :heats "2 heats",
-  :type "M",
-  :recall "Recall 6",
-  :round "Semifinal",
-  :panel "Panel 2"}
- {:starting "Start 14",
-  :number "33A",
-  :name "Disco Singel Guld J1",
-  :time "13:21*",
-  :heats "2 heats",
-  :type "Q",
-  :recall "Recall 6",
-  :round "Semifinal",
-  :panel "Panel 1"}
- {:starting "Start 14",
-  :number "33B",
-  :name "Disco Singel Guld B2",
-  :time "*",
-  :heats "2 heats",
-  :type "Q",
-  :recall "Recall 6",
-  :round "Semifinal",
-  :panel "Panel 2"}
- {:starting "Start 15",
-  :number "34A",
-  :name "Disco Singel Guld J2",
-  :time "13:27*",
-  :heats "2 heats",
-  :type "Q",
-  :recall "Recall 6",
-  :round "Semifinal",
-  :panel "Panel 1"}
- {:starting "Start 11",
-  :number "34B",
-  :name "Disco Singel Guld U",
-  :time "*",
-  :heats "1 heat",
-  :type "Q",
-  :recall "Recall 6",
-  :round "Semifinal",
-  :panel "Panel 2"}
- {:starting "",
-  :number "35A",
-  :name "Disco Singel Brons B1",
-  :time "13:31*",
-  :heats "",
-  :type "M",
-  :recall "",
-  :round "Final",
-  :panel "Panel 1"}
- {:starting "",
-  :number "35B",
-  :name "Disco Singel Brons B2",
-  :time "*",
-  :heats "",
-  :type "M",
-  :recall "",
-  :round "Final",
-  :panel "Panel 2"}
- {:starting "",
-  :number "36A",
-  :name "Disco Singel Brons J1",
-  :time "13:34*",
-  :heats "",
-  :type "M",
-  :recall "",
-  :round "Final",
-  :panel "Panel 1"}
- {:starting "",
-  :number "36B",
-  :name "Disco Singel Brons J2",
-  :time "*",
-  :heats "",
-  :type "M",
-  :recall "",
-  :round "Final",
-  :panel "Panel 2"}
- {:starting "Start 6",
-  :number "37A",
-  :name "Disco Singel Brons U",
-  :time "13:38*",
-  :heats "",
-  :type "M",
-  :recall "",
-  :round "Direct Final",
-  :panel "Panel 1"}
- {:starting "Start 6",
-  :number "37B",
-  :name "Disco Singel Brons V",
-  :time "*",
-  :heats "",
-  :type "M",
-  :recall "",
-  :round "Direct Final",
-  :panel "Panel 2"}
- {:starting "",
-  :number "37C",
-  :name "Disco Singel Guld J2",
-  :time "*",
-  :heats "1 heat",
-  :type "Q",
-  :recall "Recall 2",
-  :round "Retry",
-  :panel "Panel 1"}
- {:starting "Start 2",
-  :number "38C",
-  :name "Disco Singel Brons J2 3-4plac",
-  :time "*",
-  :heats "",
-  :type "M",
-  :recall "",
-  :round "Direct Final",
-  :panel "Panel 2"}
- {:starting "Start 5",
-  :number "38A",
-  :name "Disco Singel Silver B1",
-  :time "13:41*",
-  :heats "",
-  :type "M",
-  :recall "",
-  :round "Direct Final",
-  :panel "Panel 1"}
- {:starting "",
-  :number "38B",
-  :name "Disco Singel Silver B2",
-  :time "*",
-  :heats "",
-  :type "M",
-  :recall "",
-  :round "Final",
-  :panel "Panel 2"}
- {:starting "",
-  :number "39A",
-  :name "Disco Singel Silver J1",
-  :time "13:45*",
-  :heats "",
-  :type "M",
-  :recall "",
-  :round "Final",
-  :panel "Panel 1"}
- {:starting "",
-  :number "39B",
-  :name "Disco Singel Silver J2",
-  :time "*",
-  :heats "",
-  :type "M",
-  :recall "",
-  :round "Final",
-  :panel "Panel 2"}
- {:starting "Start 7",
-  :number "40A",
-  :name "Disco Singel Silver U",
-  :time "13:48*",
-  :heats "",
-  :type "M",
-  :recall "",
-  :round "Direct Final",
-  :panel "Panel 1"}
- {:starting "Start 4",
-  :number "40B",
-  :name "Disco Singel Silver V",
-  :time "*",
-  :heats "",
-  :type "M",
-  :recall "",
-  :round "Direct Final",
-  :panel "Panel 2"}
- {:starting "Start 6",
-  :number "41A",
-  :name "Disco Singel Guld B1",
-  :time "13:52*",
-  :heats "",
-  :type "Q",
-  :recall "",
-  :round "Direct Final",
-  :panel "Panel 1"}
- {:starting "",
-  :number "41B",
-  :name "Disco Singel Guld B2",
-  :time "*",
-  :heats "",
-  :type "Q",
-  :recall "",
-  :round "Final",
-  :panel "Panel 2"}
- {:starting "",
-  :number "42A",
-  :name "Disco Singel Guld J1",
-  :time "13:55*",
-  :heats "",
-  :type "Q",
-  :recall "",
-  :round "Final",
-  :panel "Panel 1"}
- {:starting "Start 4",
-  :number "42B",
-  :name "Disco Singel Guld V",
-  :time "*",
-  :heats "",
-  :type "Q",
-  :recall "",
-  :round "Direct Final",
-  :panel "Panel 2"}
- {:starting "",
-  :number "43A",
-  :name "Disco Singel Guld J2",
-  :time "13:59*",
-  :heats "",
-  :type "Q",
-  :recall "",
-  :round "Final",
-  :panel "Panel 1"}
- {:starting "",
-  :number "43B",
-  :name "Disco Singel Guld U",
-  :time "*",
-  :heats "",
-  :type "Q",
-  :recall "",
-  :round "Final",
-  :panel "Panel 2"}
- {:starting "Start 2",
-  :number "43C",
-  :name "Disco Singel Guld J2 3-4plac",
-  :time "*",
-  :heats "",
-  :type "Q",
-  :recall "",
-  :round "Direct Final",
-  :panel "Panel 1"}
- {:starting "",
-  :number "",
-  :name "",
-  :time "",
-  :heats "",
-  :type "",
-  :recall "",
-  :round "",
-  :panel ""}
- {:starting "",
-  :number "",
-  :name "DISCO SINGEL PRISUTDELNING",
-  :time "14:02",
-  :heats "",
-  :type "",
-  :recall "",
-  :round "",
-  :panel ""}
- {:starting "",
-  :number "",
-  :name "",
-  :time "",
-  :heats "",
-  :type "",
-  :recall "",
-  :round "",
-  :panel ""}
- {:starting "",
-  :number "",
-  :name "",
-  :time "",
-  :heats "",
-  :type "",
-  :recall "",
-  :round "",
-  :panel ""}
- {:starting "",
-  :number "",
-  :name "DISCO PAR",
-  :time "",
-  :heats "",
-  :type "",
-  :recall "",
-  :round "",
-  :panel ""}
- {:starting "",
-  :number "",
-  :name "",
-  :time "",
-  :heats "",
-  :type "",
-  :recall "",
-  :round "",
-  :panel ""}
- {:starting "Start 15",
-  :number "45A",
-  :name "Disco Par Brons J1",
-  :time "14:30*",
-  :heats "2 heats",
-  :type "M",
-  :recall "Recall 3",
-  :round "Semifinal",
-  :panel "Panel 1"}
- {:starting "Start 10",
-  :number "45B",
-  :name "Disco Par Brons B2",
-  :time "*",
-  :heats "2 heats",
-  :type "M",
-  :recall "Recall 3",
-  :round "Semifinal",
-  :panel "Panel 2"}
- {:starting "Start 6",
-  :number "46A",
-  :name "Disco Par Brons B1",
-  :time "14:35*",
-  :heats "1 heat",
-  :type "M",
-  :recall "",
-  :round "Presentation",
-  :panel ""}
- {:starting "Start 10",
-  :number "46B",
-  :name "Disco Par Brons J2",
-  :time "*",
-  :heats "2 heats",
-  :type "M",
-  :recall "Recall 3",
-  :round "Semifinal",
-  :panel "Panel 2"}
- {:starting "",
-  :number "47A",
-  :name "Disco Par Brons J1",
-  :time "14:41*",
-  :heats "2 heats",
-  :type "M",
-  :recall "Recall 3",
-  :round "2nd try",
-  :panel "Panel 1"}
- {:starting "Start 8",
-  :number "47B",
-  :name "Disco Par Silver B1 / B2",
-  :time "*",
-  :heats "1 heat",
-  :type "M",
-  :recall "Recall 6",
-  :round "Semifinal",
-  :panel "Panel 2"}
- {:starting "Start 7",
-  :number "48A",
-  :name "Disco Par Brons U / V",
-  :time "14:47*",
-  :heats "1 heat",
-  :type "M",
-  :recall "",
-  :round "Presentation",
-  :panel ""}
- {:starting "",
-  :number "48B",
-  :name "Disco Par Brons B2",
-  :time "*",
-  :heats "1 heat",
-  :type "M",
-  :recall "Recall 3",
-  :round "2nd try",
-  :panel "Panel 2"}
- {:starting "Start 6",
-  :number "49A",
-  :name "Disco Par Brons B1",
-  :time "14:53*",
-  :heats "",
-  :type "M",
-  :recall "",
-  :round "Direct Final",
-  :panel "Panel 1"}
- {:starting "",
-  :number "49B",
-  :name "Disco Par Brons J2",
-  :time "*",
-  :heats "1 heat",
-  :type "M",
-  :recall "Recall 3",
-  :round "2nd try",
-  :panel "Panel 2"}
- {:starting "",
-  :number "50A",
-  :name "Disco Par Brons J1",
-  :time "14:56*",
-  :heats "",
-  :type "M",
-  :recall "",
-  :round "Final",
-  :panel "Panel 1"}
- {:starting "",
-  :number "50B",
-  :name "Disco Par Silver B1 / B2",
-  :time "*",
-  :heats "",
-  :type "M",
-  :recall "",
-  :round "Final",
-  :panel "Panel 2"}
- {:starting "Start 7",
-  :number "51A",
-  :name "Disco Par Brons U / V",
-  :time "15:00*",
-  :heats "",
-  :type "M",
-  :recall "",
-  :round "Direct Final",
-  :panel "Panel 1"}
- {:starting "",
-  :number "51B",
-  :name "Disco Par Brons B2",
-  :time "*",
-  :heats "",
-  :type "M",
-  :recall "",
-  :round "Final",
-  :panel "Panel 2"}
- {:starting "Start 4",
-  :number "52A",
-  :name "Disco Par Silver J1",
-  :time "15:03*",
-  :heats "",
-  :type "M",
-  :recall "",
-  :round "Direct Final",
-  :panel "Panel 1"}
- {:starting "",
-  :number "52B",
-  :name "Disco Par Brons J2",
-  :time "*",
-  :heats "",
-  :type "M",
-  :recall "",
-  :round "Final",
-  :panel "Panel 2"}
- {:starting "Start 5",
-  :number "53A",
-  :name "Disco Par Silver J2",
-  :time "15:07*",
-  :heats "",
-  :type "M",
-  :recall "",
-  :round "Direct Final",
-  :panel "Panel 1"}
- {:starting "Start 6",
-  :number "53B",
-  :name "Disco Par Silver U / V",
-  :time "*",
-  :heats "",
-  :type "M",
-  :recall "",
-  :round "Direct Final",
-  :panel "Panel 2"}
- {:starting "Start 4",
-  :number "54A",
-  :name "Disco Par Guld B2",
-  :time "15:10*",
-  :heats "",
-  :type "Q",
-  :recall "",
-  :round "Direct Final",
-  :panel "Panel 1"}
- {:starting "Start 5",
-  :number "54B",
-  :name "Disco Par Guld J1",
-  :time "*",
-  :heats "",
-  :type "Q",
-  :recall "",
-  :round "Direct Final",
-  :panel "Panel 2"}
- {:starting "Start 5",
-  :number "55A",
-  :name "Disco Par Guld J2",
-  :time "15:14*",
-  :heats "",
-  :type "Q",
-  :recall "",
-  :round "Direct Final",
-  :panel "Panel 1"}
- {:starting "Start 7",
-  :number "55B",
-  :name "Disco Par Guld U",
-  :time "*",
-  :heats "",
-  :type "Q",
-  :recall "",
-  :round "Direct Final",
-  :panel "Panel 2"}
- {:starting "Start 4",
-  :number "56A",
-  :name "Disco Par Guld V",
-  :time "15:17*",
-  :heats "",
-  :type "Q",
-  :recall "",
-  :round "Direct Final",
-  :panel "Panel 1"}
- {:starting "",
-  :number "56B",
-  :name "TOMT GOLV",
-  :time "",
-  :heats "",
-  :type "",
-  :recall "",
-  :round "",
-  :panel ""}
- {:starting "",
-  :number "",
-  :name "DISCO PAR  PRISUTDELNING",
-  :time "15:21",
-  :heats "",
-  :type "",
-  :recall "",
-  :round "",
-  :panel ""}
- {:starting "",
-  :number "",
-  :name "",
-  :time "",
-  :heats "",
-  :type "",
-  :recall "",
-  :round "",
-  :panel ""}
- {:starting "",
-  :number "",
-  :name "",
-  :time "",
-  :heats "",
-  :type "",
-  :recall "",
-  :round "",
-  :panel ""}
- {:starting "",
-  :number "",
-  :name "DISCO GRUPP",
-  :time "",
-  :heats "",
-  :type "",
-  :recall "",
-  :round "",
-  :panel ""}
- {:starting "",
-  :number "",
-  :name "",
-  :time "",
-  :heats "",
-  :type "",
-  :recall "",
-  :round "",
-  :panel ""}
- {:starting "Start 8",
-  :number 57,
-  :name "Disco Grupp B-klass J",
-  :time "15:45*",
-  :heats "4 heats",
-  :type "M",
-  :recall "Recall 6",
-  :round "Semifinal",
-  :panel "Panel 4"}
- {:starting "Start 6",
-  :number 58,
-  :name "Disco Grupp B-klass B",
-  :time "15:54*",
-  :heats "",
-  :type "M",
-  :recall "",
-  :round "Direct Final",
-  :panel "Panel 4"}
- {:starting "",
-  :number 59,
-  :name "Disco Grupp B-klass J",
-  :time "16:03*",
-  :heats "",
-  :type "M",
-  :recall "",
-  :round "Final",
-  :panel "Panel 4"}
- {:starting "Start 4",
-  :number 60,
-  :name "Disco Grupp B-klass V",
-  :time "16:12*",
-  :heats "",
-  :type "M",
-  :recall "",
-  :round "Direct Final",
-  :panel "Panel 4"}
- {:starting "",
-  :number "",
-  :name "",
-  :time "",
-  :heats "",
-  :type "",
-  :recall "",
-  :round "",
-  :panel ""}
- {:starting "",
-  :number "",
-  :name "DISCO GRUPP PRISUTDELNING",
-  :time "16:18",
-  :heats "",
-  :type "",
-  :recall "",
-  :round "",
-  :panel ""}
- {:starting "",
-  :number "",
-  :name "",
-  :time "",
-  :heats "",
-  :type "",
-  :recall "",
-  :round "",
-  :panel ""}]
+[{:heats    ""
+  :name     "HIPHOP SINGEL"
+  :number   ""
+  :panel    ""
+  :recall   ""
+  :round    ""
+  :starting ""
+  :time     ""
+  :type     ""}
+ {:heats    ""
+  :name     ""
+  :number   ""
+  :panel    ""
+  :recall   ""
+  :round    ""
+  :starting ""
+  :time     ""
+  :type     ""}
+ {:heats    "1 heat"
+  :name     "Hiphop Singel Brons B1"
+  :number   "1A"
+  :panel    ""
+  :recall   ""
+  :round    "Presentation"
+  :starting "Start 6"
+  :time     "10:00*"
+  :type     "M"}
+ {:heats    "1 heat"
+  :name     "Hiphop Singel Brons B2"
+  :number   "1B"
+  :panel    "Panel 2"
+  :recall   "Recall 3"
+  :round    "Semifinal"
+  :starting "Start 11"
+  :time     "*"
+  :type     "M"}
+ {:heats    "1 heat"
+  :name     "Hiphop Singel Brons U"
+  :number   "2A"
+  :panel    ""
+  :recall   ""
+  :round    "Presentation"
+  :starting "Start 5"
+  :time     "10:03*"
+  :type     "M"}
+ {:heats    "1 heat"
+  :name     "Hiphop Singel Brons J1"
+  :number   "2B"
+  :panel    ""
+  :recall   ""
+  :round    "Presentation"
+  :starting "Start 7"
+  :time     "*"
+  :type     "M"}
+ {:heats    "1 heat"
+  :name     "Hiphop Singel Silver B2"
+  :number   "3A"
+  :panel    "Panel 1"
+  :recall   "Recall 6"
+  :round    "Semifinal"
+  :starting "Start 8"
+  :time     "10:07*"
+  :type     "M"}
+ {:heats    "1 heat"
+  :name     "Hiphop Singel Brons J2"
+  :number   "3B"
+  :panel    ""
+  :recall   ""
+  :round    "Presentation"
+  :starting "Start 5"
+  :time     "*"
+  :type     "M"}
+ {:heats    "1 heat"
+  :name     "Hiphop Singel Silver J2 / U / V"
+  :number   "4A"
+  :panel    "Panel 1"
+  :recall   "Recall 6"
+  :round    "Semifinal"
+  :starting "Start 8"
+  :time     "10:10*"
+  :type     "M"}
+ {:heats    "1 heat"
+  :name     "Hiphop Singel Brons B2"
+  :number   "4B"
+  :panel    "Panel 2"
+  :recall   "Recall 4"
+  :round    "2nd try"
+  :starting ""
+  :time     "*"
+  :type     "M"}
+ {:heats    "1 heat"
+  :name     "Hiphop Singel Guld J1"
+  :number   "5A"
+  :panel    "Panel 1"
+  :recall   "Recall 6"
+  :round    "Semifinal"
+  :starting "Start 8"
+  :time     "10:14*"
+  :type     "M"}
+ {:heats    "1 heat"
+  :name     "Hiphop Singel Brons V"
+  :number   "5B"
+  :panel    ""
+  :recall   ""
+  :round    "Presentation"
+  :starting "Start 6"
+  :time     "*"
+  :type     "M"}
+ {:heats    ""
+  :name     "Hiphop Singel Brons U"
+  :number   "6A"
+  :panel    "Panel 1"
+  :recall   ""
+  :round    "Direct Final"
+  :starting "Start 5"
+  :time     "10:17*"
+  :type     "M"}
+ {:heats    ""
+  :name     "Hiphop Singel Brons J1"
+  :number   "6B"
+  :panel    "Panel 2"
+  :recall   ""
+  :round    "Direct Final"
+  :starting "Start 7"
+  :time     "*"
+  :type     "M"}
+ {:heats    ""
+  :name     "STRUKEN!!! \"Guld U\" semi"
+  :number   "7A"
+  :panel    ""
+  :recall   ""
+  :round    ""
+  :starting ""
+  :time     "10:21"
+  :type     ""}
+ {:heats    ""
+  :name     "Hiphop Singel Brons B2"
+  :number   "7B"
+  :panel    "Panel 2"
+  :recall   ""
+  :round    "Final"
+  :starting ""
+  :time     "*"
+  :type     "M"}
+ {:heats    ""
+  :name     "Hiphop Singel Silver B2"
+  :number   "8A"
+  :panel    "Panel 1"
+  :recall   ""
+  :round    "Final"
+  :starting ""
+  :time     "10:24*"
+  :type     "M"}
+ {:heats    ""
+  :name     "Hiphop Singel Brons V"
+  :number   "8B"
+  :panel    "Panel 2"
+  :recall   ""
+  :round    "Direct Final"
+  :starting "Start 6"
+  :time     "*"
+  :type     "M"}
+ {:heats    ""
+  :name     "Hiphop Singel Brons B1"
+  :number   "9A"
+  :panel    "Panel 1"
+  :recall   ""
+  :round    "Direct Final"
+  :starting "Start 6"
+  :time     "10:28*"
+  :type     "M"}
+ {:heats    ""
+  :name     "Hiphop Singel Brons J2"
+  :number   "9B"
+  :panel    "Panel 2"
+  :recall   ""
+  :round    "Direct Final"
+  :starting "Start 5"
+  :time     "*"
+  :type     "M"}
+ {:heats    ""
+  :name     "Hiphop Singel Silver B1"
+  :number   "9C"
+  :panel    "Panel 1"
+  :recall   ""
+  :round    "Direct Final"
+  :starting "Start 3"
+  :time     "*"
+  :type     "M"}
+ {:heats    ""
+  :name     "Hiphop Singel Guld J1"
+  :number   "10A"
+  :panel    "Panel 1"
+  :recall   ""
+  :round    "Final"
+  :starting ""
+  :time     "10:31*"
+  :type     "M"}
+ {:heats    ""
+  :name     "Hiphop Singel Silver J1"
+  :number   "10B"
+  :panel    "Panel 2"
+  :recall   ""
+  :round    "Direct Final"
+  :starting "Start 4"
+  :time     "*"
+  :type     "M"}
+ {:heats    ""
+  :name     "Hiphop Singel Silver J2 / U / V"
+  :number   "11A"
+  :panel    "Panel 1"
+  :recall   ""
+  :round    "Final"
+  :starting ""
+  :time     "10:35*"
+  :type     "M"}
+ {:heats    ""
+  :name     "Hiphop Singel Guld B1 / B2"
+  :number   "11B"
+  :panel    "Panel 2"
+  :recall   ""
+  :round    "Direct Final"
+  :starting "Start 3"
+  :time     "*"
+  :type     "M"}
+ {:heats    ""
+  :name     "Hiphop Singel Guld U"
+  :number   "12A"
+  :panel    "Panel 1"
+  :recall   ""
+  :round    "Direct Final"
+  :starting "Start 5"
+  :time     "10:38*"
+  :type     "M"}
+ {:heats    ""
+  :name     "Hiphop Singel Guld J2"
+  :number   "12B"
+  :panel    "Panel 2"
+  :recall   ""
+  :round    "Direct Final"
+  :starting "Start 7"
+  :time     "*"
+  :type     "M"}
+ {:heats    ""
+  :name     "Hiphop Singel Guld V"
+  :number   "12C"
+  :panel    "Panel 1"
+  :recall   ""
+  :round    "Direct Final"
+  :starting "Start 3"
+  :time     "*"
+  :type     "M"}
+ {:heats    ""
+  :name     ""
+  :number   ""
+  :panel    ""
+  :recall   ""
+  :round    ""
+  :starting ""
+  :time     ""
+  :type     ""}
+ {:heats    ""
+  :name     "HIPHOP SINGEL PRISUTDELNING"
+  :number   ""
+  :panel    ""
+  :recall   ""
+  :round    ""
+  :starting ""
+  :time     "10:42"
+  :type     ""}
+ {:heats    ""
+  :name     ""
+  :number   ""
+  :panel    ""
+  :recall   ""
+  :round    ""
+  :starting ""
+  :time     ""
+  :type     ""}
+ {:heats    ""
+  :name     "HIPHOP PAR"
+  :number   ""
+  :panel    ""
+  :recall   ""
+  :round    ""
+  :starting ""
+  :time     ""
+  :type     ""}
+ {:heats    ""
+  :name     ""
+  :number   ""
+  :panel    ""
+  :recall   ""
+  :round    ""
+  :starting ""
+  :time     ""
+  :type     ""}
+ {:heats    "1 heat"
+  :name     "Hiphop Par Brons U / V"
+  :number   "13A"
+  :panel    "Panel 1"
+  :recall   "Recall 3"
+  :round    "Semifinal"
+  :starting "Start 8"
+  :time     "11:10*"
+  :type     "M"}
+ {:heats    ""
+  :name     "TOMT GOLV"
+  :number   "13B"
+  :panel    ""
+  :recall   ""
+  :round    ""
+  :starting ""
+  :time     ""
+  :type     ""}
+ {:heats    "1 heat"
+  :name     "Hiphop Par Brons B1"
+  :number   "14A"
+  :panel    ""
+  :recall   ""
+  :round    "Presentation"
+  :starting "Start 3"
+  :time     "11:13*"
+  :type     "M"}
+ {:heats    "1 heat"
+  :name     "Hiphop Par Brons B2 / J1 / J2"
+  :number   "14B"
+  :panel    ""
+  :recall   ""
+  :round    "Presentation"
+  :starting "Start 5"
+  :time     "*"
+  :type     "M"}
+ {:heats    ""
+  :name     "Hiphop Par Silver J2 / U / V"
+  :number   "15A"
+  :panel    "Panel 1"
+  :recall   ""
+  :round    "Direct Final"
+  :starting "Start 3"
+  :time     "11:17*"
+  :type     "M"}
+ {:heats    ""
+  :name     "Hiphop Par Silver B2 / J1"
+  :number   "15B"
+  :panel    "Panel 2"
+  :recall   ""
+  :round    "Direct Final"
+  :starting "Start 4"
+  :time     "*"
+  :type     "M"}
+ {:heats    "1 heat"
+  :name     "Hiphop Par Brons U / V"
+  :number   "16A"
+  :panel    "Panel 1"
+  :recall   "Recall 2"
+  :round    "2nd try"
+  :starting ""
+  :time     "11:20*"
+  :type     "M"}
+ {:heats    ""
+  :name     "TOMT GOLV"
+  :number   "16B"
+  :panel    ""
+  :recall   ""
+  :round    ""
+  :starting ""
+  :time     ""
+  :type     ""}
+ {:heats    ""
+  :name     "Hiphop Par Brons B1"
+  :number   "17A"
+  :panel    "Panel 1"
+  :recall   ""
+  :round    "Direct Final"
+  :starting "Start 3"
+  :time     "11:24*"
+  :type     "M"}
+ {:heats    ""
+  :name     "Hiphop Par Brons B2 / J1 / J2"
+  :number   "17B"
+  :panel    "Panel 2"
+  :recall   ""
+  :round    "Direct Final"
+  :starting "Start 5"
+  :time     "*"
+  :type     "M"}
+ {:heats    ""
+  :name     "Hiphop Par Brons U / V"
+  :number   "18A"
+  :panel    "Panel 1"
+  :recall   ""
+  :round    "Final"
+  :starting ""
+  :time     "11:27*"
+  :type     "M"}
+ {:heats    ""
+  :name     "Hiphop Par Guld B2 / J1 / J2"
+  :number   "18B"
+  :panel    "Panel 2"
+  :recall   ""
+  :round    "Direct Final"
+  :starting "Start 4"
+  :time     "*"
+  :type     "M"}
+ {:heats    ""
+  :name     "Hiphop Par Guld U / V"
+  :number   "19A"
+  :panel    "Panel 1"
+  :recall   ""
+  :round    "Direct Final"
+  :starting "Start 4"
+  :time     "11:31*"
+  :type     "M"}
+ {:heats    ""
+  :name     "TOMT GOLV"
+  :number   "19B"
+  :panel    ""
+  :recall   ""
+  :round    ""
+  :starting ""
+  :time     ""
+  :type     ""}
+ {:heats    ""
+  :name     ""
+  :number   ""
+  :panel    ""
+  :recall   ""
+  :round    ""
+  :starting ""
+  :time     ""
+  :type     ""}
+ {:heats    ""
+  :name     "HIPHOP PAR PRISUTDELNING"
+  :number   ""
+  :panel    ""
+  :recall   ""
+  :round    ""
+  :starting ""
+  :time     "11:34"
+  :type     ""}
+ {:heats    ""
+  :name     ""
+  :number   ""
+  :panel    ""
+  :recall   ""
+  :round    ""
+  :starting ""
+  :time     ""
+  :type     ""}
+ {:heats    ""
+  :name     "HIPHOP GRUPP"
+  :number   ""
+  :panel    ""
+  :recall   ""
+  :round    ""
+  :starting ""
+  :time     ""
+  :type     ""}
+ {:heats    ""
+  :name     ""
+  :number   ""
+  :panel    ""
+  :recall   ""
+  :round    ""
+  :starting ""
+  :time     ""
+  :type     ""}
+ {:heats    ""
+  :name     "Hiphop Grupp B-klass V"
+  :number   "20"
+  :panel    "Panel 3"
+  :recall   ""
+  :round    "Direct Final"
+  :starting "Start 1"
+  :time     "12:00*"
+  :type     "M"}
+ {:heats    ""
+  :name     ""
+  :number   ""
+  :panel    ""
+  :recall   ""
+  :round    ""
+  :starting ""
+  :time     ""
+  :type     ""}
+ {:heats    ""
+  :name     "HIPHOP GRUPP PRISUTDELNING"
+  :number   ""
+  :panel    ""
+  :recall   ""
+  :round    ""
+  :starting ""
+  :time     "12:04"
+  :type     ""}
+ {:heats    ""
+  :name     ""
+  :number   ""
+  :panel    ""
+  :recall   ""
+  :round    ""
+  :starting ""
+  :time     ""
+  :type     ""}
+ {:heats    ""
+  :name     "DISCO SINGEL"
+  :number   ""
+  :panel    ""
+  :recall   ""
+  :round    ""
+  :starting ""
+  :time     ""
+  :type     ""}
+ {:heats    ""
+  :name     ""
+  :number   ""
+  :panel    ""
+  :recall   ""
+  :round    ""
+  :starting ""
+  :time     ""
+  :type     ""}
+ {:heats    "3 heats"
+  :name     "Disco Singel Brons J1"
+  :number   "21A"
+  :panel    "Panel 1"
+  :recall   "Recall 9"
+  :round    "Normal"
+  :starting "Start 35"
+  :time     "12:15*"
+  :type     "M"}
+ {:heats    "3 heats"
+  :name     "Disco Singel Brons B2"
+  :number   "21B"
+  :panel    "Panel 2"
+  :recall   "Recall 9"
+  :round    "Normal"
+  :starting "Start 35"
+  :time     "*"
+  :type     "M"}
+ {:heats    ""
+  :name     "TOMT GOLV"
+  :number   "22A"
+  :panel    ""
+  :recall   ""
+  :round    ""
+  :starting ""
+  :time     "12:25"
+  :type     ""}
+ {:heats    "2 heats"
+  :name     "Disco Singel Brons J2"
+  :number   "22B"
+  :panel    "Panel 2"
+  :recall   "Recall 6"
+  :round    "Normal"
+  :starting "Start 20"
+  :time     "*"
+  :type     "M"}
+ {:heats    "2 heats"
+  :name     "Disco Singel Silver J1"
+  :number   "23A"
+  :panel    "Panel 1"
+  :recall   "Recall 12"
+  :round    "Normal"
+  :starting "Start 21"
+  :time     "12:31*"
+  :type     "M"}
+ {:heats    "2 heats"
+  :name     "Disco Singel Silver B2"
+  :number   "23B"
+  :panel    "Panel 2"
+  :recall   "Recall 12"
+  :round    "Normal"
+  :starting "Start 20"
+  :time     "*"
+  :type     "M"}
+ {:heats    "3 heats"
+  :name     "Disco Singel Brons J1"
+  :number   "24A"
+  :panel    "Panel 1"
+  :recall   "Recall 9"
+  :round    "2nd try"
+  :starting ""
+  :time     "12:36*"
+  :type     "M"}
+ {:heats    "3 heats"
+  :name     "Disco Singel Brons B2"
+  :number   "24B"
+  :panel    "Panel 2"
+  :recall   "Recall 9"
+  :round    "2nd try"
+  :starting ""
+  :time     "*"
+  :type     "M"}
+ {:heats    ""
+  :name     "TOMT GOLV"
+  :number   "25A"
+  :panel    ""
+  :recall   ""
+  :round    ""
+  :starting ""
+  :time     "12:44"
+  :type     ""}
+ {:heats    "2 heats"
+  :name     "Disco Singel Silver J2"
+  :number   "25B"
+  :panel    "Panel 2"
+  :recall   "Recall 12"
+  :round    "Normal"
+  :starting "Start 16"
+  :time     "*"
+  :type     "M"}
+ {:heats    "2 heats"
+  :name     "Disco Singel Brons B1"
+  :number   "26A"
+  :panel    "Panel 1"
+  :recall   "Recall 3"
+  :round    "Semifinal"
+  :starting "Start 14"
+  :time     "12:50*"
+  :type     "M"}
+ {:heats    "2 heats"
+  :name     "Disco Singel Brons J2"
+  :number   "26B"
+  :panel    "Panel 2"
+  :recall   "Recall 6"
+  :round    "2nd try"
+  :starting ""
+  :time     "*"
+  :type     "M"}
+ {:heats    "2 heats"
+  :name     "Disco Singel Brons J1"
+  :number   "27A"
+  :panel    "Panel 1"
+  :recall   "Recall 12"
+  :round    "Normal"
+  :starting ""
+  :time     "12:56*"
+  :type     "M"}
+ {:heats    "2 heats"
+  :name     "Disco Singel Brons B2"
+  :number   "27B"
+  :panel    "Panel 2"
+  :recall   "Recall 12"
+  :round    "Normal"
+  :starting ""
+  :time     "*"
+  :type     "M"}
+ {:heats    "1 heat"
+  :name     "Disco Singel Brons U"
+  :number   "28A"
+  :panel    ""
+  :recall   ""
+  :round    "Presentation"
+  :starting "Start 6"
+  :time     "13:02*"
+  :type     "M"}
+ {:heats    "1 heat"
+  :name     "Disco Singel Brons V"
+  :number   "28B"
+  :panel    ""
+  :recall   ""
+  :round    "Presentation"
+  :starting "Start 6"
+  :time     "*"
+  :type     "M"}
+ {:heats    "1 heat"
+  :name     "Disco Singel Brons B1"
+  :number   "29A"
+  :panel    "Panel 1"
+  :recall   "Recall 3"
+  :round    "2nd try"
+  :starting ""
+  :time     "13:05*"
+  :type     "M"}
+ {:heats    "1 heat"
+  :name     "Disco Singel Brons J2"
+  :number   "29B"
+  :panel    "Panel 2"
+  :recall   "Recall 6"
+  :round    "Semifinal"
+  :starting ""
+  :time     "*"
+  :type     "M"}
+ {:heats    "1 heat"
+  :name     "Disco Singel Brons J1"
+  :number   "30A"
+  :panel    "Panel 1"
+  :recall   "Recall 6"
+  :round    "Semifinal"
+  :starting ""
+  :time     "13:09*"
+  :type     "M"}
+ {:heats    "1 heat"
+  :name     "Disco Singel Brons B2"
+  :number   "30B"
+  :panel    "Panel 2"
+  :recall   "Recall 6"
+  :round    "Semifinal"
+  :starting ""
+  :time     "*"
+  :type     "M"}
+ {:heats    "1 heat"
+  :name     "Disco Singel Silver J1"
+  :number   "31A"
+  :panel    "Panel 1"
+  :recall   "Recall 6"
+  :round    "Semifinal"
+  :starting ""
+  :time     "13:12*"
+  :type     "M"}
+ {:heats    "1 heat"
+  :name     "Disco Singel Silver B2"
+  :number   "31B"
+  :panel    "Panel 2"
+  :recall   "Recall 6"
+  :round    "Semifinal"
+  :starting ""
+  :time     "*"
+  :type     "M"}
+ {:heats    "1 heat"
+  :name     "Disco Singel Brons J1"
+  :number   "31C"
+  :panel    "Panel 1"
+  :recall   "Recall 2"
+  :round    "Retry"
+  :starting ""
+  :time     "*"
+  :type     "M"}
+ {:heats    ""
+  :name     "TOMT GOLV"
+  :number   "32A"
+  :panel    ""
+  :recall   ""
+  :round    ""
+  :starting ""
+  :time     "13:16"
+  :type     ""}
+ {:heats    "2 heats"
+  :name     "Disco Singel Silver J2"
+  :number   "32B"
+  :panel    "Panel 2"
+  :recall   "Recall 6"
+  :round    "Semifinal"
+  :starting ""
+  :time     "*"
+  :type     "M"}
+ {:heats    "2 heats"
+  :name     "Disco Singel Guld J1"
+  :number   "33A"
+  :panel    "Panel 1"
+  :recall   "Recall 6"
+  :round    "Semifinal"
+  :starting "Start 14"
+  :time     "13:21*"
+  :type     "Q"}
+ {:heats    "2 heats"
+  :name     "Disco Singel Guld B2"
+  :number   "33B"
+  :panel    "Panel 2"
+  :recall   "Recall 6"
+  :round    "Semifinal"
+  :starting "Start 14"
+  :time     "*"
+  :type     "Q"}
+ {:heats    "2 heats"
+  :name     "Disco Singel Guld J2"
+  :number   "34A"
+  :panel    "Panel 1"
+  :recall   "Recall 6"
+  :round    "Semifinal"
+  :starting "Start 15"
+  :time     "13:27*"
+  :type     "Q"}
+ {:heats    "1 heat"
+  :name     "Disco Singel Guld U"
+  :number   "34B"
+  :panel    "Panel 2"
+  :recall   "Recall 6"
+  :round    "Semifinal"
+  :starting "Start 11"
+  :time     "*"
+  :type     "Q"}
+ {:heats    ""
+  :name     "Disco Singel Brons B1"
+  :number   "35A"
+  :panel    "Panel 1"
+  :recall   ""
+  :round    "Final"
+  :starting ""
+  :time     "13:31*"
+  :type     "M"}
+ {:heats    ""
+  :name     "Disco Singel Brons B2"
+  :number   "35B"
+  :panel    "Panel 2"
+  :recall   ""
+  :round    "Final"
+  :starting ""
+  :time     "*"
+  :type     "M"}
+ {:heats    ""
+  :name     "Disco Singel Brons J1"
+  :number   "36A"
+  :panel    "Panel 1"
+  :recall   ""
+  :round    "Final"
+  :starting ""
+  :time     "13:34*"
+  :type     "M"}
+ {:heats    ""
+  :name     "Disco Singel Brons J2"
+  :number   "36B"
+  :panel    "Panel 2"
+  :recall   ""
+  :round    "Final"
+  :starting ""
+  :time     "*"
+  :type     "M"}
+ {:heats    ""
+  :name     "Disco Singel Brons U"
+  :number   "37A"
+  :panel    "Panel 1"
+  :recall   ""
+  :round    "Direct Final"
+  :starting "Start 6"
+  :time     "13:38*"
+  :type     "M"}
+ {:heats    ""
+  :name     "Disco Singel Brons V"
+  :number   "37B"
+  :panel    "Panel 2"
+  :recall   ""
+  :round    "Direct Final"
+  :starting "Start 6"
+  :time     "*"
+  :type     "M"}
+ {:heats    "1 heat"
+  :name     "Disco Singel Guld J2"
+  :number   "37C"
+  :panel    "Panel 1"
+  :recall   "Recall 2"
+  :round    "Retry"
+  :starting ""
+  :time     "*"
+  :type     "Q"}
+ {:heats    ""
+  :name     "Disco Singel Brons J2 3-4plac"
+  :number   "38C"
+  :panel    "Panel 2"
+  :recall   ""
+  :round    "Direct Final"
+  :starting "Start 2"
+  :time     "*"
+  :type     "M"}
+ {:heats    ""
+  :name     "Disco Singel Silver B1"
+  :number   "38A"
+  :panel    "Panel 1"
+  :recall   ""
+  :round    "Direct Final"
+  :starting "Start 5"
+  :time     "13:41*"
+  :type     "M"}
+ {:heats    ""
+  :name     "Disco Singel Silver B2"
+  :number   "38B"
+  :panel    "Panel 2"
+  :recall   ""
+  :round    "Final"
+  :starting ""
+  :time     "*"
+  :type     "M"}
+ {:heats    ""
+  :name     "Disco Singel Silver J1"
+  :number   "39A"
+  :panel    "Panel 1"
+  :recall   ""
+  :round    "Final"
+  :starting ""
+  :time     "13:45*"
+  :type     "M"}
+ {:heats    ""
+  :name     "Disco Singel Silver J2"
+  :number   "39B"
+  :panel    "Panel 2"
+  :recall   ""
+  :round    "Final"
+  :starting ""
+  :time     "*"
+  :type     "M"}
+ {:heats    ""
+  :name     "Disco Singel Silver U"
+  :number   "40A"
+  :panel    "Panel 1"
+  :recall   ""
+  :round    "Direct Final"
+  :starting "Start 7"
+  :time     "13:48*"
+  :type     "M"}
+ {:heats    ""
+  :name     "Disco Singel Silver V"
+  :number   "40B"
+  :panel    "Panel 2"
+  :recall   ""
+  :round    "Direct Final"
+  :starting "Start 4"
+  :time     "*"
+  :type     "M"}
+ {:heats    ""
+  :name     "Disco Singel Guld B1"
+  :number   "41A"
+  :panel    "Panel 1"
+  :recall   ""
+  :round    "Direct Final"
+  :starting "Start 6"
+  :time     "13:52*"
+  :type     "Q"}
+ {:heats    ""
+  :name     "Disco Singel Guld B2"
+  :number   "41B"
+  :panel    "Panel 2"
+  :recall   ""
+  :round    "Final"
+  :starting ""
+  :time     "*"
+  :type     "Q"}
+ {:heats    ""
+  :name     "Disco Singel Guld J1"
+  :number   "42A"
+  :panel    "Panel 1"
+  :recall   ""
+  :round    "Final"
+  :starting ""
+  :time     "13:55*"
+  :type     "Q"}
+ {:heats    ""
+  :name     "Disco Singel Guld V"
+  :number   "42B"
+  :panel    "Panel 2"
+  :recall   ""
+  :round    "Direct Final"
+  :starting "Start 4"
+  :time     "*"
+  :type     "Q"}
+ {:heats    ""
+  :name     "Disco Singel Guld J2"
+  :number   "43A"
+  :panel    "Panel 1"
+  :recall   ""
+  :round    "Final"
+  :starting ""
+  :time     "13:59*"
+  :type     "Q"}
+ {:heats    ""
+  :name     "Disco Singel Guld U"
+  :number   "43B"
+  :panel    "Panel 2"
+  :recall   ""
+  :round    "Final"
+  :starting ""
+  :time     "*"
+  :type     "Q"}
+ {:heats    ""
+  :name     "Disco Singel Guld J2 3-4plac"
+  :number   "43C"
+  :panel    "Panel 1"
+  :recall   ""
+  :round    "Direct Final"
+  :starting "Start 2"
+  :time     "*"
+  :type     "Q"}
+ {:heats    ""
+  :name     ""
+  :number   ""
+  :panel    ""
+  :recall   ""
+  :round    ""
+  :starting ""
+  :time     ""
+  :type     ""}
+ {:heats    ""
+  :name     "DISCO SINGEL PRISUTDELNING"
+  :number   ""
+  :panel    ""
+  :recall   ""
+  :round    ""
+  :starting ""
+  :time     "14:02"
+  :type     ""}
+ {:heats    ""
+  :name     ""
+  :number   ""
+  :panel    ""
+  :recall   ""
+  :round    ""
+  :starting ""
+  :time     ""
+  :type     ""}
+ {:heats    ""
+  :name     ""
+  :number   ""
+  :panel    ""
+  :recall   ""
+  :round    ""
+  :starting ""
+  :time     ""
+  :type     ""}
+ {:heats    ""
+  :name     "DISCO PAR"
+  :number   ""
+  :panel    ""
+  :recall   ""
+  :round    ""
+  :starting ""
+  :time     ""
+  :type     ""}
+ {:heats    ""
+  :name     ""
+  :number   ""
+  :panel    ""
+  :recall   ""
+  :round    ""
+  :starting ""
+  :time     ""
+  :type     ""}
+ {:heats    "2 heats"
+  :name     "Disco Par Brons J1"
+  :number   "45A"
+  :panel    "Panel 1"
+  :recall   "Recall 3"
+  :round    "Semifinal"
+  :starting "Start 15"
+  :time     "14:30*"
+  :type     "M"}
+ {:heats    "2 heats"
+  :name     "Disco Par Brons B2"
+  :number   "45B"
+  :panel    "Panel 2"
+  :recall   "Recall 3"
+  :round    "Semifinal"
+  :starting "Start 10"
+  :time     "*"
+  :type     "M"}
+ {:heats    "1 heat"
+  :name     "Disco Par Brons B1"
+  :number   "46A"
+  :panel    ""
+  :recall   ""
+  :round    "Presentation"
+  :starting "Start 6"
+  :time     "14:35*"
+  :type     "M"}
+ {:heats    "2 heats"
+  :name     "Disco Par Brons J2"
+  :number   "46B"
+  :panel    "Panel 2"
+  :recall   "Recall 3"
+  :round    "Semifinal"
+  :starting "Start 10"
+  :time     "*"
+  :type     "M"}
+ {:heats    "2 heats"
+  :name     "Disco Par Brons J1"
+  :number   "47A"
+  :panel    "Panel 1"
+  :recall   "Recall 3"
+  :round    "2nd try"
+  :starting ""
+  :time     "14:41*"
+  :type     "M"}
+ {:heats    "1 heat"
+  :name     "Disco Par Silver B1 / B2"
+  :number   "47B"
+  :panel    "Panel 2"
+  :recall   "Recall 6"
+  :round    "Semifinal"
+  :starting "Start 8"
+  :time     "*"
+  :type     "M"}
+ {:heats    "1 heat"
+  :name     "Disco Par Brons U / V"
+  :number   "48A"
+  :panel    ""
+  :recall   ""
+  :round    "Presentation"
+  :starting "Start 7"
+  :time     "14:47*"
+  :type     "M"}
+ {:heats    "1 heat"
+  :name     "Disco Par Brons B2"
+  :number   "48B"
+  :panel    "Panel 2"
+  :recall   "Recall 3"
+  :round    "2nd try"
+  :starting ""
+  :time     "*"
+  :type     "M"}
+ {:heats    ""
+  :name     "Disco Par Brons B1"
+  :number   "49A"
+  :panel    "Panel 1"
+  :recall   ""
+  :round    "Direct Final"
+  :starting "Start 6"
+  :time     "14:53*"
+  :type     "M"}
+ {:heats    "1 heat"
+  :name     "Disco Par Brons J2"
+  :number   "49B"
+  :panel    "Panel 2"
+  :recall   "Recall 3"
+  :round    "2nd try"
+  :starting ""
+  :time     "*"
+  :type     "M"}
+ {:heats    ""
+  :name     "Disco Par Brons J1"
+  :number   "50A"
+  :panel    "Panel 1"
+  :recall   ""
+  :round    "Final"
+  :starting ""
+  :time     "14:56*"
+  :type     "M"}
+ {:heats    ""
+  :name     "Disco Par Silver B1 / B2"
+  :number   "50B"
+  :panel    "Panel 2"
+  :recall   ""
+  :round    "Final"
+  :starting ""
+  :time     "*"
+  :type     "M"}
+ {:heats    ""
+  :name     "Disco Par Brons U / V"
+  :number   "51A"
+  :panel    "Panel 1"
+  :recall   ""
+  :round    "Direct Final"
+  :starting "Start 7"
+  :time     "15:00*"
+  :type     "M"}
+ {:heats    ""
+  :name     "Disco Par Brons B2"
+  :number   "51B"
+  :panel    "Panel 2"
+  :recall   ""
+  :round    "Final"
+  :starting ""
+  :time     "*"
+  :type     "M"}
+ {:heats    ""
+  :name     "Disco Par Silver J1"
+  :number   "52A"
+  :panel    "Panel 1"
+  :recall   ""
+  :round    "Direct Final"
+  :starting "Start 4"
+  :time     "15:03*"
+  :type     "M"}
+ {:heats    ""
+  :name     "Disco Par Brons J2"
+  :number   "52B"
+  :panel    "Panel 2"
+  :recall   ""
+  :round    "Final"
+  :starting ""
+  :time     "*"
+  :type     "M"}
+ {:heats    ""
+  :name     "Disco Par Silver J2"
+  :number   "53A"
+  :panel    "Panel 1"
+  :recall   ""
+  :round    "Direct Final"
+  :starting "Start 5"
+  :time     "15:07*"
+  :type     "M"}
+ {:heats    ""
+  :name     "Disco Par Silver U / V"
+  :number   "53B"
+  :panel    "Panel 2"
+  :recall   ""
+  :round    "Direct Final"
+  :starting "Start 6"
+  :time     "*"
+  :type     "M"}
+ {:heats    ""
+  :name     "Disco Par Guld B2"
+  :number   "54A"
+  :panel    "Panel 1"
+  :recall   ""
+  :round    "Direct Final"
+  :starting "Start 4"
+  :time     "15:10*"
+  :type     "Q"}
+ {:heats    ""
+  :name     "Disco Par Guld J1"
+  :number   "54B"
+  :panel    "Panel 2"
+  :recall   ""
+  :round    "Direct Final"
+  :starting "Start 5"
+  :time     "*"
+  :type     "Q"}
+ {:heats    ""
+  :name     "Disco Par Guld J2"
+  :number   "55A"
+  :panel    "Panel 1"
+  :recall   ""
+  :round    "Direct Final"
+  :starting "Start 5"
+  :time     "15:14*"
+  :type     "Q"}
+ {:heats    ""
+  :name     "Disco Par Guld U"
+  :number   "55B"
+  :panel    "Panel 2"
+  :recall   ""
+  :round    "Direct Final"
+  :starting "Start 7"
+  :time     "*"
+  :type     "Q"}
+ {:heats    ""
+  :name     "Disco Par Guld V"
+  :number   "56A"
+  :panel    "Panel 1"
+  :recall   ""
+  :round    "Direct Final"
+  :starting "Start 4"
+  :time     "15:17*"
+  :type     "Q"}
+ {:heats    ""
+  :name     "TOMT GOLV"
+  :number   "56B"
+  :panel    ""
+  :recall   ""
+  :round    ""
+  :starting ""
+  :time     ""
+  :type     ""}
+ {:heats    ""
+  :name     "DISCO PAR  PRISUTDELNING"
+  :number   ""
+  :panel    ""
+  :recall   ""
+  :round    ""
+  :starting ""
+  :time     "15:21"
+  :type     ""}
+ {:heats    ""
+  :name     ""
+  :number   ""
+  :panel    ""
+  :recall   ""
+  :round    ""
+  :starting ""
+  :time     ""
+  :type     ""}
+ {:heats    ""
+  :name     ""
+  :number   ""
+  :panel    ""
+  :recall   ""
+  :round    ""
+  :starting ""
+  :time     ""
+  :type     ""}
+ {:heats    ""
+  :name     "DISCO GRUPP"
+  :number   ""
+  :panel    ""
+  :recall   ""
+  :round    ""
+  :starting ""
+  :time     ""
+  :type     ""}
+ {:heats    ""
+  :name     ""
+  :number   ""
+  :panel    ""
+  :recall   ""
+  :round    ""
+  :starting ""
+  :time     ""
+  :type     ""}
+ {:heats    "4 heats"
+  :name     "Disco Grupp B-klass J"
+  :number   "57"
+  :panel    "Panel 4"
+  :recall   "Recall 6"
+  :round    "Semifinal"
+  :starting "Start 8"
+  :time     "15:45*"
+  :type     "M"}
+ {:heats    ""
+  :name     "Disco Grupp B-klass B"
+  :number   "58"
+  :panel    "Panel 4"
+  :recall   ""
+  :round    "Direct Final"
+  :starting "Start 6"
+  :time     "15:54*"
+  :type     "M"}
+ {:heats    ""
+  :name     "Disco Grupp B-klass J"
+  :number   "59"
+  :panel    "Panel 4"
+  :recall   ""
+  :round    "Final"
+  :starting ""
+  :time     "16:03*"
+  :type     "M"}
+ {:heats    ""
+  :name     "Disco Grupp B-klass V"
+  :number   "60"
+  :panel    "Panel 4"
+  :recall   ""
+  :round    "Direct Final"
+  :starting "Start 4"
+  :time     "16:12*"
+  :type     "M"}
+ {:heats    ""
+  :name     ""
+  :number   ""
+  :panel    ""
+  :recall   ""
+  :round    ""
+  :starting ""
+  :time     ""
+  :type     ""}
+ {:heats    ""
+  :name     "DISCO GRUPP PRISUTDELNING"
+  :number   ""
+  :panel    ""
+  :recall   ""
+  :round    ""
+  :starting ""
+  :time     "16:18"
+  :type     ""}
+ {:heats    ""
+  :name     ""
+  :number   ""
+  :panel    ""
+  :recall   ""
+  :round    ""
+  :starting ""
+  :time     ""
+  :type     ""}]

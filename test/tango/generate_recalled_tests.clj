@@ -7,7 +7,8 @@
 (def test-data (import/competition-xml->map u/generate-example #(java.util.UUID/randomUUID)))
 
 (def result-html
-  "<head><title> Last Recalled </title><style type=\"text/css\">#stor { Font-size: 54px; } #liten { Font-size: 36px; }</style></head><body><h1><font id=\"stor\">Event 3A</font></h1><h1><font id=\"stor\">Disco Par Silver B1 / B2</font></h1><h1><font id=\"liten\">Recalled from Round 1</font></h1><h1><font id=\"stor\">1880, 1881, 1882, 1883, 1884, 1885, 1886, 1887, 1888, 1889, 1890, 1891, 1892, 1893, 1894, 1895, 1896, 1897, 1907, 1909</font></h1><br /><br /><br /><br /><br /></body>")
+  "<html>\n<head>\n<title> Last Recalled </title>\n</head>\n<body>\n<h1><font size=7>3A</font></h1>\n<h1><font size=7>Disco Par Silver B1 / B2</font></h1>\n<h1><font size=7>Recalled from Round 1</font></h1><br>\n<table border=0 cellpadding=8 cellspacing=0>\n</table>\n<p><h1><font size=7>20 couples recalled</font></p>\n<br><br><br><br>\n<h1><font size=7>Event 3A</font></h1>\n<h1><font size=7>Disco Par Silver B1 / B2</font></h1>\n<h1><font size=6>Recalled from Round 1</font></h1><br>\n<h1><font size=7>\n1880,  1881,  1882,  1883,  1884,  1885,  1886,  1887,  1888,  1889,  1890,  1891,  1892,  1893,  1894,  1895,  1896,  1897,  1907,  1909</font></h1><br><br><br><br><br><br>\n\n</body>\n</html>
+")
 
 (def text-result
   "<html><head><title> Last Recalled </title><style type=\"text/css\">#stor { Font-size: 54px; } #liten { Font-size: 36px; }</style></head><body><h1><font id=\"stor\">Event 3A</font></h1><h1><font id=\"stor\">Disco Par Silver B1 / B2</font></h1><h1><font id=\"liten\">Recalled from Round 1</font></h1><h1><font id=\"stor\">1880, 1881, 1882, 1883, 1884, 1885, 1886, 1887, 1888, 1889, 1890, 1891, 1892, 1893, 1894, 1895, 1896, 1897, 1907, 1909</font></h1><br /><br /><br /><br /><br /></body></html>")
@@ -16,7 +17,7 @@
   (testing "Genereate recalled html from imported data"
     (let [import-data test-data]
       (is (= [{:activity/number "3A"
-               :html            text-result}]
+               :html            result-html}]
              (gen/generate-recalled-html import-data))))))
 
 ;(deftest generate-re-activity-html
@@ -43,7 +44,7 @@
 
 (defn mock-spit [f content]
   (testing "-> Valid html file name"
-    (is (= "nv_re_3A.htm" f)))
+    (is (= "re_3A.htm" f)))
   (testing "-> Valid html content"
     (is (= result-html content))))
 

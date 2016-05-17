@@ -19,46 +19,53 @@
     :printer/preview true,
     :printer/printer-select-paper true}
    :competition/panels
-   [{:adjudicator-panel/name "All adjudicators",
-     :adjudicator-panel/id 4,
-     :adjudicator-panel/adjudicators
-                             [{:adjudicator/id 1,
-                               :adjudicator/name "Anders",
-                               :adjudicator/country "Sweden"}
-                              {:adjudicator/id 2,
-                               :adjudicator/name "Bertil",
-                               :adjudicator/country ""}
-                              {:adjudicator/id 3,
-                               :adjudicator/name "Cesar",
-                               :adjudicator/country ""}]}
-    {:adjudicator-panel/name "1",
-     :adjudicator-panel/id 5,
-     :adjudicator-panel/adjudicators
-                             [{:adjudicator/id 1,
-                               :adjudicator/name "Anders",
-                               :adjudicator/country "Sweden"}
-                              {:adjudicator/id 2,
-                               :adjudicator/name "Bertil",
-                               :adjudicator/country ""}]}
-    {:adjudicator-panel/name "2",
-     :adjudicator-panel/id 6,
-     :adjudicator-panel/adjudicators
-                             [{:adjudicator/id 2,
-                               :adjudicator/name "Bertil",
-                               :adjudicator/country ""}
-                              {:adjudicator/id 3,
-                               :adjudicator/name "Cesar",
-                               :adjudicator/country ""}]}],
+   [{:adjudicator-panel/adjudicators [{:adjudicator/country "Sweden"
+                                       :adjudicator/id      1
+                                       :adjudicator/name    "Anders"
+                                       :adjudicator/number  0}
+                                      {:adjudicator/country ""
+                                       :adjudicator/id      2
+                                       :adjudicator/name    "Bertil"
+                                       :adjudicator/number  1}
+                                      {:adjudicator/country ""
+                                       :adjudicator/id      3
+                                       :adjudicator/name    "Cesar"
+                                       :adjudicator/number  2}]
+     :adjudicator-panel/id           4
+     :adjudicator-panel/name         "All adjudicators"}
+    {:adjudicator-panel/adjudicators [{:adjudicator/country "Sweden"
+                                       :adjudicator/id      1
+                                       :adjudicator/name    "Anders"
+                                       :adjudicator/number  0}
+                                      {:adjudicator/country ""
+                                       :adjudicator/id      2
+                                       :adjudicator/name    "Bertil"
+                                       :adjudicator/number  1}]
+     :adjudicator-panel/id           5
+     :adjudicator-panel/name         "1"}
+    {:adjudicator-panel/adjudicators [{:adjudicator/country ""
+                                       :adjudicator/id      2
+                                       :adjudicator/name    "Bertil"
+                                       :adjudicator/number  1}
+                                      {:adjudicator/country ""
+                                       :adjudicator/id      3
+                                       :adjudicator/name    "Cesar"
+                                       :adjudicator/number  2}]
+     :adjudicator-panel/id           6
+     :adjudicator-panel/name         "2"}]
    :competition/adjudicators
-   [{:adjudicator/id 1,
-     :adjudicator/name "Anders",
-     :adjudicator/country "Sweden"}
-    {:adjudicator/id 2,
-     :adjudicator/name "Bertil",
-     :adjudicator/country ""}
-    {:adjudicator/id 3,
-     :adjudicator/name "Cesar",
-     :adjudicator/country ""}],
+   [{:adjudicator/country "Sweden"
+     :adjudicator/id      1
+     :adjudicator/name    "Anders"
+     :adjudicator/number  0}
+    {:adjudicator/country ""
+     :adjudicator/id      2
+     :adjudicator/name    "Bertil"
+     :adjudicator/number  1}
+    {:adjudicator/country ""
+     :adjudicator/id      3
+     :adjudicator/name    "Cesar"
+     :adjudicator/number  2}]
    :competition/activities
    [{:activity/name "",
      :activity/number -1,
