@@ -103,11 +103,16 @@
    :dance-competition/adjudicator-order-other s/Bool})
 
 (def competition-data-schema
-  {:competition/id       s/Uuid
-   :competition/name     s/Str
-   :competition/location s/Str
-   :competition/date     s/Inst
-   :competition/options  (merge printer-options presentation-options dance-competition-options)})
+  {:competition/id                            s/Uuid
+   :competition/name                          s/Str
+   :competition/location                      s/Str
+   :competition/date                          s/Inst
+   :competition/options                       (merge printer-options presentation-options dance-competition-options)
+   (s/optional-key :competition/adjudicators) [adjudicator]
+   (s/optional-key :competition/activities)   [activity-schema]
+   (s/optional-key :competition/panels)       [adjudicator-panel]
+   (s/optional-key :competition/classes)      [class-schema]
+   })
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Makers

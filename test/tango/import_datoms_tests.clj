@@ -5,11 +5,14 @@
             [tango.expected.expected-small-result :as esr]
             [tango.datomic-storage :as ds]
             [clojure.edn :as edn]
-    [tango.domain :as dom]
+            [tango.domain :as dom]
+            [schema.core :as s]))
 
-    [schema.core :as s]
-            ))
 
+(def old-data (ds/clean-import-data (imp/competition-xml->map u/real-example #(java.util.UUID/randomUUID))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Setup utils
 
 (def mem-uri "datomic:mem://localhost:4334//competitions")
 
@@ -25,9 +28,14 @@
         ;; Competition should have id
         (:db/id form) (if (:db/ident form)
                         (:db/ident form)
-                        (dissoc form :db/id))
+                        (if (> (count (keys form)) 1)
+                          (dissoc form :db/id)
+                          form))
         :else form))
     test-data))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Setup fixtures
 
 (defn setup-db [test-fn]
   (ds/delete-storage mem-uri)
@@ -41,25 +49,73 @@
 
 (use-fixtures :each setup-db)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Test pull expressions
+
+(def class-query
+  ['* {:class/adjudicator-panel
+       ['* {:adjudicator-panel/adjudicators ['*]}]}
+   {:class/dances ['*]}
+   {:class/starting ['*]}
+   {:class/rounds
+    ['* {:round/status ['*]
+         :round/type ['*]
+         :round/panel ['* {:adjudicator-panel/adjudicators ['*]}]
+         :round/dances ['* ]
+         :round/starting ['*]
+         :round/results ['* {:result/participant ['*]
+                             :result/adjudicator ['*]}]}]}])
+
+(def activities-query
+  ['* {:activity/source
+       ['* {:round/status ['*]
+            :round/type ['*]
+            :round/panel ['* {:adjudicator-panel/adjudicators ['*]}]
+            :round/dances ['* ]
+            :round/starting ['*]
+            :round/results ['* {:result/participant ['*]
+                                :result/adjudicator ['*]}]}]}])
+
+(def panel-query
+  ['* {:adjudicator-panel/adjudicators ['*]}])
+
+(def class-query
+  ['* {:class/adjudicator-panel
+       ['* {:adjudicator-panel/adjudicators ['*]}]}
+   {:class/dances ['*]}
+   {:class/starting ['*]}
+   {:class/rounds
+    ['* {:round/status ['*]
+         :round/type ['*]
+         :round/panel ['* {:adjudicator-panel/adjudicators ['*]}]
+         :round/dances ['* ]
+         :round/starting ['*]
+         :round/results ['* {:result/participant ['*]
+                             :result/adjudicator ['*]}]}]}])
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Tests
+
 (deftest create-connection
   (testing "Create a connection to db"
     (is (not= nil (ds/create-storage mem-uri schema-tx)))
     (is (not= nil (ds/create-connection mem-uri)))))
 
-;; TODO factor out pulls
-;; TODO : schema
 (deftest import-competition
   (testing "Import of complete competition"
-    (let [competition-data (ds/clean-import-data
-                             (imp/competition-xml->map
-                               u/real-example
-                               #(java.util.UUID/randomUUID)))
-          _ (ds/delete-storage mem-uri)
-          _ (ds/create-storage mem-uri schema-tx)
-          conn (ds/create-connection mem-uri)
-          _ (ds/transact-competition conn [competition-data])]
-      (is (= (count (ds/query-adjudicators conn ['*]))
-             6)))))
+    (let [competition-data @test-competition
+          _ (ds/transact-competition @conn [competition-data])]
+      (is (= (count (ds/query-adjudicators @conn ['*]))
+             6))
+
+      (is (seq (s/validate dom/competition-data-schema
+                           (clean-test-data (first (ds/query-competition
+                                                     @conn
+                                                     ['* {:competition/options ['*]
+                                                          :competition/adjudicators ['*]
+                                                          :competition/activities activities-query
+                                                          :competition/classes class-query
+                                                          :competition/panels panel-query}])))))))))
 
 (deftest import-adjudicators
   (testing "Import of adjudicator data"
@@ -74,7 +130,7 @@
           _ (ds/transact-competition @conn competition-data)]
       (is (seq (mapv #(s/validate dom/adjudicator-panel %)
                      (clean-test-data
-                       (ds/query-adjudicator-panels @conn ['* {:adjudicator-panel/adjudicators ['*]}]))))))))
+                       (ds/query-adjudicator-panels @conn panel-query))))))))
 
 (deftest import-classes
   (testing "Import of classes data"
@@ -85,18 +141,7 @@
 
       (is (seq (mapv #(s/validate dom/class-schema %)
                      (clean-test-data
-                       (ds/query-classes @conn ['* {:class/adjudicator-panel
-                                                    ['* {:adjudicator-panel/adjudicators ['*]}]}
-                                                {:class/dances ['*]}
-                                                {:class/starting ['*]}
-                                                {:class/rounds
-                                                 ['* {:round/status ['*]
-                                                      :round/type ['*]
-                                                      :round/panel ['* {:adjudicator-panel/adjudicators ['*]}]
-                                                      :round/dances ['* ]
-                                                      :round/starting ['*]
-                                                      :round/results ['* {:result/participant ['*]
-                                                                          :result/adjudicator ['*]}]}]}]))))))))
+                       (ds/query-classes @conn class-query))))))))
 
 (deftest import-activities
   (testing "Import of activities data"
@@ -107,14 +152,7 @@
 
       (is (seq (mapv #(s/validate dom/activity-schema %)
                      (clean-test-data
-                       (ds/query-activities @conn ['* {:activity/source
-                                                       ['* {:round/status ['*]
-                                                            :round/type ['*]
-                                                            :round/panel ['* {:adjudicator-panel/adjudicators ['*]}]
-                                                            :round/dances ['* ]
-                                                            :round/starting ['*]
-                                                            :round/results ['* {:result/participant ['*]
-                                                                                :result/adjudicator ['*]}]}]}]))))))))
+                       (ds/query-activities @conn activities-query))))))))
 
 (deftest import-competition-data
   (testing "Import of competition data"
@@ -176,8 +214,6 @@
                :result/participant {:participant/id 1337}
                :result/adjudicator {:adjudicator/id #uuid"62490165-ee33-4bc4-a669-4b7dfb42654b"}}])))))
 
-
-(def old-data (ds/clean-import-data (imp/competition-xml->map u/real-example #(java.util.UUID/randomUUID))))
 
 
 
