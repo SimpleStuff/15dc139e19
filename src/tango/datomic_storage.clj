@@ -279,6 +279,19 @@
       (if (map? form) (assoc form :db/id (create-literal)) form))
     round-data))
 
+(defn clean-data [data]
+  (clojure.walk/postwalk
+    (fn [form]
+      (cond
+        ;; Competition should have id
+        (:db/id form) (if (:db/ident form)
+                        (:db/ident form)
+                        (if (> (count (keys form)) 1)
+                          (dissoc form :db/id)
+                          form))
+        :else form))
+    data))
+
 (defn delete-storage [uri]
   (d/delete-database uri))
 
@@ -292,8 +305,6 @@
   (d/connect uri))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defn transact-competition [conn tx]
-  @(d/transact conn (mapv fix-id tx)))
 
 (defn participant-index
   "Return map of index number -> id"
@@ -370,6 +381,10 @@
           :else form
           ))
       import-data)))
+
+(defn transact-competition [conn tx]
+  @(d/transact conn (mapv fix-id (clean-import-data tx))))
+
 
 (defn query-adjudicators [conn query]
   (d/q '[:find [(pull ?e selector) ...]
@@ -481,76 +496,7 @@
          :where
          [?e :result/id]]
        (d/db conn) query))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Examples
 
-;(def uri "datomic:mem://localhost:4334//competitions")
-;
-;(d/delete-database uri)
-;;; create db
-;(d/create-database uri)
-;
-;;; create conn
-;(def conn (d/connect uri))
-;
-;;; add schema
-;@(d/transact conn schema-test)
-;
-;;; simple test data
-;(def test-data [{:competition/name "Rikstävling i disco"
-;                 :db/id #db/id[:db.part/user -100000]}])
-;
-;(def test-no-id [{:competition/name "No ID"}])
-;
-;;; transact data
-;@(d/transact conn test-data)
-;
-;;@(d/transact conn test-no-id)
-;
-;;; query
-;(def result-1
-;  (d/q '[:find ?n :where [?n :competition/name]] (d/db conn)))
-;
-;;; test entity api
-;(:competition/name (d/entity (d/db conn) (ffirst result-1)))
-;
-;;; test of pull
-;(d/q '[:find [(pull ?n [:competition/name])]
-;       :where [?n :competition/name]]
-;     (d/db conn))
-;
-;;; DS test
-;(def ds-conn (ds/create-conn ui/schema))
-;
-;(ds/transact! ds-conn test-no-id)
-;
-;(ds/transact! ds-conn [(ui/sanitize u/expected-small-example)])
-;
-;ds-conn
-;
-;(ds/q '[:find (pull ?e [*])
-;        :where [?e :competition/name]]
-;      (ds/db ds-conn))
-;
-;(defn create-literal
-;  ([]
-;    (d/tempid :db.part/user))
-;  ([id]
-;   (d/tempid :db.part/user (- id 100000))))
-;
-;(create-literal 1)
-;
-;(d/transact conn [{:competition/name "Test"
-;                   :db/id            (create-literal 1)}])
-;
-;(d/transact conn [[:db/add (create-literal 1) :competition/name "Ost"]])
-;
-;(def test-data (keys (ds/transact! ds-conn [(ui/sanitize u/expected-small-example)])))
-;
-;(ds/datoms (ds/db ds-conn) :eavt)
-;
-;(defn stuff [conn]
-;  (let [dvec #(vector (:e %) (:a %) (:v %))]
-;    (map dvec (ds/datoms (ds/db conn) :eavt))))
-;
-;(stuff ds-conn)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Services
+

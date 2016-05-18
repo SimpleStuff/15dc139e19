@@ -3,13 +3,15 @@
             [com.stuartsierra.component :as component]
             [taoensso.timbre :as log]
             [clojure.core.match :refer [match]]
-            [tango.file-storage :as fs]))
+            [tango.file-storage :as fs]
+            [tango.datomic-storage :as d]
+            [tango.datomic-storage :as ds]))
 
 (defn create-message [topic payload]
   {:topic topic
    :payload payload})
 
-(defn- start-message-handler [in-channel out-channel storage-path]
+(defn- start-message-handler [in-channel out-channel storage-path datomic-uri]
   {:pre [(some? in-channel)
          (some? out-channel)
          (some? storage-path)]}
@@ -26,16 +28,23 @@
                    ;; [:event-file-storage/create p]
                    ;; (async/put! out-channel (create-message :event-file-storage/created (fs/save [] p)))
                    [:event-file-storage/transact p]
-                   (let [
-                         ;; TODO - only supporting one entry at this time
-                         ;current (fs/read-file storage-path)
-                         ;new-content (conj curren p)
-                         new-content (conj [] p)
-                         ]
+                   ;(let [
+                   ;      ;; TODO - only supporting one entry at this time
+                   ;      ;current (fs/read-file storage-path)
+                   ;      ;new-content (conj curren p)
+                   ;      new-content (conj [] p)
+                   ;      ]
+                   ;  (async/put! out-channel (merge message
+                   ;                                 {:topic :event-file-storage/added
+                   ;                                  :payload (fs/save new-content
+                   ;                                                    storage-path)})))
+
+                   (let [conn (d/create-connection datomic-uri)
+                         tx (d/transact-competition conn [p])]
+                     ;(log/info tx)
                      (async/put! out-channel (merge message
                                                     {:topic :event-file-storage/added
-                                                     :payload (fs/save new-content
-                                                                       storage-path)})))
+                                                     :payload :ok})))
                    [:event-file-storage/query p]
                    (let [raw-data (fs/read-file storage-path)]
                      (if (= 2 (count p))
@@ -71,7 +80,7 @@
             (async/>! out-channel (str "Exception message: " (.getMessage e)))))
         (recur)))))
 
-(defrecord EventFileStorage [event-file-storage-channels message-handler storage-path]
+(defrecord EventFileStorage [event-file-storage-channels message-handler storage-path datomic-uri]
   component/Lifecycle
   (start [component]
     (log/report "Starting EventFileStorage")
@@ -80,18 +89,19 @@
       (do
         ;; Init storage
         ;; Check if DB file already exists, otherwise create a new
-        (when-not (.exists (clojure.java.io/file storage-path))
-          (fs/save [] storage-path))
+        ;(when-not (.exists (clojure.java.io/file storage-path))
+        ;  (fs/save [] storage-path))
         (assoc component :message-handler (start-message-handler
                                            (:in-channel event-file-storage-channels)
                                            (:out-channel event-file-storage-channels)
-                                           storage-path)))))
+                                           storage-path
+                                           datomic-uri)))))
   (stop [component]
     (log/report "Stopping EventFileStorage")
     (assoc component :message-handler nil :event-file-storage-channels nil)))
 
-(defn create-event-file-storage [storage-path]
-  (map->EventFileStorage {:storage-path storage-path}))
+(defn create-event-file-storage [storage-path db-uri]
+  (map->EventFileStorage {:storage-path storage-path :datomic-uri db-uri}))
 
 (defrecord EventFileStorageChannels [in-channel out-channel]
    component/Lifecycle

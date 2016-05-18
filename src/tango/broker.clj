@@ -231,9 +231,12 @@
     (log/report "Starting MessageBroker")
     (let [rules-in-ch (async/chan)
           rules-out-ch (async/chan)
-          db (d/create-storage datomic-storage-uri (into d/select-activity-schema
-                                                         (into d/application-schema
-                                                               d/result-schema)))
+          schema-tx (read-string (slurp "./src/tango/schema/activity.edn"))
+          _ (d/create-storage datomic-storage-uri schema-tx
+                               ;(into d/select-activity-schema
+                               ;                          (into d/application-schema
+                               ;                                d/result-schema))
+                               )
           rules-engine (start-result-rules-engine
                          rules-in-ch
                          rules-out-ch
@@ -247,6 +250,8 @@
                            :http-server-channels http-server-channels
                            :rules-engine-channels {:in-channel rules-in-ch
                                                    :out-channel rules-out-ch}})]
+      (log/info "Schema-tx")
+      (log/info schema-tx)
       (assoc component :broker-process broker-process
                        :rules-engine rules-engine)))
   (stop [component]
