@@ -11,6 +11,16 @@
   {:topic topic
    :payload payload})
 
+;; TODO - should be done in db serv
+(defn clean-db-from-data [data]
+  (clojure.walk/postwalk
+    (fn [form]
+      (cond
+        ;; Competition should have id
+        (:db/id form) (dissoc form :db/id)
+        :else form))
+    data))
+
 (defn- start-message-handler [in-channel out-channel storage-path datomic-uri]
   {:pre [(some? in-channel)
          (some? out-channel)
@@ -40,31 +50,38 @@
                    ;                                                    storage-path)})))
 
                    (let [conn (d/create-connection datomic-uri)
-                         tx (d/transact-competition conn [p])]
+                         tx (clean-db-from-data (d/transact-competition conn [p]))]
                      ;(log/info tx)
                      (async/put! out-channel (merge message
                                                     {:topic :event-file-storage/added
                                                      :payload :ok})))
                    [:event-file-storage/query p]
-                   (let [raw-data (fs/read-file storage-path)]
-                     (if (= 2 (count p))
-                       ;; pull
-                       (let [[pull-q [entity-k entity-v]] p
-                             entity (first (filterv #(= (get % entity-k) entity-v) raw-data))
-                             result (if (= pull-q '[*])
-                                      ;; full-pull, return the complete entity
-                                      entity
-                                      ;; partial pull
-                                      (select-keys entity pull-q))]
-                         (async/put! out-channel (merge message {:topic :event-file-storage/result
-                                                                 :payload result})))
-                       ;; query
-                       (let [[q-keys] p 
-                             q-result (mapv #(select-keys % q-keys) raw-data)]
-                         (async/put! out-channel (merge message {:topic :event-file-storage/result
-                                                                 :payload q-result})))
-                       )
-                     )
+                   (let [query-result (d/query-competition (d/create-connection datomic-uri) (first p))]
+                     (log/info "Payload")
+                     (log/info p)
+                     (log/info "Result")
+                     (log/info query-result)
+                     (async/put! out-channel (merge message {:topic   :event-file-storage/result
+                                                             :payload query-result})))
+                   ;(let [raw-data (fs/read-file storage-path)]
+                   ;  (if (= 2 (count p))
+                   ;    ;; pull
+                   ;    (let [[pull-q [entity-k entity-v]] p
+                   ;          entity (first (filterv #(= (get % entity-k) entity-v) raw-data))
+                   ;          result (if (= pull-q '[*])
+                   ;                   ;; full-pull, return the complete entity
+                   ;                   entity
+                   ;                   ;; partial pull
+                   ;                   (select-keys entity pull-q))]
+                   ;      (async/put! out-channel (merge message {:topic :event-file-storage/result
+                   ;                                              :payload result})))
+                   ;    ;; query
+                   ;    (let [[q-keys] p
+                   ;          q-result (mapv #(select-keys % q-keys) raw-data)]
+                   ;      (async/put! out-channel (merge message {:topic :event-file-storage/result
+                   ;                                              :payload q-result})))
+                   ;    )
+                   ;  )
                    ;; (let [raw-data (fs/read-file storage-path)
                    ;;       q-result (mapv #(select-keys % p) raw-data)]
                    ;;   (async/put! out-channel (merge message {:topic :event-file-storage/result
