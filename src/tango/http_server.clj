@@ -147,7 +147,7 @@
   [{:keys [state query]} key params]
   {:value (do
             (log/info (str "app/selected-competition read"))
-            "Selected comp")})
+            (d/query-competition state query))})
 
 (defmethod reader :app/confirmed
   [{:keys [state query]} key params]
@@ -234,6 +234,9 @@
    (GET "/speaker" req {:body (slurp (clojure.java.io/resource "public/speaker.html"))
                             :session {:uid (rand-int 10000)}
                             :headers {"Content-Type" "text/html"}})
+   (GET "/runtime" req {:body (slurp (clojure.java.io/resource "public/runtime.html"))
+                        :session {:uid (rand-int 10000)}
+                        :headers {"Content-Type" "text/html"}})
    (GET "/query" req (partial handle-query (:out-channel http-server-channels) datomic-storage-uri))
    ;; Sente channel routes
    (GET  "/chsk" req (ajax-get-or-ws-handshake-fn req))
