@@ -258,6 +258,48 @@
 ;;;;;;;;;;;;;;;;;;;;
 ;; Competition
 
+;; TODO temp test
+(def class-query
+  ['* {:class/adjudicator-panel
+       ['* {:adjudicator-panel/adjudicators ['*]}]}
+   {:class/dances ['*]}
+   {:class/starting ['*]}
+   {:class/rounds
+    ['* {:round/status ['*]
+         :round/type ['*]
+         :round/panel ['* {:adjudicator-panel/adjudicators ['*]}]
+         :round/dances ['* ]
+         :round/starting ['*]
+         :round/results ['* {:result/participant ['*]
+                             :result/adjudicator ['*]}]}]}])
+
+(def activities-query
+  ['* {:activity/source
+       ['* {:round/status ['*]
+            :round/type ['*]
+            :round/panel ['* {:adjudicator-panel/adjudicators ['*]}]
+            :round/dances ['* ]
+            :round/starting ['*]
+            :round/results ['* {:result/participant ['*]
+                                :result/adjudicator ['*]}]}]}])
+
+(def panel-query
+  ['* {:adjudicator-panel/adjudicators ['*]}])
+
+;(def class-query
+;  ['* {:class/adjudicator-panel
+;       ['* {:adjudicator-panel/adjudicators ['*]}]}
+;   {:class/dances ['*]}
+;   {:class/starting ['*]}
+;   {:class/rounds
+;    ['* {:round/status ['*]
+;         :round/type ['*]
+;         :round/panel ['* {:adjudicator-panel/adjudicators ['*]}]
+;         :round/dances ['* ]
+;         :round/starting ['*]
+;         :round/results ['* {:result/participant ['*]
+;                             :result/adjudicator ['*]}]}]}])
+
 (defui Competition
   static om/IQuery
   (query [_]
@@ -272,7 +314,12 @@
         ;; TODO - this should be handle by some remote mechanism
         #js {:onClick #(if (app-online? conn)
                         (do
-                          (chsk-send! [:event-manager/query ['[*] [:competition/name name]]])
+                          (chsk-send! [:event-manager/query [['* {:competition/options ['*]
+                                                                  :competition/adjudicators ['*]
+                                                                  :competition/activities activities-query
+                                                                  :competition/classes class-query
+                                                                  :competition/panels panel-query}]
+                                                             [:competition/name name]]])
                           (om/transact! this `[(app/select-competition {:name ~name})])
                           (om/transact! this `[(app/status {:status :querying})]))
                         (om/transact! this `[(app/select-competition {:name ~name})]))}

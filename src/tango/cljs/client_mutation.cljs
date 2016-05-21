@@ -4,6 +4,10 @@
     [datascript.core :as d]))
 
 
+
+(defn log [m]
+  (.log js/console m))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Mutate
 
@@ -13,10 +17,21 @@
   [{:keys [state]} _ params]
   {:value  {:keys [:app/competitions]}
    :action (fn []
+             (log "Addddding competttttion")
              (when params
                (if (:competitions params)
-                 (d/transact! state (:competitions params))
-                 (d/transact! state [params]))))})
+                 (do
+                   (log "Pre tx")
+                   (let [tx
+                         (d/transact! state (:competitions params))]
+                     (log "Post tx")
+                     (log tx)))
+                 (do
+                   (log "Pre tx")
+                   (let [tx
+                         (d/transact! state [params])]
+                     (log "Post tx")
+                     (log tx))))))})
 
 (defmethod mutate 'app/select-page
   [{:keys [state]} _ {:keys [page]}]
@@ -45,8 +60,6 @@
    :action (fn []
              (d/transact! state [{:app/id 1 :app/status status}]))})
 
-(defn log [m]
-  (.log js/console m))
 
 (defmethod mutate 'app/online?
   [{:keys [state]} _ {:keys [online?]}]
