@@ -383,7 +383,7 @@
       import-data)))
 
 (defn transact-competition [conn tx]
-  @(d/transact conn (mapv fix-id (clean-import-data tx))))
+  @(d/transact conn [(fix-id (clean-import-data tx))]))
 
 
 (defn query-adjudicators [conn query]
