@@ -7,8 +7,8 @@
 
 (defmulti mutate om/dispatch)
 
-;(defmethod mutate 'app/set-filter
-;  [{:keys [state]} _ {:keys [filter]}]
-;  {:value  {:keys [:app/filter]}
-;   :action (fn []
-;             (swap! state assoc :app/filter filter))})
+(defmethod mutate 'app/set-status
+  [{:keys [state]} _ {:keys [status]}]
+  {:value  {:keys [:app/status]}
+   :action (fn []
+             (swap! state assoc :app/status status))})

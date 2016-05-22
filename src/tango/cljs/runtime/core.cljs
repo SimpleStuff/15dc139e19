@@ -82,16 +82,80 @@
          (sente/start-chsk-router-loop! event-msg-handler* ch-chsk))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Import
+
+(defn on-file-read [e file-reader]
+  (let [result (.-result file-reader)]
+    (log "On file read : send :file/import")
+    (chsk-send! [:file/import {:content result}])))
+
+(defn on-click-import-file [e read-cb]
+  (log "Import clicked")
+  (let [file (.item (.. e -target -files) 0)
+        r (js/FileReader.)]
+    (set! (.-onload r) #(read-cb % r))
+    (.readAsText r file)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Import/Export Component
+(defui ImportExportComponent
+  static om/IQuery
+  (query [_]
+    [])
+  Object
+  (render
+    [this]
+    (let [import-status (:import-status (om/props this))
+          read-cb on-file-read]
+      (dom/div nil
+        (dom/span #js {:className (str "btn btn-default btn-file"
+                                       (when (= import-status :importing) " disabled"))}
+          "Importera.."
+          (dom/input #js {:type     "file"
+                          :onChange #(do
+                                      (om/transact! this `[(app/set-status {:status :importing})])
+                                      (on-click-import-file % read-cb))}))
+
+        (dom/button #js {:className "btn btn-default"
+                         :onClick   #(om/transact!
+                                      this
+                                      `[(app/set-status {:status :requested})
+                                        :app/selected-competition])}
+                    "Exportera")))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Admin view
+(defui AdminViewComponent
+  static om/IQuery
+  (query [_]
+    [])
+  Object
+  (render
+    [this]
+    (let [p (om/props this)
+          status (:status p)]
+      (dom/div nil
+        (dom/h1 nil "Admin")
+        ((om/factory ImportExportComponent) {:import-status status})))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; MainComponent
 
 (defui MainComponent
   static om/IQuery
   (query [_]
-    [{:app/selected-competition [:competition/name]}])
+    [{:app/selected-competition [:competition/name :competition/location]}
+     :app/status])
   Object
   (render
     [this]
-    (dom/h1 nil "Runtime")))
+    (let [p (om/props this)
+          selected-competition (:app/selected-competition p)
+          status (:app/status p)]
+      (log (str selected-competition))
+      (dom/div nil
+        (dom/h1 nil (str "Runtime of " (:competition/name selected-competition)))
+        ((om/factory AdminViewComponent) {:status status})))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Remote com
@@ -104,20 +168,15 @@
                                                      {:query (pr-str (if (map? (first (:query edn)))
                                                                        (:query edn)
                                                                        (om/get-query MainComponent)))}}))
-              edn-response (second (cljs.reader/read-string (:body response)))
-              known-numbers (set (map :activity/number (:app/speaker-activites @app-state)))
-              new-acts (filterv #(not (contains? known-numbers (:activity/number %)))
-                                (:app/speaker-activites edn-response))]
-          ;(log known-numbers)
-          ;(log new-acts)
-          ;(log edn-response)
+              edn-response (second (cljs.reader/read-string (:body response)))]
+
           ;; TODO - why is the response a vec?
-          (cb {:app/speaker-activites (into (:app/speaker-activites @app-state)
-                                            new-acts)}))))))
+          (cb {:app/selected-competition (first (:app/selected-competition edn-response))}))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Application
-(defonce app-state (atom {:app/selected-competition nil}))
+(defonce app-state (atom {:app/selected-competition nil
+                          :app/status :loaded}))
 
 (def reconciler
   (om/reconciler

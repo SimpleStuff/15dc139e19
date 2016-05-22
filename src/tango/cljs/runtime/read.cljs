@@ -16,3 +16,7 @@
   [{:keys [state]} _ _]
   {:value (:competition/name (get @state :app/selected-competition []))})
 
+(defmethod read :app/status
+  [{:keys [state]} _ _]
+  {:value (get @state :app/status :undefined)})
+
