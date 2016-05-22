@@ -221,6 +221,7 @@
 
  {:db/id                 #db/id[:db.part/db]
   :db/ident              :activity/number
+  ; :db/unique             :db.unique/identity
   :db/valueType          :db.type/string
   :db/cardinality        :db.cardinality/one
   :db/doc                "An activitys number"
