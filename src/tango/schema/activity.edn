@@ -1,4 +1,16 @@
 [;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ ;; Application
+
+ ;; TODO - Is this the correct approach or should this be an attribute of the competition?
+ ;; selected-competition
+ {:db/id                 #db/id[:db.part/db]
+  :db/ident              :app/selected-competition
+  :db/valueType          :db.type/ref
+  :db/cardinality        :db.cardinality/one
+  :db/doc                "The applications selected competition"
+  :db.install/_attribute :db.part/db}
+
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  ;; Competition
 
  ;; id
