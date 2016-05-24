@@ -130,7 +130,7 @@
     (when (= topic :event-manager/transaction-result)
       (chsk-send! [:event-manager/query [[:competition/name :competition/location]]]))
     (when (= topic :tx/accepted)
-      ;(log payload)
+      (log payload)
       (cond
         (= payload 'participant/set-result)
         (om/transact! reconciler `[:app/results])

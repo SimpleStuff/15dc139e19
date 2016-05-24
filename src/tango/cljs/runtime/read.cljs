@@ -20,3 +20,7 @@
   [{:keys [state]} _ _]
   {:value (get @state :app/status :undefined)})
 
+(defmethod read :app/selected-page
+  [{:keys [state]} _ _]
+  {:value (get @state :app/selected-page :home)})
+

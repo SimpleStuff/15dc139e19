@@ -12,3 +12,9 @@
   {:value  {:keys [:app/status]}
    :action (fn []
              (swap! state assoc :app/status status))})
+
+(defmethod mutate 'app/select-page
+  [{:keys [state]} _ {:keys [selected-page]}]
+  {:value  {:keys [:app/selected-page]}
+   :action (fn []
+             (swap! state assoc :app/selected-page selected-page))})

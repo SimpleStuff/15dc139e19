@@ -27,6 +27,7 @@
 
 (declare reconciler)
 (declare app-state)
+(declare update-ch)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Sente Socket setup
 (let [{:keys [chsk ch-recv send-fn state]}
@@ -64,8 +65,12 @@
 (defmethod event-msg-handler :chsk/recv
   [{:as ev-msg :keys [?data]}]
   (let [[topic payload] ?data]
+    (log (str "Socket Event from server: " topic))
+    (when (= topic :event-manager/transaction-result)
+      (do (log "Time to re-query")
+          (om/transact! reconciler `[(app/set-status {:status :requested}) :app/selected-competition])))
     (when (= topic :tx/accepted)
-      ;(log (str "Socket Event from server: " topic))
+      (log (str "Socket Event from server: " topic))
       ;(log (str "Socket Payload: " payload))
       (cond
         (= payload 'app/set-speaker-activity)
@@ -95,6 +100,18 @@
         r (js/FileReader.)]
     (set! (.-onload r) #(read-cb % r))
     (.readAsText r file)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; TimeScheduleComponent
+(defui TimeScheduleComponent
+  static om/IQuery
+  (query [_]
+    [])
+  Object
+  (render
+    [this]
+    (let [p (om/props this)]
+      (dom/div nil "Time Schedule"))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Import/Export Component
@@ -139,23 +156,47 @@
         ((om/factory ImportExportComponent) {:import-status status})))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; MenuComponent
+(defui MenuComponent
+  static om/IQuery
+  (query [_]
+    [])
+  Object
+  (render
+    [this]
+    (let [p (om/props this)]
+      (dom/div nil
+        (dom/button #js {:onClick #(om/transact! this `[(app/select-page {:selected-page :home})
+                                                        :app/selected-page])} "Home")
+        (dom/button #js {:onClick #(om/transact! this `[(app/select-page {:selected-page :time-schedule})
+                                                        :app/selected-page])} "Time Schedule")))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; MainComponent
 
 (defui MainComponent
   static om/IQuery
   (query [_]
     [{:app/selected-competition [:competition/name :competition/location]}
-     :app/status])
+     :app/status
+     :app/selected-page])
   Object
   (render
     [this]
     (let [p (om/props this)
           selected-competition (:app/selected-competition p)
-          status (:app/status p)]
+          status (:app/status p)
+          selected-page (:app/selected-page p)]
       (log (str selected-competition))
       (dom/div nil
-        (dom/h1 nil (str "Runtime of " (:competition/name selected-competition)))
-        ((om/factory AdminViewComponent) {:status status})))))
+        ((om/factory MenuComponent))
+        (condp = selected-page
+          :home (dom/div nil
+                  (dom/h1 nil (str "Runtime of " (:competition/name selected-competition)))
+                  ((om/factory AdminViewComponent) {:status status}))
+
+          :time-schedule ((om/factory TimeScheduleComponent)))
+        ))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Remote com
@@ -171,12 +212,17 @@
               edn-response (second (cljs.reader/read-string (:body response)))]
 
           ;; TODO - why is the response a vec?
-          (cb {:app/selected-competition (first (:app/selected-competition edn-response))}))))))
+          ;(cb {:app/selected-competition (first (:app/selected-competition edn-response))})
+          (cb edn-response)
+          )))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Application
+(def update-ch (chan))
+
 (defonce app-state (atom {:app/selected-competition nil
-                          :app/status :loaded}))
+                          :app/status :loaded
+                          :app/selected-page :home}))
 
 (def reconciler
   (om/reconciler

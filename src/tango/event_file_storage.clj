@@ -49,8 +49,12 @@
                    ;                                  :payload (fs/save new-content
                    ;                                                    storage-path)})))
 
-                   (let [conn (d/create-connection datomic-uri)
-                         tx (clean-db-from-data (d/transact-competition conn [p]))]
+                   ;; TODO - Currently we do only support one competition imported at the time
+                   (let [_ (d/delete-storage datomic-uri)
+                         schema-tx (read-string (slurp "./src/tango/schema/activity.edn"))
+                         _ (d/create-storage datomic-uri schema-tx)
+                         conn (d/create-connection datomic-uri)
+                         tx (d/transact-competition conn p)]
                      ;(log/info tx)
                      (async/put! out-channel (merge message
                                                     {:topic :event-file-storage/added
