@@ -84,7 +84,7 @@
   (let [round (:activity/source activity)
         
         ;; Comments have no activity number or if they do the round will not belong to any class
-        comment? (or (not= (:activity/comment activity) "") (= (:activity/number activity) -1))
+        comment? (or (not= (:activity/comment activity) "") (= (:activity/number activity) "-1"))
             
         ;; When a class have only one round that round is a direct final.
         ;; Note that a presentation round should not be considered and a
@@ -101,7 +101,7 @@
                         ))
                     (if (= (:round/status round) :completed) "*" ""))
 
-     :number   (str (if (= (:activity/number activity) -1) "" (:activity/number activity)))
+     :number   (str (if (= (:activity/number activity) "-1") "" (:activity/number activity)))
 
      :name     (if comment? (:activity/comment activity) (:activity/name activity))
 
@@ -136,7 +136,7 @@
 
      :heats    (if (or comment? direct-final? (= (:round/type round) :final-x))
                  ""
-                 (let [heats (:round/heats round)
+                 (let [heats (:round/number-of-heats round)
                        suffix (if (= 1 heats) "" "s")]
                    (str heats " heat" suffix)))
 

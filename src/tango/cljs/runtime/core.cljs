@@ -102,16 +102,144 @@
     (.readAsText r file)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; TimeScheduleComponent
-(defui TimeScheduleComponent
+;; ScheduleRow
+
+(defui ScheduleRow
   static om/IQuery
   (query [_]
-    [])
+    [:activity/comment :activity/number :activity/time :activity/name :activity/id :activity/position
+     {:activity/source
+      [:round/class-id :round/type :round/index :round/status
+       {:round/starting [:participant/number :participant/id]}
+       :round/number-of-heats :round/number-to-recall
+       {:round/dances [:dance/name]}
+       {:round/panel [:adjudicator-panel/name
+                      :adjudicator-panel/id
+                      {:adjudicator-panel/adjudicators
+                       [:adjudicator/name
+                        :adjudicator/id
+                        :adjudicator/number]}]}
+       {:class/_rounds
+        [{:class/rounds
+          [:round/type :round/index :round/status]}]}]}])
   Object
   (render
     [this]
-    (let [p (om/props this)]
-      (dom/div nil "Time Schedule"))))
+    (let [p (om/props this)
+          {:keys [time number name starting round heats recall panel type]}
+          (presentation/make-time-schedule-activity-presenter
+            p
+            (first (:class/_rounds (:activity/source (om/props this)))))
+          selected? false
+          ;(seq (filter #(= (:activity/id (om/props this)) (:activity/id %))
+          ;                       (:selected-activity (om/props this))))
+          completed? (= (:round/status (:activity/source (om/props this))) :completed)
+          speaker-activies #{}                                 ;(:speaker-activites (om/props this))
+          speaker? (seq (filter #(= (:activity/id (om/props this)) (:activity/id %))
+                                speaker-activies))
+          ]
+      (dom/tr #js {:className (if selected? "success" (if completed? "info" ""))}
+        (dom/td nil time)
+        (dom/td nil number)
+        (dom/td nil name)
+        (dom/td nil starting)
+        (dom/td nil round)
+        (dom/td nil heats)
+        (dom/td nil recall)
+        (dom/td nil panel)
+        (dom/td nil type)
+        (when-not (= name "")
+          (dom/td nil
+                  (dom/div #js {:className "control-group"}
+                    ;(dom/button #js {:className (str "btn" (if selected? " btn-success" " btn-default"))
+                    ;                 :onClick   #(when-not completed?
+                    ;                              (when-not selected?
+                    ;                                (om/transact!
+                    ;                                  this
+                    ;                                  `[(app/select-activity
+                    ;                                      {:activity/id    ~(:activity/id (om/props this))
+                    ;                                       :activity/name  ~name
+                    ;                                       :activity/number ~number
+                    ;
+                    ;                                       :round/recall   ~(:round/recall (:activity/source
+                    ;                                                                         (om/props this)))
+                    ;                                       :round/name     ~round
+                    ;                                       :round/heats    ~(:round/heats (:activity/source
+                    ;                                                                        (om/props this)))
+                    ;                                       :round/starting ~(:round/starting (:activity/source
+                    ;                                                                           (om/props this)))
+                    ;                                       :round/panel    ~(:round/panel (:activity/source
+                    ;                                                                        (om/props this)))
+                    ;                                       :round/dances   ~(:round/dances (:activity/source
+                    ;                                                                         (om/props this)))})
+                    ;                                    :app/selected-activity])))}
+                    ;            (dom/span #js {:className "glyphicon glyphicon-play"}))
+                    ;(dom/button #js {:className "btn btn-default"}
+                    ;            (dom/span #js {:className "glyphicon glyphicon-stop"}))
+                    (dom/button #js {:className (str "btn" (if speaker? " btn-success" " btn-default"))
+                                     :onClick   #(when-not completed?
+                                                  (when-not speaker?
+                                                    (om/transact!
+                                                      this
+                                                      `[(app/set-speaker-activity
+                                                          {:activity/id          ~(:activity/id (om/props this))
+                                                           :activity/name        ~name
+                                                           :activity/number      ~number
+                                                           :activity/position    ~(:activity/position
+                                                                                    (om/props this))
+                                                           :round/index          ~(:round/index (:activity/source
+                                                                                                  (om/props this)))
+                                                           :round/recall         ~(:round/recall (:activity/source
+                                                                                                   (om/props this)))
+                                                           :round/heats          ~(:round/heats (:activity/source
+                                                                                                  (om/props this)))
+                                                           :round/starting       ~(:round/starting (:activity/source
+                                                                                                     (om/props this)))
+                                                           :round/panel          ~(:round/panel (:activity/source
+                                                                                                  (om/props this)))
+
+                                                           :round/speaker-dances ~(:round/dances (:activity/source
+                                                                                                   (om/props this)))
+                                                           })
+                                                        :app/speaker-activites])))}
+                                (dom/span #js {:className "glyphicon glyphicon-volume-up"})))))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; ScheduleView
+
+(defui ScheduleView
+  static om/IQuery
+  (query [_]
+    [{:competition/activities (om/get-query ScheduleRow)}])
+  Object
+  (render
+    [this]
+    (let [p (om/props this)
+          activites (sort-by :activity/position (:competition/activities p))]
+      (log "Schedule")
+      (log (first activites))
+      (dom/div nil
+        (dom/h2 nil "Time Schedule")
+        (dom/table
+          #js {:className "table table-hover table-condensed"}
+          (dom/thead nil
+            (dom/tr nil
+              (dom/th #js {:width "20"} "Time")
+              (dom/th #js {:width "20"} "#")
+              (dom/th #js {:width "200"} "Dansdisciplin")
+              (dom/th #js {:width "20"} "Startande")
+              (dom/th #js {:width "20"} "Rond")
+              (dom/th #js {:width "20"} "Heats")
+              (dom/th #js {:width "20"} "Recall")
+              (dom/th #js {:width "20"} "Panel")
+              (dom/th #js {:width "20"} "Type")
+              (dom/th #js {:width "400"} "")))
+          (apply dom/tbody nil (map #((om/factory ScheduleRow) %) activites))
+          ;(apply dom/tbody nil (map #((om/factory ScheduleRow)
+          ;                            (merge % {:selected-activity (:selected-activity (om/props this))
+          ;                                      :speaker-activites (:speaker-activites (om/props this))}))
+          ;                          activites))
+          )))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Import/Export Component
@@ -177,7 +305,8 @@
 (defui MainComponent
   static om/IQuery
   (query [_]
-    [{:app/selected-competition [:competition/name :competition/location]}
+    [{:app/selected-competition (into [:competition/name :competition/location]
+                                      (concat (om/get-query ScheduleView)))}
      :app/status
      :app/selected-page])
   Object
@@ -187,7 +316,7 @@
           selected-competition (:app/selected-competition p)
           status (:app/status p)
           selected-page (:app/selected-page p)]
-      (log (str selected-competition))
+      ;(log (str selected-competition))
       (dom/div nil
         ((om/factory MenuComponent))
         (condp = selected-page
@@ -195,7 +324,7 @@
                   (dom/h1 nil (str "Runtime of " (:competition/name selected-competition)))
                   ((om/factory AdminViewComponent) {:status status}))
 
-          :time-schedule ((om/factory TimeScheduleComponent)))
+          :time-schedule ((om/factory ScheduleView) selected-competition))
         ))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -205,10 +334,13 @@
     (cond
       (:query edn)
       (go
+        (log "Query")
+        (log edn)
         (let [response (async/<! (http/get "/query" {:query-params
                                                      {:query (pr-str (if (map? (first (:query edn)))
                                                                        (:query edn)
-                                                                       (om/get-query MainComponent)))}}))
+                                                                       ;; TODO - why do we not get a good query
+                                                                       (conj [] (first (om/get-query MainComponent)))))}}))
               edn-response (second (cljs.reader/read-string (:body response)))]
 
           ;; TODO - why is the response a vec?
