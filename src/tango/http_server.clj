@@ -148,7 +148,15 @@
   {:value (do
             (log/info (str "app/selected-competition read"))
             ;; TODO - only support on competition
-            (first (d/query-competition state query)))})
+            (let [r (first (d/query-competition state query))
+                  c (d/clean-data r)]
+              (log/info "QR")
+              (log/info r)
+              (log/info "CLEAN")
+              (log/info c)
+              c)
+            ;(d/clean-data (first (d/query-competition state query)))
+            )})
 
 (defmethod reader :app/confirmed
   [{:keys [state query]} key params]

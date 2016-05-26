@@ -109,7 +109,7 @@
   (query [_]
     [:activity/comment :activity/number :activity/time :activity/name :activity/id :activity/position
      {:activity/source
-      [:round/class-id :round/type :round/index :round/status
+      [:round/class-id {:round/type ['*]} :round/index {:round/status ['*]}
        {:round/starting [:participant/number :participant/id]}
        :round/number-of-heats :round/number-to-recall
        {:round/dances [:dance/name]}
@@ -121,7 +121,7 @@
                         :adjudicator/number]}]}
        {:class/_rounds
         [{:class/rounds
-          [:round/type :round/index :round/status]}]}]}])
+          [{:round/type ['*]} :round/index {:round/status ['*]}]}]}]}])
   Object
   (render
     [this]
@@ -138,6 +138,7 @@
           speaker? (seq (filter #(= (:activity/id (om/props this)) (:activity/id %))
                                 speaker-activies))
           ]
+      (log (:round/type (:activity/source (om/props this))))
       (dom/tr #js {:className (if selected? "success" (if completed? "info" ""))}
         (dom/td nil time)
         (dom/td nil number)

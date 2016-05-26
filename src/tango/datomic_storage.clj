@@ -279,6 +279,7 @@
       (if (map? form) (assoc form :db/id (create-literal)) form))
     round-data))
 
+;; TODO - do not leak db/id?
 (defn clean-data [data]
   (clojure.walk/postwalk
     (fn [form]
