@@ -15,3 +15,7 @@
 (defmethod read :app/filter
   [{:keys [state]} _ _]
   {:value (get @state :app/filter [])})
+
+(defmethod read :app/marked-activites
+  [{:keys [state]} _ _]
+  {:value (get @state :app/marked-activites [])})
