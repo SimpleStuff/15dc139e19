@@ -23,6 +23,7 @@
 (def test-competition (atom nil))
 (def conn (atom nil))
 
+;; TODO - cleaning should be part of DB code
 (defn clean-test-data [test-data]
   (clojure.walk/postwalk
     (fn [form]

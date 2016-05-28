@@ -137,7 +137,7 @@
                    "Direct Final"
                    (make-event-round-presentation (:round/type round))))
 
-     :heats    (if (or comment? direct-final? (= (:round/type round) :final-x))
+     :heats    (if (or comment? direct-final? (= (:round/type round) :round-type/final-x))
                  ""
                  (let [heats (:round/number-of-heats round)
                        suffix (if (= 1 heats) "" "s")]

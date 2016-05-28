@@ -1,36 +1,43 @@
 (ns tango.presentation-tests
   (:require [clojure.test :refer :all]
             [tango.presentation :as p]
-            [tango.test-utils :as u]))
+            [tango.test-utils :as u]
+            [tango.datomic-storage :as ds]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Utils
+(defn- round-class-index [competition]
+  (apply merge
+         (map (fn [c]
+                (let [round-ids (map (fn [r] (hash-map (:round/id r) c)) (:class/rounds c))]
+                  (apply merge round-ids)))
+              (:competition/classes competition))))
+
 
 (defn- make-time-schedule-presentations [competition]
-  (mapv (fn [act] (p/make-time-schedule-activity-presenter
-                    act
-                    (first
-                      (filter
-                        (fn [c]
-                          (= (:class/id c) (:round/class-id (:activity/source act))))
-                        (:competition/classes competition)))))
-        (:competition/activities competition)))
+  (let [class-index (round-class-index competition)]
+    (mapv (fn [act] (p/make-time-schedule-activity-presenter
+                      act
+                      (get class-index (:round/id (:activity/source act)))))
+          (:competition/activities competition))))
 
 (defn- make-class-presentations [example]
   (mapv p/make-class-presenter (:competition/classes example)))
+
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Time schedule presentation
 
 (deftest make-time-schedule-presentation
   (testing "Presentation of time schedule activites"
-    (is (= (make-time-schedule-presentations u/expected-real-example)
+    (is (= (make-time-schedule-presentations (ds/clean-import-data u/expected-real-example))
            u/expected-real-example-activity-presentation))
 
-    (is (= (make-time-schedule-presentations u/expected-real-example-kungsor)
+    (is (= (make-time-schedule-presentations (ds/clean-import-data u/expected-real-example-kungsor))
            u/expected-real-example-kungsor-activity-presentation))
 
-    (is (= (make-time-schedule-presentations u/expected-real-example-uppsala)
+    (is (= (make-time-schedule-presentations (ds/clean-import-data u/expected-real-example-uppsala))
            u/expected-real-example-uppsala-activity-presentation))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -38,13 +45,13 @@
 
 (deftest make-class-presentation
   (testing "Presentation of classes"
-    (is (= (make-class-presentations u/expected-real-example)
+    (is (= (make-class-presentations (ds/clean-import-data u/expected-real-example))
            u/expected-real-example-classes-presentation))
 
-    (is (= (make-class-presentations u/expected-real-example-kungsor)
+    (is (= (make-class-presentations (ds/clean-import-data u/expected-real-example-kungsor))
            u/expected-real-example-kungsor-classes-presentation))
 
-    (is (= (make-class-presentations u/expected-real-example-uppsala)
+    (is (= (make-class-presentations (ds/clean-import-data u/expected-real-example-uppsala))
            u/expected-real-example-uppsala-classes-presentation))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
