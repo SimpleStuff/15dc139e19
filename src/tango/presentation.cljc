@@ -66,22 +66,29 @@
 ;; Presenters
 
 (defn make-class-presenter [class]
-  {:position (:class/position class)
-   
-   :name (:class/name class)
-   
-   :panel (if-let [panel (:class/adjudicator-panel class)]
-            (:adjudicator-panel/name panel)
-            "0")
-   
-   :type (make-dance-type-presentation (:class/dances class))
-   
-   :starting (str (count (:class/remaining class)) "/" (count (:class/starting class)))
-   
-   ;; Present how far into the competition this class is.
-   ;; The round status is given by the last completed round, if there are none
-   ;;  the class is not started
-   :status (make-round-presentation (:class/rounds class))})
+  (let [last-round (last (:class/rounds class))
+        remaining (if (:round/starting last-round)
+                    (:round/starting last-round)
+                    (:class/starting class))
+        remaining-count (if (= :status/completed (:round/status last-round))
+                          0
+                          (count remaining))]
+    {:position (:class/position class)
+
+     :name     (:class/name class)
+
+     :panel    (if-let [panel (:class/adjudicator-panel class)]
+                 (:adjudicator-panel/name panel)
+                 "0")
+
+     :type     (make-dance-type-presentation (:class/dances class))
+
+     :starting (str remaining-count "/" (count (:class/starting class)))
+
+     ;; Present how far into the competition this class is.
+     ;; The round status is given by the last completed round, if there are none
+     ;;  the class is not started
+     :status   (make-round-presentation (:class/rounds class))}))
 
 (defn make-time-schedule-activity-presenter [activity class]
   (let [round (:activity/source activity)

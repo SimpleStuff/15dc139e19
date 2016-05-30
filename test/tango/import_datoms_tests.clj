@@ -191,7 +191,7 @@
   (testing "Transform old result format to new"
     (let [old-result
           {:result/participant-number 11,
-           :result/recalled           "",
+           :result/recalled           :r,
            :result/judgings [{:judging/adjudicator #uuid"c1574c96-17e5-4ad8-a40b-66d8f8f7124b",
                               :judging/marks        [{:mark/x false}]}
                              {:judging/adjudicator #uuid"f78a26da-a254-4927-b3a1-ce7a4bb8da40",
