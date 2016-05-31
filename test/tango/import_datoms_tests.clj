@@ -187,6 +187,45 @@
                      (clean-test-data
                        (ds/query-competition @conn ['* {:competition/options ['*]}]))))))))
 
+(deftest import-real-example-kongsor
+  (testing "Import of real example from Kungsör"
+    (let [competition-data (imp/competition-xml->map
+                             u/real-example-kungsor
+                             #(java.util.UUID/randomUUID))
+          _ (ds/transact-competition @conn competition-data)]
+      (is (= (count (ds/query-adjudicators @conn ['*]))
+             6))
+
+      (is (seq (s/validate dom/competition-data-schema
+                           (clean-test-data (first (ds/query-competition
+                                                     @conn
+                                                     ['* {:competition/options ['*]
+                                                          :competition/adjudicators ['*]
+                                                          :competition/activities activities-query
+                                                          :competition/classes class-query
+                                                          :competition/panels panel-query}])))))))))
+
+;; TODO - add support for this competition
+;; TODO - it seems that rounds with several dances have multiple entries for marks
+;; i.e. 3 adjs and rounds is 4 dances will give 12 mark entries
+;(deftest import-real-example-uppsala
+;  (testing "Import of real example from Uppsala"
+;    (let [competition-data (imp/competition-xml->map
+;                             u/real-example-uppsala
+;                             #(java.util.UUID/randomUUID))
+;          _ (ds/transact-competition @conn competition-data)]
+;      (is (= (count (ds/query-adjudicators @conn ['*]))
+;             6))
+;
+;      (is (seq (s/validate dom/competition-data-schema
+;                           (clean-test-data (first (ds/query-competition
+;                                                     @conn
+;                                                     ['* {:competition/options ['*]
+;                                                          :competition/adjudicators ['*]
+;                                                          :competition/activities activities-query
+;                                                          :competition/classes class-query
+;                                                          :competition/panels panel-query}])))))))))
+
 (deftest transform-old-result
   (testing "Transform old result format to new"
     (let [old-result
