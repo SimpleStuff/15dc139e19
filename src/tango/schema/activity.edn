@@ -10,6 +10,22 @@
   :db/doc                "The applications selected competition"
   :db.install/_attribute :db.part/db}
 
+ {:db/id                 #db/id[:db.part/db]
+  :db/ident              :app/selected-activities
+  :db/valueType          :db.type/ref
+  :db/cardinality        :db.cardinality/many
+  :db/doc                "The applications selected activities"
+  :db.install/_attribute :db.part/db}
+
+ ;; id
+ {:db/id                 #db/id[:db.part/db]
+  :db/ident              :app/id
+  :db/unique             :db.unique/identity
+  :db/valueType          :db.type/uuid
+  :db/cardinality        :db.cardinality/one
+  :db/doc                "Applications id"
+  :db.install/_attribute :db.part/db}
+
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  ;; Competition
 

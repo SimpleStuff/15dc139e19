@@ -138,7 +138,6 @@
           speaker? (seq (filter #(= (:activity/id (om/props this)) (:activity/id %))
                                 speaker-activies))
           ]
-      (log (:round/type (:activity/source (om/props this))))
       (dom/tr #js {:className (if selected? "success" (if completed? "info" ""))}
         (dom/td nil time)
         (dom/td nil number)
@@ -218,7 +217,6 @@
     (let [p (om/props this)
           activites (sort-by :activity/position (:competition/activities p))]
       (log "Schedule")
-      (log (first activites))
       (dom/div nil
         (dom/h2 nil "Time Schedule")
         (dom/table
@@ -337,13 +335,15 @@
       (go
         (log "Query")
         (log edn)
-        (let [response (async/<! (http/get "/query" {:query-params
-                                                     {:query (pr-str (if (map? (first (:query edn)))
-                                                                       (:query edn)
-                                                                       ;; TODO - why do we not get a good query
-                                                                       (conj [] (first (om/get-query MainComponent)))))}}))
+        (let [remote-query (if (map? (first (:query edn)))
+                             (:query edn)
+                             ;; TODO - why do we not get a good query
+                             (conj [] (first (om/get-query MainComponent))))
+              response (async/<! (http/get "/query" {:query-params
+                                                     {:query (pr-str remote-query)}}))
               edn-response (second (cljs.reader/read-string (:body response)))]
 
+          (log remote-query)
           ;; TODO - why is the response a vec?
           ;(cb {:app/selected-competition (first (:app/selected-competition edn-response))})
           (cb edn-response)

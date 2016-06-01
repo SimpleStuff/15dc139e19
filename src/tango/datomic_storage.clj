@@ -289,7 +289,10 @@
                         (:db/ident form)
                         (if (> (count (keys form)) 1)
                           (dissoc form :db/id)
-                          form))
+                          #{}
+                          ;form
+                          ))
+
         :else form))
     data))
 
@@ -424,9 +427,18 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defn select-round [conn round]
-  @(d/transact conn [(fix-id {:app/selected-activites round
-                              :app/id                 1})]))
+;(defn select-round [conn round]
+;  @(d/transact conn [(fix-id {:app/selected-activites round
+;                              :app/id                 1})]))
+(defn select-round [conn activity-id]
+  @(d/transact conn [{:app/selected-activities {:db/id [:activity/id activity-id]}
+                      ;:app/id 1
+                      :db/id                   (d/tempid :db.part/user)
+                      }
+                     ]))
+
+(defn deselect-round [conn activity-id]
+  )
 
 (defn set-speaker-activity [conn activity]
   @(d/transact conn [(fix-id {:app/speaker-activites activity
@@ -449,14 +461,14 @@
   (let [tx-data (update-fn)]
     @(d/transact db [tx-data])))
 
-(defn get-selected-activity [conn query]
+(defn get-selected-activities [conn query]
   (do (log/info "DT query " query)
-      (d/q '[:find (pull ?a selector) .
-             :in $ selector
-             :where
-             [?e :app/id 1]
-             [?e :app/selected-activity ?a]]
-           (d/db conn) query)))
+      (clean-data (d/q '[:find [(pull ?a selector) ...]
+                         :in $ selector
+                         :where
+                         ;[?e :app/id 1]
+                         [?e :app/selected-activities ?a]]
+                       (d/db conn) query))))
 
 
 (defn get-speaker-activites [conn query]
@@ -468,15 +480,15 @@
              [?e :app/speaker-activites ?a]]
            (d/db conn) query)))
 
-(defn get-selected-activites [conn query]
-  (do (log/info "Selected Activites " query)
-      (d/q '[:find [(pull ?a selector) ...]
-             ;:find ?a
-             :in $ selector
-             :where
-             [?e :app/id 1]
-             [?e :app/selected-activites ?a]]
-           (d/db conn) query)))
+;(defn get-selected-activites [conn query]
+;  (do (log/info "Selected Activites " query)
+;      (d/q '[:find [(pull ?a selector) ...]
+;             ;:find ?a
+;             :in $ selector
+;             :where
+;             [?e :app/id 1]
+;             [?e :app/selected-activites ?a]]
+;           (d/db conn) query)))
 
 ;; TODO - need to pull only for a specific activity
 ;; understand how to query for guid value
