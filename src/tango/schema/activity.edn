@@ -20,10 +20,10 @@
  ;; id
  {:db/id                 #db/id[:db.part/db]
   :db/ident              :app/id
+  :db/valueType          :db.type/long
   :db/unique             :db.unique/identity
-  :db/valueType          :db.type/uuid
   :db/cardinality        :db.cardinality/one
-  :db/doc                "Applications id"
+  :db/doc                "The applications id"
   :db.install/_attribute :db.part/db}
 
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

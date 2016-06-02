@@ -79,7 +79,7 @@
              (keys (ds/select-round @conn (:activity/id activity)))))
 
       (is (= (ds/get-selected-activities @conn ['*])
-             (assoc (dissoc activity :db/id) :activity/source #{}))))))
+             (conj [] (assoc (dissoc activity :db/id) :activity/source #{})))))))
 
 (deftest application-should-be-able-to-run-multiple-rounds
   (testing "The application should be able to run multiple rounds at once"
@@ -105,23 +105,39 @@
           _ (ds/select-round @conn (:activity/id activity-two))
           ]
       (is (= (count (ds/get-selected-activities @conn ['*])) 2))
+
+      (is (= (into #{} (ds/get-selected-activities @conn ['*]))
+             (into #{} (map #(dissoc (merge % {:activity/source #{}}) :db/id)
+                            [activity-one activity-two]))))
+
       (ds/deselect-round @conn (:activity/id activity-one))
-      (is (= (count (ds/get-selected-activities @conn ['*])) 1))
+      (is (= (ds/get-selected-activities @conn ['*]) [activity-two]))
+
       (ds/deselect-round @conn (:activity/id activity-two))
-      (is (= (count (ds/get-selected-activities @conn ['*])) 0))
-      )))
+      (is (= (ds/get-selected-activities @conn ['*]) []))
+
+      ;; the activites should still be present
+      (is (= (first (filter #(= (:activity/number %) "15A") (ds/query-activities @conn ['*])))
+             activity-one))
+      (is (= (first (filter #(= (:activity/number %) "15B") (ds/query-activities @conn ['*])))
+             activity-two)))))
 
 (deftest application-should-be-able-to-run-speaker-rounds
   (testing "The application should be able to run multiple speaker rounds at once"
-    (let [deleted? (ds/delete-storage mem-uri)
-          created? (ds/create-storage mem-uri (into ds/select-activity-schema ds/application-schema))
-          conn (ds/create-connection mem-uri)
-          tx (ds/set-speaker-activity conn {:activity/id #uuid "967d051d-ea8b-43d4-9dba-35fb51aedda9"
-                                            :activity/name "One"})]
-      (ds/set-speaker-activity conn {:activity/id #uuid "867d051d-ea8b-43d4-9dba-35fb51aedda9"
-                                     :activity/name "Two"})
-      (is (= (mapv :activity/name (ds/get-speaker-activites conn [:activity/name]))
-             ["One" "Two"])))))
+    (let []
+      (is (= 0 1)))))
+
+;(deftest application-should-be-able-to-run-speaker-rounds
+;  (testing "The application should be able to run multiple speaker rounds at once"
+;    (let [deleted? (ds/delete-storage mem-uri)
+;          created? (ds/create-storage mem-uri (into ds/select-activity-schema ds/application-schema))
+;          conn (ds/create-connection mem-uri)
+;          tx (ds/set-speaker-activity conn {:activity/id #uuid "967d051d-ea8b-43d4-9dba-35fb51aedda9"
+;                                            :activity/name "One"})]
+;      (ds/set-speaker-activity conn {:activity/id #uuid "867d051d-ea8b-43d4-9dba-35fb51aedda9"
+;                                     :activity/name "Two"})
+;      (is (= (mapv :activity/name (ds/get-speaker-activites conn [:activity/name]))
+;             ["One" "Two"])))))
 
 ;(deftest selecting-the-same-activity-should-not-add-data
 ;  (testing "Selecting the same activity multiple times should add data"

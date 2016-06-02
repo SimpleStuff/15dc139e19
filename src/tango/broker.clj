@@ -17,7 +17,7 @@
     (log/info (str "Application selected round changed : " ))))
 
 (defn selected-activity [conn]
-  (log/info (str "Application selected round : " (d/get-selected-activity conn '[:activity/name]))))
+  (log/info (str "Application selected round : " (d/get-selected-activities conn '[:activity/name]))))
 
 (defn set-speaker-activity [conn activity]
   (do

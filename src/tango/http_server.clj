@@ -83,7 +83,7 @@
                ;; TODO - this should be in its own service etc
                (let [conn (d/create-connection "datomic:free://localhost:4334//competitions")
                      selected-acts-with-results
-                     (d/get-selected-activites
+                     (d/get-selected-activities
                        conn
                        [:activity/name
                         :activity/number
@@ -121,7 +121,7 @@
   {:value (do
             (log/info (str "Selector in selected activity" query))
             ;(d/get-selected-activity state query)
-            (d/get-selected-activites state query)
+            (d/get-selected-activities state query)
             )
    ;(do (log/info (str "Reader Query Key Params " query key params)))
    })

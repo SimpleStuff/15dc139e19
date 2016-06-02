@@ -387,7 +387,7 @@
       import-data)))
 
 (defn transact-competition [conn tx]
-  @(d/transact conn [(fix-id (clean-import-data tx))]))
+  @(d/transact conn [(assoc (fix-id (clean-import-data tx)) :app/id 1)]))
 
 
 (defn query-adjudicators [conn query]
@@ -412,11 +412,12 @@
        (d/db conn) query))
 
 (defn query-activities [conn query]
-  (d/q '[:find [(pull ?e selector) ...]
-         :in $ selector
-         :where
-         [?e :activity/id]]
-       (d/db conn) query))
+  (clean-data
+    (d/q '[:find [(pull ?e selector) ...]
+           :in $ selector
+           :where
+           [?e :activity/id]]
+         (d/db conn) query)))
 
 (defn query-competition [conn query]
   (d/q '[:find [(pull ?e selector) ...]
@@ -433,12 +434,13 @@
 (defn select-round [conn activity-id]
   @(d/transact conn [{:app/selected-activities {:db/id [:activity/id activity-id]}
                       ;:app/id 1
-                      :db/id                   (d/tempid :db.part/user)
+                      :db/id                   [:app/id 1]                                ; (d/tempid :db.part/user)
                       }
                      ]))
 
 (defn deselect-round [conn activity-id]
-  )
+  @(d/transact conn [[:db/retract [:app/id 1]
+                      :app/selected-activities [:activity/id activity-id]]]))
 
 (defn set-speaker-activity [conn activity]
   @(d/transact conn [(fix-id {:app/speaker-activites activity
