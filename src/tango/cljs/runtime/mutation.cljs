@@ -24,7 +24,7 @@
 
 (defmethod mutate 'app/select-activity
   [{:keys [state]} _ {:keys [activity/id]}]
-  {:value  {:keys [:app/selected-activity]}
+  {:value  {:keys []}
    :action (fn []
              (let [activity
                    (first (filter #(= (:activity/id %) id)

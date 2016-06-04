@@ -130,9 +130,7 @@
           (presentation/make-time-schedule-activity-presenter
             p
             (first (:class/_rounds (:activity/source (om/props this)))))
-          selected? false
-          ;(seq (filter #(= (:activity/id (om/props this)) (:activity/id %))
-          ;                       (:selected-activity (om/props this))))
+          selected? (:is-selected p)
           completed? (= (:round/status (:activity/source (om/props this))) :status/completed)
           speaker-activies #{}                                 ;(:speaker-activites (om/props this))
           speaker? (seq (filter #(= (:activity/id (om/props this)) (:activity/id %))
@@ -157,7 +155,8 @@
                                                     (log "Selected")
                                                     (om/transact!
                                                       this
-                                                      `[(app/select-activity {:activity/id ~(:activity/id p)})])))}
+                                                      `[(app/select-activity {:activity/id ~(:activity/id p)})
+                                                        :app/selected-activities])))}
                                 (dom/span #js {:className "glyphicon glyphicon-play"}))
 
                     (dom/button #js {:className "btn btn-default"
@@ -235,6 +234,8 @@
     (let [p (om/props this)
           activites (sort-by :activity/position (:competition/activities p))]
       (log "Schedule")
+      (log "Selected")
+      (log (:selected-activities p))
       (dom/div nil
         (dom/h2 nil "Time Schedule")
         (dom/table
@@ -251,7 +252,12 @@
               (dom/th #js {:width "20"} "Panel")
               (dom/th #js {:width "20"} "Type")
               (dom/th #js {:width "400"} "")))
-          (apply dom/tbody nil (map #((om/factory ScheduleRow) %) activites))
+          (apply dom/tbody nil (map #((om/factory ScheduleRow)
+                                      (merge % {:is-selected
+                                                (seq (filter (fn [act]
+                                                               (= (:activity/id act) (:activity/id %)))
+                                                             (:selected-activities p)))
+                                                })) activites))
           ;(apply dom/tbody nil (map #((om/factory ScheduleRow)
           ;                            (merge % {:selected-activity (:selected-activity (om/props this))
           ;                                      :speaker-activites (:speaker-activites (om/props this))}))
@@ -347,7 +353,8 @@
                   ((om/factory AdminViewComponent) {:status status}))
 
           :time-schedule ((om/factory ScheduleView) {:competition/activities
-                                                     (:competition/activities selected-competition)}))
+                                                     (:competition/activities selected-competition)
+                                                     :selected-activities (:app/selected-activities p)}))
         ))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
