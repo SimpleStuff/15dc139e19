@@ -2,6 +2,9 @@
   (:require
     [om.next :as om]))
 
+(defn log [m]
+  (.log js/console m))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Mutate
 
@@ -18,3 +21,13 @@
   {:value  {:keys [:app/selected-page]}
    :action (fn []
              (swap! state assoc :app/selected-page selected-page))})
+
+(defmethod mutate 'app/select-activity
+  [{:keys [state]} _ {:keys [activity/id]}]
+  {:value  {:keys [:app/selected-activity]}
+   :action (fn []
+             (let [activity
+                   (first (filter #(= (:activity/id %) id)
+                                  (:competition/activities (:app/selected-competition @state))))]
+               (swap! state (fn [current]
+                              (update-in current [:app/selected-activities] #(conj % activity))))))})

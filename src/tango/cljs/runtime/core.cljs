@@ -153,7 +153,11 @@
                   (dom/div #js {:className "control-group"}
                     (dom/button #js {:className (str "btn" (if selected? " btn-success" " btn-default"))
                                      :onClick   #(when-not (or completed? selected?)
-                                                  (log "Selected"))}
+                                                  (do
+                                                    (log "Selected")
+                                                    (om/transact!
+                                                      this
+                                                      `[(app/select-activity {:activity/id ~(:activity/id p)})])))}
                                 (dom/span #js {:className "glyphicon glyphicon-play"}))
 
                     (dom/button #js {:className "btn btn-default"
@@ -321,7 +325,9 @@
     [{:app/selected-competition (into [:competition/name :competition/location]
                                       (concat (om/get-query ScheduleView)))}
      :app/status
-     :app/selected-page])
+     :app/selected-page
+     :app/selected-activities
+     ])
   Object
   (render
     [this]
@@ -329,6 +335,9 @@
           selected-competition (:app/selected-competition p)
           status (:app/status p)
           selected-page (:app/selected-page p)]
+      (log "QWWWWWW")
+      (log (om/get-query ScheduleView))
+      (log (:app/selected-activities p))
       ;(log (str selected-competition))
       (dom/div nil
         ((om/factory MenuComponent))
@@ -337,7 +346,8 @@
                   (dom/h1 nil (str "Runtime of " (:competition/name selected-competition)))
                   ((om/factory AdminViewComponent) {:status status}))
 
-          :time-schedule ((om/factory ScheduleView) selected-competition))
+          :time-schedule ((om/factory ScheduleView) {:competition/activities
+                                                     (:competition/activities selected-competition)}))
         ))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -369,7 +379,8 @@
 
 (defonce app-state (atom {:app/selected-competition nil
                           :app/status :loaded
-                          :app/selected-page :home}))
+                          :app/selected-page :home
+                          :app/selected-activities #{}}))
 
 (def reconciler
   (om/reconciler

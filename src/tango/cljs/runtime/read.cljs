@@ -24,3 +24,6 @@
   [{:keys [state]} _ _]
   {:value (get @state :app/selected-page :home)})
 
+(defmethod read :app/selected-activities
+  [{:keys [state]} _ _]
+  {:value (get @state :app/selected-activities [])})
