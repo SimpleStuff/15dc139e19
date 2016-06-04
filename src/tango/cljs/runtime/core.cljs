@@ -133,7 +133,7 @@
           selected? false
           ;(seq (filter #(= (:activity/id (om/props this)) (:activity/id %))
           ;                       (:selected-activity (om/props this))))
-          completed? (= (:round/status (:activity/source (om/props this))) :completed)
+          completed? (= (:round/status (:activity/source (om/props this))) :status/completed)
           speaker-activies #{}                                 ;(:speaker-activites (om/props this))
           speaker? (seq (filter #(= (:activity/id (om/props this)) (:activity/id %))
                                 speaker-activies))
@@ -151,6 +151,20 @@
         (when-not (= name "")
           (dom/td nil
                   (dom/div #js {:className "control-group"}
+                    (dom/button #js {:className (str "btn" (if selected? " btn-success" " btn-default"))
+                                     :onClick   #(when-not (or completed? selected?)
+                                                  (log "Selected"))}
+                                (dom/span #js {:className "glyphicon glyphicon-play"}))
+
+                    (dom/button #js {:className "btn btn-default"
+                                     :onClick #(log "Deselect")}
+                                (dom/span #js {:className "glyphicon glyphicon-stop"}))
+
+                    (dom/button #js {:className (str "btn" (if speaker? " btn-success" " btn-default"))
+                                     :onClick   #(when-not (or completed? speaker?)
+                                                  (log "Speaker Select"))}
+                                (dom/span #js {:className "glyphicon glyphicon-volume-up"}))
+
                     ;(dom/button #js {:className (str "btn" (if selected? " btn-success" " btn-default"))
                     ;                 :onClick   #(when-not completed?
                     ;                              (when-not selected?
@@ -174,35 +188,35 @@
                     ;                                                                         (om/props this)))})
                     ;                                    :app/selected-activity])))}
                     ;            (dom/span #js {:className "glyphicon glyphicon-play"}))
-                    ;(dom/button #js {:className "btn btn-default"}
-                    ;            (dom/span #js {:className "glyphicon glyphicon-stop"}))
-                    (dom/button #js {:className (str "btn" (if speaker? " btn-success" " btn-default"))
-                                     :onClick   #(when-not completed?
-                                                  (when-not speaker?
-                                                    (om/transact!
-                                                      this
-                                                      `[(app/set-speaker-activity
-                                                          {:activity/id          ~(:activity/id (om/props this))
-                                                           :activity/name        ~name
-                                                           :activity/number      ~number
-                                                           :activity/position    ~(:activity/position
-                                                                                    (om/props this))
-                                                           :round/index          ~(:round/index (:activity/source
-                                                                                                  (om/props this)))
-                                                           :round/recall         ~(:round/recall (:activity/source
-                                                                                                   (om/props this)))
-                                                           :round/heats          ~(:round/heats (:activity/source
-                                                                                                  (om/props this)))
-                                                           :round/starting       ~(:round/starting (:activity/source
-                                                                                                     (om/props this)))
-                                                           :round/panel          ~(:round/panel (:activity/source
-                                                                                                  (om/props this)))
 
-                                                           :round/speaker-dances ~(:round/dances (:activity/source
-                                                                                                   (om/props this)))
-                                                           })
-                                                        :app/speaker-activites])))}
-                                (dom/span #js {:className "glyphicon glyphicon-volume-up"})))))))))
+                    ;(dom/button #js {:className (str "btn" (if speaker? " btn-success" " btn-default"))
+                    ;                 :onClick   #(when-not completed?
+                    ;                              (when-not speaker?
+                    ;                                (om/transact!
+                    ;                                  this
+                    ;                                  `[(app/set-speaker-activity
+                    ;                                      {:activity/id          ~(:activity/id (om/props this))
+                    ;                                       :activity/name        ~name
+                    ;                                       :activity/number      ~number
+                    ;                                       :activity/position    ~(:activity/position
+                    ;                                                                (om/props this))
+                    ;                                       :round/index          ~(:round/index (:activity/source
+                    ;                                                                              (om/props this)))
+                    ;                                       :round/recall         ~(:round/recall (:activity/source
+                    ;                                                                               (om/props this)))
+                    ;                                       :round/heats          ~(:round/heats (:activity/source
+                    ;                                                                              (om/props this)))
+                    ;                                       :round/starting       ~(:round/starting (:activity/source
+                    ;                                                                                 (om/props this)))
+                    ;                                       :round/panel          ~(:round/panel (:activity/source
+                    ;                                                                              (om/props this)))
+                    ;
+                    ;                                       :round/speaker-dances ~(:round/dances (:activity/source
+                    ;                                                                               (om/props this)))
+                    ;                                       })
+                    ;                                    :app/speaker-activites])))}
+                    ;            (dom/span #js {:className "glyphicon glyphicon-volume-up"}))
+                    )))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ScheduleView
