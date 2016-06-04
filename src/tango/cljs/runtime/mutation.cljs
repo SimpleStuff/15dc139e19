@@ -30,4 +30,5 @@
                    (first (filter #(= (:activity/id %) id)
                                   (:competition/activities (:app/selected-competition @state))))]
                (swap! state (fn [current]
-                              (update-in current [:app/selected-activities] #(conj % activity))))))})
+                              (update-in current [:app/selected-activities] #(conj % activity))))))
+   :command true})

@@ -13,7 +13,7 @@
 
 (defn select-activity [conn activity]
   (do
-    (d/select-round conn activity)
+    (d/select-round conn (:activity/id activity))
     (log/info (str "Application selected round changed : " ))))
 
 (defn selected-activity [conn]

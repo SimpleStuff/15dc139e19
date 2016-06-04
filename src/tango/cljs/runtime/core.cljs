@@ -332,7 +332,7 @@
                                       (concat (om/get-query ScheduleView)))}
      :app/status
      :app/selected-page
-     :app/selected-activities
+     {:app/selected-activities [:activity/id]}
      ])
   Object
   (render
@@ -341,9 +341,9 @@
           selected-competition (:app/selected-competition p)
           status (:app/status p)
           selected-page (:app/selected-page p)]
-      (log "QWWWWWW")
-      (log (om/get-query ScheduleView))
-      (log (:app/selected-activities p))
+      ;(log "QWWWWWW")
+      ;(log (om/get-query ScheduleView))
+      ;(log (:app/selected-activities p))
       ;(log (str selected-competition))
       (dom/div nil
         ((om/factory MenuComponent))
@@ -359,9 +359,24 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Remote com
+(defn transit-post [url edn cb]
+  ;(log edn)
+  (.send XhrIo url
+         #()                                                ;log
+         ;(this-as this
+         ;  (log (t/read (t/reader :json)
+         ;               (.getResponseText this)))
+         ;  (cb (t/read (t/reader :json) (.getResponseText this))))
+
+         "POST" (t/write (t/writer :json) edn)
+         #js {"Content-Type" "application/transit+json"}))
+
 (defn remote-send []
   (fn [edn cb]
     (cond
+      (:command edn)
+      ;(log "a")
+      (transit-post "/commands" edn cb)
       (:query edn)
       (go
         (log "Query")
@@ -382,8 +397,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Application
-(def update-ch (chan))
-
 (defonce app-state (atom {:app/selected-competition nil
                           :app/status :loaded
                           :app/selected-page :home
