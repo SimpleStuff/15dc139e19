@@ -32,3 +32,20 @@
                (swap! state (fn [current]
                               (update-in current [:app/selected-activities] #(conj % activity))))))
    :command true})
+
+(defmethod mutate 'app/select-speaker-activity
+  [{:keys [state]} _ {:keys [activity/id]}]
+  {:value  {:keys []}
+   :action (fn []
+             (do
+               (log "Pre Update")
+               (let [activity
+                     (first (filter #(= (:activity/id %) id)
+                                    (:competition/activities (:app/selected-competition @state))))]
+                 (swap! state (fn [current]
+                                (update-in current [:app/speaker-activities] #(conj % activity)))))
+               (log "Post Update")
+               ;(log (:app/speaker-activites @state))
+               ))
+   ;:command true
+   })

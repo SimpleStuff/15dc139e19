@@ -132,9 +132,10 @@
             (first (:class/_rounds (:activity/source (om/props this)))))
           selected? (:is-selected p)
           completed? (= (:round/status (:activity/source (om/props this))) :status/completed)
-          speaker-activies #{}                                 ;(:speaker-activites (om/props this))
-          speaker? (seq (filter #(= (:activity/id (om/props this)) (:activity/id %))
-                                speaker-activies))
+          ;speaker-activies #{}                                 ;(:speaker-activites (om/props this))
+          ;speaker? (seq (filter #(= (:activity/id (om/props this)) (:activity/id %))
+          ;                      speaker-activies))
+          speaker? (:is-speaker-selected p)
           ]
       (dom/tr #js {:className (if selected? "success" (if completed? "info" ""))}
         (dom/td nil time)
@@ -164,8 +165,13 @@
                                 (dom/span #js {:className "glyphicon glyphicon-stop"}))
 
                     (dom/button #js {:className (str "btn" (if speaker? " btn-success" " btn-default"))
-                                     :onClick   #(when-not (or completed? speaker?)
-                                                  (log "Speaker Select"))}
+                                     :onClick #(when-not (or completed? speaker?)
+                                                (do
+                                                  (log "Speaker Select")
+                                                  (om/transact!
+                                                    this
+                                                    `[(app/select-speaker-activity {:activity/id ~(:activity/id p)})
+                                                      :app/speaker-activities])))}
                                 (dom/span #js {:className "glyphicon glyphicon-volume-up"}))
 
                     ;(dom/button #js {:className (str "btn" (if selected? " btn-success" " btn-default"))
@@ -234,8 +240,10 @@
     (let [p (om/props this)
           activites (sort-by :activity/position (:competition/activities p))]
       (log "Schedule")
-      (log "Selected")
-      (log (:selected-activities p))
+      ;(log "Selected")
+      ;(log (:selected-activities p))
+      (log "Speaker")
+      (log (:speaker-activities p))
       (dom/div nil
         (dom/h2 nil "Time Schedule")
         (dom/table
@@ -257,6 +265,10 @@
                                                 (seq (filter (fn [act]
                                                                (= (:activity/id act) (:activity/id %)))
                                                              (:selected-activities p)))
+                                                :is-speaker-selected
+                                                (seq (filter (fn [act]
+                                                               (= (:activity/id act) (:activity/id %)))
+                                                             (:speaker-activities p)))
                                                 })) activites))
           ;(apply dom/tbody nil (map #((om/factory ScheduleRow)
           ;                            (merge % {:selected-activity (:selected-activity (om/props this))
@@ -333,6 +345,7 @@
      :app/status
      :app/selected-page
      {:app/selected-activities [:activity/id]}
+     {:app/speaker-activities [:activity/id]}
      ])
   Object
   (render
@@ -341,9 +354,9 @@
           selected-competition (:app/selected-competition p)
           status (:app/status p)
           selected-page (:app/selected-page p)]
-      ;(log "QWWWWWW")
       ;(log (om/get-query ScheduleView))
-      ;(log (:app/selected-activities p))
+      (log "Speaker activites")
+      (log (:app/speaker-activities p))
       ;(log (str selected-competition))
       (dom/div nil
         ((om/factory MenuComponent))
@@ -354,7 +367,10 @@
 
           :time-schedule ((om/factory ScheduleView) {:competition/activities
                                                      (:competition/activities selected-competition)
-                                                     :selected-activities (:app/selected-activities p)}))
+                                                     :selected-activities
+                                                     (:app/selected-activities p)
+                                                     :speaker-activities
+                                                     (:app/speaker-activities p)}))
         ))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -379,8 +395,8 @@
       (transit-post "/commands" edn cb)
       (:query edn)
       (go
-        (log "Query")
-        (log edn)
+        ;(log "Query")
+        ;(log edn)
         (let [remote-query (if (map? (first (:query edn)))
                              (:query edn)
                              ;; TODO - why do we not get a good query
@@ -400,7 +416,8 @@
 (defonce app-state (atom {:app/selected-competition nil
                           :app/status :loaded
                           :app/selected-page :home
-                          :app/selected-activities #{}}))
+                          :app/selected-activities #{}
+                          :app/speaker-activities #{}}))
 
 (def reconciler
   (om/reconciler
