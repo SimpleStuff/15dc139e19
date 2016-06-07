@@ -17,6 +17,15 @@
   :db/doc                "The applications selected activities"
   :db.install/_attribute :db.part/db}
 
+ ;; selected-speaker-rounds
+ {:db/id                 #db/id[:db.part/db]
+  :db/ident              :app/speaker-activities
+  :db/valueType          :db.type/ref
+  :db/cardinality        :db.cardinality/many
+  :db/doc                "The applications selected speaker activities"
+  :db.install/_attribute :db.part/db}
+
+ ;; TODO - use competition id instead
  ;; id
  {:db/id                 #db/id[:db.part/db]
   :db/ident              :app/id

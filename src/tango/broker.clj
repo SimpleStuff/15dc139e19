@@ -21,7 +21,7 @@
 
 (defn set-speaker-activity [conn activity]
   (do
-    (d/set-speaker-activity conn activity)
+    (d/select-speaker-round conn activity)
     (log/info (str "Speaker activity set"))))
 
 (defn fix-lookup-refs [result]

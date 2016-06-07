@@ -442,10 +442,18 @@
   @(d/transact conn [[:db/retract [:app/id 1]
                       :app/selected-activities [:activity/id activity-id]]]))
 
-(defn set-speaker-activity [conn activity]
-  @(d/transact conn [(fix-id {:app/speaker-activites activity
-                              :app/id                1})]))
+(defn select-speaker-round [conn activity-id]
+  @(d/transact conn [{:app/speaker-activities {:db/id [:activity/id activity-id]}
+                      :db/id [:app/id 1]}]))
 
+(defn deselect-speaker-round [conn activity-id]
+  @(d/transact conn [[:db/retract [:app/id 1]
+                      :app/speaker-activities [:activity/id activity-id]]]))
+
+;(defn set-speaker-activity [conn activity]
+;  @(d/transact conn [(fix-id {:app/speaker-activites activity
+;                              :app/id                1})]))
+;
 (defn set-results [conn results]
   @(d/transact conn (mapv fix-id results)))
 
@@ -472,15 +480,22 @@
                          [?e :app/selected-activities ?a]]
                        (d/db conn) query))))
 
+(defn get-speaker-activities [conn query]
+  (clean-data (d/q '[:find [(pull ?a selector) ...]
+                     :in $ selector
+                     :where
+                     ;[?e :app/id 1]
+                     [?e :app/speaker-activities ?a]]
+                   (d/db conn) query)))
 
-(defn get-speaker-activites [conn query]
-  (do (log/info "Selected Speaker Activites " query)
-      (d/q '[:find [(pull ?a selector) ...]
-             :in $ selector
-             :where
-             [?e :app/id 1]
-             [?e :app/speaker-activites ?a]]
-           (d/db conn) query)))
+;(defn get-speaker-activites [conn query]
+;  (do (log/info "Selected Speaker Activites " query)
+;      (d/q '[:find [(pull ?a selector) ...]
+;             :in $ selector
+;             :where
+;             [?e :app/id 1]
+;             [?e :app/speaker-activites ?a]]
+;           (d/db conn) query)))
 
 ;(defn get-selected-activites [conn query]
 ;  (do (log/info "Selected Activites " query)

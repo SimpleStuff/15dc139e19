@@ -136,7 +136,7 @@
   [{:keys [state query]} key params]
   {:value (do
             (log/info (str "Selector in speaker activites " query))
-            (d/get-speaker-activites state query))})
+            (d/get-speaker-activities state query))})
 
 ;(let [selected-act (d/get-selected-activity state '[:activity/id])]
 ;  (log/info (str "Selected act " selected-act))

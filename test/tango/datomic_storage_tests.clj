@@ -106,6 +106,10 @@
           ]
       (is (= (count (ds/get-selected-activities @conn ['*])) 2))
 
+      ;; selecting the same round twice should change nothing
+      (ds/select-round @conn (:activity/id activity-one))
+      (is (= (count (ds/get-selected-activities @conn ['*])) 2))
+
       (is (= (into #{} (ds/get-selected-activities @conn ['*]))
              (into #{} (map #(dissoc (merge % {:activity/source #{}}) :db/id)
                             [activity-one activity-two]))))
@@ -124,30 +128,23 @@
 
 (deftest application-should-be-able-to-run-speaker-rounds
   (testing "The application should be able to run multiple speaker rounds at once"
-    (let []
-      (is (= 0 1)))))
+    (let [competition-data @test-competition
+          _ (ds/transact-competition @conn competition-data)
+          acts (ds/query-activities @conn ['*])
+          activity-one (first (filter #(= (:activity/number %) "15A") acts))
+          activity-two (first (filter #(= (:activity/number %) "15B") acts))
+          _ (ds/select-speaker-round @conn (:activity/id activity-one))
+          _ (ds/select-speaker-round @conn (:activity/id activity-two))]
 
-;(deftest application-should-be-able-to-run-speaker-rounds
-;  (testing "The application should be able to run multiple speaker rounds at once"
-;    (let [deleted? (ds/delete-storage mem-uri)
-;          created? (ds/create-storage mem-uri (into ds/select-activity-schema ds/application-schema))
-;          conn (ds/create-connection mem-uri)
-;          tx (ds/set-speaker-activity conn {:activity/id #uuid "967d051d-ea8b-43d4-9dba-35fb51aedda9"
-;                                            :activity/name "One"})]
-;      (ds/set-speaker-activity conn {:activity/id #uuid "867d051d-ea8b-43d4-9dba-35fb51aedda9"
-;                                     :activity/name "Two"})
-;      (is (= (mapv :activity/name (ds/get-speaker-activites conn [:activity/name]))
-;             ["One" "Two"])))))
+      (is (= (into #{} (ds/get-speaker-activities @conn ['*]))
+             (into #{} (map #(dissoc (merge % {:activity/source #{}}) :db/id)
+                            [activity-one activity-two]))))
 
-;(deftest selecting-the-same-activity-should-not-add-data
-;  (testing "Selecting the same activity multiple times should add data"
-;    (let [_ (ds/delete-storage mem-uri)
-;          _ (ds/create-storage mem-uri (into ds/select-activity-schema ds/application-schema))
-;          conn (ds/create-connection mem-uri)
-;          round (create-selected-round "One")]
-;      (ds/select-round conn round)
-;      (ds/select-round conn round)
-;      (is (= 2 (count (:round/starting (ds/get-selected-activity conn ['*]))))))))
+      (ds/deselect-speaker-round @conn (:activity/id activity-one))
+      (is (= (ds/get-speaker-activities @conn ['*]) [activity-two]))
+
+      (ds/deselect-speaker-round @conn (:activity/id activity-two))
+      (is (= (ds/get-speaker-activities @conn ['*]) [])))))
 
 (deftest adjudicator-results-can-be-transacted
   (testing "Adjudicator result can be transacted to db"
