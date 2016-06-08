@@ -1,7 +1,8 @@
 (ns tango.datomic-storage-tests
   (:require [clojure.test :refer :all]
             [tango.test-utils :as u]
-            [tango.datomic-storage :as ds]))
+            [tango.datomic-storage :as ds]
+            [tango.import :as imp]))
 
 ;(defn- transact-small-example []
 ;  (let [conn (db/create-connection db/schema)]
@@ -27,61 +28,123 @@
 ;(fix-id select-round-data)
 
 (def mem-uri "datomic:mem://localhost:4334//competitions")
+(def schema-tx (read-string (slurp "./src/tango/schema/activity.edn")))
 
 (deftest create-connection
   (testing "Create a connection to db"
     (is (not= nil (ds/create-storage mem-uri ds/select-activity-schema)))
     (is (not= nil (ds/create-connection mem-uri)))))
 
+;(deftest select-round
+;  (testing "Transaction of selecting a round"
+;    (let [_ (ds/delete-storage mem-uri)
+;          _ (ds/create-storage mem-uri (into ds/select-activity-schema ds/application-schema))
+;          conn (ds/create-connection mem-uri)]
+;      (is (= [:db-before :db-after :tx-data :tempids]
+;             (keys (ds/select-round conn select-round-data)))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Setup utils
+
+(def mem-uri "datomic:mem://localhost:4334//competitions")
+
+(def schema-tx (read-string (slurp "./src/tango/schema/activity.edn")))
+
+(def test-competition (atom nil))
+(def conn (atom nil))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Setup fixtures
+
+(defn setup-db [test-fn]
+  (ds/delete-storage mem-uri)
+  (ds/create-storage mem-uri schema-tx)
+  (reset! test-competition (imp/competition-xml->map
+                             u/real-example
+                             #(java.util.UUID/randomUUID)))
+  (reset! conn (ds/create-connection mem-uri))
+  (test-fn))
+
+(use-fixtures :each setup-db)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (deftest select-round
   (testing "Transaction of selecting a round"
-    (let [_ (ds/delete-storage mem-uri)
-          _ (ds/create-storage mem-uri (into ds/select-activity-schema ds/application-schema))
-          conn (ds/create-connection mem-uri)]
+    (let [competition-data @test-competition
+          _ (ds/transact-competition @conn competition-data)
+          acts (ds/query-activities @conn ['*])
+          activity (first (filter #(= (:activity/number %) "15A") acts))]
       (is (= [:db-before :db-after :tx-data :tempids]
-             (keys (ds/select-round conn select-round-data)))))))
+             (keys (ds/select-round @conn (:activity/id activity)))))
 
-;(deftest application-should-only-have-one-selected-round
-;  (testing "The application should only be able to have one selected round at a time"
-;    (let [deleted? (ds/delete-storage mem-uri)
-;          created? (ds/create-storage mem-uri (into ds/select-activity-schema ds/application-schema))
-;          conn (ds/create-connection mem-uri)]
-;      (ds/select-round conn (create-selected-round "One"))
-;      (ds/select-round conn (create-selected-round "Two"))
-;      (is (= (:activity/name (ds/get-selected-activity conn [:activity/name]))
-;             "Two")))))
+      (is (= (ds/get-selected-activities @conn ['*])
+             (conj [] (assoc (dissoc activity :db/id) :activity/source #{})))))))
 
 (deftest application-should-be-able-to-run-multiple-rounds
   (testing "The application should be able to run multiple rounds at once"
-    (let [deleted? (ds/delete-storage mem-uri)
-          created? (ds/create-storage mem-uri (into ds/select-activity-schema ds/application-schema))
-          conn (ds/create-connection mem-uri)
-          tx (ds/select-round conn (create-selected-round "One"))]
-      (ds/select-round conn (create-selected-round "Two"))
-      (is (= (mapv :activity/name (ds/get-selected-activites conn [:activity/name]))
-             ["One" "Two"])))))
+    (let [competition-data @test-competition
+          _ (ds/transact-competition @conn competition-data)
+          acts (ds/query-activities @conn ['*])
+          activity-one (first (filter #(= (:activity/number %) "15A") acts))
+          activity-two (first (filter #(= (:activity/number %) "15B") acts))
+          _ (ds/select-round @conn (:activity/id activity-one))
+          _ (ds/select-round @conn (:activity/id activity-two))]
+      (is (= (mapv #(select-keys % [:activity/name :db/id]) (ds/get-selected-activities @conn ['*]))
+             [{:activity/name "Disco Singel Guld J2"}
+              {:activity/name "Disco Singel Guld J1"}])))))
+
+(deftest application-should-be-able-to-deselect-rounds
+  (testing "It should be possible to deselect a selected round"
+    (let [competition-data @test-competition
+          _ (ds/transact-competition @conn competition-data)
+          acts (ds/query-activities @conn ['*])
+          activity-one (first (filter #(= (:activity/number %) "15A") acts))
+          activity-two (first (filter #(= (:activity/number %) "15B") acts))
+          _ (ds/select-round @conn (:activity/id activity-one))
+          _ (ds/select-round @conn (:activity/id activity-two))
+          ]
+      (is (= (count (ds/get-selected-activities @conn ['*])) 2))
+
+      ;; selecting the same round twice should change nothing
+      (ds/select-round @conn (:activity/id activity-one))
+      (is (= (count (ds/get-selected-activities @conn ['*])) 2))
+
+      (is (= (into #{} (ds/get-selected-activities @conn ['*]))
+             (into #{} (map #(dissoc (merge % {:activity/source #{}}) :db/id)
+                            [activity-one activity-two]))))
+
+      (ds/deselect-round @conn (:activity/id activity-one))
+      (is (= (ds/get-selected-activities @conn ['*]) [activity-two]))
+
+      (ds/deselect-round @conn (:activity/id activity-two))
+      (is (= (ds/get-selected-activities @conn ['*]) []))
+
+      ;; the activites should still be present
+      (is (= (first (filter #(= (:activity/number %) "15A") (ds/query-activities @conn ['*])))
+             activity-one))
+      (is (= (first (filter #(= (:activity/number %) "15B") (ds/query-activities @conn ['*])))
+             activity-two)))))
 
 (deftest application-should-be-able-to-run-speaker-rounds
   (testing "The application should be able to run multiple speaker rounds at once"
-    (let [deleted? (ds/delete-storage mem-uri)
-          created? (ds/create-storage mem-uri (into ds/select-activity-schema ds/application-schema))
-          conn (ds/create-connection mem-uri)
-          tx (ds/set-speaker-activity conn {:activity/id #uuid "967d051d-ea8b-43d4-9dba-35fb51aedda9"
-                                            :activity/name "One"})]
-      (ds/set-speaker-activity conn {:activity/id #uuid "867d051d-ea8b-43d4-9dba-35fb51aedda9"
-                                     :activity/name "Two"})
-      (is (= (mapv :activity/name (ds/get-speaker-activites conn [:activity/name]))
-             ["One" "Two"])))))
+    (let [competition-data @test-competition
+          _ (ds/transact-competition @conn competition-data)
+          acts (ds/query-activities @conn ['*])
+          activity-one (first (filter #(= (:activity/number %) "15A") acts))
+          activity-two (first (filter #(= (:activity/number %) "15B") acts))
+          _ (ds/select-speaker-round @conn (:activity/id activity-one))
+          _ (ds/select-speaker-round @conn (:activity/id activity-two))]
 
-;(deftest selecting-the-same-activity-should-not-add-data
-;  (testing "Selecting the same activity multiple times should add data"
-;    (let [_ (ds/delete-storage mem-uri)
-;          _ (ds/create-storage mem-uri (into ds/select-activity-schema ds/application-schema))
-;          conn (ds/create-connection mem-uri)
-;          round (create-selected-round "One")]
-;      (ds/select-round conn round)
-;      (ds/select-round conn round)
-;      (is (= 2 (count (:round/starting (ds/get-selected-activity conn ['*]))))))))
+      (is (= (into #{} (ds/get-speaker-activities @conn ['*]))
+             (into #{} (map #(dissoc (merge % {:activity/source #{}}) :db/id)
+                            [activity-one activity-two]))))
+
+      (ds/deselect-speaker-round @conn (:activity/id activity-one))
+      (is (= (ds/get-speaker-activities @conn ['*]) [activity-two]))
+
+      (ds/deselect-speaker-round @conn (:activity/id activity-two))
+      (is (= (ds/get-speaker-activities @conn ['*]) [])))))
 
 (deftest adjudicator-results-can-be-transacted
   (testing "Adjudicator result can be transacted to db"

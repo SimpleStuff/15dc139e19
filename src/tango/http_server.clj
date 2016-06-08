@@ -57,10 +57,10 @@
              (log/info "Select activity")
              (async/>!! state {:topic :command :sender :http :payload [key params]}))})
 
-(defmethod mutate 'app/set-speaker-activity
+(defmethod mutate 'app/select-speaker-activity
   [{:keys [state] :as env} key params]
   {:action (fn []
-             (log/info "Set Speaker activity")
+             (log/info "Select Speaker activity")
              (async/>!! state {:topic :command :sender :http :payload [key params]}))})
 
 (defmethod mutate 'participant/set-result
@@ -83,7 +83,7 @@
                ;; TODO - this should be in its own service etc
                (let [conn (d/create-connection "datomic:free://localhost:4334//competitions")
                      selected-acts-with-results
-                     (d/get-selected-activites
+                     (d/get-selected-activities
                        conn
                        [:activity/name
                         :activity/number
@@ -115,22 +115,28 @@
 ;; Read
 (defmulti reader (fn [env key params] key))
 
+(defmethod reader :app/selected-activities
+  [{:keys [state query]} key params]
+  {:value (do
+            (log/info "Selected activites read")
+            (d/get-selected-activities state query))})
+
 ;; TODO - clients should send query params instead of filtering on the client
 (defmethod reader :app/selected-activity
   [{:keys [state query]} key params]
   {:value (do
             (log/info (str "Selector in selected activity" query))
             ;(d/get-selected-activity state query)
-            (d/get-selected-activites state query)
+            (d/get-selected-activities state query)
             )
    ;(do (log/info (str "Reader Query Key Params " query key params)))
    })
 
-(defmethod reader :app/speaker-activites
+(defmethod reader :app/speaker-activities
   [{:keys [state query]} key params]
   {:value (do
             (log/info (str "Selector in speaker activites " query))
-            (d/get-speaker-activites state query))})
+            (d/get-speaker-activities state query))})
 
 ;(let [selected-act (d/get-selected-activity state '[:activity/id])]
 ;  (log/info (str "Selected act " selected-act))
@@ -147,7 +153,16 @@
   [{:keys [state query]} key params]
   {:value (do
             (log/info (str "app/selected-competition read"))
-            "Selected comp")})
+            ;; TODO - only support on competition
+            (let [r (first (d/query-competition state query))
+                  c (d/clean-data r)]
+              (log/info "QR")
+              (log/info r)
+              (log/info "CLEAN")
+              (log/info c)
+              c)
+            ;(d/clean-data (first (d/query-competition state query)))
+            )})
 
 (defmethod reader :app/confirmed
   [{:keys [state query]} key params]
@@ -234,6 +249,9 @@
    (GET "/speaker" req {:body (slurp (clojure.java.io/resource "public/speaker.html"))
                             :session {:uid (rand-int 10000)}
                             :headers {"Content-Type" "text/html"}})
+   (GET "/runtime" req {:body (slurp (clojure.java.io/resource "public/runtime.html"))
+                        :session {:uid (rand-int 10000)}
+                        :headers {"Content-Type" "text/html"}})
    (GET "/query" req (partial handle-query (:out-channel http-server-channels) datomic-storage-uri))
    ;; Sente channel routes
    (GET  "/chsk" req (ajax-get-or-ws-handshake-fn req))

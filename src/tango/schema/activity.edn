@@ -1,4 +1,41 @@
 [;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ ;; Application
+
+ ;; TODO - Is this the correct approach or should this be an attribute of the competition?
+ ;; selected-competition
+ {:db/id                 #db/id[:db.part/db]
+  :db/ident              :app/selected-competition
+  :db/valueType          :db.type/ref
+  :db/cardinality        :db.cardinality/one
+  :db/doc                "The applications selected competition"
+  :db.install/_attribute :db.part/db}
+
+ {:db/id                 #db/id[:db.part/db]
+  :db/ident              :app/selected-activities
+  :db/valueType          :db.type/ref
+  :db/cardinality        :db.cardinality/many
+  :db/doc                "The applications selected activities"
+  :db.install/_attribute :db.part/db}
+
+ ;; selected-speaker-rounds
+ {:db/id                 #db/id[:db.part/db]
+  :db/ident              :app/speaker-activities
+  :db/valueType          :db.type/ref
+  :db/cardinality        :db.cardinality/many
+  :db/doc                "The applications selected speaker activities"
+  :db.install/_attribute :db.part/db}
+
+ ;; TODO - use competition id instead
+ ;; id
+ {:db/id                 #db/id[:db.part/db]
+  :db/ident              :app/id
+  :db/valueType          :db.type/long
+  :db/unique             :db.unique/identity
+  :db/cardinality        :db.cardinality/one
+  :db/doc                "The applications id"
+  :db.install/_attribute :db.part/db}
+
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  ;; Competition
 
  ;; id
@@ -221,6 +258,7 @@
 
  {:db/id                 #db/id[:db.part/db]
   :db/ident              :activity/number
+  ; :db/unique             :db.unique/identity
   :db/valueType          :db.type/string
   :db/cardinality        :db.cardinality/one
   :db/doc                "An activitys number"

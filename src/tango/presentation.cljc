@@ -23,18 +23,21 @@
 ;; Presenter utils
 
 (def round-map
-  {:none ""
-   :normal-x "Normal" :semifinal-x "Semifinal" :final-x "Final"
-   :b-final-x "B-Final" :retry-x "Retry" :second-try-x "2nd try"
+  {:round-type/none ""
+   :round-type/normal-x "Normal" :round-type/semifinal-x "Semifinal" :round-type/final-x "Final"
+   :round-type/b-final-x "B-Final" :round-type/retry-x "Retry" :round-type/second-try-x "2nd try"
 
-   :normal-1-5 "Normal 1-5" :semifinal-1-5 "Semifinal 1-5" :retry-1-5 "Retry 1-5" :second-try-1-5 "2nd try 1-5"
+   :round-type/normal-1-5 "Normal 1-5" :round-type/semifinal-1-5 "Semifinal 1-5"
+   :round-type/retry-1-5 "Retry 1-5" :round-type/second-try-1-5 "2nd try 1-5"
 
-   :normal-3d "Normal 3D" :semifinal-3d "Semifinal 3D" :retry-3d "Retry 3D" :second-try-3d "2nd try 3D"
+   :round-type/normal-3d "Normal 3D" :round-type/semifinal-3d "Semifinal 3D"
+   :round-type/retry-3d "Retry 3D" :round-type/second-try-3d "2nd try 3D"
 
-   :normal-a+b "Normal A+B" :semifinal-a+b "Semifinal A+B" :final-a+b "Final A+B"
-   :b-final-a+b "B-Final A+B" :retry-a+b "Retry A+B" :second-try-a+b "2nd try A+B"
+   :round-type/normal-a+b "Normal A+B" :round-type/semifinal-a+b "Semifinal A+B"
+   :round-type/final-a+b "Final A+B" :round-type/b-final-a+b "B-Final A+B"
+   :round-type/retry-a+b "Retry A+B" :round-type/second-try-a+b "2nd try A+B"
 
-   :presentation "Presentation"})
+   :round-type/presentation "Presentation"})
 
 (defn- make-event-round-presentation [event-round]
   (get round-map event-round))
@@ -44,8 +47,8 @@
   (clojure.string/join (map #(first (:dance/name %)) dances)))
 
 (defn- get-completed-rounds [rounds]
-  (filter #(and (= (:round/status %) :completed)
-                (not= (:round/type %) :presentation)) rounds))
+  (filter #(and (= (:round/status %) :status/completed)
+                (not= (:round/type %) :round-type/presentation)) rounds))
 
 (defn- make-round-presentation [rounds]
   ;; Only count rounds that are completed and that are not presentation rounds
@@ -54,7 +57,7 @@
      (count completed-rounds) " - "
      (if (seq completed-rounds)
        (let [round-type (:round/type (last completed-rounds))]
-         (if (= round-type :normal-x)
+         (if (= round-type :round-type/normal-x)
            (str "Round " (count completed-rounds))
            (get round-map round-type)))
        "Not Started"))))
@@ -63,34 +66,41 @@
 ;; Presenters
 
 (defn make-class-presenter [class]
-  {:position (:class/position class)
-   
-   :name (:class/name class)
-   
-   :panel (if-let [panel (:class/adjudicator-panel class)]
-            (:adjudicator-panel/name panel)
-            "0")
-   
-   :type (make-dance-type-presentation (:class/dances class))
-   
-   :starting (str (count (:class/remaining class)) "/" (count (:class/starting class)))
-   
-   ;; Present how far into the competition this class is.
-   ;; The round status is given by the last completed round, if there are none
-   ;;  the class is not started
-   :status (make-round-presentation (:class/rounds class))})
+  (let [last-round (last (:class/rounds class))
+        remaining (if (:round/starting last-round)
+                    (:round/starting last-round)
+                    (:class/starting class))
+        remaining-count (if (= :status/completed (:round/status last-round))
+                          0
+                          (count remaining))]
+    {:position (:class/position class)
+
+     :name     (:class/name class)
+
+     :panel    (if-let [panel (:class/adjudicator-panel class)]
+                 (:adjudicator-panel/name panel)
+                 "0")
+
+     :type     (make-dance-type-presentation (:class/dances class))
+
+     :starting (str remaining-count "/" (count (:class/starting class)))
+
+     ;; Present how far into the competition this class is.
+     ;; The round status is given by the last completed round, if there are none
+     ;;  the class is not started
+     :status   (make-round-presentation (:class/rounds class))}))
 
 (defn make-time-schedule-activity-presenter [activity class]
   (let [round (:activity/source activity)
         
         ;; Comments have no activity number or if they do the round will not belong to any class
-        comment? (or (not= (:activity/comment activity) "") (= (:activity/number activity) -1))
+        comment? (or (not= (:activity/comment activity) "") (= (:activity/number activity) "-1"))
             
         ;; When a class have only one round that round is a direct final.
         ;; Note that a presentation round should not be considered and a
         ;; presentation round is never a direct final.
-        direct-final? (and (= (count (filter #(not= (:round/type %) :presentation) (:class/rounds class))) 1)
-                           (not= (:round/type round) :presentation))
+        direct-final? (and (= (count (filter #(not= (:round/type %) :round-type/presentation) (:class/rounds class))) 1)
+                           (not= (:round/type round) :round-type/presentation))
                 
         last-completed-round-index (:round/index (last (get-completed-rounds (:class/rounds class))))]
     {:time     (str (if (:activity/time activity)
@@ -99,9 +109,9 @@
                         ;(str (time/hour t) ":" (time/minute t))
                         (tf/unparse formatter t)
                         ))
-                    (if (= (:round/status round) :completed) "*" ""))
+                    (if (= (:round/status round) :status/completed) "*" ""))
 
-     :number   (str (if (= (:activity/number activity) -1) "" (:activity/number activity)))
+     :number   (str (if (= (:activity/number activity) "-1") "" (:activity/number activity)))
 
      :name     (if comment? (:activity/comment activity) (:activity/name activity))
 
@@ -134,17 +144,17 @@
                    "Direct Final"
                    (make-event-round-presentation (:round/type round))))
 
-     :heats    (if (or comment? direct-final? (= (:round/type round) :final-x))
+     :heats    (if (or comment? direct-final? (= (:round/type round) :round-type/final-x))
                  ""
-                 (let [heats (:round/heats round)
+                 (let [heats (:round/number-of-heats round)
                        suffix (if (= 1 heats) "" "s")]
                    (str heats " heat" suffix)))
 
-     :recall   (if (or (zero? (get round :round/recall 0)) comment?)
+     :recall   (if (or (zero? (get round :round/number-to-recall 0)) comment?)
                  ""
-                 (str "Recall " (:round/recall round)))
+                 (str "Recall " (:round/number-to-recall round)))
 
-     :panel    (if (or comment? (= (:round/type round) :presentation))
+     :panel    (if (or comment? (= (:round/type round) :round-type/presentation))
                  ""
                  (let [panel (:adjudicator-panel/name (:round/panel round))]
                    (if (= panel "All adjudicators")

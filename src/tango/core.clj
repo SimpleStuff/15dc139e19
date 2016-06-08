@@ -94,7 +94,9 @@
 
      ;; Event Storage
      :event-file-storage-channels (file-storage/create-event-file-storage-channels)
-     :event-file-storage (component/using (file-storage/create-event-file-storage "./file-storage.dat")
+     :event-file-storage (component/using (file-storage/create-event-file-storage
+                                            "./file-storage.dat"
+                                            "datomic:free://localhost:4334//competitions")
                                      [:event-file-storage-channels])
 
      ;; Event Access
@@ -134,7 +136,7 @@
 (defn go
   "Entry point from a REPL, will initilize a default system and start it."
   []
-  ;(d/delete-storage "datomic:free://localhost:4334//competitions")
+  (d/delete-storage "datomic:free://localhost:4334//competitions")
   (init)
   (start))
 

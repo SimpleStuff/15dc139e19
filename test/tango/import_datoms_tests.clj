@@ -11,6 +11,8 @@
 
 (def old-data (ds/clean-import-data (imp/competition-xml->map u/real-example #(java.util.UUID/randomUUID))))
 
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Setup utils
 
@@ -21,6 +23,7 @@
 (def test-competition (atom nil))
 (def conn (atom nil))
 
+;; TODO - cleaning should be part of DB code
 (defn clean-test-data [test-data]
   (clojure.walk/postwalk
     (fn [form]
@@ -40,10 +43,9 @@
 (defn setup-db [test-fn]
   (ds/delete-storage mem-uri)
   (ds/create-storage mem-uri schema-tx)
-  (reset! test-competition (ds/clean-import-data
-                             (imp/competition-xml->map
-                               u/real-example
-                               #(java.util.UUID/randomUUID))))
+  (reset! test-competition (imp/competition-xml->map
+                             u/real-example
+                             #(java.util.UUID/randomUUID)))
   (reset! conn (ds/create-connection mem-uri))
   (test-fn))
 
@@ -104,7 +106,7 @@
 (deftest import-competition
   (testing "Import of complete competition"
     (let [competition-data @test-competition
-          _ (ds/transact-competition @conn [competition-data])]
+          _ (ds/transact-competition @conn competition-data)]
       (is (= (count (ds/query-adjudicators @conn ['*]))
              6))
 
@@ -119,23 +121,20 @@
 
 (deftest import-adjudicators
   (testing "Import of adjudicator data"
-    (let [competition-data (:competition/adjudicators @test-competition)
-          _ (ds/transact-competition @conn competition-data)]
+    (let [_ (ds/transact-competition @conn @test-competition)]
       (is (seq (mapv #(s/validate dom/adjudicator %)
                      (clean-test-data (ds/query-adjudicators @conn ['*]))))))))
 
 (deftest import-adjudicator-panels
   (testing "Import of adjudicator panels data"
-    (let [competition-data (:competition/panels @test-competition)
-          _ (ds/transact-competition @conn competition-data)]
+    (let [_ (ds/transact-competition @conn @test-competition)]
       (is (seq (mapv #(s/validate dom/adjudicator-panel %)
                      (clean-test-data
                        (ds/query-adjudicator-panels @conn panel-query))))))))
 
 (deftest import-classes
   (testing "Import of classes data"
-    (let [competition-data (:competition/classes @test-competition)
-          _ (ds/transact-competition @conn competition-data)]
+    (let [_ (ds/transact-competition @conn @test-competition)]
       (is (= (count (ds/query-classes @conn ['*]))
              48))
 
@@ -145,8 +144,7 @@
 
 (deftest import-activities
   (testing "Import of activities data"
-    (let [competition-data (:competition/activities @test-competition)
-          _ (ds/transact-competition @conn competition-data)]
+    (let [_ (ds/transact-competition @conn @test-competition)]
       (is (= (count (ds/query-activities @conn ['*]))
              140))
 
@@ -162,7 +160,7 @@
                               :competition/date
                               :competition/location
                               :competition/options])
-          _ (ds/transact-competition @conn [competition-data])
+          _ (ds/transact-competition @conn competition-data)
           query-result (first (ds/query-competition @conn ['* {:competition/options ['*]}]))]
       (is (= (:competition/date query-result)
              #inst "2015-09-26T00:00:00.000-00:00"))
@@ -189,11 +187,50 @@
                      (clean-test-data
                        (ds/query-competition @conn ['* {:competition/options ['*]}]))))))))
 
+(deftest import-real-example-kongsor
+  (testing "Import of real example from Kungsör"
+    (let [competition-data (imp/competition-xml->map
+                             u/real-example-kungsor
+                             #(java.util.UUID/randomUUID))
+          _ (ds/transact-competition @conn competition-data)]
+      (is (= (count (ds/query-adjudicators @conn ['*]))
+             6))
+
+      (is (seq (s/validate dom/competition-data-schema
+                           (clean-test-data (first (ds/query-competition
+                                                     @conn
+                                                     ['* {:competition/options ['*]
+                                                          :competition/adjudicators ['*]
+                                                          :competition/activities activities-query
+                                                          :competition/classes class-query
+                                                          :competition/panels panel-query}])))))))))
+
+;; TODO - add support for this competition
+;; TODO - it seems that rounds with several dances have multiple entries for marks
+;; i.e. 3 adjs and rounds is 4 dances will give 12 mark entries
+;(deftest import-real-example-uppsala
+;  (testing "Import of real example from Uppsala"
+;    (let [competition-data (imp/competition-xml->map
+;                             u/real-example-uppsala
+;                             #(java.util.UUID/randomUUID))
+;          _ (ds/transact-competition @conn competition-data)]
+;      (is (= (count (ds/query-adjudicators @conn ['*]))
+;             6))
+;
+;      (is (seq (s/validate dom/competition-data-schema
+;                           (clean-test-data (first (ds/query-competition
+;                                                     @conn
+;                                                     ['* {:competition/options ['*]
+;                                                          :competition/adjudicators ['*]
+;                                                          :competition/activities activities-query
+;                                                          :competition/classes class-query
+;                                                          :competition/panels panel-query}])))))))))
+
 (deftest transform-old-result
   (testing "Transform old result format to new"
     (let [old-result
           {:result/participant-number 11,
-           :result/recalled           "",
+           :result/recalled           :r,
            :result/judgings [{:judging/adjudicator #uuid"c1574c96-17e5-4ad8-a40b-66d8f8f7124b",
                               :judging/marks        [{:mark/x false}]}
                              {:judging/adjudicator #uuid"f78a26da-a254-4927-b3a1-ce7a4bb8da40",

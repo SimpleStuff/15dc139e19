@@ -15,8 +15,9 @@
         class-for-round (first (filter #(= (:class/name %)
                                            (:activity/name completed))
                                        classes))
-        presentation (p/make-time-schedule-activity-presenter completed
-                                                              class-for-round)
+        presentation (p/make-time-schedule-activity-presenter
+                       completed
+                       class-for-round)
         temp-result {:activity/name   (:activity/name completed)
                      :activity/number (:activity/number completed)
                      :round/recalled (filter #(not= (:result/recalled %) "")

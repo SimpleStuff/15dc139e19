@@ -13,15 +13,15 @@
 
 (defn select-activity [conn activity]
   (do
-    (d/select-round conn activity)
+    (d/select-round conn (:activity/id activity))
     (log/info (str "Application selected round changed : " ))))
 
 (defn selected-activity [conn]
-  (log/info (str "Application selected round : " (d/get-selected-activity conn '[:activity/name]))))
+  (log/info (str "Application selected round : " (d/get-selected-activities conn '[:activity/name]))))
 
 (defn set-speaker-activity [conn activity]
   (do
-    (d/set-speaker-activity conn activity)
+    (d/select-speaker-round conn (:activity/id activity))
     (log/info (str "Speaker activity set"))))
 
 (defn fix-lookup-refs [result]
@@ -87,7 +87,7 @@
                                       (into [] (:results payload))
                                       (:adjudicator payload)
                                       (:activity payload)))
-                   ['app/set-speaker-activity _]
+                   ['app/select-speaker-activity _]
                    (do
                      (log/info (str "Set Speaker Activity"))
                      (set-speaker-activity (d/create-connection datomic-storage-uri) payload))
@@ -231,9 +231,12 @@
     (log/report "Starting MessageBroker")
     (let [rules-in-ch (async/chan)
           rules-out-ch (async/chan)
-          db (d/create-storage datomic-storage-uri (into d/select-activity-schema
-                                                         (into d/application-schema
-                                                               d/result-schema)))
+          schema-tx (read-string (slurp "./src/tango/schema/activity.edn"))
+          _ (d/create-storage datomic-storage-uri schema-tx
+                               ;(into d/select-activity-schema
+                               ;                          (into d/application-schema
+                               ;                                d/result-schema))
+                               )
           rules-engine (start-result-rules-engine
                          rules-in-ch
                          rules-out-ch
@@ -247,6 +250,8 @@
                            :http-server-channels http-server-channels
                            :rules-engine-channels {:in-channel rules-in-ch
                                                    :out-channel rules-out-ch}})]
+      (log/info "Schema-tx")
+      (log/info schema-tx)
       (assoc component :broker-process broker-process
                        :rules-engine rules-engine)))
   (stop [component]

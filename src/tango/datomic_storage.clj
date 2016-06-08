@@ -279,6 +279,23 @@
       (if (map? form) (assoc form :db/id (create-literal)) form))
     round-data))
 
+;; TODO - do not leak db/id?
+(defn clean-data [data]
+  (clojure.walk/postwalk
+    (fn [form]
+      (cond
+        ;; Competition should have id
+        (:db/id form) (if (:db/ident form)
+                        (:db/ident form)
+                        (if (> (count (keys form)) 1)
+                          (dissoc form :db/id)
+                          #{}
+                          ;form
+                          ))
+
+        :else form))
+    data))
+
 (defn delete-storage [uri]
   (d/delete-database uri))
 
@@ -292,8 +309,6 @@
   (d/connect uri))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defn transact-competition [conn tx]
-  @(d/transact conn (mapv fix-id tx)))
 
 (defn participant-index
   "Return map of index number -> id"
@@ -371,6 +386,10 @@
           ))
       import-data)))
 
+(defn transact-competition [conn tx]
+  @(d/transact conn [(assoc (fix-id (clean-import-data tx)) :app/id 1)]))
+
+
 (defn query-adjudicators [conn query]
   (d/q '[:find [(pull ?e selector) ...]
          :in $ selector
@@ -393,11 +412,12 @@
        (d/db conn) query))
 
 (defn query-activities [conn query]
-  (d/q '[:find [(pull ?e selector) ...]
-         :in $ selector
-         :where
-         [?e :activity/id]]
-       (d/db conn) query))
+  (clean-data
+    (d/q '[:find [(pull ?e selector) ...]
+           :in $ selector
+           :where
+           [?e :activity/id]]
+         (d/db conn) query)))
 
 (defn query-competition [conn query]
   (d/q '[:find [(pull ?e selector) ...]
@@ -408,14 +428,32 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defn select-round [conn round]
-  @(d/transact conn [(fix-id {:app/selected-activites round
-                              :app/id                 1})]))
+;(defn select-round [conn round]
+;  @(d/transact conn [(fix-id {:app/selected-activites round
+;                              :app/id                 1})]))
+(defn select-round [conn activity-id]
+  @(d/transact conn [{:app/selected-activities {:db/id [:activity/id activity-id]}
+                      ;:app/id 1
+                      :db/id                   [:app/id 1]                                ; (d/tempid :db.part/user)
+                      }
+                     ]))
 
-(defn set-speaker-activity [conn activity]
-  @(d/transact conn [(fix-id {:app/speaker-activites activity
-                              :app/id                1})]))
+(defn deselect-round [conn activity-id]
+  @(d/transact conn [[:db/retract [:app/id 1]
+                      :app/selected-activities [:activity/id activity-id]]]))
 
+(defn select-speaker-round [conn activity-id]
+  @(d/transact conn [{:app/speaker-activities {:db/id [:activity/id activity-id]}
+                      :db/id [:app/id 1]}]))
+
+(defn deselect-speaker-round [conn activity-id]
+  @(d/transact conn [[:db/retract [:app/id 1]
+                      :app/speaker-activities [:activity/id activity-id]]]))
+
+;(defn set-speaker-activity [conn activity]
+;  @(d/transact conn [(fix-id {:app/speaker-activites activity
+;                              :app/id                1})]))
+;
 (defn set-results [conn results]
   @(d/transact conn (mapv fix-id results)))
 
@@ -433,34 +471,42 @@
   (let [tx-data (update-fn)]
     @(d/transact db [tx-data])))
 
-(defn get-selected-activity [conn query]
+(defn get-selected-activities [conn query]
   (do (log/info "DT query " query)
-      (d/q '[:find (pull ?a selector) .
-             :in $ selector
-             :where
-             [?e :app/id 1]
-             [?e :app/selected-activity ?a]]
-           (d/db conn) query)))
+      (clean-data (d/q '[:find [(pull ?a selector) ...]
+                         :in $ selector
+                         :where
+                         ;[?e :app/id 1]
+                         [?e :app/selected-activities ?a]]
+                       (d/db conn) query))))
 
+(defn get-speaker-activities [conn query]
+  (do (log/info "get Speaker activities"))
+  (clean-data (d/q '[:find [(pull ?a selector) ...]
+                     :in $ selector
+                     :where
+                     ;[?e :app/id 1]
+                     [?e :app/speaker-activities ?a]]
+                   (d/db conn) query)))
 
-(defn get-speaker-activites [conn query]
-  (do (log/info "Selected Speaker Activites " query)
-      (d/q '[:find [(pull ?a selector) ...]
-             :in $ selector
-             :where
-             [?e :app/id 1]
-             [?e :app/speaker-activites ?a]]
-           (d/db conn) query)))
+;(defn get-speaker-activites [conn query]
+;  (do (log/info "Selected Speaker Activites " query)
+;      (d/q '[:find [(pull ?a selector) ...]
+;             :in $ selector
+;             :where
+;             [?e :app/id 1]
+;             [?e :app/speaker-activites ?a]]
+;           (d/db conn) query)))
 
-(defn get-selected-activites [conn query]
-  (do (log/info "Selected Activites " query)
-      (d/q '[:find [(pull ?a selector) ...]
-             ;:find ?a
-             :in $ selector
-             :where
-             [?e :app/id 1]
-             [?e :app/selected-activites ?a]]
-           (d/db conn) query)))
+;(defn get-selected-activites [conn query]
+;  (do (log/info "Selected Activites " query)
+;      (d/q '[:find [(pull ?a selector) ...]
+;             ;:find ?a
+;             :in $ selector
+;             :where
+;             [?e :app/id 1]
+;             [?e :app/selected-activites ?a]]
+;           (d/db conn) query)))
 
 ;; TODO - need to pull only for a specific activity
 ;; understand how to query for guid value
@@ -481,76 +527,7 @@
          :where
          [?e :result/id]]
        (d/db conn) query))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Examples
 
-;(def uri "datomic:mem://localhost:4334//competitions")
-;
-;(d/delete-database uri)
-;;; create db
-;(d/create-database uri)
-;
-;;; create conn
-;(def conn (d/connect uri))
-;
-;;; add schema
-;@(d/transact conn schema-test)
-;
-;;; simple test data
-;(def test-data [{:competition/name "Rikstävling i disco"
-;                 :db/id #db/id[:db.part/user -100000]}])
-;
-;(def test-no-id [{:competition/name "No ID"}])
-;
-;;; transact data
-;@(d/transact conn test-data)
-;
-;;@(d/transact conn test-no-id)
-;
-;;; query
-;(def result-1
-;  (d/q '[:find ?n :where [?n :competition/name]] (d/db conn)))
-;
-;;; test entity api
-;(:competition/name (d/entity (d/db conn) (ffirst result-1)))
-;
-;;; test of pull
-;(d/q '[:find [(pull ?n [:competition/name])]
-;       :where [?n :competition/name]]
-;     (d/db conn))
-;
-;;; DS test
-;(def ds-conn (ds/create-conn ui/schema))
-;
-;(ds/transact! ds-conn test-no-id)
-;
-;(ds/transact! ds-conn [(ui/sanitize u/expected-small-example)])
-;
-;ds-conn
-;
-;(ds/q '[:find (pull ?e [*])
-;        :where [?e :competition/name]]
-;      (ds/db ds-conn))
-;
-;(defn create-literal
-;  ([]
-;    (d/tempid :db.part/user))
-;  ([id]
-;   (d/tempid :db.part/user (- id 100000))))
-;
-;(create-literal 1)
-;
-;(d/transact conn [{:competition/name "Test"
-;                   :db/id            (create-literal 1)}])
-;
-;(d/transact conn [[:db/add (create-literal 1) :competition/name "Ost"]])
-;
-;(def test-data (keys (ds/transact! ds-conn [(ui/sanitize u/expected-small-example)])))
-;
-;(ds/datoms (ds/db ds-conn) :eavt)
-;
-;(defn stuff [conn]
-;  (let [dvec #(vector (:e %) (:a %) (:v %))]
-;    (map dvec (ds/datoms (ds/db conn) :eavt))))
-;
-;(stuff ds-conn)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Services
+
