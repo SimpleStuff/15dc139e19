@@ -113,6 +113,24 @@
                                ;:optimizations :none
                                }}
 
+               {:id           "runtime"
+                :source-paths ["src/tango/cljs/runtime" "src"]
+                :figwheel     {:on-jsload "tango.cljs.adjudicator.core/on-js-reload"}
+                :compiler     {:main       tango.cljs.runtime.core
+                               :asset-path "js/out/runtime"
+                               :output-to  "resources/public/js/runtime.js"
+                               :output-dir "resources/public/js/out/runtime"
+                               ;:source-map    "resources/public/js/out.js.map"
+                               ;; PROD
+                               :optimizations :advanced
+                               :pretty-print  false
+
+                               ;; DEV
+                               ;:source-map true
+                               ;:pretty-print  true
+                               ;:optimizations :none
+                               }}
+
                {:id           "speaker"
                 :source-paths ["src/tango/cljs/speaker" "src"]
                 :figwheel     {:on-jsload "tango.cljs.speaker.core/on-js-reload"}
