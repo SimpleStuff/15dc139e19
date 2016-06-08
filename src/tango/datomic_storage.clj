@@ -481,6 +481,7 @@
                        (d/db conn) query))))
 
 (defn get-speaker-activities [conn query]
+  (do (log/info "get Speaker activities"))
   (clean-data (d/q '[:find [(pull ?a selector) ...]
                      :in $ selector
                      :where

@@ -132,7 +132,7 @@
    ;(do (log/info (str "Reader Query Key Params " query key params)))
    })
 
-(defmethod reader :app/speaker-activites
+(defmethod reader :app/speaker-activities
   [{:keys [state query]} key params]
   {:value (do
             (log/info (str "Selector in speaker activites " query))

@@ -47,5 +47,4 @@
                (log "Post Update")
                ;(log (:app/speaker-activites @state))
                ))
-   ;:command true
-   })
+   :command true})

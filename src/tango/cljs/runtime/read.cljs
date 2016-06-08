@@ -32,5 +32,4 @@
 (defmethod read :app/speaker-activities
   [{:keys [state]} _ _]
   {:value (get @state :app/speaker-activities [])
-   ;:query true
-   })
+   :query true})

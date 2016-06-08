@@ -21,7 +21,7 @@
 
 (defn set-speaker-activity [conn activity]
   (do
-    (d/select-speaker-round conn activity)
+    (d/select-speaker-round conn (:activity/id activity))
     (log/info (str "Speaker activity set"))))
 
 (defn fix-lookup-refs [result]
@@ -87,7 +87,7 @@
                                       (into [] (:results payload))
                                       (:adjudicator payload)
                                       (:activity payload)))
-                   ['app/set-speaker-activity _]
+                   ['app/select-speaker-activity _]
                    (do
                      (log/info (str "Set Speaker Activity"))
                      (set-speaker-activity (d/create-connection datomic-storage-uri) payload))
