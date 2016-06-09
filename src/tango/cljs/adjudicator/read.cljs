@@ -13,6 +13,20 @@
   {:value (get @state :app/selected-adjudicator nil)
    :query true})
 
+(defmethod read :app/results
+  [{:keys [state]} _ _]
+  {:value (get @state :app/results [])
+   :query true})
+
+(defmethod read :app/heat-page
+  [{:keys [state]} _ _]
+  {:value (get @state :app/heat-page 1)})
+
+(defmethod read :app/heat-page-size
+  [{:keys [state]} _ _]
+  {:value (get @state :app/heat-page-size 2)})
+
+
 ;(defmethod read :app/selected-page
 ;  [{:keys [state]} _ _]
 ;  {:value (d/q '[:find ?page .
@@ -98,17 +112,7 @@
 ;     ;:query true
 ;     }))
 ;
-;(defmethod read :app/heat-page
-;  [{:keys [state]} _ _]
-;  {:value (d/q '[:find ?page .
-;                 :where [[:app/id 1] :app/heat-page ?page]]
-;               (d/db state))})
-;
-;(defmethod read :app/heat-page-size
-;  [{:keys [state]} _ _]
-;  {:value (d/q '[:find ?s .
-;                 :where [[:app/id 1] :app/heat-page-size ?s]]
-;               (d/db state))})
+
 ;
 ;(defmethod read :app/admin-mode
 ;  [{:keys [state]} _ _]

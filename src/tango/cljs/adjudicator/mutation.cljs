@@ -23,6 +23,13 @@
                (swap! state assoc :app/selected-adjudicator adjudicator)
                (log "Post select")))})
 
+(defmethod mutate 'app/heat-page
+  [{:keys [state]} _ {:keys [page]}]
+  {:value  {:keys [:app/heat-page]}
+   :remote true
+   :action (fn []
+             (swap! state assoc :app/heat-page page))})
+
 ;(defmethod mutate 'app/status
 ;  [{:keys [state]} _ {:keys [status]}]
 ;  {:value  {:keys [:app/status]}
