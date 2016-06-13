@@ -52,7 +52,14 @@
 (defmethod mutate 'app/status
   [{:keys [state]} _ {:keys [status]}]
   {:value  {:keys [:app/status]}
-   :action (fn [] (swap! state assoc :app/status status))})
+   :action (fn []
+             (swap! state assoc :app/status status)
+             (log (:app/status @state)))})
+
+(defmethod mutate 'app/set-admin-mode
+  [{:keys [state]} _ {:keys [in-admin]}]
+  {:value  {:keys [:app/admin-mode]}
+   :action (fn [] (swap! state assoc :app/admin-mode in-admin))})
 
 ;(defmethod mutate 'app/status
 ;  [{:keys [state]} _ {:keys [status]}]

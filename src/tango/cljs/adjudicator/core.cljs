@@ -193,7 +193,9 @@
                                      (swap! local-id assoc :name (:adjudicator/name %))
                                      ;(swap! local-id assoc :adjudicator %)
                                      (om/transact! this `[(app/select-adjudicator {:adjudicator ~%})
-                                                          :app/selected-adjudicator])))}
+                                                          (app/status {:status :waiting-for-round})
+                                                          :app/selected-adjudicator
+                                                          :app/status])))}
                      (:adjudicator/name %)) (:adjudicator-panel/adjudicators panel))))
           (dom/div nil
             (dom/h3 nil "Waiting for Adjudicator Panel to select Adjudicator from..")))))))
@@ -362,6 +364,29 @@
                            :onClick   #(om/transact! this `[(app/heat-page {:page ~(inc current-page)})
                                                             :app/heat-page])} "Next"))))))
 
+(defui AdminComponent
+  static om/IQuery
+  (query [_])
+  Object
+  (render
+    [this]
+    (let [pwd (atom "")
+          status (:status (om/props this))]
+      (dom/div nil
+        (dom/div nil
+          (dom/h3 nil (str "Local Storage Says : " (:name @local-id)))
+          (dom/button #js {:className "btn btn-default"
+                           :onClick   #(when (= @pwd "1337")
+                                        (ls/clear-local-storage!))} "Clear Storage")
+          (dom/input #js {:className "text" :value @pwd :onChange #(reset! pwd (.. % -target -value))})
+          (dom/p nil "Refresh after clearing storage!"))
+        (dom/div nil
+          (dom/button #js {:className "btn btn-primary"
+                           :onClick #(when (= @pwd "1337")
+                                      (om/transact! this `[(app/status {:status :judging})]))}
+                      "Show Confirmed Results")
+          (dom/h5 nil (str "Current State : " status)))))))
+
 ;https://medium.com/@kovasb/om-next-the-reconciler-af26f02a6fb4#.kwq2t2jzr
 (defui MainComponent
   static om/IQuery
@@ -386,14 +411,14 @@
 
      :app/heat-page
      :app/heat-page-size
-     ;:app/admin-mode
-     ;:app/status
+     :app/admin-mode
+     :app/status
      ])
   Object
   (render
     [this]
     (let [app (om/props this)
-          ;status (:app/status app)
+          status (:app/status app)
           selected-activity (first (:app/selected-activities (om/props this)))
           selected-round (:activity/source selected-activity)
           panel (:round/panel selected-round)
@@ -402,12 +427,9 @@
           results-for-this-adjudicator (filter #(= (:adjudicator/id selected-adjudicator)
                                                    (:adjudicator/id (:result/adjudicator %)))
                                                (:app/results (om/props this)))
-          ;results-for-this-adjudicator (filter #(= (:adjudicator/id selected-adjudicator)
-          ;                                         (:result/adjudicator %))
-          ;                                     (:app/results (om/props this)))
           mark-count (count (filter #(when (:result/mark-x %) %) results-for-this-adjudicator))
           allow-marks? (< mark-count (int (:round/number-to-recall selected-round)) )
-          ;in-admin-mode? (:app/admin-mode (om/props this))
+          in-admin-mode? (:app/admin-mode (om/props this))
           ]
       ;(log-trace "Rendering MainComponent")
       ;(log selected-activity)
@@ -416,63 +438,106 @@
       ;(log "Results for adj")
       ;(log results-for-this-adjudicator)
       ;(log (:app/results (om/props this)))
+      (log "Status")
+      (log status)
+      (log "In admin mode")
+      (log in-admin-mode?)
       (dom/div #js {:className "container-fluid"}
-        (when-not selected-adjudicator
-          ((om/factory AdjudicatorSelection) panel))
-        (when selected-adjudicator
-          (dom/div #js {:className "col-xs-12"}
-            (dom/h3 #js {:className "text-center"} (str "Judge : "
-                                                        (if selected-adjudicator
-                                                          (:adjudicator/name selected-adjudicator)
-                                                          "None selected")))
+        ;(when-not selected-adjudicator
+        ;  ((om/factory AdjudicatorSelection) panel))
+        ;(when selected-adjudicator)
+        (dom/div #js {:className "col-xs-1 pull-right"}
+          (dom/button #js {:className "btn btn-default"
+                           :onClick   #(om/transact! this `[(app/set-admin-mode
+                                                              {:in-admin ~(not in-admin-mode?)})])}
+                      (dom/span #js {:className "glyphicon glyphicon-cog"})))
+        (when in-admin-mode?
+          (dom/div nil
+            ((om/factory AdminComponent) {:status status})))
+        (dom/div nil
+          (condp = status
+            :loading  (if selected-adjudicator
+                        (om/transact! this `[(app/status {:status :waiting-for-round})])
+                        (om/transact! this `[(app/status {:status :select-judge})]))
 
-            (if selected-activity
-              (dom/div nil
-                (dom/h3 #js {:className "text-center"}
-                        (:activity/name selected-activity))
-                (dom/h3 #js {:className "text-center"}
-                        (str (:round/name selected-activity)
-                             " (" (:round/number-of-heats selected-round) " heats)"))
-                (dom/h3 #js {:className "text-center"}
-                        (str "Mark " (:round/number-to-recall selected-round) " of "
-                             (count
-                               (:round/starting selected-round))
-                             " to next round"))
+            :select-judge ((om/factory AdjudicatorSelection) panel)
 
-                ((om/factory HeatsComponent) {:participants   (:round/starting selected-round)
-                                              :heats          (:round/number-of-heats selected-round)
-                                              :adjudicator/id (:adjudicator/id selected-adjudicator)
-                                              :activity/id    (:activity/id selected-activity)
-                                              :results        results-for-this-adjudicator
-                                              :allow-marks?   allow-marks?
-                                              :heat-page-size (:app/heat-page-size (om/props this))
-                                              :heat-page      (:app/heat-page (om/props this))})
+            :confirming (dom/div nil
+                          (dom/h3 nil "Confirming results, please wait.."))
+            :confirmed (do
+                         (go (let [time (<! (timeout 13000))]
+                               (om/transact!
+                                 this
+                                 `[(app/status {:status :waiting-for-round})])))
+                         (dom/div nil
+                           (dom/h3 nil "Results have been confirmed!")))
 
+            :waiting-for-round (dom/div nil
+                                 (dom/h3 nil "Waiting for next round.."))
+            ;:waiting-for-round (if (and selected-activity
+            ;                            (filter #(= (:adjudicator/id selected-adjudicator)
+            ;                                        (:adjudicator/id %))
+            ;                                    (:activity/confirmed-by selected-activity)))
+            ;                     (dom/div nil
+            ;                       (dom/h3 nil "Waiting for next round.."))
+            ;                     (dom/div nil
+            ;                       (dom/h3 nil "cas")))
+
+
+            :judging
+            (dom/div #js {:className "col-xs-12"}
+              (dom/h3 #js {:className "text-center"} (str "Judge : "
+                                                          (if selected-adjudicator
+                                                            (:adjudicator/name selected-adjudicator)
+                                                            "None selected")))
+
+              (if selected-activity
                 (dom/div nil
-                  ((om/factory HeatsControll)
-                    {:heat-page      (:app/heat-page (om/props this))
-                     :heat-last-page (int (Math/floor
-                                            (/ (int (:round/number-of-heats selected-round))
-                                               (:app/heat-page-size (om/props this)))))}))
+                  (dom/h3 #js {:className "text-center"}
+                          (:activity/name selected-activity))
+                  (dom/h3 #js {:className "text-center"}
+                          (str (:round/name selected-activity)
+                               " (" (:round/number-of-heats selected-round) " heats)"))
+                  (dom/h3 #js {:className "text-center"}
+                          (str "Mark " (:round/number-to-recall selected-round) " of "
+                               (count
+                                 (:round/starting selected-round))
+                               " to next round"))
 
-                (dom/div #js {:className "row"}
-                  (dom/h1 #js {:className "col-xs-offset-4 col-xs-4 text-center"}
-                          (str "Marks " mark-count "/" (:round/number-to-recall selected-round))))
+                  ((om/factory HeatsComponent) {:participants   (:round/starting selected-round)
+                                                :heats          (:round/number-of-heats selected-round)
+                                                :adjudicator/id (:adjudicator/id selected-adjudicator)
+                                                :activity/id    (:activity/id selected-activity)
+                                                :results        results-for-this-adjudicator
+                                                :allow-marks?   allow-marks?
+                                                :heat-page-size (:app/heat-page-size (om/props this))
+                                                :heat-page      (:app/heat-page (om/props this))})
 
-                (dom/div #js {:className "row"}
-                  (dom/div #js {:className "col-xs-offset-4 col-xs-4"}
-                    (dom/button #js {:className "btn btn-primary btn-lg btn-block"
-                                     :disabled  (not= mark-count (:round/number-to-recall selected-round))
-                                     :onClick   #(om/transact!
-                                                  this
-                                                  `[(app/confirm-marks
-                                                      ~{:results     results-for-this-adjudicator
-                                                        :adjudicator selected-adjudicator
-                                                        :activity (select-keys selected-activity
-                                                                               [:activity/id])})])}
-                                "Confirm Marks")))
-                ))
-            ))
+                  (dom/div nil
+                    ((om/factory HeatsControll)
+                      {:heat-page      (:app/heat-page (om/props this))
+                       :heat-last-page (int (Math/floor
+                                              (/ (int (:round/number-of-heats selected-round))
+                                                 (:app/heat-page-size (om/props this)))))}))
+
+                  (dom/div #js {:className "row"}
+                    (dom/h1 #js {:className "col-xs-offset-4 col-xs-4 text-center"}
+                            (str "Marks " mark-count "/" (:round/number-to-recall selected-round))))
+
+                  (dom/div #js {:className "row"}
+                    (dom/div #js {:className "col-xs-offset-4 col-xs-4"}
+                      (dom/button #js {:className "btn btn-primary btn-lg btn-block"
+                                       :disabled  (not= mark-count (:round/number-to-recall selected-round))
+                                       :onClick   #(om/transact!
+                                                    this
+                                                    `[(app/confirm-marks
+                                                        ~{:results     results-for-this-adjudicator
+                                                          :adjudicator selected-adjudicator
+                                                          :activity    (select-keys selected-activity
+                                                                                    [:activity/id])})])}
+                                  "Confirm Marks")))
+                  ))
+              )))
         )
       )))
 
@@ -619,6 +684,7 @@
                           :app/heat-page 0
                           :app/heat-page-size 2
                           :app/results #{}
+                          :app/admin-mode false
                           :app/status :loading}))
 
 (def reconciler

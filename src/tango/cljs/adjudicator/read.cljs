@@ -26,6 +26,13 @@
   [{:keys [state]} _ _]
   {:value (get @state :app/heat-page-size 2)})
 
+(defmethod read :app/status
+  [{:keys [state]} _ _]
+  {:value (get @state :app/status :loading)})
+
+(defmethod read :app/admin-mode
+  [{:keys [state]} _ _]
+  {:value (get @state :app/admin-mode false)})
 
 ;(defmethod read :app/selected-page
 ;  [{:keys [state]} _ _]
