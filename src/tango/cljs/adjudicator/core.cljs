@@ -145,10 +145,18 @@
       (cond
         (= payload 'app/select-activity)
         (do
-          (om/transact! reconciler `[(app/selected-activity-status {:status :out-of-sync})
-                                     ;(app/status {:status :judging})
-                                     ;:app/status
-                                     :app/results]))
+          ;; only set the activity if a judige is selected for this client
+          ;(when (= (:name @local-id)
+          ;         (:adjudicator/name (:payload payload))))
+          (om/transact! reconciler `[;(app/selected-activities {:activities #{}})
+                                     (app/status {:status :round-received})
+                                     :app/selected-activities
+                                     ])
+          ;(om/transact! reconciler `[(app/selected-activity-status {:status :out-of-sync})
+          ;                           ;(app/status {:status :judging})
+          ;                           ;:app/status
+          ;                           :app/results])
+          )
 
         (= (:topic payload) 'app/confirm-marks)
         (when (= (:name @local-id)
@@ -195,6 +203,7 @@
                                      (om/transact! this `[(app/select-adjudicator {:adjudicator ~%})
                                                           (app/status {:status :waiting-for-round})
                                                           :app/selected-adjudicator
+                                                          :app/selected-activities
                                                           :app/status])))}
                      (:adjudicator/name %)) (:adjudicator-panel/adjudicators panel))))
           (dom/div nil
@@ -430,6 +439,9 @@
           mark-count (count (filter #(when (:result/mark-x %) %) results-for-this-adjudicator))
           allow-marks? (< mark-count (int (:round/number-to-recall selected-round)) )
           in-admin-mode? (:app/admin-mode (om/props this))
+          confirmed? (seq (filter #(= (:adjudicator/id selected-adjudicator)
+                                      (:adjudicator/id %))
+                                  (:activity/confirmed-by selected-activity)))
           ]
       ;(log-trace "Rendering MainComponent")
       ;(log selected-activity)
@@ -442,6 +454,12 @@
       (log status)
       (log "In admin mode")
       (log in-admin-mode?)
+      (log "Confirmed?")
+      (log confirmed?)
+      ;(log (:adjudicator/id selected-adjudicator))
+      ;(log (filter #(= (:adjudicator/id selected-adjudicator)
+      ;                 (:adjudicator/id %))
+      ;             (:activity/confirmed-by selected-activity)))
       (dom/div #js {:className "container-fluid"}
         ;(when-not selected-adjudicator
         ;  ((om/factory AdjudicatorSelection) panel))
@@ -465,23 +483,20 @@
             :confirming (dom/div nil
                           (dom/h3 nil "Confirming results, please wait.."))
             :confirmed (do
-                         (go (let [time (<! (timeout 13000))]
-                               (om/transact!
-                                 this
-                                 `[(app/status {:status :waiting-for-round})])))
+                         (go (let [_ (<! (timeout 13000))]
+                               (om/transact! this `[(app/status {:status :waiting-for-round})
+                                                    :app/selected-activities])))
                          (dom/div nil
                            (dom/h3 nil "Results have been confirmed!")))
 
             :waiting-for-round (dom/div nil
                                  (dom/h3 nil "Waiting for next round.."))
-            ;:waiting-for-round (if (and selected-activity
-            ;                            (filter #(= (:adjudicator/id selected-adjudicator)
-            ;                                        (:adjudicator/id %))
-            ;                                    (:activity/confirmed-by selected-activity)))
-            ;                     (dom/div nil
-            ;                       (dom/h3 nil "Waiting for next round.."))
-            ;                     (dom/div nil
-            ;                       (dom/h3 nil "cas")))
+
+            ;:round-received (dom/div nil
+            ;                  (dom/h3 nil "Round received"))
+            :round-received (if (and selected-activity confirmed?)
+                              (om/transact! this `[(app/status {:status :waiting-for-round})])
+                              (om/transact! this `[(app/status {:status :judging})]))
 
 
             :judging
@@ -674,6 +689,7 @@
 
           (log remote-query)
           ;; TODO - why is the response a vec?
+          ;; TODO - change status if we get a new round
           (cb edn-response)
           )))))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
