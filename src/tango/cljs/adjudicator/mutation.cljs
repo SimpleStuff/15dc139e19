@@ -31,7 +31,7 @@
 
 (defmethod mutate 'participant/set-result
   [{:keys [state]} _ {:keys [id] :as result}]
-  {:value  {:keys []}
+  {:value  {:keys [:app/results]}
    :action (fn []
              ;; TODO - normalize with Om instead
              (swap! state (fn [current]
@@ -39,8 +39,20 @@
                                                        (:app/results current))]
                               (update-in current [:app/results] #(conj clean-result result)))))
 
-             (log (:app/results @state)))
+             ;(log (:app/results @state))
+             )
    :command true})
+
+(defmethod mutate 'app/confirm-marks
+  [{:keys [state]} _ {:keys [results]}]
+  {:value   {:keys []}
+   :action  (fn [] (swap! state assoc :app/status :confirming))
+   :command true})
+
+(defmethod mutate 'app/status
+  [{:keys [state]} _ {:keys [status]}]
+  {:value  {:keys [:app/status]}
+   :action (fn [] (swap! state assoc :app/status status))})
 
 ;(defmethod mutate 'app/status
 ;  [{:keys [state]} _ {:keys [status]}]

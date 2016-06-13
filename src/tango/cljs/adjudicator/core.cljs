@@ -348,8 +348,8 @@
     (let [current-page (:heat-page (om/props this))
           last-page (:heat-last-page (om/props this))]
       ;(log-trace "Render HeatsControll")
-      (log "Current Page")
-      (log current-page)
+      ;(log "Current Page")
+      ;(log current-page)
       (dom/div #js {:className "row"}
         (dom/div #js {:className "col-xs-4"}
           (dom/button #js {:className "btn btn-primary btn-block btn-lg"
@@ -368,6 +368,7 @@
   (query [_]
     [{:app/selected-activities
       [:activity/id :activity/name
+       {:activity/confirmed-by [:adjudicator/id]}
        {:activity/source [{:round/panel (om/get-query AdjudicatorSelection)}
                           :round/number-of-heats
                           :round/number-to-recall
@@ -410,11 +411,11 @@
           ]
       ;(log-trace "Rendering MainComponent")
       ;(log selected-activity)
-      (log "Selected Adjudicator")
-      (log selected-adjudicator)
-      (log "Results for adj")
-      (log results-for-this-adjudicator)
-      (log (:app/results (om/props this)))
+      ;(log "Selected Adjudicator")
+      ;(log selected-adjudicator)
+      ;(log "Results for adj")
+      ;(log results-for-this-adjudicator)
+      ;(log (:app/results (om/props this)))
       (dom/div #js {:className "container-fluid"}
         (when-not selected-adjudicator
           ((om/factory AdjudicatorSelection) panel))
@@ -461,7 +462,7 @@
                 (dom/div #js {:className "row"}
                   (dom/div #js {:className "col-xs-offset-4 col-xs-4"}
                     (dom/button #js {:className "btn btn-primary btn-lg btn-block"
-                                     :disabled  (not= mark-count (:round/number-to-recall selected-activity))
+                                     :disabled  (not= mark-count (:round/number-to-recall selected-round))
                                      :onClick   #(om/transact!
                                                   this
                                                   `[(app/confirm-marks
@@ -617,7 +618,8 @@
                           :app/selected-adjudicator nil
                           :app/heat-page 0
                           :app/heat-page-size 2
-                          :app/results #{}}))
+                          :app/results #{}
+                          :app/status :loading}))
 
 (def reconciler
   (om/reconciler
