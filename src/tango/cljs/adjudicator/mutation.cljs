@@ -26,9 +26,22 @@
 (defmethod mutate 'app/heat-page
   [{:keys [state]} _ {:keys [page]}]
   {:value  {:keys [:app/heat-page]}
-   :remote true
    :action (fn []
              (swap! state assoc :app/heat-page page))})
+
+(defmethod mutate 'participant/set-result
+  [{:keys [state]} _ {:keys [id] :as result}]
+  {:value  {:keys []}
+   :action (fn []
+             ;; TODO - normalize with Om instead
+             (swap! state (fn [current]
+                            (let [clean-result (filter #(not= (:result/id %) (:result/id result))
+                                                       (:app/results current))]
+                              (update-in current [:app/results] #(conj clean-result result)))))
+
+             (log (:app/results @state)))
+   ;:command true
+   })
 
 ;(defmethod mutate 'app/status
 ;  [{:keys [state]} _ {:keys [status]}]

@@ -148,7 +148,6 @@
           (om/transact! reconciler `[(app/selected-activity-status {:status :out-of-sync})
                                      ;(app/status {:status :judging})
                                      ;:app/status
-                                     :app/selected-activity
                                      :app/results]))
 
         (= (:topic payload) 'app/confirm-marks)
@@ -209,7 +208,11 @@
     (let [result (:result (om/props this))
           point (if (:result/point result) (:result/point result) 0)
           mark-x (if (:result/mark-x result) (:result/mark-x result) false)]
-      ;(log-trace "Render HeatRowComponent")
+      (log "Render HeatRowComponent")
+      (log "Results")
+      (log result)
+      ;(log "Props")
+      ;(log (om/props this))
       (dom/div #js {:className "row"}
         (dom/div #js {:className "col-xs-2"}
           (dom/h3 #js {:className "control-label"} (str (:participant/number (om/props this)))))
@@ -247,9 +250,9 @@
                                                                     (random-uuid))
                                              :result/mark-x      ~mark-value
                                              :result/point       ~point
-                                             :result/participant ~(:participant/id (om/props this))
-                                             :result/activity    ~(:activity/id (om/props this))
-                                             :result/adjudicator ~(:adjudicator/id (om/props this))})
+                                             :result/participant {:participant/id ~(:participant/id (om/props this))}
+                                             :result/activity    {:activity/id ~(:activity/id (om/props this))}
+                                             :result/adjudicator {:adjudicator/id ~(:adjudicator/id (om/props this))}})
                                           :app/results]))})
           )
 
@@ -262,9 +265,9 @@
                                                             (random-uuid))
                                      :result/mark-x      ~mark-x
                                      :result/point       ~(transform-fn point)
-                                     :result/participant ~(:participant/id (om/props this))
-                                     :result/activity    ~(:activity/id (om/props this))
-                                     :result/adjudicator ~(:adjudicator/id (om/props this))})
+                                     :result/participant {:participant/id ~(:participant/id (om/props this))}
+                                     :result/activity    {:activity/id ~(:activity/id (om/props this))}
+                                     :result/adjudicator {:adjudicator/id ~(:adjudicator/id (om/props this))}})
                                   :app/results]))]
           (dom/div #js {:className "col-xs-7"}
             (dom/button #js {:type      "button"
@@ -294,7 +297,11 @@
                         (first (filter (fn [res] (= (:participant/id participant)
                                                     (:participant/id (:result/participant res))))
                                        results)))]
-      ;(log-trace "Render HeatComponent")
+      ;(log "Render HeatComponent")
+      ;(log "Result")
+      ;(log (:results (om/props this)))
+      ;(log "Participants")
+      ;(log (:participants (om/props this)))
       (dom/div #js {:className "col-xs-6"}
         (dom/h2 #js {:className "text-center"} "Heat " (str (+ 1 heat)))
         (map #((om/factory HeatRowComponent)
@@ -319,7 +326,7 @@
           current-page (:heat-page (om/props this))
           page-start (* page-size current-page)
           page-end (+ page-start page-size)]
-      (log-trace "Render HeatsComponent")
+
       (dom/div nil
         (dom/div #js {:className "col-xs-12"}
           (subvec
@@ -394,16 +401,20 @@
           results-for-this-adjudicator (filter #(= (:adjudicator/id selected-adjudicator)
                                                    (:adjudicator/id (:result/adjudicator %)))
                                                (:app/results (om/props this)))
+          ;results-for-this-adjudicator (filter #(= (:adjudicator/id selected-adjudicator)
+          ;                                         (:result/adjudicator %))
+          ;                                     (:app/results (om/props this)))
           mark-count (count (filter #(when (:result/mark-x %) %) results-for-this-adjudicator))
           allow-marks? (< mark-count (int (:round/number-to-recall selected-round)) )
           ;in-admin-mode? (:app/admin-mode (om/props this))
           ]
       ;(log-trace "Rendering MainComponent")
       ;(log selected-activity)
-      ;(log "Selected Adjudicator")
-      ;(log selected-adjudicator)
-      (log "Mark Count")
-      (log mark-count)
+      (log "Selected Adjudicator")
+      (log selected-adjudicator)
+      (log "Results for adj")
+      (log results-for-this-adjudicator)
+      (log (:app/results (om/props this)))
       (dom/div #js {:className "container-fluid"}
         (when-not selected-adjudicator
           ((om/factory AdjudicatorSelection) panel))
@@ -604,9 +615,9 @@
 (defonce app-state (atom {:app/selected-page :home
                           :app/selected-activities #{}
                           :app/selected-adjudicator nil
-                          :app/heat-page 1
+                          :app/heat-page 0
                           :app/heat-page-size 2
-                          :app/results []}))
+                          :app/results #{}}))
 
 (def reconciler
   (om/reconciler

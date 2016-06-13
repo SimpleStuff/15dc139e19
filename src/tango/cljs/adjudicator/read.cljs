@@ -16,7 +16,8 @@
 (defmethod read :app/results
   [{:keys [state]} _ _]
   {:value (get @state :app/results [])
-   :query true})
+   ;:query true
+   })
 
 (defmethod read :app/heat-page
   [{:keys [state]} _ _]
