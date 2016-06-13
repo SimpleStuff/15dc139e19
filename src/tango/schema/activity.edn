@@ -513,6 +513,14 @@
   :db/doc                "The adjudicator these result is associated with"
   :db.install/_attribute :db.part/db}
 
+ ;; result/activity
+ {:db/id                 #db/id[:db.part/db]
+  :db/ident              :result/activity
+  :db/valueType          :db.type/ref
+  :db/cardinality        :db.cardinality/one
+  :db/doc                "The activity these result is associated with"
+  :db.install/_attribute :db.part/db}
+
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  ;; Dances
  {:db/id                 #db/id[:db.part/db]

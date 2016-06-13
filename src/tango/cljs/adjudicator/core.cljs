@@ -208,9 +208,9 @@
     (let [result (:result (om/props this))
           point (if (:result/point result) (:result/point result) 0)
           mark-x (if (:result/mark-x result) (:result/mark-x result) false)]
-      (log "Render HeatRowComponent")
-      (log "Results")
-      (log result)
+      ;(log "Render HeatRowComponent")
+      ;(log "Results")
+      ;(log result)
       ;(log "Props")
       ;(log (om/props this))
       (dom/div #js {:className "row"}
@@ -441,7 +441,7 @@
                 ((om/factory HeatsComponent) {:participants   (:round/starting selected-round)
                                               :heats          (:round/number-of-heats selected-round)
                                               :adjudicator/id (:adjudicator/id selected-adjudicator)
-                                              :activity/id    (:activity/id selected-round)
+                                              :activity/id    (:activity/id selected-activity)
                                               :results        results-for-this-adjudicator
                                               :allow-marks?   allow-marks?
                                               :heat-page-size (:app/heat-page-size (om/props this))

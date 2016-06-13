@@ -35,11 +35,13 @@
   (do
     (log/info (str "Set Result : " ) result)
 
-    (d/set-results conn [(merge
-                           result
-                           {:result/participant {:participant/id (:result/participant result)}
-                            :result/activity {:activity/id (:result/activity result)}
-                            :result/adjudicator {:adjudicator/id (:result/adjudicator result)}})])))
+    (d/set-results conn [result]
+                   ;[(merge
+                   ;   result
+                   ;   {:result/participant {:participant/id (:result/participant result)}
+                   ;    :result/activity {:activity/id (:result/activity result)}
+                   ;    :result/adjudicator {:adjudicator/id (:result/adjudicator result)}})]
+                   )))
 
 (defn confirm-results [conn results adjudicator activity]
   (do

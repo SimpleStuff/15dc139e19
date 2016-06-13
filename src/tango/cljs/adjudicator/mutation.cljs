@@ -40,8 +40,7 @@
                               (update-in current [:app/results] #(conj clean-result result)))))
 
              (log (:app/results @state)))
-   ;:command true
-   })
+   :command true})
 
 ;(defmethod mutate 'app/status
 ;  [{:keys [state]} _ {:keys [status]}]
