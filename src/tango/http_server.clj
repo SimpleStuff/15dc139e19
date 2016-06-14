@@ -75,6 +75,12 @@
              (async/>!! state {:topic :command :sender :http :payload [key params]})
              (log/info (str "Confirm Marks " key " " params)))})
 
+(defmethod mutate 'app/set-client-info
+  [{:keys [state] :as env} key params]
+  {:action (fn []
+             (async/>!! state {:topic :command :sender :http :payload [key params]})
+             (log/info (str "Set client info " key " " params)))})
+
 (defmethod mutate 'app/set-export-status
   [{:keys [state] :as env} key params]
   {:action (fn []

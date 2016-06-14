@@ -61,57 +61,14 @@
 ;; Local storage
 ;(log-trace "Begin Local Storage")
 
-(def local-id (ls/local-storage (atom {}) :local-id))
+(def local-storage (ls/local-storage (atom {}) :local-id))
 
-;(log-info (str "Local Adjudicator of Client : " (:name @local-id) " - "
-;               (:adjudicator/id (:adjudicator @local-id))))
+(log (str "Client id : " @local-storage))
+
+;(log (str "Local Adjudicator of Client : " (:name @local-id) " - "
+;          (:adjudicator/id (:adjudicator @local-id))))
 
 ;(log-trace "End Local Storage")
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Init DB
-;(log-trace "Begin Init DB")
-
-;(def adjudicator-ui-schema {:app/selected-activity {:db/cardinality :db.cardinality/one
-;                                                    :db/valueType :db.type/ref}
-;
-;                            :app/selected-adjudicator {:db/cardinality :db.cardinality/one
-;                                                       :db/valueType :db.type/ref}
-;
-;                            :app/results {:db/cardinality :db.cardinality/many
-;                                          :db/valueType :db.type/ref}
-;
-;                            :result/participant {:db/cardinality :db.cardinality/one
-;                                                 :db/valueType :db.type/ref}
-;
-;                            :result/id {:db/unique :db.unique/identity}})
-;
-;(defonce conn (d/create-conn (merge adjudicator-ui-schema uidb/schema)))
-
-;(defn init-app []
-;  (do
-;    ;(log-trace "Init App")
-;    (d/transact! conn [{:db/id -1 :app/id 1}
-;                       {:db/id -1 :app/online? false}
-;                       {:db/id -1 :app/status (if (:app/status @local-id)
-;                                                (:app/status @local-id)
-;                                                :judging)}
-;                       {:db/id -1 :app/selected-activity-status :in-sync}
-;                       {:db/id -1 :app/heat-page 0}
-;                       {:db/id -1 :app/heat-page-size 2}
-;                       {:db/id -1 :app/admin-mode false}])))
-
-;(defn app-started? [conn]
-;  (seq (d/q '[:find ?e
-;              :where
-;              [?e :app/id 1]] (d/db conn))))
-;
-;(defn app-online? [conn]
-;  (d/q '[:find ?online .
-;         :where
-;         [_ :app/online? ?online]] (d/db conn)))
-
-;(log-trace "End Init DB")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Sente message handling
@@ -159,7 +116,7 @@
           )
 
         (= (:topic payload) 'app/confirm-marks)
-        (when (= (:name @local-id)
+        (when (= (:name @local-storage)
                  (:adjudicator/name (:payload payload)))
           ;; TODO - only confirm if it was this client
           (om/transact! reconciler `[(app/status {:status :confirmed})]))))))
@@ -198,7 +155,7 @@
                                  (fn [e]
                                    (do
                                      ;; Persist this adjudicator to storage
-                                     (swap! local-id assoc :name (:adjudicator/name %))
+                                     (swap! local-storage assoc :name (:adjudicator/name %))
                                      ;(swap! local-id assoc :adjudicator %)
                                      (om/transact! this `[(app/select-adjudicator {:adjudicator ~%})
                                                           (app/status {:status :waiting-for-round})
@@ -219,11 +176,6 @@
     (let [result (:result (om/props this))
           point (if (:result/point result) (:result/point result) 0)
           mark-x (if (:result/mark-x result) (:result/mark-x result) false)]
-      ;(log "Render HeatRowComponent")
-      ;(log "Results")
-      ;(log result)
-      ;(log "Props")
-      ;(log (om/props this))
       (dom/div #js {:className "row"}
         (dom/div #js {:className "col-xs-2"}
           (dom/h3 #js {:className "control-label"} (str (:participant/number (om/props this)))))
@@ -383,7 +335,9 @@
           status (:status (om/props this))]
       (dom/div nil
         (dom/div nil
-          (dom/h3 nil (str "Local Storage Says : " (:name @local-id)))
+          (dom/h3 nil (str "Local Storage Says : " (:name @local-storage)))
+          (dom/h3 nil (str "Complete local storage : " @local-storage))
+          (dom/p nil (str "This clients id : " (:client-id @local-storage)))
           (dom/button #js {:className "btn btn-default"
                            :onClick   #(when (= @pwd "1337")
                                         (ls/clear-local-storage!))} "Clear Storage")
@@ -422,6 +376,7 @@
      :app/heat-page-size
      :app/admin-mode
      :app/status
+     :app/local-id
      ])
   Object
   (render
@@ -443,23 +398,7 @@
                                       (:adjudicator/id %))
                                   (:activity/confirmed-by selected-activity)))
           ]
-      ;(log-trace "Rendering MainComponent")
-      ;(log selected-activity)
-      ;(log "Selected Adjudicator")
-      ;(log selected-adjudicator)
-      ;(log "Results for adj")
-      ;(log results-for-this-adjudicator)
-      ;(log (:app/results (om/props this)))
-      (log "Status")
-      (log status)
-      (log "In admin mode")
-      (log in-admin-mode?)
-      (log "Confirmed?")
-      (log confirmed?)
-      ;(log (:adjudicator/id selected-adjudicator))
-      ;(log (filter #(= (:adjudicator/id selected-adjudicator)
-      ;                 (:adjudicator/id %))
-      ;             (:activity/confirmed-by selected-activity)))
+
       (dom/div #js {:className "container-fluid"}
         ;(when-not selected-adjudicator
         ;  ((om/factory AdjudicatorSelection) panel))
@@ -474,16 +413,28 @@
             ((om/factory AdminComponent) {:status status})))
         (dom/div nil
           (condp = status
-            :loading  (if selected-adjudicator
-                        (om/transact! this `[(app/status {:status :waiting-for-round})])
-                        (om/transact! this `[(app/status {:status :select-judge})]))
+            :loading (if (:app/local-id app)
+                       (om/transact! this `[(app/status {:status :select-judge})])
+                       (do
+                         (log (str (:client-id @local-storage)))
+                         (om/transact! this `[(app/status {:status :init})])))
+
+            :init (dom/div nil
+                    (dom/h3 nil "Init this client")
+                    (dom/p nil "Client name : ")
+                    (dom/button #js {:onClick
+                                     #(om/transact! this `[(app/set-client-info {:id ~(random-uuid)
+                                                                                :name "Allan Awsome"})
+                                                           (app/status {:status :loading})
+                                                           :app/status])}
+                                "Done"))
 
             :select-judge ((om/factory AdjudicatorSelection) panel)
 
             :confirming (dom/div nil
                           (dom/h3 nil "Confirming results, please wait.."))
             :confirmed (do
-                         (go (let [_ (<! (timeout 13000))]
+                         (go (let [_ (<! (timeout 3000))]
                                (om/transact! this `[(app/status {:status :waiting-for-round})
                                                     :app/selected-activities])))
                          (dom/div nil
@@ -687,7 +638,7 @@
                                                      {:query (pr-str remote-query)}}))
               edn-response (second (cljs.reader/read-string (:body response)))]
 
-          (log remote-query)
+          ;(log remote-query)
           ;; TODO - why is the response a vec?
           ;; TODO - change status if we get a new round
           (cb edn-response)
@@ -701,7 +652,9 @@
                           :app/heat-page-size 2
                           :app/results #{}
                           :app/admin-mode false
-                          :app/status :loading}))
+                          :app/status :loading
+                          :app/client-name ""
+                          :app/local-id (:client-id @local-storage)}))
 
 (def reconciler
   (om/reconciler
