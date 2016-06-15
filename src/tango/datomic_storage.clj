@@ -444,7 +444,7 @@
 
 (defn select-speaker-round [conn activity-id]
   @(d/transact conn [{:app/speaker-activities {:db/id [:activity/id activity-id]}
-                      :db/id [:app/id 1]}]))
+                      :db/id                  [:app/id 1]}]))
 
 (defn deselect-speaker-round [conn activity-id]
   @(d/transact conn [[:db/retract [:app/id 1]
@@ -528,6 +528,17 @@
          [?e :result/id]]
        (d/db conn) query))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Client information
+(defn set-client-information [conn client-info]
+  @(d/transact conn [(fix-id client-info)]))
+
+(defn query-clients [conn query]
+  (clean-data (d/q '[:find [(pull ?c selector) ...]
+                     :in $ selector
+                     :where
+                     [?c :client/id]]
+                   (d/db conn) query)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Services
 

@@ -4,12 +4,6 @@
             [tango.datomic-storage :as ds]
             [tango.import :as imp]))
 
-;(defn- transact-small-example []
-;  (let [conn (db/create-connection db/schema)]
-;    (db/transform-competition conn (fn [] (db/sanitize u/expected-small-example)))
-;    conn))
-;
-
 (def select-round-data
   {:activity/id   #uuid "4b0b1db9-6e5d-4aa6-9947-cb214a4d89df"
    :activity/name "Hiphop Par Brons J1"
@@ -25,8 +19,6 @@
 (defn create-selected-round [name]
   (merge select-round-data {:activity/name name :activity/id (java.util.UUID/randomUUID)}))
 
-;(fix-id select-round-data)
-
 (def mem-uri "datomic:mem://localhost:4334//competitions")
 (def schema-tx (read-string (slurp "./src/tango/schema/activity.edn")))
 
@@ -34,14 +26,6 @@
   (testing "Create a connection to db"
     (is (not= nil (ds/create-storage mem-uri ds/select-activity-schema)))
     (is (not= nil (ds/create-connection mem-uri)))))
-
-;(deftest select-round
-;  (testing "Transaction of selecting a round"
-;    (let [_ (ds/delete-storage mem-uri)
-;          _ (ds/create-storage mem-uri (into ds/select-activity-schema ds/application-schema))
-;          conn (ds/create-connection mem-uri)]
-;      (is (= [:db-before :db-after :tx-data :tempids]
-;             (keys (ds/select-round conn select-round-data)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Setup utils
@@ -220,30 +204,25 @@
                                                     :result/activity    [:activity/id]}]
                                              (:activity/id (:result/activity result)))))))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Storage of Client information
+
+(deftest should-be-possible-to-store-client-information
+  (testing "It should be possible to store client information"
+    (let [_ (ds/delete-storage mem-uri)
+          _ (ds/create-storage mem-uri schema-tx)
+          conn (ds/create-connection mem-uri)
+          init-client-tx {:client/id #uuid "60edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"
+                          :client/name "Platta 3"}
+          assoc-client-tx {:client/id #uuid "60edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"
+                           :client/user {:adjudicator/id #uuid "1ace2915-42dc-4f58-8017-dcb79f958463"}}]
+      (ds/set-client-information conn init-client-tx)
+      (ds/set-client-information conn assoc-client-tx)
+      (is (= (ds/query-clients conn [:client/id
+                                     :client/name
+                                     {:client/user [:adjudicator/id]}])
+             [{:client/name "Platta 3"
+               :client/id   #uuid "60edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"
+               :client/user {:adjudicator/id #uuid "1ace2915-42dc-4f58-8017-dcb79f958463"}}])))))
 
 
-;(deftest select-round-should-be-sanitized
-;  (testing "Nil values etc should be removed before transacted"
-;    (is (= 1 0))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;(deftest add-competition
-;  (testing "Add map represention of a competition"
-;    (let [conn (ds/create-connection mem-uri)]
-;      (is (= [:db-before :db-after :tx-data :tempids :tx-meta]
-;             (keys (ds/transform-competition
-;                     conn
-;                     (fn [] (select-keys u/expected-small-example
-;                                         [:competition/name])))))))))
-
-
-;(deftest query-for-competition-info
-;  (testing "Query to get competition info"
-;    (let [conn (transact-small-example)]
-;      (is (= [{:competition/name "TurboMegatävling"
-;               :competition/location "THUNDERDOME"
-;               :competition/date #inst "2014-11-22T00:00:00.000-00:00"}]
-;             (db/query conn '[:find [(pull ?e [:competition/name
-;                                               :competition/location
-;                                               :competition/date])]
-;                              :where [?e :competition/name]]))))))
