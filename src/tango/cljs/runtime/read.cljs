@@ -33,3 +33,8 @@
   [{:keys [state]} _ _]
   {:value (get @state :app/speaker-activities [])
    :query true})
+
+(defmethod read :app/clients
+  [{:keys [state]} _ _]
+  {:value (get @state :app/clients [])
+   :query true})

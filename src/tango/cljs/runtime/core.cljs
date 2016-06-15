@@ -76,7 +76,10 @@
         (= payload 'app/set-speaker-activity)
         (do
           ;(log "select")
-          (om/transact! reconciler `[:app/speaker-activites]))))))
+          (om/transact! reconciler `[:app/speaker-activites]))
+        (= payload 'app/set-client-info)
+        (do
+          (log (str "Client info changed " payload)))))))
 
 (defmethod event-msg-handler :chsk/handshake
   [{:as ev-msg :keys [?data]}]
@@ -279,7 +282,22 @@
         (dom/button #js {:onClick #(om/transact! this `[(app/select-page {:selected-page :home})
                                                         :app/selected-page])} "Home")
         (dom/button #js {:onClick #(om/transact! this `[(app/select-page {:selected-page :time-schedule})
-                                                        :app/selected-page])} "Time Schedule")))))
+                                                        :app/selected-page])} "Time Schedule")
+        (dom/button #js {:onClick #(om/transact! this `[(app/select-page {:selected-page :clients})
+                                                        :app/selected-page])} "Clients")))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Clients View
+(defui ClientsView
+  static om/IQuery
+  (query [_]
+    [:client/id :client/name])
+  Object
+  (render
+    [this]
+    (let [clients (:clients (om/props this))]
+      (dom/div nil
+        (dom/h3 nil (:client/name (first clients)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; MainComponent
@@ -293,6 +311,7 @@
      :app/selected-page
      {:app/selected-activities [:activity/id] }
      {:app/speaker-activities [:activity/id]}
+     {:app/clients (om/get-query ClientsView)}
      ])
   Object
   (render
@@ -301,10 +320,6 @@
           selected-competition (:app/selected-competition p)
           status (:app/status p)
           selected-page (:app/selected-page p)]
-      ;(log (om/get-query ScheduleView))
-      (log "Speaker activites")
-      (log (:app/speaker-activities p))
-      ;(log (str selected-competition))
       (dom/div nil
         ((om/factory MenuComponent))
         (condp = selected-page
@@ -317,7 +332,8 @@
                                                      :selected-activities
                                                      (:app/selected-activities p)
                                                      :speaker-activities
-                                                     (:app/speaker-activities p)}))
+                                                     (:app/speaker-activities p)})
+          :clients ((om/factory ClientsView) {:clients (:app/clients p)}))
         ))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

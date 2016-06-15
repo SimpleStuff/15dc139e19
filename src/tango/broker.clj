@@ -62,6 +62,14 @@
       (log/debug (str "Results After Count " (count (d/query-all-results conn ['*])))))
     ))
 
+(defn set-client-info [conn client-info]
+  (let [db-info {:client/id   (:id client-info)
+                 :client/name (:name client-info)}
+        merged-info (if (:user-id client-info)
+                      (merge db-info {:adjudicator/id (:user-id client-info)})
+                      db-info)]
+    (d/set-client-information conn db-info)))
+
 (defn start-result-rules-engine [in-ch out-ch client-in-channel datomic-storage-uri]
   (async/go-loop []
     (when-let [message (async/<! in-ch)]
@@ -73,6 +81,10 @@
             (log/info (str "Result Received Topic: [" topic "]"))
             (log/info (str "Result Received payload: [" payload "]"))
             (match [topic payload]
+                   ['app/set-client-info _]
+                   (do
+                     (log/info (str "Set client info " payload))
+                     (set-client-info (d/create-connection datomic-storage-uri) payload))
                    ['app/select-activity _]
                    (do
                      (log/info (str "Select activity " payload))
@@ -93,12 +105,7 @@
                    (do
                      (log/info (str "Set Speaker Activity"))
                      (set-speaker-activity (d/create-connection datomic-storage-uri) payload))
-                   ;[:app/selected-activity _]
-                   ;(do
-                   ;  (log/info (str "Selected activity " (:app/selected-activity payload)))
-                   ;  (selected-activity (d/create-connection datomic-storage-uri)))
-                   [:set-result p]
-                   (log/info "Mark X")
+
                    :else (async/>!!
                            out-ch
                            {:topic :rules/unkown-topic :payload {:topic topic}})

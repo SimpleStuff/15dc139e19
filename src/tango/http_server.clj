@@ -176,6 +176,12 @@
             (log/info (str "app/confirmed read"))
             (d/query-confirmation state query))})
 
+(defmethod reader :app/clients
+  [{:keys [state query]} key params]
+  {:value (do
+            (log/info (str "app/clients read"))
+            (d/query-clients state query))})
+
 ;; TODO - hack fix
 (defmethod reader :app/selected-adjudicator
   [{:keys [state query]} key params]
