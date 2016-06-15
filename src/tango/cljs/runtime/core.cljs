@@ -287,6 +287,19 @@
                                                         :app/selected-page])} "Clients")))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Client Row
+(defui ClientRow
+  static om/IQuery
+  (query [_]
+    [:client/id :client/name])
+  Object
+  (render
+    [this]
+    (let [client (:client (om/props this))]
+      (dom/div nil
+        (dom/h3 nil (str "Client Name : " (:client/name client)))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Clients View
 (defui ClientsView
   static om/IQuery
@@ -297,7 +310,7 @@
     [this]
     (let [clients (:clients (om/props this))]
       (dom/div nil
-        (dom/h3 nil (:client/name (first clients)))))))
+        (map #((om/factory ClientRow) {:client %}) clients)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; MainComponent
