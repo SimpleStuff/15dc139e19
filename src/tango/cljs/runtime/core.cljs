@@ -295,22 +295,73 @@
   Object
   (render
     [this]
-    (let [client (:client (om/props this))]
-      (dom/div nil
-        (dom/h3 nil (str "Client Name : " (:client/name client)))))))
+    (let [client (:client (om/props this))
+          panels (sort-by :adjudicator-panel/name (:adjudicator-panels (om/props this)))]
+      (dom/tr nil
+        (dom/td nil (:client/name client))
+        (dom/td nil
+                (dom/div #js {:className "dropdown"}
+                  (dom/button #js {:className "btn btn-default dropdown-toggle"
+                                   :data-toggle "dropdown"} ""
+                              (dom/span #js {:className "selection"} "AA ")
+                              (dom/span #js {:className "caret"}))
+                  ;(dom/ul #js {:className "dropdown-menu"
+                  ;             :role "menu"}
+                  ;  (dom/li #js {:className "dropdown-header"} (str "Panel - "
+                  ;                                                  (:adjudicator-panel/name (first panels))))
+                  ;  (dom/li #js {:role "presentation"}
+                  ;    (dom/a #js {:role "menuitem"} "AA"))
+                  ;  (dom/li #js {:role "presentation"}
+                  ;    (dom/a #js {:role "menuitem"} "BB")))
+
+                  (apply dom/ul #js {:className "dropdown-menu" :role "menu"}
+                    (map (fn [panel]
+                           [(dom/li #js {:className "dropdown-header"}
+                              (str "Panel - " (:adjudicator-panel/name panel)))
+                            (map (fn [adjudicator]
+                                   (dom/li #js {:role    "presentation"
+                                                :onClick #(log (str "Change ajd to " (:adjudicator/name adjudicator)))}
+                                     (dom/a #js {:role "menuitem"} (:adjudicator/name adjudicator))))
+                                 (:adjudicator-panel/adjudicators panel))])
+                         panels))
+                  ))
+        ))))
+
+;<div class="dropdown">
+;<button class="btn btn-default dropdown-toggle" type="button" id="menu1" data-toggle="dropdown">Tutorials
+;<span class="caret"></span></button>
+;<ul class="dropdown-menu" role="menu" aria-labelledby="menu1">
+;<li role="presentation"><a role="menuitem" tabindex="-1" href="#">HTML</a></li>
+;<li role="presentation"><a role="menuitem" tabindex="-1" href="#">CSS</a></li>
+;<li role="presentation"><a role="menuitem" tabindex="-1" href="#">JavaScript</a></li>
+;<li role="presentation" class="divider"></li>
+;<li role="presentation"><a role="menuitem" tabindex="-1" href="#">About Us</a></li>
+;</ul>
+;</div>
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Clients View
 (defui ClientsView
   static om/IQuery
   (query [_]
-    [:client/id :client/name])
+    (into [] (om/get-query ClientRow)))
   Object
   (render
     [this]
-    (let [clients (:clients (om/props this))]
+    (let [clients (:clients (om/props this))
+          panels (:adjudicator-panels (om/props this))]
+      (log "Ajd")
+      (log panels)
       (dom/div nil
-        (map #((om/factory ClientRow) {:client %}) clients)))))
+        (dom/h2 nil "Clients")
+        (dom/table
+          #js {:className "table table-hover table-condensed"}
+          (dom/thead nil
+            (dom/tr nil
+              (dom/th #js {:width "100"} "Name")
+              (dom/th #js {:width "50"} "Assigned to Adjudicator")))
+          (apply dom/tbody nil (map #((om/factory ClientRow) {:client       %
+                                                              :adjudicator-panels panels}) clients)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; MainComponent
@@ -318,7 +369,11 @@
 (defui MainComponent
   static om/IQuery
   (query [_]
-    [{:app/selected-competition (into [:competition/name :competition/location]
+    [{:app/selected-competition (into [:competition/name :competition/location
+                                       {:competition/panels [:adjudicator-panel/name
+                                                             {:adjudicator-panel/adjudicators
+                                                              [:adjudicator/id
+                                                               :adjudicator/name]}]}]
                                       (concat (om/get-query ScheduleView)))}
      :app/status
      :app/selected-page
@@ -346,7 +401,8 @@
                                                      (:app/selected-activities p)
                                                      :speaker-activities
                                                      (:app/speaker-activities p)})
-          :clients ((om/factory ClientsView) {:clients (:app/clients p)}))
+          :clients ((om/factory ClientsView) {:clients      (:app/clients p)
+                                              :adjudicator-panels (:competition/panels selected-competition)}))
         ))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
