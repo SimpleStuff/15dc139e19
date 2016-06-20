@@ -2,6 +2,10 @@
   (:require
     [om.next :as om]))
 
+
+(defn log [m]
+  (.log js/console m))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Read
 

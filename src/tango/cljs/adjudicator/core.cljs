@@ -119,7 +119,12 @@
         (when (= (:name @local-storage)
                  (:adjudicator/name (:payload payload)))
           ;; TODO - only confirm if it was this client
-          (om/transact! reconciler `[(app/status {:status :confirmed})]))))))
+          (om/transact! reconciler `[(app/status {:status :confirmed})]))
+
+        (= payload 'app/set-client-info)
+        (do (log "Update client info")
+            (om/transact! reconciler `[{:app/selected-adjudicator [:adjudicator/name
+                                                                   :adjudicator/id]}]))))))
 
 (defmethod event-msg-handler :chsk/handshake
   [{:as ev-msg :keys [?data]}]
@@ -144,7 +149,10 @@
   Object
   (render [this]
     ;(log-trace "Render AdjudicatorSelection")
-    (let [panel (om/props this)]
+    (let [panel (om/props this)
+          adjudicator (:adjudicator (om/props this))]
+      (log "Adjudicator : ")
+      (log (str adjudicator))
       (dom/div nil
         (if (:adjudicator-panel/name panel)
           (dom/div nil
@@ -164,7 +172,8 @@
                                                           :app/status])))}
                      (:adjudicator/name %)) (:adjudicator-panel/adjudicators panel))))
           (dom/div nil
-            (dom/h3 nil "Waiting for Adjudicator Panel to select Adjudicator from..")))))))
+            (dom/h3 nil "Waiting for Adjudicator Panel to select Adjudicator from..")
+            (dom/h3 nil (str "Adjudicator :" (:adjudicator/name adjudicator)))))))))
 
 (defui HeatRowComponent
   static om/IQuery
@@ -352,6 +361,9 @@
 
 ;https://medium.com/@kovasb/om-next-the-reconciler-af26f02a6fb4#.kwq2t2jzr
 (defui MainComponent
+  static om/IQueryParams
+  (params [_]
+    {:id 1})
   static om/IQuery
   (query [_]
     [{:app/selected-activities
@@ -362,6 +374,8 @@
                           :round/number-to-recall
                           {:round/starting (om/get-query HeatsComponent)}]}]}
 
+     ;'(:app/selected-adjudicator {:id ?id
+     ;                             :query [:adjudicator/name]})
      {:app/selected-adjudicator [:adjudicator/name
                                  :adjudicator/id]}
 
@@ -399,6 +413,8 @@
                                   (:activity/confirmed-by selected-activity)))
           ]
 
+      (log "Selected Adjudicator: ")
+      (log selected-adjudicator)
       (dom/div #js {:className "container-fluid"}
         ;(when-not selected-adjudicator
         ;  ((om/factory AdjudicatorSelection) panel))
@@ -423,13 +439,13 @@
                     (dom/h3 nil "Init this client")
                     (dom/p nil "Client name : ")
                     (dom/button #js {:onClick
-                                     #(om/transact! this `[(app/set-client-info {:id ~(random-uuid)
-                                                                                :name "Allan Awsome"})
+                                     #(om/transact! this `[(app/set-client-info {:client/id ~(random-uuid)
+                                                                                :client/name "Allan Awsome"})
                                                            (app/status {:status :loading})
                                                            :app/status])}
                                 "Done"))
 
-            :select-judge ((om/factory AdjudicatorSelection) panel)
+            :select-judge ((om/factory AdjudicatorSelection) {:adjudicator (:client/user selected-adjudicator)})
 
             :confirming (dom/div nil
                           (dom/h3 nil "Confirming results, please wait.."))
@@ -507,107 +523,6 @@
         )
       )))
 
-;(log-trace "End Components")
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Remote Posts
-;(log-trace "Begin Remote Posts")
-
-;http://jeremyraines.com/2015/11/16/getting-started-with-clojure-web-development.html
-;http://code.tutsplus.com/tutorials/mobile-first-with-bootstrap-3--net-34808
-;(defn transit-post [url]
-;  (fn [edn cb]
-;    ;(log-trace "Transit Post")
-;    (cond
-;      (:command edn) (.send XhrIo url
-;                           #()                              ;log  ;; TODO - Should do something with the response..
-;                           "POST" (t/write (t/writer :json) edn)
-;                           #js {"Content-Type" "application/transit+json"})
-;      (:query edn) (let [edn-query-str (pr-str
-;                                         ;; TODO - fix this hack with proper query handling
-;                                         (if (map? (first (:query edn)))
-;                                           (:query edn)
-;                                           (om/get-query MainComponent)))]
-;                     ;(log "Query >>")
-;                     ;(log edn)
-;
-;                     (go
-;                       (let [response (async/<! (http/get "/query"
-;                                                          {:query-params
-;                                                           {:query edn-query-str}}))
-;                             body (:body response)
-;                             edn-result (second (cljs.reader/read-string body))
-;                             all-act (:app/selected-activity edn-result)
-;                             acts-for-this-adj (filter (fn [act]
-;                                                         (seq (filter #(= (:name @local-id) (:adjudicator/name %))
-;                                                                      (:adjudicator-panel/adjudicators (:round/panel act)))))
-;                                                       all-act)
-;                             awsome-act (first acts-for-this-adj)]
-;
-;                         (when (not= (count acts-for-this-adj) 1)
-;                           (log "WARNING MULTIPLE RUNNING ACTIVITIES"))
-;                         ;(log "Local Judge")
-;                         ;(log (:name @local-id))
-;                         ;(log "Response")
-;                         ;(log awsome-act)
-;                         ;; TODO - ska det vara en lista med ett element kanske?
-;
-;
-;                         ;; TODO - check if cb can be used with the transaction keys and after
-;                         ;; doing an explicit datalog transaction
-;                         ;(log "App RESULT")
-;                         ;(log (:app/results edn-result))
-;
-;                         ;; Only change round if this judge are in it
-;                         (let [adjs (:adjudicator-panel/adjudicators (:round/panel awsome-act))
-;                               current-adj-name (:name @local-id)
-;                               should-judge? (seq (filter #(= current-adj-name (:adjudicator/name %))
-;                                                          adjs))
-;                               real-adj (first (filter #(= current-adj-name (:adjudicator/name %))
-;                                                       adjs))]
-;
-;                           ;(log "Should judge")
-;                           ;(log should-judge?)
-;
-;                           ;(log "Results")
-;                           ;(log (:app/results edn-result))
-;                           ;; TODO - need to make better handling of client adjudicator
-;                           ;; configuration
-;                           (when (or should-judge? (= nil current-adj-name))
-;                             (let [act-to-change-to (if (= nil current-adj-name)
-;                                                      (first all-act)
-;                                                      awsome-act)
-;                                   results-for-this-adj
-;                                   (filter #(= (:adjudicator/id real-adj)
-;                                               (:adjudicator/id (:result/adjudicator %)))
-;                                           (:app/results edn-result))]
-;
-;                               ;; Time to judge another round, reset local db from previous round
-;                               ;;  and set the new round as selected
-;                               (log "Pre Reset")
-;
-;
-;                               (log "Pos Reset")
-;                               (om/transact! reconciler
-;                                             `[(app/select-activity
-;                                                 {:activity ~act-to-change-to})
-;                                               (app/set-results
-;                                                 {:results ~results-for-this-adj})
-;                                               (app/heat-page ~{:page 0})
-;                                               (app/status ~{:status :judging})
-;                                               ])))
-;
-;                           ;; Always set judge to the locally selected
-;                           ;(log "Real Adj")
-;                           ;(log real-adj)
-;                           (if real-adj
-;                             (om/transact! reconciler `[(app/select-adjudicator ~real-adj)
-;                                                        :app/selected-adjudicator]))
-;                           ;(om/transact! reconciler `[(app/select-adjudicator ~current-adj)
-;                           ;                           :app/selected-adjudicator])
-;                           )))))))
-
-;(log-trace "End Remote Posts")
-
 (defn transit-post [url edn cb]
   ;(log edn)
   (.send XhrIo url
@@ -620,6 +535,7 @@
          "POST" (t/write (t/writer :json) edn)
          #js {"Content-Type" "application/transit+json"}))
 
+; http://stackoverflow.com/questions/35675766/om-nexts-query-ast-and-ast-query-functions
 (defn remote-send []
   (fn [edn cb]
     (cond
@@ -628,21 +544,28 @@
       (transit-post "/commands" edn cb)
       (:query edn)
       (go
-        ;(log "Query")
-        ;(log edn)
-        (let [remote-query (if (map? (first (:query edn)))
-                             (:query edn)
-                             ;; TODO - why do we not get a good query
-                             (conj [] (first (om/get-query MainComponent))))
+        (log "Query")
+        (log edn)
+        (log "Params")
+        (log (:params (om/get-query MainComponent)))
+        (let [remote-query (:query edn)
+              ;remote-query (if (map? (first (:query edn)))
+              ;               (:query edn)
+              ;               ;; TODO - why do we not get a good query
+              ;               (conj [] (first (om/get-query MainComponent))))
               response (async/<! (http/get "/query" {:query-params
-                                                     {:query (pr-str remote-query)}}))
+                                                     {:query (pr-str remote-query)
+                                                      ;:params (pr-str {:id (:client-id @local-storage)})
+                                                      }}))
               edn-response (second (cljs.reader/read-string (:body response)))]
 
-          ;(log remote-query)
+          (log "Remote Q")
+          (log remote-query)
           ;; TODO - why is the response a vec?
           ;; TODO - change status if we get a new round
           (cb edn-response)
           )))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Application
 (defonce app-state (atom {:app/selected-page :home

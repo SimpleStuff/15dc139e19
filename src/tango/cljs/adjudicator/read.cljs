@@ -1,5 +1,14 @@
 (ns tango.cljs.adjudicator.read
-  (:require [om.next :as om]))
+  (:require [om.next :as om]
+            [alandipert.storage-atom :as ls]))
+
+(defn log [m]
+  (.log js/console m))
+
+(def local-storage (ls/local-storage (atom {}) :local-id))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Read
 
 (defmulti read om/dispatch)
 
@@ -9,9 +18,10 @@
    :query true})
 
 (defmethod read :app/selected-adjudicator
-  [{:keys [state]} _ _]
+  [{:keys [ast state]} _ _]
   {:value (get @state :app/selected-adjudicator nil)
-   :query true})
+   :query (do (log (str "AST : " (assoc ast :params {:client/id (:client-id @local-storage)})))
+              (assoc ast :params {:client/id (:client-id @local-storage)}))})
 
 (defmethod read :app/results
   [{:keys [state]} _ _]

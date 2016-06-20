@@ -62,13 +62,17 @@
       (log/debug (str "Results After Count " (count (d/query-all-results conn ['*])))))
     ))
 
+;; TODO - now we only support adjudicators as users
 (defn set-client-info [conn client-info]
-  (let [db-info {:client/id   (:id client-info)
-                 :client/name (:name client-info)}
-        merged-info (if (:user-id client-info)
-                      (merge db-info {:adjudicator/id (:user-id client-info)})
-                      db-info)]
-    (d/set-client-information conn db-info)))
+  (d/set-client-information conn client-info))
+
+;(defn set-client-info [conn client-info]
+;  (let [db-info {:client/id   (:id client-info)
+;                 :client/name (:name client-info)}
+;        merged-info (if (:user-id client-info)
+;                      (merge db-info {:adjudicator/id (:user-id client-info)})
+;                      db-info)]
+;    (d/set-client-information conn db-info)))
 
 (defn start-result-rules-engine [in-ch out-ch client-in-channel datomic-storage-uri]
   (async/go-loop []

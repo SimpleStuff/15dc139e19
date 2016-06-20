@@ -69,7 +69,7 @@
 ;             (swap! local-storage assoc :client-id id))})
 
 (defmethod mutate 'app/set-client-info
-  [{:keys [state]} _ {:keys [name id]}]
+  [{:keys [state]} _ {:keys [client/name client/id]}]
   {:value   {:keys [:app/client-name
                     :app/local-id]}
    :action  (fn []

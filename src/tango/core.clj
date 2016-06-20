@@ -136,7 +136,7 @@
 (defn go
   "Entry point from a REPL, will initilize a default system and start it."
   []
-  (d/delete-storage "datomic:free://localhost:4334//competitions")
+  ;(d/delete-storage "datomic:free://localhost:4334//competitions")
   (init)
   (start))
 

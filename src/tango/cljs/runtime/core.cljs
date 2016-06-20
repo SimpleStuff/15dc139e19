@@ -79,7 +79,8 @@
           (om/transact! reconciler `[:app/speaker-activites]))
         (= payload 'app/set-client-info)
         (do
-          (log (str "Client info changed " payload)))))))
+          (log (str "Client info changed " payload))
+          (om/transact! reconciler `[:app/clients]))))))
 
 (defmethod event-msg-handler :chsk/handshake
   [{:as ev-msg :keys [?data]}]
@@ -291,40 +292,53 @@
 (defui ClientRow
   static om/IQuery
   (query [_]
-    [:client/id :client/name])
+    [:client/id :client/name {:client/user [:adjudicator/id :adjudicator/name]}])
   Object
   (render
     [this]
     (let [client (:client (om/props this))
-          panels (sort-by :adjudicator-panel/name (:adjudicator-panels (om/props this)))]
+          panels (sort-by :adjudicator-panel/name (:adjudicator-panels (om/props this)))
+          client-id (:client/id client)
+          client-name (:client/name client)
+          adjudicator-id (:adjudicator/id (:client/user client))
+          adjudicator-name (:adjudicator/name (:client/user client))]
       (dom/tr nil
-        (dom/td nil (:client/name client))
+        (dom/td nil (str client-id))
+        (dom/td nil client-name)
         (dom/td nil
-                (dom/div #js {:className "dropdown"}
-                  (dom/button #js {:className "btn btn-default dropdown-toggle"
-                                   :data-toggle "dropdown"} ""
-                              (dom/span #js {:className "selection"} "AA ")
-                              (dom/span #js {:className "caret"}))
-                  ;(dom/ul #js {:className "dropdown-menu"
-                  ;             :role "menu"}
-                  ;  (dom/li #js {:className "dropdown-header"} (str "Panel - "
-                  ;                                                  (:adjudicator-panel/name (first panels))))
-                  ;  (dom/li #js {:role "presentation"}
-                  ;    (dom/a #js {:role "menuitem"} "AA"))
-                  ;  (dom/li #js {:role "presentation"}
-                  ;    (dom/a #js {:role "menuitem"} "BB")))
+          (dom/div #js {:className "dropdown"}
+            (dom/button #js {:className   "btn btn-default dropdown-toggle"
+                             :data-toggle "dropdown"} ""
+                        (dom/span #js {:className "selection"}
+                          (if adjudicator-name adjudicator-name "Select"))
+                        (dom/span #js {:className "caret"}))
+            ;(dom/ul #js {:className "dropdown-menu"
+            ;             :role "menu"}
+            ;  (dom/li #js {:className "dropdown-header"} (str "Panel - "
+            ;                                                  (:adjudicator-panel/name (first panels))))
+            ;  (dom/li #js {:role "presentation"}
+            ;    (dom/a #js {:role "menuitem"} "AA"))
+            ;  (dom/li #js {:role "presentation"}
+            ;    (dom/a #js {:role "menuitem"} "BB")))
 
-                  (apply dom/ul #js {:className "dropdown-menu" :role "menu"}
-                    (map (fn [panel]
-                           [(dom/li #js {:className "dropdown-header"}
-                              (str "Panel - " (:adjudicator-panel/name panel)))
-                            (map (fn [adjudicator]
-                                   (dom/li #js {:role    "presentation"
-                                                :onClick #(log (str "Change ajd to " (:adjudicator/name adjudicator)))}
-                                     (dom/a #js {:role "menuitem"} (:adjudicator/name adjudicator))))
-                                 (:adjudicator-panel/adjudicators panel))])
-                         panels))
-                  ))
+            (apply dom/ul #js {:className "dropdown-menu" :role "menu"}
+                   (map (fn [panel]
+                          [(dom/li #js {:className "dropdown-header"}
+                             (str "Panel - " (:adjudicator-panel/name panel)))
+                           (map (fn [adjudicator]
+                                  (dom/li #js {:role "presentation"
+                                               :onClick     ;#(log (str "Change ajd to " (:adjudicator/name adjudicator)))
+                                                     #(om/transact! reconciler `[(app/set-client-info
+                                                                             {:client/id   ~client-id
+                                                                              :client/name ~client-name
+                                                                              :client/user {:adjudicator/id   ~(:adjudicator/id adjudicator)
+                                                                                            :adjudicator/name ~(:adjudicator/name adjudicator)}})
+                                                                           :app/clients])
+                                               }
+                                    (dom/a #js {:role "menuitem"} (:adjudicator/name adjudicator))))
+                                (:adjudicator-panel/adjudicators panel))])
+                        panels))
+            ))
         ))))
 
 ;<div class="dropdown">
@@ -348,19 +362,20 @@
   Object
   (render
     [this]
-    (let [clients (:clients (om/props this))
+    (let [clients (sort-by (juxt :client/name :client/id) (:clients (om/props this)))
           panels (:adjudicator-panels (om/props this))]
-      (log "Ajd")
-      (log panels)
+      (log "clients")
+      (log clients)
       (dom/div nil
         (dom/h2 nil "Clients")
         (dom/table
           #js {:className "table table-hover table-condensed"}
           (dom/thead nil
             (dom/tr nil
-              (dom/th #js {:width "100"} "Name")
+              (dom/th #js {:width "50"} "Id")
+              (dom/th #js {:width "50"} "Name")
               (dom/th #js {:width "50"} "Assigned to Adjudicator")))
-          (apply dom/tbody nil (map #((om/factory ClientRow) {:client       %
+          (apply dom/tbody nil (map #((om/factory ClientRow {:key-fn :client/id}) {:client       %
                                                               :adjudicator-panels panels}) clients)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -408,7 +423,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Remote com
 (defn transit-post [url edn cb]
-  ;(log edn)
+  (log edn)
   (.send XhrIo url
          #()                                                ;log
          ;(this-as this
@@ -437,9 +452,10 @@
                                                      {:query (pr-str remote-query)}}))
               edn-response (second (cljs.reader/read-string (:body response)))]
 
-          (log remote-query)
+          ;(log remote-query)
+          ;(log edn-response)
           ;; TODO - why is the response a vec?
-          ;(cb {:app/selected-competition (first (:app/selected-competition edn-response))})
+          ;(cb (cljs.reader/read-string (:body response)))
           (cb edn-response)
           )))))
 

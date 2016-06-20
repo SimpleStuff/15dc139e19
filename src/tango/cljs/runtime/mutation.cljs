@@ -48,3 +48,21 @@
                ;(log (:app/speaker-activites @state))
                ))
    :command true})
+
+(defmethod mutate 'app/set-client-info
+  [{:keys [state]} _ {:keys [client/name client/id client/user] :as client}]
+  {:value   {:keys []}
+   :action  (fn []
+              (swap! state (fn [current]
+                             (let [clean-clients (filter #(not= id (:client/id %)) (:app/clients current))]
+                               (update-in current [:app/clients] #(conj clean-clients client))))))
+   ;:action  (fn []
+   ;           (swap! state (fn [current]
+   ;                          (let [client (first
+   ;                                         (filter #(= id (:client/id %)) (:app/clients current)))]
+   ;                            )))
+   ;           (swap! state (fn [current]
+   ;                          (merge current {:app/local-id    id
+   ;                                          :app/client-name name})))
+   ;           )
+   :command true})
