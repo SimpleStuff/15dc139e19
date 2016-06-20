@@ -76,6 +76,7 @@
               (swap! state (fn [current]
                              (merge current {:app/local-id    id
                                              :app/client-name name})))
-              (swap! local-storage assoc :client-id id)
-              (log (str "Local changed : " (:client-id @local-storage))))
+              ;(swap! local-storage assoc :client-id id)
+              ;(log (str "Local changed : " (:client-id @local-storage)))
+              )
    :command true})

@@ -70,66 +70,7 @@
 
 ;(log-trace "End Local Storage")
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Sente message handling
-;(log-trace "Begin Sente message handling")
 
-; Dispatch on event-id
-(defmulti event-msg-handler :id)
-
-;; Wrap for logging, catching, etc.:
-(defn event-msg-handler* [{:keys [id ?data event] :as ev-msg}]
-  (event-msg-handler {:id    (first ev-msg)
-                      :?data (second ev-msg)}))
-
-(defmethod event-msg-handler :default
-  [ev-msg]
-  (log (str "Unhandled socket event: " ev-msg)))
-
-(defmethod event-msg-handler :chsk/state
-  [{:as ev-msg :keys [?data]}]
-  (do
-    (log (str "Channel socket state change: " ?data))
-    (when (:first-open? ?data)
-      (log "Channel socket successfully established!"))))
-
-;; TODO - Cleaning when respons type can be separated
-(defmethod event-msg-handler :chsk/recv
-  [{:as ev-msg :keys [?data]}]
-  (let [[topic payload] ?data]
-    (when (= topic :tx/accepted)
-      ;(log (str "Socket Payload: " payload))
-      (cond
-        (= payload 'app/select-activity)
-        (do
-          ;; only set the activity if a judige is selected for this client
-          ;(when (= (:name @local-id)
-          ;         (:adjudicator/name (:payload payload))))
-          (om/transact! reconciler `[;(app/selected-activities {:activities #{}})
-                                     (app/status {:status :round-received})
-                                     :app/selected-activities
-                                     ]))
-
-        (= (:topic payload) 'app/confirm-marks)
-        (when (= (:name @local-storage)
-                 (:adjudicator/name (:payload payload)))
-          ;; TODO - only confirm if it was this client
-          (om/transact! reconciler `[(app/status {:status :confirmed})]))
-
-        (= payload 'app/set-client-info)
-        (do (log "Update client info")
-            (om/transact! reconciler `[{:app/selected-adjudicator [:adjudicator/name
-                                                                   :adjudicator/id]}]))))))
-
-(defmethod event-msg-handler :chsk/handshake
-  [{:as ev-msg :keys [?data]}]
-  (let [[?uid ?csrf-token ?handshake-data] ?data]
-    (log (str "Socket Handshake: " ?data))))
-
-(defonce chsk-router
-         (sente/start-chsk-router-loop! event-msg-handler* ch-chsk))
-
-;(log-trace "End Sente message handling")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Components
 ;(log-trace "Begin Components")
@@ -350,15 +291,13 @@
         (dom/div nil
           (dom/button #js {:className "btn btn-primary"
                            :onClick #(when (= @pwd "1337")
-                                      (om/transact! this `[(app/status {:status :judging})]))}
+                                      (om/transact! this `[(app/status {:status :judging})
+                                                           :app/status]))}
                       "Show Confirmed Results")
           (dom/h5 nil (str "Current State : " status)))))))
 
 ;https://medium.com/@kovasb/om-next-the-reconciler-af26f02a6fb4#.kwq2t2jzr
 (defui MainComponent
-  static om/IQueryParams
-  (params [_]
-    {:id 1})
   static om/IQuery
   (query [_]
     [{:app/selected-activities
@@ -393,7 +332,7 @@
           selected-activity (first (:app/selected-activities (om/props this)))
           selected-round (:activity/source selected-activity)
           panel (:round/panel selected-round)
-          selected-adjudicator (:app/selected-adjudicator (om/props this))
+          selected-adjudicator (:client/user (:app/selected-adjudicator (om/props this)))
           ;;; Results must also be for selected round
           results-for-this-adjudicator (filter #(= (:adjudicator/id selected-adjudicator)
                                                    (:adjudicator/id (:result/adjudicator %)))
@@ -408,6 +347,8 @@
 
       (log "Selected Adjudicator: ")
       (log selected-adjudicator)
+      ;(log "Results :")
+      ;(log (:app/results (om/props this)))
       (dom/div #js {:className "container-fluid"}
         ;(when-not selected-adjudicator
         ;  ((om/factory AdjudicatorSelection) panel))
@@ -432,16 +373,24 @@
                     (dom/h3 nil "Init this client")
                     (dom/p nil "Client name : ")
                     (dom/button #js {:onClick
-                                     #(om/transact! this `[(app/set-client-info {:client/id ~(random-uuid)
-                                                                                :client/name "Allan Awsome"})
-                                                           (app/status {:status :loading})
-                                                           :app/status])}
+                                     #(do
+                                       (let [idt (random-uuid)]
+                                         (swap! local-storage assoc :client-id idt)
+                                         (om/transact! this `[(app/set-client-info {:client/id   ~idt
+                                                                                    :client/name "Allan Awsome"})
+                                                              (app/status {:status :loading})
+                                                              :app/status])))
+                                     }
                                 "Done"))
 
-            :select-judge (if (:client/user selected-adjudicator)
-                            (om/transact! this `[(app/status {:status :waiting-for-round})])
+            :select-judge (if selected-adjudicator
+                            (do
+                              (swap! local-storage assoc :adjudicator selected-adjudicator)
+                              (log "Stored adj")
+                              (log (:adjudicator @local-storage))
+                              (om/transact! this `[(app/status {:status :waiting-for-round})]))
                             ((om/factory AdjudicatorSelection)
-                              {:adjudicator (:client/user selected-adjudicator)}))
+                              {:adjudicator selected-adjudicator}))
 
             :confirming (dom/div nil
                           (dom/h3 nil "Confirming results, please wait.."))
@@ -466,7 +415,8 @@
             (dom/div #js {:className "col-xs-12"}
               (dom/h3 #js {:className "text-center"} (str "Judge : "
                                                           (if selected-adjudicator
-                                                            (:adjudicator/name selected-adjudicator)
+                                                            (:adjudicator/name
+                                                              selected-adjudicator)
                                                             "None selected")))
 
               (if selected-activity
@@ -484,7 +434,8 @@
 
                   ((om/factory HeatsComponent) {:participants   (:round/starting selected-round)
                                                 :heats          (:round/number-of-heats selected-round)
-                                                :adjudicator/id (:adjudicator/id selected-adjudicator)
+                                                :adjudicator/id (:adjudicator/id
+                                                                  selected-adjudicator)
                                                 :activity/id    (:activity/id selected-activity)
                                                 :results        results-for-this-adjudicator
                                                 :allow-marks?   allow-marks?
@@ -561,6 +512,81 @@
           ;; TODO - change status if we get a new round
           (cb edn-response)
           )))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Sente message handling
+;(log-trace "Begin Sente message handling")
+
+; Dispatch on event-id
+(defmulti event-msg-handler :id)
+
+;; Wrap for logging, catching, etc.:
+(defn event-msg-handler* [{:keys [id ?data event] :as ev-msg}]
+  (event-msg-handler {:id    (first ev-msg)
+                      :?data (second ev-msg)}))
+
+(defmethod event-msg-handler :default
+  [ev-msg]
+  (log (str "Unhandled socket event: " ev-msg)))
+
+(defmethod event-msg-handler :chsk/state
+  [{:as ev-msg :keys [?data]}]
+  (do
+    (log (str "Channel socket state change: " ?data))
+    (when (:first-open? ?data)
+      (log "Channel socket successfully established!"))))
+
+;; TODO - Cleaning when respons type can be separated
+(defmethod event-msg-handler :chsk/recv
+  [{:as ev-msg :keys [?data]}]
+  (let [[topic payload] ?data]
+    (when (= topic :tx/accepted)
+      (log (str "Socket Payload: " payload))
+      (cond
+        (= payload 'app/select-activity)
+        (do
+          ;; only set the activity if a judige is selected for this client
+          ;(when (= (:name @local-id)
+          ;         (:adjudicator/name (:payload payload))))
+          (om/transact! reconciler `[;(app/selected-activities {:activities #{}})
+                                     (app/status {:status :round-received})
+                                     ;; TODO - consolidate with the one from main view
+                                     {:app/selected-activities
+                                      [:activity/id :activity/name
+                                       {:activity/confirmed-by [:adjudicator/id]}
+                                       {:activity/source [{:round/panel ~(om/get-query AdjudicatorSelection)}
+                                                          :round/number-of-heats
+                                                          :round/number-to-recall
+                                                          {:round/starting ~(om/get-query HeatsComponent)}]}]}
+                                     ]))
+
+        ;; TODO - this feels ikky, should be symetrical
+        (= (:topic payload) 'app/confirm-marks)
+        (when (= (:adjudicator/id (:adjudicator @local-storage))
+                 (:adjudicator/id (:payload payload)))
+          (om/transact! reconciler `[(app/status {:status :confirmed})]))
+        ;(log (str "Marks are confirmed! Adj " (:adjudicator @local-storage)))
+
+        ;(om/transact! reconciler `[(app/status {:status confirmed})])
+        ;(when (= (:name @local-storage)
+        ;         (:adjudicator/name (:payload payload)))
+        ;  ;; TODO - only confirm if it was this client
+        ;  (om/transact! reconciler `[(app/status {:status :confirmed})]))
+
+        (= payload 'app/set-client-info)
+        (do (log "Update client info")
+            (om/transact! reconciler `[{:app/selected-adjudicator [:adjudicator/name
+                                                                   :adjudicator/id]}]))))))
+
+(defmethod event-msg-handler :chsk/handshake
+  [{:as ev-msg :keys [?data]}]
+  (let [[?uid ?csrf-token ?handshake-data] ?data]
+    (log (str "Socket Handshake: " ?data))))
+
+(defonce chsk-router
+         (sente/start-chsk-router-loop! event-msg-handler* ch-chsk))
+
+;(log-trace "End Sente message handling")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Application
