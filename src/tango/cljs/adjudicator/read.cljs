@@ -20,8 +20,8 @@
 (defmethod read :app/selected-adjudicator
   [{:keys [ast state]} _ _]
   {:value (get @state :app/selected-adjudicator nil)
-   :query (do (log (str "AST : " (assoc ast :params {:client/id (:client-id @local-storage)})))
-              (assoc ast :params {:client/id (:client-id @local-storage)}))})
+   :query (do (log (str "AST : " (assoc ast :params {:client/id (:app/local-id @state)})))
+              (assoc ast :params {:client/id (:app/local-id @state)}))})
 
 (defmethod read :app/results
   [{:keys [state]} _ _]

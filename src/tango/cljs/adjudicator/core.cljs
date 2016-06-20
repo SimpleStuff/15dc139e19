@@ -108,12 +108,7 @@
           (om/transact! reconciler `[;(app/selected-activities {:activities #{}})
                                      (app/status {:status :round-received})
                                      :app/selected-activities
-                                     ])
-          ;(om/transact! reconciler `[(app/selected-activity-status {:status :out-of-sync})
-          ;                           ;(app/status {:status :judging})
-          ;                           ;:app/status
-          ;                           :app/results])
-          )
+                                     ]))
 
         (= (:topic payload) 'app/confirm-marks)
         (when (= (:name @local-storage)
@@ -374,8 +369,6 @@
                           :round/number-to-recall
                           {:round/starting (om/get-query HeatsComponent)}]}]}
 
-     ;'(:app/selected-adjudicator {:id ?id
-     ;                             :query [:adjudicator/name]})
      {:app/selected-adjudicator [:adjudicator/name
                                  :adjudicator/id]}
 
@@ -445,7 +438,10 @@
                                                            :app/status])}
                                 "Done"))
 
-            :select-judge ((om/factory AdjudicatorSelection) {:adjudicator (:client/user selected-adjudicator)})
+            :select-judge (if (:client/user selected-adjudicator)
+                            (om/transact! this `[(app/status {:status :waiting-for-round})])
+                            ((om/factory AdjudicatorSelection)
+                              {:adjudicator (:client/user selected-adjudicator)}))
 
             :confirming (dom/div nil
                           (dom/h3 nil "Confirming results, please wait.."))
