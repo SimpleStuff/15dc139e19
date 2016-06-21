@@ -69,14 +69,16 @@
 ;             (swap! local-storage assoc :client-id id))})
 
 (defmethod mutate 'app/set-client-info
-  [{:keys [state]} _ {:keys [client/name client/id]}]
-  {:value   {:keys [:app/client-name
-                    :app/local-id]}
+  [{:keys [state]} _ {:keys [client/name client/id] :as client}]
+  {:value   {:keys [:app/client]}
    :action  (fn []
-              (swap! state (fn [current]
-                             (merge current {:app/local-id    id
-                                             :app/client-name name})))
+              ;(swap! state (fn [current]
+              ;               (merge current {:app/local-id    id
+              ;                               :app/client-name name})))
+              (swap! state assoc :app/client client)
+              (log (str "client changed " (:app/client @state)))
               ;(swap! local-storage assoc :client-id id)
               ;(log (str "Local changed : " (:client-id @local-storage)))
               )
-   :command true})
+   ;:command true
+   })

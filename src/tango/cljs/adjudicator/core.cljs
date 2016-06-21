@@ -296,6 +296,50 @@
                       "Show Confirmed Results")
           (dom/h5 nil (str "Current State : " status)))))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Init Client Component
+(defui InitClientComponent
+  static om/IQuery
+  (query [_]
+    [:client/id :client/name])
+  Object
+  (render
+    [this]
+    (let [client (:client (om/props this))]
+      (log "Client Init")
+      (log client)
+      (dom/div #js {:className "container"}
+        (dom/h3 nil "Assign this client a name to use it as an Adjudicator device")
+        (dom/div #js {:className "form-horizontal"}
+          (dom/div #js {:className "form-group"}
+            (dom/label #js {:className "col-sm-2 control-label"
+                            :htmlFor       "clientInputName"} "Client name")
+            (dom/div #js {:className "col-sm-8"}
+              (dom/input #js {:className "form-control"
+                              :value (:client/name client)
+                              :id        "clientInputName"
+                              :onChange #(om/transact! this `[(app/set-client-info
+                                                                {:client/name ~(.. % -target -value)})
+                                                              ;:app/client
+                                                              ])})))
+          (dom/div #js {:className "form-group"}
+            (dom/div #js {:className "col-sm-offset-2 col-sm-10"}
+              (dom/button
+                #js {:className "btn btn-default"
+                     :type      "submit"
+                     :onClick   #(do
+                                  (let [idt (random-uuid)]
+                                    (swap! local-storage assoc :client-id idt)
+                                    (om/transact! this
+                                                  `[(app/set-client-info {:client/id   ~idt
+                                                                          :client/name "Allan Awsome"})
+                                                    (app/status {:status :loading})
+                                                    :app/status])))}
+                "Connect"))))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; MainComponent
+
 ;https://medium.com/@kovasb/om-next-the-reconciler-af26f02a6fb4#.kwq2t2jzr
 (defui MainComponent
   static om/IQuery
@@ -310,6 +354,8 @@
 
      {:app/selected-adjudicator [:adjudicator/name
                                  :adjudicator/id]}
+
+     {:app/client (om/get-query InitClientComponent)}
 
      {:app/results [:result/mark-x
                     :result/point
@@ -333,6 +379,7 @@
           selected-round (:activity/source selected-activity)
           panel (:round/panel selected-round)
           selected-adjudicator (:client/user (:app/selected-adjudicator (om/props this)))
+          client (:app/client (om/props this))
           ;;; Results must also be for selected round
           results-for-this-adjudicator (filter #(= (:adjudicator/id selected-adjudicator)
                                                    (:adjudicator/id (:result/adjudicator %)))
@@ -349,11 +396,8 @@
       ;(log selected-adjudicator)
       ;(log "Results :")
       ;(log (:app/results (om/props this)))
-      (log "Selected Act")
-      (log (:activity/name selected-activity))
-      (log "Confirmed")
-      (log confirmed?)
-      (log (not confirmed?))
+      (log "Main client")
+      (log client)
       (dom/div #js {:className "container-fluid"}
         ;(when-not selected-adjudicator
         ;  ((om/factory AdjudicatorSelection) panel))
@@ -374,19 +418,34 @@
                          (log (str (:client-id @local-storage)))
                          (om/transact! this `[(app/status {:status :init})])))
 
-            :init (dom/div nil
-                    (dom/h3 nil "Init this client")
-                    (dom/p nil "Client name : ")
-                    (dom/button #js {:onClick
-                                     #(do
-                                       (let [idt (random-uuid)]
-                                         (swap! local-storage assoc :client-id idt)
-                                         (om/transact! this `[(app/set-client-info {:client/id   ~idt
-                                                                                    :client/name "Allan Awsome"})
-                                                              (app/status {:status :loading})
-                                                              :app/status])))
-                                     }
-                                "Done"))
+            :init (dom/div #js {:className "container"}
+                    (dom/h3 nil "Assign this client a name to use it as an Adjudicator device")
+                    (dom/div #js {:className "form-horizontal"}
+                      (dom/div #js {:className "form-group"}
+                        (dom/label #js {:className "col-sm-2 control-label"
+                                        :htmlFor       "clientInputName"} "Client name")
+                        (dom/div #js {:className "col-sm-8"}
+                          (dom/input #js {:className "form-control"
+                                          :value (:client/name client)
+                                          :id        "clientInputName"
+                                          :onChange #(om/transact! this `[(app/set-client-info
+                                                                            {:client/name ~(.. % -target -value)})
+                                                                          ;:app/client
+                                                                          ])})))
+                      (dom/div #js {:className "form-group"}
+                        (dom/div #js {:className "col-sm-offset-2 col-sm-10"}
+                          (dom/button
+                            #js {:className "btn btn-default"
+                                 :type      "submit"
+                                 :onClick   #(do
+                                              (let [idt (random-uuid)]
+                                                (swap! local-storage assoc :client-id idt)
+                                                (om/transact! this
+                                                              `[(app/set-client-info {:client/id   ~idt
+                                                                                      :client/name "Allan Awsome"})
+                                                                (app/status {:status :loading})
+                                                                :app/status])))}
+                            "Connect")))))
 
             :select-judge (if selected-adjudicator
                             (do
@@ -496,10 +555,6 @@
       (transit-post "/commands" edn cb)
       (:query edn)
       (go
-        (log "Query")
-        (log edn)
-        (log "Params")
-        (log (:params (om/get-query MainComponent)))
         (let [remote-query (:query edn)
               ;remote-query (if (map? (first (:query edn)))
               ;               (:query edn)
@@ -510,13 +565,7 @@
                                                       ;:params (pr-str {:id (:client-id @local-storage)})
                                                       }}))
               edn-response (second (cljs.reader/read-string (:body response)))]
-
-          (log "Remote Q")
-          (log remote-query)
-          ;; TODO - why is the response a vec?
-          ;; TODO - change status if we get a new round
-          (cb edn-response)
-          )))))
+          (cb edn-response))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Sente message handling
@@ -604,7 +653,8 @@
                           :app/admin-mode false
                           :app/status :loading
                           :app/client-name ""
-                          :app/local-id (:client-id @local-storage)}))
+                          :app/local-id (:client-id @local-storage)
+                          :app/client nil}))
 
 (def reconciler
   (om/reconciler
