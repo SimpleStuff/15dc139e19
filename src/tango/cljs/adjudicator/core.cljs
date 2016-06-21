@@ -345,10 +345,15 @@
                                   (:activity/confirmed-by selected-activity)))
           ]
 
-      (log "Selected Adjudicator: ")
-      (log selected-adjudicator)
+      ;(log "Selected Adjudicator: ")
+      ;(log selected-adjudicator)
       ;(log "Results :")
       ;(log (:app/results (om/props this)))
+      (log "Selected Act")
+      (log (:activity/name selected-activity))
+      (log "Confirmed")
+      (log confirmed?)
+      (log (not confirmed?))
       (dom/div #js {:className "container-fluid"}
         ;(when-not selected-adjudicator
         ;  ((om/factory AdjudicatorSelection) panel))
@@ -401,11 +406,11 @@
                          (dom/div nil
                            (dom/h3 nil "Results have been confirmed!")))
 
-            :waiting-for-round (dom/div nil
-                                 (dom/h3 nil "Waiting for next round.."))
+            :waiting-for-round (if (and selected-activity (not confirmed?))
+                                 (om/transact! this `[(app/status {:status :round-received})])
+                                 (dom/div nil
+                                   (dom/h3 nil "Waiting for next round..")))
 
-            ;:round-received (dom/div nil
-            ;                  (dom/h3 nil "Round received"))
             :round-received (if (and selected-activity confirmed?)
                               (om/transact! this `[(app/status {:status :waiting-for-round})])
                               (om/transact! this `[(app/status {:status :judging})]))

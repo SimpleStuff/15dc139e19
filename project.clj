@@ -104,13 +104,13 @@
                                :output-dir "resources/public/js/out/adj"
                                ;:source-map    "resources/public/js/out.js.map"
                                ;; PROD
-                               :optimizations :advanced
-                               :pretty-print  false
+                               ;:optimizations :advanced
+                               ;:pretty-print  false
 
                                ;; DEV
-                               ;:source-map true
-                               ;:pretty-print  true
-                               ;:optimizations :none
+                               :source-map true
+                               :pretty-print  true
+                               :optimizations :none
                                }}
 
                {:id           "runtime"
@@ -122,13 +122,13 @@
                                :output-dir "resources/public/js/out/runtime"
                                ;:source-map    "resources/public/js/out.js.map"
                                ;; PROD
-                               :optimizations :advanced
-                               :pretty-print  false
+                               ;:optimizations :advanced
+                               ;:pretty-print  false
 
                                ;; DEV
-                               ;:source-map true
-                               ;:pretty-print  true
-                               ;:optimizations :none
+                               :source-map true
+                               :pretty-print  true
+                               :optimizations :none
                                }}
 
                {:id           "speaker"
