@@ -76,7 +76,11 @@
         (= payload 'app/set-speaker-activity)
         (do
           ;(log "select")
-          (om/transact! reconciler `[:app/speaker-activites]))))))
+          (om/transact! reconciler `[:app/speaker-activites]))
+        (= payload 'app/set-client-info)
+        (do
+          (log (str "Client info changed " payload))
+          (om/transact! reconciler `[:app/clients]))))))
 
 (defmethod event-msg-handler :chsk/handshake
   [{:as ev-msg :keys [?data]}]
@@ -172,60 +176,7 @@
                                                     this
                                                     `[(app/select-speaker-activity {:activity/id ~(:activity/id p)})
                                                       :app/speaker-activities])))}
-                                (dom/span #js {:className "glyphicon glyphicon-volume-up"}))
-
-                    ;(dom/button #js {:className (str "btn" (if selected? " btn-success" " btn-default"))
-                    ;                 :onClick   #(when-not completed?
-                    ;                              (when-not selected?
-                    ;                                (om/transact!
-                    ;                                  this
-                    ;                                  `[(app/select-activity
-                    ;                                      {:activity/id    ~(:activity/id (om/props this))
-                    ;                                       :activity/name  ~name
-                    ;                                       :activity/number ~number
-                    ;
-                    ;                                       :round/recall   ~(:round/recall (:activity/source
-                    ;                                                                         (om/props this)))
-                    ;                                       :round/name     ~round
-                    ;                                       :round/heats    ~(:round/heats (:activity/source
-                    ;                                                                        (om/props this)))
-                    ;                                       :round/starting ~(:round/starting (:activity/source
-                    ;                                                                           (om/props this)))
-                    ;                                       :round/panel    ~(:round/panel (:activity/source
-                    ;                                                                        (om/props this)))
-                    ;                                       :round/dances   ~(:round/dances (:activity/source
-                    ;                                                                         (om/props this)))})
-                    ;                                    :app/selected-activity])))}
-                    ;            (dom/span #js {:className "glyphicon glyphicon-play"}))
-
-                    ;(dom/button #js {:className (str "btn" (if speaker? " btn-success" " btn-default"))
-                    ;                 :onClick   #(when-not completed?
-                    ;                              (when-not speaker?
-                    ;                                (om/transact!
-                    ;                                  this
-                    ;                                  `[(app/set-speaker-activity
-                    ;                                      {:activity/id          ~(:activity/id (om/props this))
-                    ;                                       :activity/name        ~name
-                    ;                                       :activity/number      ~number
-                    ;                                       :activity/position    ~(:activity/position
-                    ;                                                                (om/props this))
-                    ;                                       :round/index          ~(:round/index (:activity/source
-                    ;                                                                              (om/props this)))
-                    ;                                       :round/recall         ~(:round/recall (:activity/source
-                    ;                                                                               (om/props this)))
-                    ;                                       :round/heats          ~(:round/heats (:activity/source
-                    ;                                                                              (om/props this)))
-                    ;                                       :round/starting       ~(:round/starting (:activity/source
-                    ;                                                                                 (om/props this)))
-                    ;                                       :round/panel          ~(:round/panel (:activity/source
-                    ;                                                                              (om/props this)))
-                    ;
-                    ;                                       :round/speaker-dances ~(:round/dances (:activity/source
-                    ;                                                                               (om/props this)))
-                    ;                                       })
-                    ;                                    :app/speaker-activites])))}
-                    ;            (dom/span #js {:className "glyphicon glyphicon-volume-up"}))
-                    )))))))
+                                (dom/span #js {:className "glyphicon glyphicon-volume-up"})))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ScheduleView
@@ -332,7 +283,100 @@
         (dom/button #js {:onClick #(om/transact! this `[(app/select-page {:selected-page :home})
                                                         :app/selected-page])} "Home")
         (dom/button #js {:onClick #(om/transact! this `[(app/select-page {:selected-page :time-schedule})
-                                                        :app/selected-page])} "Time Schedule")))))
+                                                        :app/selected-page])} "Time Schedule")
+        (dom/button #js {:onClick #(om/transact! this `[(app/select-page {:selected-page :clients})
+                                                        :app/selected-page])} "Clients")))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Client Row
+(defui ClientRow
+  static om/IQuery
+  (query [_]
+    [:client/id :client/name {:client/user [:adjudicator/id :adjudicator/name]}])
+  Object
+  (render
+    [this]
+    (let [client (:client (om/props this))
+          panels (sort-by :adjudicator-panel/name (:adjudicator-panels (om/props this)))
+          client-id (:client/id client)
+          client-name (:client/name client)
+          adjudicator-id (:adjudicator/id (:client/user client))
+          adjudicator-name (:adjudicator/name (:client/user client))]
+      (dom/tr nil
+        (dom/td nil (str client-id))
+        (dom/td nil client-name)
+        (dom/td nil
+          (dom/div #js {:className "dropdown"}
+            (dom/button #js {:className   "btn btn-default dropdown-toggle"
+                             :data-toggle "dropdown"} ""
+                        (dom/span #js {:className "selection"}
+                          (if adjudicator-name adjudicator-name "Select"))
+                        (dom/span #js {:className "caret"}))
+            ;(dom/ul #js {:className "dropdown-menu"
+            ;             :role "menu"}
+            ;  (dom/li #js {:className "dropdown-header"} (str "Panel - "
+            ;                                                  (:adjudicator-panel/name (first panels))))
+            ;  (dom/li #js {:role "presentation"}
+            ;    (dom/a #js {:role "menuitem"} "AA"))
+            ;  (dom/li #js {:role "presentation"}
+            ;    (dom/a #js {:role "menuitem"} "BB")))
+
+            (apply dom/ul #js {:className "dropdown-menu" :role "menu"}
+                   (map (fn [panel]
+                          [(dom/li #js {:className "dropdown-header"}
+                             (str "Panel - " (:adjudicator-panel/name panel)))
+                           (map (fn [adjudicator]
+                                  (dom/li #js {:role "presentation"
+                                               :onClick     ;#(log (str "Change ajd to " (:adjudicator/name adjudicator)))
+                                                     #(om/transact! reconciler `[(app/set-client-info
+                                                                             {:client/id   ~client-id
+                                                                              :client/name ~client-name
+                                                                              :client/user {:adjudicator/id   ~(:adjudicator/id adjudicator)
+                                                                                            :adjudicator/name ~(:adjudicator/name adjudicator)}})
+                                                                           :app/clients])
+                                               }
+                                    (dom/a #js {:role "menuitem"} (:adjudicator/name adjudicator))))
+                                (:adjudicator-panel/adjudicators panel))])
+                        panels))
+            ))
+        ))))
+
+;<div class="dropdown">
+;<button class="btn btn-default dropdown-toggle" type="button" id="menu1" data-toggle="dropdown">Tutorials
+;<span class="caret"></span></button>
+;<ul class="dropdown-menu" role="menu" aria-labelledby="menu1">
+;<li role="presentation"><a role="menuitem" tabindex="-1" href="#">HTML</a></li>
+;<li role="presentation"><a role="menuitem" tabindex="-1" href="#">CSS</a></li>
+;<li role="presentation"><a role="menuitem" tabindex="-1" href="#">JavaScript</a></li>
+;<li role="presentation" class="divider"></li>
+;<li role="presentation"><a role="menuitem" tabindex="-1" href="#">About Us</a></li>
+;</ul>
+;</div>
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Clients View
+(defui ClientsView
+  static om/IQuery
+  (query [_]
+    (into [] (om/get-query ClientRow)))
+  Object
+  (render
+    [this]
+    (let [clients (sort-by (juxt :client/name :client/id) (:clients (om/props this)))
+          panels (:adjudicator-panels (om/props this))]
+      (log "clients")
+      (log clients)
+      (dom/div nil
+        (dom/h2 nil "Clients")
+        (dom/table
+          #js {:className "table table-hover table-condensed"}
+          (dom/thead nil
+            (dom/tr nil
+              (dom/th #js {:width "50"} "Id")
+              (dom/th #js {:width "50"} "Name")
+              (dom/th #js {:width "50"} "Assigned to Adjudicator")))
+          (apply dom/tbody nil (map #((om/factory ClientRow {:key-fn :client/id}) {:client       %
+                                                              :adjudicator-panels panels}) clients)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; MainComponent
@@ -340,12 +384,17 @@
 (defui MainComponent
   static om/IQuery
   (query [_]
-    [{:app/selected-competition (into [:competition/name :competition/location]
+    [{:app/selected-competition (into [:competition/name :competition/location
+                                       {:competition/panels [:adjudicator-panel/name
+                                                             {:adjudicator-panel/adjudicators
+                                                              [:adjudicator/id
+                                                               :adjudicator/name]}]}]
                                       (concat (om/get-query ScheduleView)))}
      :app/status
      :app/selected-page
-     {:app/selected-activities [:activity/id]}
+     {:app/selected-activities [:activity/id] }
      {:app/speaker-activities [:activity/id]}
+     {:app/clients (om/get-query ClientsView)}
      ])
   Object
   (render
@@ -354,10 +403,6 @@
           selected-competition (:app/selected-competition p)
           status (:app/status p)
           selected-page (:app/selected-page p)]
-      ;(log (om/get-query ScheduleView))
-      (log "Speaker activites")
-      (log (:app/speaker-activities p))
-      ;(log (str selected-competition))
       (dom/div nil
         ((om/factory MenuComponent))
         (condp = selected-page
@@ -370,13 +415,15 @@
                                                      :selected-activities
                                                      (:app/selected-activities p)
                                                      :speaker-activities
-                                                     (:app/speaker-activities p)}))
+                                                     (:app/speaker-activities p)})
+          :clients ((om/factory ClientsView) {:clients      (:app/clients p)
+                                              :adjudicator-panels (:competition/panels selected-competition)}))
         ))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Remote com
 (defn transit-post [url edn cb]
-  ;(log edn)
+  (log edn)
   (.send XhrIo url
          #()                                                ;log
          ;(this-as this
@@ -405,9 +452,10 @@
                                                      {:query (pr-str remote-query)}}))
               edn-response (second (cljs.reader/read-string (:body response)))]
 
-          (log remote-query)
+          ;(log remote-query)
+          ;(log edn-response)
           ;; TODO - why is the response a vec?
-          ;(cb {:app/selected-competition (first (:app/selected-competition edn-response))})
+          ;(cb (cljs.reader/read-string (:body response)))
           (cb edn-response)
           )))))
 

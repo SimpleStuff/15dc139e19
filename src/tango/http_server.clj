@@ -75,6 +75,12 @@
              (async/>!! state {:topic :command :sender :http :payload [key params]})
              (log/info (str "Confirm Marks " key " " params)))})
 
+(defmethod mutate 'app/set-client-info
+  [{:keys [state] :as env} key params]
+  {:action (fn []
+             (async/>!! state {:topic :command :sender :http :payload [key params]})
+             (log/info (str "Set client info " key " " params)))})
+
 (defmethod mutate 'app/set-export-status
   [{:keys [state] :as env} key params]
   {:action (fn []
@@ -170,12 +176,24 @@
             (log/info (str "app/confirmed read"))
             (d/query-confirmation state query))})
 
+(defmethod reader :app/clients
+  [{:keys [state query]} key params]
+  {:value (do
+            (log/info (str "app/clients read"))
+            (d/query-clients state query))})
+
 ;; TODO - hack fix
 (defmethod reader :app/selected-adjudicator
   [{:keys [state query]} key params]
   {:value (do
-            (log/info (str "app/results read"))
-            nil)})
+            (log/info (str "app/selected-adjudicator read"))
+            (log/info (str query " - " key " - " params))
+            (let [q [:client/id
+                     :client/name
+                     {:client/user query}]
+                  clients (d/query-clients state q)]
+              (log/info (str "Clients : " clients))
+              (first (filter #(= (:client/id params) (:client/id %)) clients))))})
 
 (defmethod reader :app/status
   [{:keys [state query]} key params]

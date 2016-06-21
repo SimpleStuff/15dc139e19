@@ -35,11 +35,13 @@
   (do
     (log/info (str "Set Result : " ) result)
 
-    (d/set-results conn [(merge
-                           result
-                           {:result/participant {:participant/id (:result/participant result)}
-                            :result/activity {:activity/id (:result/activity result)}
-                            :result/adjudicator {:adjudicator/id (:result/adjudicator result)}})])))
+    (d/set-results conn [result]
+                   ;[(merge
+                   ;   result
+                   ;   {:result/participant {:participant/id (:result/participant result)}
+                   ;    :result/activity {:activity/id (:result/activity result)}
+                   ;    :result/adjudicator {:adjudicator/id (:result/adjudicator result)}})]
+                   )))
 
 (defn confirm-results [conn results adjudicator activity]
   (do
@@ -60,6 +62,18 @@
       (log/debug (str "Results After Count " (count (d/query-all-results conn ['*])))))
     ))
 
+;; TODO - now we only support adjudicators as users
+(defn set-client-info [conn client-info]
+  (d/set-client-information conn client-info))
+
+;(defn set-client-info [conn client-info]
+;  (let [db-info {:client/id   (:id client-info)
+;                 :client/name (:name client-info)}
+;        merged-info (if (:user-id client-info)
+;                      (merge db-info {:adjudicator/id (:user-id client-info)})
+;                      db-info)]
+;    (d/set-client-information conn db-info)))
+
 (defn start-result-rules-engine [in-ch out-ch client-in-channel datomic-storage-uri]
   (async/go-loop []
     (when-let [message (async/<! in-ch)]
@@ -71,6 +85,10 @@
             (log/info (str "Result Received Topic: [" topic "]"))
             (log/info (str "Result Received payload: [" payload "]"))
             (match [topic payload]
+                   ['app/set-client-info _]
+                   (do
+                     (log/info (str "Set client info " payload))
+                     (set-client-info (d/create-connection datomic-storage-uri) payload))
                    ['app/select-activity _]
                    (do
                      (log/info (str "Select activity " payload))
@@ -91,12 +109,7 @@
                    (do
                      (log/info (str "Set Speaker Activity"))
                      (set-speaker-activity (d/create-connection datomic-storage-uri) payload))
-                   ;[:app/selected-activity _]
-                   ;(do
-                   ;  (log/info (str "Selected activity " (:app/selected-activity payload)))
-                   ;  (selected-activity (d/create-connection datomic-storage-uri)))
-                   [:set-result p]
-                   (log/info "Mark X")
+
                    :else (async/>!!
                            out-ch
                            {:topic :rules/unkown-topic :payload {:topic topic}})
