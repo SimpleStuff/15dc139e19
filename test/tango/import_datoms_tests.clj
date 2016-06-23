@@ -18,7 +18,7 @@
 
 (def mem-uri "datomic:mem://localhost:4334//competitions")
 
-(def schema-tx (read-string (slurp "./src/tango/schema/activity.edn")))
+(def schema-tx (read-string (slurp "./resources/schema/activity.edn")))
 
 (def test-competition (atom nil))
 (def conn (atom nil))

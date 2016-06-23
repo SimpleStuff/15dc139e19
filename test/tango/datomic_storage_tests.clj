@@ -19,23 +19,22 @@
 (defn create-selected-round [name]
   (merge select-round-data {:activity/name name :activity/id (java.util.UUID/randomUUID)}))
 
-(def mem-uri "datomic:mem://localhost:4334//competitions")
-(def schema-tx (read-string (slurp "./src/tango/schema/activity.edn")))
 
-(deftest create-connection
-  (testing "Create a connection to db"
-    (is (not= nil (ds/create-storage mem-uri ds/select-activity-schema)))
-    (is (not= nil (ds/create-connection mem-uri)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Setup utils
 
 (def mem-uri "datomic:mem://localhost:4334//competitions")
 
-(def schema-tx (read-string (slurp "./src/tango/schema/activity.edn")))
+(def schema-tx (read-string (slurp "./resources/schema/activity.edn")))
 
 (def test-competition (atom nil))
 (def conn (atom nil))
+
+(deftest create-connection
+  (testing "Create a connection to db"
+    (is (not= nil (ds/create-storage mem-uri ds/select-activity-schema)))
+    (is (not= nil (ds/create-connection mem-uri)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Setup fixtures

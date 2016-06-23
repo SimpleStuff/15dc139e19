@@ -244,14 +244,8 @@
     (log/report "Starting MessageBroker")
     (let [rules-in-ch (async/chan)
           rules-out-ch (async/chan)
-          ;(slurp (clojure.java.io/resource "public/index.html"))
-          ;(read-string (slurp (.getFile (clojure.java.io/resource "schema/activity.edn"))))
           schema-tx (read-string (slurp (clojure.java.io/resource "schema/activity.edn")))
-          _ (d/create-storage datomic-storage-uri schema-tx
-                               ;(into d/select-activity-schema
-                               ;                          (into d/application-schema
-                               ;                                d/result-schema))
-                               )
+          _ (d/create-storage datomic-storage-uri schema-tx)
           rules-engine (start-result-rules-engine
                          rules-in-ch
                          rules-out-ch
