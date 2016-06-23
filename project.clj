@@ -60,6 +60,7 @@
   :source-paths ["src"]
 
   :clean-targets ^{:protect false} ["resources/public/js/out"
+                                    "resources/public/js/runtime.js"
                                     "resources/public/js/app.js"
                                     "resources/public/js/adj.js"
                                     "resources/public/js/speaker.js"
@@ -75,15 +76,34 @@
           :ignore-ns #{}}
 
   :cljsbuild {:builds
-              [{:id           "dev"
-                :source-paths ["src/tango/cljs" "src"]
+              [
+               ;{:id           "dev"
+               ; :source-paths ["src/tango/cljs" "src"]
+               ;
+               ; :figwheel     {:on-jsload "tango.cljs.client/on-js-reload"}
+               ;
+               ; :compiler     {:main          tango.cljs.client
+               ;                :asset-path    "js/out"
+               ;                :output-to     "resources/public/js/app.js"
+               ;                :output-dir    "resources/public/js/out"
+               ;                ;:source-map    "resources/public/js/out.js.map"
+               ;                ;; PROD
+               ;                :optimizations :advanced
+               ;                :pretty-print  false
+               ;
+               ;                ;; DEV
+               ;                ;:source-map true
+               ;                ;:pretty-print  true
+               ;                ;:optimizations :none
+               ;                }}
 
-                :figwheel     {:on-jsload "tango.cljs.client/on-js-reload"}
-
-                :compiler     {:main          tango.cljs.client
-                               :asset-path    "js/out"
-                               :output-to     "resources/public/js/app.js"
-                               :output-dir    "resources/public/js/out"
+               {:id           "adj"
+                :source-paths ["src/tango/cljs/adjudicator" "src"]
+                :figwheel     {:on-jsload "tango.cljs.adjudicator.core/on-js-reload"}
+                :compiler     {:main       tango.cljs.adjudicator.core
+                               :asset-path "js/out/adj"
+                               :output-to  "resources/public/js/adj.js"
+                               :output-dir "resources/public/js/out/adj"
                                ;:source-map    "resources/public/js/out.js.map"
                                ;; PROD
                                :optimizations :advanced
@@ -95,24 +115,6 @@
                                ;:optimizations :none
                                }}
 
-               {:id           "adj"
-                :source-paths ["src/tango/cljs/adjudicator" "src"]
-                :figwheel     {:on-jsload "tango.cljs.adjudicator.core/on-js-reload"}
-                :compiler     {:main       tango.cljs.adjudicator.core
-                               :asset-path "js/out/adj"
-                               :output-to  "resources/public/js/adj.js"
-                               :output-dir "resources/public/js/out/adj"
-                               ;:source-map    "resources/public/js/out.js.map"
-                               ;; PROD
-                               ;:optimizations :advanced
-                               ;:pretty-print  false
-
-                               ;; DEV
-                               :source-map true
-                               :pretty-print  true
-                               :optimizations :none
-                               }}
-
                {:id           "runtime"
                 :source-paths ["src/tango/cljs/runtime" "src"]
                 :figwheel     {:on-jsload "tango.cljs.adjudicator.core/on-js-reload"}
@@ -122,13 +124,13 @@
                                :output-dir "resources/public/js/out/runtime"
                                ;:source-map    "resources/public/js/out.js.map"
                                ;; PROD
-                               ;:optimizations :advanced
-                               ;:pretty-print  false
+                               :optimizations :advanced
+                               :pretty-print  false
 
                                ;; DEV
-                               :source-map true
-                               :pretty-print  true
-                               :optimizations :none
+                               ;:source-map true
+                               ;:pretty-print  true
+                               ;:optimizations :none
                                }}
 
                {:id           "speaker"
@@ -154,7 +156,7 @@
                ;; lein cljsbuild once min
                {:id           "min"
                 :source-paths ["src"]
-                :compiler     {:main          tango.cljs.client
+                :compiler     {:main          tango.cljs.runtime.core
                                :output-to     "resources/public/js/app.js"
                                :asset-path    "js/out"
                                :optimizations :advanced

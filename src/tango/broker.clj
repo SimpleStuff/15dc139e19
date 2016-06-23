@@ -244,7 +244,9 @@
     (log/report "Starting MessageBroker")
     (let [rules-in-ch (async/chan)
           rules-out-ch (async/chan)
-          schema-tx (read-string (slurp "./src/tango/schema/activity.edn"))
+          ;(slurp (clojure.java.io/resource "public/index.html"))
+          ;(read-string (slurp (.getFile (clojure.java.io/resource "schema/activity.edn"))))
+          schema-tx (read-string (slurp (clojure.java.io/resource "schema/activity.edn")))
           _ (d/create-storage datomic-storage-uri schema-tx
                                ;(into d/select-activity-schema
                                ;                          (into d/application-schema
