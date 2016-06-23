@@ -84,32 +84,12 @@
                                        :adjudicator/id]}])
   Object
   (render [this]
-    ;(log-trace "Render AdjudicatorSelection")
-    (let [panel (om/props this)
-          adjudicator (:adjudicator (om/props this))]
-      (log "Adjudicator : ")
-      (log (str adjudicator))
+    (let [client (om/props this)]
       (dom/div nil
-        (if (:adjudicator-panel/name panel)
-          (dom/div nil
-            (dom/h3 nil (str "Panel for this round : " (:adjudicator-panel/name panel)))
-            (dom/h3 nil (str "Select judge for use in this client :"))
-            (dom/ul nil
-              (map #(dom/li #js {:onClick
-                                 (fn [e]
-                                   (do
-                                     ;; Persist this adjudicator to storage
-                                     (swap! local-storage assoc :name (:adjudicator/name %))
-                                     ;(swap! local-id assoc :adjudicator %)
-                                     (om/transact! this `[(app/select-adjudicator {:adjudicator ~%})
-                                                          (app/status {:status :waiting-for-round})
-                                                          :app/selected-adjudicator
-                                                          :app/selected-activities
-                                                          :app/status])))}
-                     (:adjudicator/name %)) (:adjudicator-panel/adjudicators panel))))
-          (dom/div nil
-            (dom/h3 nil "Waiting for Adjudicator Panel to select Adjudicator from..")
-            (dom/h3 nil (str "Adjudicator :" (:adjudicator/name adjudicator)))))))))
+        (dom/h3 nil
+          (str "Waiting for Administrator to assign an adjudicator to this client ("
+               (:client/name client)
+               ")"))))))
 
 (defui HeatRowComponent
   static om/IQuery
@@ -296,6 +276,49 @@
                       "Show Confirmed Results")
           (dom/h5 nil (str "Current State : " status)))))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Init Client Component
+(defui InitClientComponent
+  static om/IQuery
+  (query [_]
+    [:client/id :client/name])
+  Object
+  (render
+    [this]
+    (let [client (om/props this)
+          {:keys [:client/name]} client]
+      (log "Client Init")
+      (log (om/props this))
+      (dom/div #js {:className "container"}
+        (dom/h3 nil "Assign this client a name to use it as an Adjudicator device")
+        (dom/div #js {:className "form-horizontal"}
+          (dom/div #js {:className "form-group"}
+            (dom/label #js {:className "col-sm-2 control-label"
+                            :htmlFor       "clientInputName"} "Client name")
+            (dom/div #js {:className "col-sm-8"}
+              (dom/input #js {:className "form-control"
+                              :value name
+                              :id        "clientInputName"
+                              :onChange #(om/transact! this `[(app/set-client-info
+                                                                {:client/name ~(.. % -target -value)})])})))
+          (dom/div #js {:className "form-group"}
+            (dom/div #js {:className "col-sm-offset-2 col-sm-10"}
+              (dom/button
+                #js {:className "btn btn-default"
+                     :type      "submit"
+                     :onClick   #(do
+                                  (let [idt (random-uuid)]
+                                    (swap! local-storage assoc :client-id idt)
+                                    (om/transact! this
+                                                  `[(app/set-client-info {:client/id   ~idt
+                                                                          :client/name ~name})
+                                                    (app/status {:status :loading})
+                                                    :app/status])))}
+                "Connect"))))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; MainComponent
+
 ;https://medium.com/@kovasb/om-next-the-reconciler-af26f02a6fb4#.kwq2t2jzr
 (defui MainComponent
   static om/IQuery
@@ -310,6 +333,8 @@
 
      {:app/selected-adjudicator [:adjudicator/name
                                  :adjudicator/id]}
+
+     {:app/client (om/get-query InitClientComponent)}
 
      {:app/results [:result/mark-x
                     :result/point
@@ -331,8 +356,8 @@
           status (:app/status app)
           selected-activity (first (:app/selected-activities (om/props this)))
           selected-round (:activity/source selected-activity)
-          panel (:round/panel selected-round)
           selected-adjudicator (:client/user (:app/selected-adjudicator (om/props this)))
+          client (:app/client (om/props this))
           ;;; Results must also be for selected round
           results-for-this-adjudicator (filter #(= (:adjudicator/id selected-adjudicator)
                                                    (:adjudicator/id (:result/adjudicator %)))
@@ -349,15 +374,11 @@
       ;(log selected-adjudicator)
       ;(log "Results :")
       ;(log (:app/results (om/props this)))
-      (log "Selected Act")
-      (log (:activity/name selected-activity))
+      (log "Main client")
+      (log client)
       (log "Confirmed")
       (log confirmed?)
-      (log (not confirmed?))
       (dom/div #js {:className "container-fluid"}
-        ;(when-not selected-adjudicator
-        ;  ((om/factory AdjudicatorSelection) panel))
-        ;(when selected-adjudicator)
         (dom/div #js {:className "col-xs-1 pull-right"}
           (dom/button #js {:className "btn btn-default"
                            :onClick   #(om/transact! this `[(app/set-admin-mode
@@ -368,25 +389,13 @@
             ((om/factory AdminComponent) {:status status})))
         (dom/div nil
           (condp = status
-            :loading (if (:app/local-id app)
+            :loading (if (:client/id (:app/client app))
                        (om/transact! this `[(app/status {:status :select-judge})])
                        (do
                          (log (str (:client-id @local-storage)))
                          (om/transact! this `[(app/status {:status :init})])))
 
-            :init (dom/div nil
-                    (dom/h3 nil "Init this client")
-                    (dom/p nil "Client name : ")
-                    (dom/button #js {:onClick
-                                     #(do
-                                       (let [idt (random-uuid)]
-                                         (swap! local-storage assoc :client-id idt)
-                                         (om/transact! this `[(app/set-client-info {:client/id   ~idt
-                                                                                    :client/name "Allan Awsome"})
-                                                              (app/status {:status :loading})
-                                                              :app/status])))
-                                     }
-                                "Done"))
+            :init ((om/factory InitClientComponent) (:app/client (om/props this)))
 
             :select-judge (if selected-adjudicator
                             (do
@@ -394,8 +403,7 @@
                               (log "Stored adj")
                               (log (:adjudicator @local-storage))
                               (om/transact! this `[(app/status {:status :waiting-for-round})]))
-                            ((om/factory AdjudicatorSelection)
-                              {:adjudicator selected-adjudicator}))
+                            ((om/factory AdjudicatorSelection) (:app/client (om/props this))))
 
             :confirming (dom/div nil
                           (dom/h3 nil "Confirming results, please wait.."))
@@ -409,6 +417,8 @@
             :waiting-for-round (if (and selected-activity (not confirmed?))
                                  (om/transact! this `[(app/status {:status :round-received})])
                                  (dom/div nil
+                                   (dom/h3 nil (str "Judge " (:adjudicator/name selected-adjudicator)
+                                                    " on client " (:client/name (:app/client app))))
                                    (dom/h3 nil "Waiting for next round..")))
 
             :round-received (if (and selected-activity confirmed?)
@@ -418,11 +428,8 @@
 
             :judging
             (dom/div #js {:className "col-xs-12"}
-              (dom/h3 #js {:className "text-center"} (str "Judge : "
-                                                          (if selected-adjudicator
-                                                            (:adjudicator/name
-                                                              selected-adjudicator)
-                                                            "None selected")))
+              (dom/h3 #js {:className "text-center"} (str "Judge : " (:adjudicator/name
+                                                                       selected-adjudicator)))
 
               (if selected-activity
                 (dom/div nil
@@ -496,10 +503,6 @@
       (transit-post "/commands" edn cb)
       (:query edn)
       (go
-        (log "Query")
-        (log edn)
-        (log "Params")
-        (log (:params (om/get-query MainComponent)))
         (let [remote-query (:query edn)
               ;remote-query (if (map? (first (:query edn)))
               ;               (:query edn)
@@ -510,13 +513,7 @@
                                                       ;:params (pr-str {:id (:client-id @local-storage)})
                                                       }}))
               edn-response (second (cljs.reader/read-string (:body response)))]
-
-          (log "Remote Q")
-          (log remote-query)
-          ;; TODO - why is the response a vec?
-          ;; TODO - change status if we get a new round
-          (cb edn-response)
-          )))))
+          (cb edn-response))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Sente message handling
@@ -580,7 +577,8 @@
 
         (= payload 'app/set-client-info)
         (do (log "Update client info")
-            (om/transact! reconciler `[{:app/selected-adjudicator [:adjudicator/name
+            (om/transact! reconciler `[(app/status {:status :loading})
+                                       {:app/selected-adjudicator [:adjudicator/name
                                                                    :adjudicator/id]}]))))))
 
 (defmethod event-msg-handler :chsk/handshake
@@ -603,8 +601,7 @@
                           :app/results #{}
                           :app/admin-mode false
                           :app/status :loading
-                          :app/client-name ""
-                          :app/local-id (:client-id @local-storage)}))
+                          :app/client {:client/id (:client-id @local-storage)}}))
 
 (def reconciler
   (om/reconciler
