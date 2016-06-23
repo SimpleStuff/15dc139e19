@@ -80,5 +80,5 @@
               ;(swap! local-storage assoc :client-id id)
               ;(log (str "Local changed : " (:client-id @local-storage)))
               )
-   ;:command true
+   :command true
    })
