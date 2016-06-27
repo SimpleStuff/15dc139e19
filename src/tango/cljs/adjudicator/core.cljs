@@ -281,7 +281,9 @@
 (defui InitClientComponent
   static om/IQuery
   (query [_]
-    [:client/id :client/name])
+    [:client/id :client/name
+     {:client/user
+      [:adjudicator/name :adjudicator/id]}])
   Object
   (render
     [this]
@@ -331,9 +333,6 @@
                           :round/number-to-recall
                           {:round/starting (om/get-query HeatsComponent)}]}]}
 
-     {:app/selected-adjudicator [:adjudicator/name
-                                 :adjudicator/id]}
-
      {:app/client (om/get-query InitClientComponent)}
 
      {:app/results [:result/mark-x
@@ -356,8 +355,9 @@
           status (:app/status app)
           selected-activity (first (:app/selected-activities (om/props this)))
           selected-round (:activity/source selected-activity)
-          selected-adjudicator (:client/user (:app/selected-adjudicator (om/props this)))
           client (:app/client (om/props this))
+          selected-adjudicator (:client/user client)
+
           ;;; Results must also be for selected round
           results-for-this-adjudicator (filter #(= (:adjudicator/id selected-adjudicator)
                                                    (:adjudicator/id (:result/adjudicator %)))
@@ -597,9 +597,7 @@
         (= payload 'app/set-client-info)
         (do (log "Update client info")
             (om/transact! reconciler `[(app/status {:status :init})
-                                       {:app/selected-adjudicator
-                                        [:adjudicator/name
-                                         :adjudicator/id]}]))))))
+                                       {:app/client ~(om/get-query InitClientComponent)}]))))))
 
 (defmethod event-msg-handler :chsk/handshake
   [{:as ev-msg :keys [?data]}]
@@ -615,7 +613,6 @@
 ;; Application
 (defonce app-state (atom {:app/selected-page :home
                           :app/selected-activities #{}
-                          :app/selected-adjudicator nil
                           :app/heat-page 0
                           :app/heat-page-size 2
                           :app/results #{}
