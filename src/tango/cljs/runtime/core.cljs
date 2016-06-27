@@ -179,6 +179,58 @@
           )))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; ClassRow
+
+(defui ClassRow
+  static om/IQuery
+  (query [_]
+    [:class/position :class/name :class/remaining :class/starting
+     {:class/rounds
+      [{:round/status ['*]}
+       {:round/type ['*]}]}
+     {:class/adjudicator-panel
+      [:adjudicator-panel/name]}
+     {:class/dances ['*]}])
+  Object
+  (render [this]
+    (log "ClassRow")
+    (log (:class/dances (om/props this)))
+    (let [{:keys [position name panel type starting status]}
+          (presentation/make-class-presenter (om/props this))]
+      (dom/tr nil
+        (dom/td nil position)
+        (dom/td nil name)
+        (dom/td nil panel)
+        (dom/td nil type)
+        (dom/td nil starting)
+        (dom/td nil status)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; ClassesView
+(defui ClassesView
+  static om/IQuery
+  (query [_]
+    (into [] (om/get-query ClassRow)))
+  Object
+  (render
+    [this]
+    (let [classes (sort-by :class/position (om/props this))]
+      (dom/div nil
+        (dom/h2 {:className "sub-header"} "Klasser")
+        (dom/table
+          #js {:className "table"}
+          (dom/thead nil
+            (dom/tr nil
+              (dom/th #js {:width "20"} "#")
+              (dom/th #js {:width "200"} "Dansdisciplin")
+              (dom/th #js {:width "20"} "Panel")
+              (dom/th #js {:width "20"} "Typ")
+              (dom/th #js {:width "20"} "Startande")
+              (dom/th #js {:width "20"} "Status")))
+          (apply dom/tbody nil (map (om/factory ClassRow) classes)))))))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Import/Export Component
 (defui ImportExportComponent
   static om/IQuery
@@ -229,14 +281,20 @@
   Object
   (render
     [this]
-    (let [p (om/props this)]
+    (let [make-btn-fn
+          (fn [page-name page-key]
+            (dom/button #js {:onClick
+                             #(om/transact! this
+                                            `[(app/select-page {:selected-page ~page-key})
+                                              :app/selected-page])}
+                        page-name))]
       (dom/div nil
-        (dom/button #js {:onClick #(om/transact! this `[(app/select-page {:selected-page :home})
-                                                        :app/selected-page])} "Home")
-        (dom/button #js {:onClick #(om/transact! this `[(app/select-page {:selected-page :time-schedule})
-                                                        :app/selected-page])} "Time Schedule")
-        (dom/button #js {:onClick #(om/transact! this `[(app/select-page {:selected-page :clients})
-                                                        :app/selected-page])} "Clients")))))
+        (apply dom/div #js {:className "nav"}
+               (map (fn [[name key]] (make-btn-fn name key))
+                    [["Home" :home]
+                     ["Classes" :classes]
+                     ["Time Schedule" :time-schedule]
+                     ["Clients" :clients]]))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Client Row
@@ -292,18 +350,6 @@
             ))
         ))))
 
-;<div class="dropdown">
-;<button class="btn btn-default dropdown-toggle" type="button" id="menu1" data-toggle="dropdown">Tutorials
-;<span class="caret"></span></button>
-;<ul class="dropdown-menu" role="menu" aria-labelledby="menu1">
-;<li role="presentation"><a role="menuitem" tabindex="-1" href="#">HTML</a></li>
-;<li role="presentation"><a role="menuitem" tabindex="-1" href="#">CSS</a></li>
-;<li role="presentation"><a role="menuitem" tabindex="-1" href="#">JavaScript</a></li>
-;<li role="presentation" class="divider"></li>
-;<li role="presentation"><a role="menuitem" tabindex="-1" href="#">About Us</a></li>
-;</ul>
-;</div>
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Clients View
 (defui ClientsView
@@ -335,12 +381,14 @@
 (defui MainComponent
   static om/IQuery
   (query [_]
-    [{:app/selected-competition (into [:competition/name :competition/location
-                                       {:competition/panels [:adjudicator-panel/name
-                                                             {:adjudicator-panel/adjudicators
-                                                              [:adjudicator/id
-                                                               :adjudicator/name]}]}]
-                                      (concat (om/get-query ScheduleView)))}
+    [{:app/selected-competition
+      (into [:competition/name :competition/location
+             {:competition/classes (om/get-query ClassesView)}
+             {:competition/panels [:adjudicator-panel/name
+                                   {:adjudicator-panel/adjudicators
+                                    [:adjudicator/id
+                                     :adjudicator/name]}]}]
+            (concat (om/get-query ScheduleView)))}
      :app/status
      :app/selected-page
      {:app/selected-activities [:activity/id] }
@@ -362,6 +410,8 @@
           :home (dom/div nil
                   (dom/h1 nil (str "Runtime of " (:competition/name selected-competition)))
                   ((om/factory AdminViewComponent) {:status status}))
+
+          :classes ((om/factory ClassesView) (:competition/classes selected-competition))
 
           :time-schedule ((om/factory ScheduleView) {:competition/activities
                                                      (:competition/activities selected-competition)
