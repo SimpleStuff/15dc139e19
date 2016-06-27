@@ -39,6 +39,12 @@
 
 (defmulti mutate (fn [env key params] key))
 
+(defmethod mutate 'class/create
+  [{:keys [state] :as env} key params]
+  {:action (fn []
+             (async/>!! state {:topic :command :sender :http :payload [key params]})
+             (log/info (str "Class create " key " " params)))})
+
 (defmethod mutate 'app/status
   [{:keys [state] :as env} key params]
   {:action (fn []

@@ -217,6 +217,10 @@
     (let [classes (sort-by :class/position (om/props this))]
       (dom/div nil
         (dom/h2 {:className "sub-header"} "Klasser")
+        (dom/div nil
+          (dom/button #js {:onClick #(om/transact! this `[(class/create {:class/name "New Class"
+                                                                         :class/id ~(random-uuid)})
+                                                          :app/selected-competition])} "New"))
         (dom/table
           #js {:className "table"}
           (dom/thead nil

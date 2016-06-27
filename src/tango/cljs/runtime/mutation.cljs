@@ -56,13 +56,18 @@
               (swap! state (fn [current]
                              (let [clean-clients (filter #(not= id (:client/id %)) (:app/clients current))]
                                (update-in current [:app/clients] #(conj clean-clients client))))))
-   ;:action  (fn []
-   ;           (swap! state (fn [current]
-   ;                          (let [client (first
-   ;                                         (filter #(= id (:client/id %)) (:app/clients current)))]
-   ;                            )))
-   ;           (swap! state (fn [current]
-   ;                          (merge current {:app/local-id    id
-   ;                                          :app/client-name name})))
-   ;           )
+   :command true})
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Classes
+(defmethod mutate 'class/create
+  [{:keys [state]} _ {:keys [class/name class/id]}]
+  {:value  {:keys []}
+   :action (fn []
+             (swap! state (fn [current]
+                            (update-in current
+                                       [:app/selected-competition :competition/classes]
+                                       (fn [current-classes]
+                                         (conj current-classes {:class/name name
+                                                                :class/id id}))))))
    :command true})
