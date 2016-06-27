@@ -39,56 +39,7 @@
   (def chsk-state state)                                    ; Watchable, read-only atom
   )
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Sente message handling
 
-; Dispatch on event-id
-(defmulti event-msg-handler :id)
-
-;; Wrap for logging, catching, etc.:
-(defn event-msg-handler* [{:keys [id ?data event] :as ev-msg}]
-  (event-msg-handler {:id    (first ev-msg)
-                      :?data (second ev-msg)}))
-
-(defmethod event-msg-handler :default
-  [ev-msg]
-  (log (str "Unhandled socket event: " ev-msg)))
-
-(defmethod event-msg-handler :chsk/state
-  [{:as ev-msg :keys [?data]}]
-  (do
-    (log (str "Channel socket state change: " ?data))
-    (when (:first-open? ?data)
-      (log "Channel socket successfully established!"))))
-
-;; TODO - Cleaning when respons type can be separated
-(defmethod event-msg-handler :chsk/recv
-  [{:as ev-msg :keys [?data]}]
-  (let [[topic payload] ?data]
-    (log (str "Socket Event from server: " topic))
-    (when (= topic :event-manager/transaction-result)
-      (do (log "Time to re-query")
-          (om/transact! reconciler `[(app/set-status {:status :requested}) :app/selected-competition])))
-    (when (= topic :tx/accepted)
-      (log (str "Socket Event from server: " topic))
-      ;(log (str "Socket Payload: " payload))
-      (cond
-        (= payload 'app/set-speaker-activity)
-        (do
-          ;(log "select")
-          (om/transact! reconciler `[:app/speaker-activites]))
-        (= payload 'app/set-client-info)
-        (do
-          (log (str "Client info changed " payload))
-          (om/transact! reconciler `[:app/clients]))))))
-
-(defmethod event-msg-handler :chsk/handshake
-  [{:as ev-msg :keys [?data]}]
-  (let [[?uid ?csrf-token ?handshake-data] ?data]
-    (log (str "Socket Handshake: " ?data))))
-
-(defonce chsk-router
-         (sente/start-chsk-router-loop! event-msg-handler* ch-chsk))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Import
@@ -403,6 +354,8 @@
           selected-competition (:app/selected-competition p)
           status (:app/status p)
           selected-page (:app/selected-page p)]
+      (log "Main Clients :")
+      (log (:app/client p))
       (dom/div nil
         ((om/factory MenuComponent))
         (condp = selected-page
@@ -444,10 +397,11 @@
       (go
         ;(log "Query")
         ;(log edn)
-        (let [remote-query (if (map? (first (:query edn)))
-                             (:query edn)
-                             ;; TODO - why do we not get a good query
-                             (conj [] (first (om/get-query MainComponent))))
+        (let [remote-query (:query edn)
+              ;remote-query (if (map? (first (:query edn)))
+              ;               (:query edn)
+              ;               ;; TODO - why do we not get a good query
+              ;               (conj [] (first (om/get-query MainComponent))))
               response (async/<! (http/get "/query" {:query-params
                                                      {:query (pr-str remote-query)}}))
               edn-response (second (cljs.reader/read-string (:body response)))]
@@ -458,6 +412,66 @@
           ;(cb (cljs.reader/read-string (:body response)))
           (cb edn-response)
           )))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Sente message handling
+
+; Dispatch on event-id
+(defmulti event-msg-handler :id)
+
+;; Wrap for logging, catching, etc.:
+(defn event-msg-handler* [{:keys [id ?data event] :as ev-msg}]
+  (event-msg-handler {:id    (first ev-msg)
+                      :?data (second ev-msg)}))
+
+(defmethod event-msg-handler :default
+  [ev-msg]
+  (log (str "Unhandled socket event: " ev-msg)))
+
+(defmethod event-msg-handler :chsk/state
+  [{:as ev-msg :keys [?data]}]
+  (do
+    (log (str "Channel socket state change: " ?data))
+    (when (:first-open? ?data)
+      (log "Channel socket successfully established!"))))
+
+;; TODO - Cleaning when respons type can be separated
+(defmethod event-msg-handler :chsk/recv
+  [{:as ev-msg :keys [?data]}]
+  (let [[topic payload] ?data]
+    (log (str "Socket Event from server: " topic))
+    (when (= topic :event-manager/transaction-result)
+      (do (log "Time to re-query")
+          (om/transact! reconciler
+                        `[(app/set-status {:status :requested})
+                          ;; TODO - consolidate with main query
+                          {:app/selected-competition
+                           ~(into [:competition/name :competition/location
+                                  {:competition/panels [:adjudicator-panel/name
+                                                        {:adjudicator-panel/adjudicators
+                                                         [:adjudicator/id
+                                                          :adjudicator/name]}]}]
+                                 (concat (om/get-query ScheduleView)))}])))
+    (when (= topic :tx/accepted)
+      (log (str "Socket Event from server: " topic))
+      ;(log (str "Socket Payload: " payload))
+      (cond
+        (= payload 'app/set-speaker-activity)
+        (do
+          ;(log "select")
+          (om/transact! reconciler `[:app/speaker-activites]))
+        (= payload 'app/set-client-info)
+        (do
+          (log (str "Client info changed " payload))
+          (om/transact! reconciler `[{:app/clients ~(om/get-query ClientsView)}]))))))
+
+(defmethod event-msg-handler :chsk/handshake
+  [{:as ev-msg :keys [?data]}]
+  (let [[?uid ?csrf-token ?handshake-data] ?data]
+    (log (str "Socket Handshake: " ?data))))
+
+(defonce chsk-router
+         (sente/start-chsk-router-loop! event-msg-handler* ch-chsk))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Application

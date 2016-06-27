@@ -49,6 +49,8 @@
    :action  (fn [] (swap! state assoc :app/status :confirming))
    :command true})
 
+;; If we are in init and do not still have a client/id
+;;  we should not be able to change state
 (defmethod mutate 'app/status
   [{:keys [state]} _ {:keys [status]}]
   {:value  {:keys [:app/status]}

@@ -50,8 +50,9 @@
                    ;                                                    storage-path)})))
 
                    ;; TODO - Currently we do only support one competition imported at the time
+                   ;; TODO - fix this crap!
                    (let [_ (d/delete-storage datomic-uri)
-                         schema-tx (read-string (slurp "./src/tango/schema/activity.edn"))
+                         schema-tx (read-string (slurp (clojure.java.io/resource "schema/activity.edn")))
                          _ (d/create-storage datomic-uri schema-tx)
                          conn (d/create-connection datomic-uri)
                          tx (d/transact-competition conn p)]

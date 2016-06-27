@@ -281,7 +281,9 @@
 (defui InitClientComponent
   static om/IQuery
   (query [_]
-    [:client/id :client/name])
+    [:client/id :client/name
+     {:client/user
+      [:adjudicator/name :adjudicator/id]}])
   Object
   (render
     [this]
@@ -331,9 +333,6 @@
                           :round/number-to-recall
                           {:round/starting (om/get-query HeatsComponent)}]}]}
 
-     {:app/selected-adjudicator [:adjudicator/name
-                                 :adjudicator/id]}
-
      {:app/client (om/get-query InitClientComponent)}
 
      {:app/results [:result/mark-x
@@ -356,8 +355,9 @@
           status (:app/status app)
           selected-activity (first (:app/selected-activities (om/props this)))
           selected-round (:activity/source selected-activity)
-          selected-adjudicator (:client/user (:app/selected-adjudicator (om/props this)))
           client (:app/client (om/props this))
+          selected-adjudicator (:client/user client)
+
           ;;; Results must also be for selected round
           results-for-this-adjudicator (filter #(= (:adjudicator/id selected-adjudicator)
                                                    (:adjudicator/id (:result/adjudicator %)))
@@ -393,12 +393,18 @@
                        (om/transact! this `[(app/status {:status :select-judge})])
                        (do
                          (log (str (:client-id @local-storage)))
-                         (om/transact! this `[(app/status {:status :init})])))
+                         ((om/factory InitClientComponent) (:app/client (om/props this)))
+                         ;(om/transact! this `[(app/status {:status :init})])
+                         ))
 
-            :init ((om/factory InitClientComponent) (:app/client (om/props this)))
+            :init (if (:client/id (:app/client app))
+                    (om/transact! this `[(app/status {:status :select-judge})])
+                    ((om/factory InitClientComponent) (:app/client (om/props this))))
 
             :select-judge (if selected-adjudicator
                             (do
+                              (log "Selected Adj")
+                              (log selected-adjudicator)
                               (swap! local-storage assoc :adjudicator selected-adjudicator)
                               (log "Stored adj")
                               (log (:adjudicator @local-storage))
@@ -409,16 +415,21 @@
                           (dom/h3 nil "Confirming results, please wait.."))
             :confirmed (do
                          (go (let [_ (<! (timeout 3000))]
-                               (om/transact! this `[(app/status {:status :waiting-for-round})
-                                                    :app/selected-activities])))
+                               (om/transact! this `[(app/status {:status :waiting-for-round})])))
                          (dom/div nil
-                           (dom/h3 nil "Results have been confirmed!")))
+                           (dom/h3 nil (str "Results have been confirmed for "
+                                            (:activity/name selected-activity)))))
 
             :waiting-for-round (if (and selected-activity (not confirmed?))
                                  (om/transact! this `[(app/status {:status :round-received})])
-                                 (dom/div nil
+                                 (dom/div #js {:className "container"}
                                    (dom/h3 nil (str "Judge " (:adjudicator/name selected-adjudicator)
                                                     " on client " (:client/name (:app/client app))))
+
+                                   (when confirmed?
+                                     (dom/h3 nil
+                                       (str "You have confirmed the currently running round "
+                                            (:activity/name selected-activity))))
                                    (dom/h3 nil "Waiting for next round..")))
 
             :round-received (if (and selected-activity confirmed?)
@@ -566,7 +577,15 @@
         (= (:topic payload) 'app/confirm-marks)
         (when (= (:adjudicator/id (:adjudicator @local-storage))
                  (:adjudicator/id (:payload payload)))
-          (om/transact! reconciler `[(app/status {:status :confirmed})]))
+          (om/transact! reconciler `[(app/status {:status :confirmed})
+                                     ;; TODO - consolidate with the one from main view
+                                     {:app/selected-activities
+                                      [:activity/id :activity/name
+                                       {:activity/confirmed-by [:adjudicator/id]}
+                                       {:activity/source [{:round/panel ~(om/get-query AdjudicatorSelection)}
+                                                          :round/number-of-heats
+                                                          :round/number-to-recall
+                                                          {:round/starting ~(om/get-query HeatsComponent)}]}]}]))
         ;(log (str "Marks are confirmed! Adj " (:adjudicator @local-storage)))
 
         ;(om/transact! reconciler `[(app/status {:status confirmed})])
@@ -577,9 +596,8 @@
 
         (= payload 'app/set-client-info)
         (do (log "Update client info")
-            (om/transact! reconciler `[(app/status {:status :loading})
-                                       {:app/selected-adjudicator [:adjudicator/name
-                                                                   :adjudicator/id]}]))))))
+            (om/transact! reconciler `[(app/status {:status :init})
+                                       {:app/client ~(om/get-query InitClientComponent)}]))))))
 
 (defmethod event-msg-handler :chsk/handshake
   [{:as ev-msg :keys [?data]}]
@@ -595,7 +613,6 @@
 ;; Application
 (defonce app-state (atom {:app/selected-page :home
                           :app/selected-activities #{}
-                          :app/selected-adjudicator nil
                           :app/heat-page 0
                           :app/heat-page-size 2
                           :app/results #{}
