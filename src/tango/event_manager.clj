@@ -57,9 +57,9 @@
             (log/trace (str "Received: " message))
             (log/info (str "Received Topic: [" topic "]"))
             (match [topic payload]
-                   [:create-class p]
+                   [:event-manager/create-competition p]
                    (let [[v ch] (async/alts! [[(:in-channel event-access)
-                                               message]
+                                               (merge message {:topic :event-access/create-competition})]
                                               (async/timeout 2000)])]
                      (if v
                        (let [[result ch] (async/alts! [(:out-channel event-access)])]
@@ -70,11 +70,47 @@
                                                              :payload (:payload result)}))
                              (async/put! out-channel (merge message
                                                             {:topic   :event-manager/tx-processed
-                                                             :payload result})))
+                                                             :payload {:topic :event-manager/create-competition}})))
                            (async/put! out-channel (merge message
                                                           {:topic :event-manager/tx-timout
                                                            :payload {:reason :event-access/timeout}}))))))
-                   [:event-access/ping p]
+                   [:event-manager/create-class p]
+                   (let [[v ch] (async/alts! [[(:in-channel event-access)
+                                               (merge message {:topic :event-access/create-class})]
+                                              (async/timeout 2000)])]
+                     (if v
+                       (let [[result ch] (async/alts! [(:out-channel event-access)])]
+                         (if result
+                           (if (= :tx/rejected (:topic result))
+                             (async/put! out-channel (merge message
+                                                            {:topic :tx/rejected
+                                                             :payload (:payload result)}))
+                             (async/put! out-channel (merge message
+                                                            {:topic   :event-manager/tx-processed
+                                                             :payload {:topic :event-manager/create-class}})))
+                           (async/put! out-channel (merge message
+                                                          {:topic :event-manager/tx-timout
+                                                           :payload {:reason :event-access/timeout}}))))))
+
+                   [:event-manager/query-competition p]
+                   (let [[v ch] (async/alts! [[(:in-channel event-access)
+                                               (merge message {:topic :event-access/query-competition})]
+                                              (async/timeout 2000)])]
+                     (if v
+                       (let [[result ch] (async/alts! [(:out-channel event-access)])]
+                         (if result
+                           (if (= :tx/rejected (:topic result))
+                             (async/put! out-channel (merge message
+                                                            {:topic :tx/rejected
+                                                             :payload (:payload result)}))
+                             (async/put! out-channel (merge message
+                                                            {:topic   :event-manager/tx-processed
+                                                             :payload {:result (:result (:payload result))
+                                                                       :topic :event-manager/query-competition}})))
+                           (async/put! out-channel (merge message
+                                                          {:topic :event-manager/tx-timout
+                                                           :payload {:reason :event-access/timeout}}))))))
+                   [:event-manager/ping p]
                    (async/put! out-channel (merge message {:topic :event-access/pong}))
                    :else (async/>!!
                            out-channel

@@ -5,7 +5,7 @@
             [clojure.core.match :refer [match]]
             [tango.datomic-storage :as d]))
 
-(defn- start-message-handler [in-channel out-channel        ;storage-channels
+(defn- start-message-handler [in-channel out-channel conn
                               ]
   {:pre [(some? in-channel)
          (some? out-channel)
@@ -23,13 +23,19 @@
             (log/trace (str "Received: " message))
             (log/info (str "Received Topic: [" topic "]"))
             (match [topic payload]
-                   [:create-class p]
-                   ;(log/info "Create class")
+                   [:event-access/create-competition p]
+                   (let [_ (d/create-competition conn p)]
+                     (async/put! out-channel {:topic :tx/processed :payload topic}))
+                   [:event-access/create-class p]
                    (if (:competition/id p)
-                     (let [_ (d/create-class (:competition/id p) (:competition/class class))]
+                     (let [_ (d/create-class conn (:competition/id p) (:competition/class p))]
                        (async/put! out-channel {:topic :tx/processed :payload topic}))
                      (async/put! out-channel {:topic :tx/rejected :payload {:reason :invalid-argument
                                                                             :message "Missing competition/id"}}))
+                   [:event-access/query-competition p]
+                   (let [result (d/query-competition conn (:query p))]
+                     (async/put! out-channel {:topic :tx/processed :payload {:topic topic
+                                                                             :result result}}))
                    ;[:event-access/transact t]
                    ;(let [[tx c] (async/alts! [[(:in-channel storage-channels)
                    ;                             {:topic :event-file-storage/transact
@@ -63,7 +69,7 @@
                    ;    (async/put! out-channel (merge message
                    ;                                   {:topic :event-file-storage/query-timeout
                    ;                                    :payload :time-out}))))
-                 
+
                    [:event-access/ping p]
                    (async/put! out-channel (merge message {:topic :event-access/pong}))
                    :else (async/>!!
@@ -89,11 +95,11 @@
         (assoc component :message-handler (start-message-handler
                                             (:in-channel event-access-channels)
                                             (:out-channel event-access-channels)
-                                            ;storage-channels
+                                            (d/create-connection datomic-uri)
                                             )))))
   (stop [component]
     (log/report "Stopping EventAccess")
-    (assoc component :message-handler nil :event-access-channels nil :storage-channels nil)))
+    (assoc component :message-handler nil :event-access-channels nil :datomic-uri nil :schema-path nil)))
 
 (defn create-event-access [datomic-resource-uri schema-path]
   (map->EventAccess {:datomic-uri datomic-resource-uri
