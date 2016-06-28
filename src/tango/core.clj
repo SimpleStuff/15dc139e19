@@ -113,6 +113,8 @@
                                      {:event-manager-channels :event-manager-channels
                                       :event-access-channels  :event-access-channels})
 
+     ;; TODO - broker should not have channels of down stream services i.e. event-access since
+     ;;  it will steal messages that the manager awaits on..
      ;; Message broker
      :message-broker (component/using (broker/create-message-broker "datomic:free://localhost:4334//competitions")
                                       {:channel-connection-channels client-connection

@@ -48,6 +48,7 @@
   {:pre [(some? in-channel)
          (some? out-channel)]}
   (async/go-loop []
+    (log/info "Waiting for message..")
     (when-let [message (async/<! in-channel)]
       (log/debug (str "Raw message : " message))
       (when message
@@ -79,7 +80,9 @@
                                                (merge message {:topic :event-access/create-class})]
                                               (async/timeout 2000)])]
                      (if v
-                       (let [[result ch] (async/alts! [(:out-channel event-access)])]
+                       (let [[result ch] (async/alts! [(:out-channel event-access)
+                                                       (async/timeout 500)])]
+                         (log/info "Create class Event Access answer")
                          (if result
                            (if (= :tx/rejected (:topic result))
                              (async/put! out-channel (merge message

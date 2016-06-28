@@ -443,7 +443,9 @@
          #js {"Content-Type" "application/transit+json"}))
 
 (defn remote-send []
-  (fn [edn cb]
+d  (fn [edn cb]
+    ;; TODO - seems that om will put togheter both command and query when needed
+    ;;  so it should be possible to put them togheter on serverside
     (cond
       (:command edn)
       ;(log "a")

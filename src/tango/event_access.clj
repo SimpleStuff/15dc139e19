@@ -12,6 +12,7 @@
          ;(some? storage-channels)
          ]}
   (async/go-loop []
+    (log/info "Waiting for message..")
     (when-let [message (async/<! in-channel)]
       (log/debug (str "Raw message : " message))
       (when message
