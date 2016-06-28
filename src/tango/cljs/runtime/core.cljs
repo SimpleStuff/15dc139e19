@@ -386,7 +386,7 @@
   static om/IQuery
   (query [_]
     [{:app/selected-competition
-      (into [:competition/name :competition/location
+      (into [:competition/name :competition/location :competition/id
              {:competition/classes (om/get-query ClassesView)}
              {:competition/panels [:adjudicator-panel/name
                                    {:adjudicator-panel/adjudicators
@@ -413,6 +413,7 @@
         (condp = selected-page
           :home (dom/div nil
                   (dom/h1 nil (str "Runtime of " (:competition/name selected-competition)))
+                  (dom/h4 nil (str "Competition Id : " (:competition/id selected-competition)))
                   ((om/factory AdminViewComponent) {:status status}))
 
           :classes ((om/factory ClassesView) (:competition/classes selected-competition))
@@ -446,7 +447,9 @@
     (cond
       (:command edn)
       ;(log "a")
-      (transit-post "/commands" edn cb)
+      (do
+        (log (:command edn))
+        (transit-post "/commands" edn cb))
       (:query edn)
       (go
         ;(log "Query")

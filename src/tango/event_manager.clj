@@ -139,3 +139,26 @@
 
 (defn create-event-manager []
   (map->EventManager {}))
+
+(defrecord EventManagerChannels [in-channel out-channel]
+  component/Lifecycle
+  (start [component]
+    (if (and in-channel out-channel)
+      component
+      (do
+        (log/info "Starting EventManager Channels")
+        (assoc component
+          :in-channel (async/chan)
+          :out-channel (async/chan)))))
+  (stop [component]
+    (log/info "Closing EventManager Channels")
+    (if-let [in-chan (:in-channel component)]
+      (async/close! in-chan))
+    (if-let [out-chan (:out-channel component)]
+      (async/close! out-chan))
+    (assoc component
+      :in-channel nil
+      :out-channel nil)))
+
+(defn create-event-manager-channels []
+  (map->EventManagerChannels {}))

@@ -42,8 +42,11 @@
 (defmethod mutate 'class/create
   [{:keys [state] :as env} key params]
   {:action (fn []
-             (async/>!! state {:topic :command :sender :http :payload [key params]})
-             (log/info (str "Class create " key " " params)))})
+             (let [message {:topic   :event-manager/create-class
+                            :payload {:competition/id    (:competition/id params)
+                                      :competition/class (select-keys params [:class/name :class/id])}}]
+               (async/>!! state {:topic :command :sender :http :payload message})
+               (log/info (str "Class create " key " " params))))})
 
 (defmethod mutate 'app/status
   [{:keys [state] :as env} key params]

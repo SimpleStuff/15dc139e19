@@ -79,7 +79,10 @@
                                      :message message}})))
           (catch Exception e
             (log/error e "Exception in message go loop")
-            (async/>! out-channel (str "Exception message: " (.getMessage e)))))
+            (async/>! out-channel
+                      {:topic   :tx/rejected
+                       :payload {:reason  :event-access/exception
+                                 :message (str "Exception message: " (.getMessage e))}})))
         (recur)))))
 
 (defrecord EventAccess [event-access-channels message-handler ;storage-channels
