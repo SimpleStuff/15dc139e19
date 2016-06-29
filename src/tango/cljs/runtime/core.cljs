@@ -179,6 +179,67 @@
           )))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; CreateClassView
+(defui CreateClassView
+  static om/IQuery
+  (query [_]
+    [])
+  Object
+  (render
+    [this]
+    (let [x 1]
+      ;; - Class name
+      ;; - Adj Panel
+      ;; - Dances
+      ;; - Startlist (participants)
+      (dom/div nil
+        (dom/h2 {:className "sub-header"} "Create new class")
+        (dom/div #js {:className "container"}
+          (dom/div #js {:className "form-horizontal"}
+            (dom/div #js {:className "form-group"}
+              (dom/label #js {:className "col-sm-2 control-label"} "Class name")
+              (dom/div #js {:className "col-sm-8"}
+                (dom/input #js {:className "form-control"
+                                :value     "name"
+                                :id        "clientInputName"})))
+            (dom/div #js {:className "form-group"}
+              (dom/div #js {:className "col-sm-offset-2 col-sm-10"}
+                (dom/button
+                  #js {:className "btn btn-default"
+                       :type      "submit"
+                       :onClick   #()}
+                  "Create")))))
+        ))))
+
+;(dom/div #js {:className "container"}
+;  (dom/h3 nil "Assign this client a name to use it as an Adjudicator device")
+;  (dom/div #js {:className "form-horizontal"}
+;    (dom/div #js {:className "form-group"}
+;      (dom/label #js {:className "col-sm-2 control-label"
+;                      :htmlFor       "clientInputName"} "Client name")
+;      (dom/div #js {:className "col-sm-8"}
+;        (dom/input #js {:className "form-control"
+;                        :value name
+;                        :id        "clientInputName"
+;                        :onChange #(om/transact! this `[(app/set-client-info
+;                                                          {:client/name ~(.. % -target -value)})])})))
+;    (dom/div #js {:className "form-group"}
+;      (dom/div #js {:className "col-sm-offset-2 col-sm-10"}
+;        (dom/button
+;          #js {:className "btn btn-default"
+;               :type      "submit"
+;               :onClick   #(do
+;                            (let [idt (random-uuid)]
+;                              (swap! local-storage assoc :client-id idt)
+;                              (om/transact! this
+;                                            `[(app/set-client-info {:client/id   ~idt
+;                                                                    :client/name ~name})
+;                                              (app/status {:status :loading})
+;                                              :app/status])))}
+;          "Connect")))))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ClassRow
 
 (defui ClassRow
@@ -220,7 +281,10 @@
         (dom/div nil
           (dom/button #js {:onClick #(om/transact! this `[(class/create {:class/name "New Class"
                                                                          :class/id ~(random-uuid)})
-                                                          :app/selected-competition])} "New"))
+                                                          :app/selected-competition])} "New")
+          (dom/button #js {:onClick #(om/transact! this `[(app/select-page {:selected-page :create-class})
+                                                          :app/selected-page])} "Newer"))
+
         (dom/table
           #js {:className "table"}
           (dom/thead nil
@@ -418,6 +482,8 @@
 
           :classes ((om/factory ClassesView) (:competition/classes selected-competition))
 
+          :create-class ((om/factory CreateClassView))
+
           :time-schedule ((om/factory ScheduleView) {:competition/activities
                                                      (:competition/activities selected-competition)
                                                      :selected-activities
@@ -443,7 +509,7 @@
          #js {"Content-Type" "application/transit+json"}))
 
 (defn remote-send []
-d  (fn [edn cb]
+  (fn [edn cb]
     ;; TODO - seems that om will put togheter both command and query when needed
     ;;  so it should be possible to put them togheter on serverside
     (cond
