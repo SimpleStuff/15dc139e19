@@ -112,6 +112,7 @@
    (s/optional-key :competition/activities)   [activity-schema]
    (s/optional-key :competition/panels)       [adjudicator-panel]
    (s/optional-key :competition/classes)      [class-schema]
+   (s/optional-key :competition/participants) [participant]
 
    ;; TODO - this should be consolidated in a better way
    (s/optional-key :app/id)                   s/Int

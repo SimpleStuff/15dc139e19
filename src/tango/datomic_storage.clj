@@ -420,6 +420,14 @@
            [?e :activity/id]]
          (d/db conn) query)))
 
+(defn query-participants [conn query]
+  (clean-data
+    (d/q '[:find [(pull ?e selector) ...]
+           :in $ selector
+           :where
+           [?e :participant/id]]
+         (d/db conn) query)))
+
 (defn query-competition [conn query]
   (d/q '[:find [(pull ?e selector) ...]
          :in $ selector

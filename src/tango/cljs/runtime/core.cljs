@@ -196,12 +196,14 @@
         (dom/h2 {:className "sub-header"} "Create new class")
         (dom/div #js {:className "container"}
           (dom/div #js {:className "form-horizontal"}
+
             (dom/div #js {:className "form-group"}
               (dom/label #js {:className "col-sm-2 control-label"} "Class name")
               (dom/div #js {:className "col-sm-8"}
                 (dom/input #js {:className "form-control"
                                 :value     "name"
                                 :id        "clientInputName"})))
+
             (dom/div #js {:className "form-group"}
               (dom/div #js {:className "col-sm-offset-2 col-sm-10"}
                 (dom/button
@@ -362,7 +364,8 @@
                     [["Home" :home]
                      ["Classes" :classes]
                      ["Time Schedule" :time-schedule]
-                     ["Clients" :clients]]))))))
+                     ["Clients" :clients]
+                     ["Participants" :participants]]))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Client Row
@@ -444,6 +447,44 @@
                                                               :adjudicator-panels panels}) clients)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Participant Row
+(defui ParticipantRow
+  static om/IQuery
+  (query [_]
+    [:participant/id :participant/number :participant/name])
+  Object
+  (render
+    [this]
+    (let [participant (om/props this)
+          name (:participant/name participant)]
+      (dom/tr nil
+        ;(dom/td nil (str client-id))
+        (dom/td nil name)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; ParticipantsView
+(defui ParticipantsView
+  static om/IQuery
+  (query [_]
+    (into [] (om/get-query ParticipantRow)))
+  Object
+  (render
+    [this]
+    (let [participants (om/props this)]
+      (log "participants")
+      (log participants)
+      (dom/div nil
+        (dom/h2 nil "Participants")
+        (dom/table
+          #js {:className "table table-hover table-condensed"}
+          (dom/thead nil
+            (dom/tr nil
+              ;(dom/th #js {:width "50"} "Id")
+              (dom/th #js {:width "50"} "Name")
+              (dom/th #js {:width "50"} "Assigned to Adjudicator")))
+          (apply dom/tbody nil (map #((om/factory ParticipantRow {:key-fn :participant/id})) participants)))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; MainComponent
 
 (defui MainComponent
@@ -455,7 +496,9 @@
              {:competition/panels [:adjudicator-panel/name
                                    {:adjudicator-panel/adjudicators
                                     [:adjudicator/id
-                                     :adjudicator/name]}]}]
+                                     :adjudicator/name]}]}
+             {:competition/participants (om/get-query ParticipantsView)}
+             ]
             (concat (om/get-query ScheduleView)))}
      :app/status
      :app/selected-page
@@ -491,7 +534,9 @@
                                                      :speaker-activities
                                                      (:app/speaker-activities p)})
           :clients ((om/factory ClientsView) {:clients      (:app/clients p)
-                                              :adjudicator-panels (:competition/panels selected-competition)}))
+                                              :adjudicator-panels (:competition/panels selected-competition)})
+
+          :participants ((om/factory ParticipantsView) (:competition/participants selected-competition)))
         ))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
