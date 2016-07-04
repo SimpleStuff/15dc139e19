@@ -9,10 +9,6 @@
             [schema.core :as s]))
 
 
-(def old-data (ds/clean-import-data (imp/competition-xml->map u/real-example #(java.util.UUID/randomUUID))))
-
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Setup utils
 
@@ -120,7 +116,13 @@
                                                           :competition/adjudicators ['*]
                                                           :competition/activities activities-query
                                                           :competition/classes class-query
-                                                          :competition/panels panel-query}])))))))))
+                                                          :competition/panels panel-query}]))))))
+
+      (is (=
+            (:competition/participants (first (ds/query-competition
+                                                @conn
+                                                ['*])))
+            800)))))
 
 (deftest import-adjudicators
   (testing "Import of adjudicator data"

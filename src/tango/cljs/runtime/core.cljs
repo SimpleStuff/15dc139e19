@@ -456,9 +456,13 @@
   (render
     [this]
     (let [participant (om/props this)
-          name (:participant/name participant)]
+          name (:participant/name participant)
+          number (:participant/number participant)]
+      (log "Participant Row")
+      (log participant)
       (dom/tr nil
         ;(dom/td nil (str client-id))
+        (dom/td nil number)
         (dom/td nil name)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -480,9 +484,10 @@
           (dom/thead nil
             (dom/tr nil
               ;(dom/th #js {:width "50"} "Id")
-              (dom/th #js {:width "50"} "Name")
-              (dom/th #js {:width "50"} "Assigned to Adjudicator")))
-          (apply dom/tbody nil (map #((om/factory ParticipantRow {:key-fn :participant/id})) participants)))))))
+              (dom/th #js {:width "20"} "Number")
+              (dom/th #js {:width "50"} "Name")))
+          (apply dom/tbody nil (map #((om/factory ParticipantRow {:key-fn :participant/id}) %)
+                                    participants)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; MainComponent
@@ -500,10 +505,14 @@
              {:competition/participants (om/get-query ParticipantsView)}
              ]
             (concat (om/get-query ScheduleView)))}
+
+     ;; TODO - participants should come from the competition
+     {:app/participants (om/get-query ParticipantsView)}
+
      :app/status
      :app/selected-page
      {:app/selected-activities [:activity/id] }
-     {:app/speaker-activities [:activity/id]}
+     {:app/speaker-activities [:activity/id] }
      {:app/clients (om/get-query ClientsView)}
      ])
   Object
@@ -512,7 +521,8 @@
     (let [p (om/props this)
           selected-competition (:app/selected-competition p)
           status (:app/status p)
-          selected-page (:app/selected-page p)]
+          selected-page (:app/selected-page p)
+          participants (:app/participants p)]
       (log "Main Clients :")
       (log (:app/client p))
       (dom/div nil
@@ -536,7 +546,7 @@
           :clients ((om/factory ClientsView) {:clients      (:app/clients p)
                                               :adjudicator-panels (:competition/panels selected-competition)})
 
-          :participants ((om/factory ParticipantsView) (:competition/participants selected-competition)))
+          :participants ((om/factory ParticipantsView) participants))
         ))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

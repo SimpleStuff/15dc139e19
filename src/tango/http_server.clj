@@ -136,6 +136,13 @@
             (log/info "Selected activites read")
             (d/get-selected-activities state query))})
 
+;; TODO - temporary, should be queried on competition
+(defmethod reader :app/participants
+  [{:keys [state query]} key params]
+  {:value (do
+            (log/info "app/participants ")
+            (d/query-participants state query))})
+
 ;; TODO - clients should send query params instead of filtering on the client
 (defmethod reader :app/selected-activity
   [{:keys [state query]} key params]
