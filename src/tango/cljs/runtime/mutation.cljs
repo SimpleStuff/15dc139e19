@@ -70,7 +70,14 @@
                                         (fn [current-classes]
                                           (conj current-classes {:class/name name
                                                                  :class/id   id}))))))
-   :command (assoc ast :params
-                       (merge params
-                              {:competition/id
-                               (:competition/id (:app/selected-competition @state))}))})
+   ;:command (assoc ast :params
+   ;                    (merge params
+   ;                           {:competition/id
+   ;                            (:competition/id (:app/selected-competition @state))}))
+   })
+
+(defmethod mutate 'app/select-class
+  [{:keys [state]} _ {:keys [name] :as selected-class}]
+  {:value  {:keys [:app/selected-class]}
+   :action (fn []
+             (swap! state assoc :app/selected-class selected-class))})

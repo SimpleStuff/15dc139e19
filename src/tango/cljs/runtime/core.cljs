@@ -183,27 +183,40 @@
 (defui CreateClassView
   static om/IQuery
   (query [_]
-    [])
+    [:class/name :class/id])
   Object
   (render
     [this]
-    (let [x 1]
+    (let [selected-class (om/props this)]
       ;; - Class name
       ;; - Adj Panel
       ;; - Dances
       ;; - Startlist (participants)
+      (log "Selected class")
+      (log selected-class)
       (dom/div nil
         (dom/h2 {:className "sub-header"} "Create new class")
         (dom/div #js {:className "container"}
           (dom/div #js {:className "form-horizontal"}
 
+            ;; Class name
             (dom/div #js {:className "form-group"}
               (dom/label #js {:className "col-sm-2 control-label"} "Class name")
               (dom/div #js {:className "col-sm-8"}
                 (dom/input #js {:className "form-control"
-                                :value     "name"
+                                :value     (:class/name selected-class)
                                 :id        "clientInputName"})))
 
+            ;; Adjudicator Panel
+
+            ;; Participants
+            (dom/div #js {:className "form-group"}
+              (dom/label #js {:className "col-sm-2 control-label"} "Participants")
+              (dom/div #js {:className "col-sm-8"}
+                (dom/ul nil
+                  (dom/li nil "A"))))
+
+            ;; Create
             (dom/div #js {:className "form-group"}
               (dom/div #js {:className "col-sm-offset-2 col-sm-10"}
                 (dom/button
@@ -285,6 +298,8 @@
                                                                          :class/id ~(random-uuid)})
                                                           :app/selected-competition])} "New")
           (dom/button #js {:onClick #(om/transact! this `[(app/select-page {:selected-page :create-class})
+                                                          (app/select-class {:class/name "New Class"
+                                                                             :class/id ~(random-uuid)})
                                                           :app/selected-page])} "Newer"))
 
         (dom/table
@@ -480,7 +495,7 @@
       (dom/div nil
         (dom/h2 nil "Participants")
         (dom/table
-          #js {:className "table table-hover table-condensed"}
+          #js {:className "table table-hover"}
           (dom/thead nil
             (dom/tr nil
               ;(dom/th #js {:width "50"} "Id")
@@ -511,6 +526,9 @@
 
      :app/status
      :app/selected-page
+
+     {:app/selected-class (om/get-query CreateClassView)}
+
      {:app/selected-activities [:activity/id] }
      {:app/speaker-activities [:activity/id] }
      {:app/clients (om/get-query ClientsView)}
@@ -523,8 +541,8 @@
           status (:app/status p)
           selected-page (:app/selected-page p)
           participants (:app/participants p)]
-      (log "Main Clients :")
-      (log (:app/client p))
+      (log "Main Selected :")
+      (log (:app/selected-class p ))
       (dom/div nil
         ((om/factory MenuComponent))
         (condp = selected-page
@@ -535,7 +553,7 @@
 
           :classes ((om/factory ClassesView) (:competition/classes selected-competition))
 
-          :create-class ((om/factory CreateClassView))
+          :create-class ((om/factory CreateClassView) (:app/selected-class p))
 
           :time-schedule ((om/factory ScheduleView) {:competition/activities
                                                      (:competition/activities selected-competition)
@@ -659,7 +677,8 @@
                           :app/status :loaded
                           :app/selected-page :home
                           :app/selected-activities #{}
-                          :app/speaker-activities #{}}))
+                          :app/speaker-activities #{}
+                          :app/selected-class nil}))
 
 (def reconciler
   (om/reconciler

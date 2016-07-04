@@ -43,6 +43,10 @@
   {:value (get @state :app/clients [])
    :query true})
 
+(defmethod read :app/selected-class
+  [{:keys [state]} _ _]
+  {:value (get @state :app/selected-class nil)})
+
 ;; TODO - temporary, should be read from the competition
 (defmethod read :app/participants
   [{:keys [state]} _ _]
