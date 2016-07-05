@@ -118,11 +118,8 @@
                                                           :competition/classes class-query
                                                           :competition/panels panel-query}]))))))
 
-      (is (=
-            (:competition/participants (first (ds/query-competition
-                                                @conn
-                                                ['*])))
-            800)))))
+      (is (= (count (ds/query-participants @conn ['*]))
+             882)))))
 
 (deftest import-adjudicators
   (testing "Import of adjudicator data"
