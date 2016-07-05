@@ -205,7 +205,11 @@
               (dom/div #js {:className "col-sm-8"}
                 (dom/input #js {:className "form-control"
                                 :value     (:class/name selected-class)
-                                :id        "clientInputName"})))
+                                :id        "clientInputName"
+                                :onChange (fn [e]
+                                            (om/transact! this `[(class/update
+                                                                   {:class/id ~(:class/id selected-class)
+                                                                    :class/name ~(.. e -target -value)})]))})))
 
             ;; Adjudicator Panel
 

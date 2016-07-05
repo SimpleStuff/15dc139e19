@@ -81,3 +81,12 @@
   {:value  {:keys [:app/selected-class]}
    :action (fn []
              (swap! state assoc :app/selected-class selected-class))})
+
+(defmethod mutate 'class/update
+  [{:keys [state]} _ {:keys [class/id class/name] :as class-info}]
+  {:value  {:keys [:app/selected-class]}
+   :action (fn []
+             (swap! state (fn [current]
+                            (update-in current [:app/selected-class]
+                                       (fn [current-selected]
+                                         (merge current-selected class-info))))))})
