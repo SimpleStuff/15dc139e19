@@ -37,7 +37,18 @@
                    (let [result (d/query-competition conn (:query p))]
                      (async/put! out-channel {:topic :tx/processed :payload {:topic topic
                                                                              :result result}}))
-                   ;[:event-access/transact t]
+                   [:event-access/transact p]
+                   ;; TODO - Currently we do only support one competition imported at the time
+                   ;; TODO - fix this crap!
+                   (let [_ (d/delete-storage "datomic:free://localhost:4334//competitions")
+                         schema-tx (read-string (slurp (clojure.java.io/resource "schema/activity.edn")))
+                         _ (d/create-storage "datomic:free://localhost:4334//competitions" schema-tx)
+                         conn (d/create-connection "datomic:free://localhost:4334//competitions")
+                         tx (d/transact-competition conn p)]
+                     ;(log/info tx)
+                     (async/put! out-channel (merge message
+                                                    {:topic :event-access/transaction-result
+                                                     :payload :ok})))
                    ;(let [[tx c] (async/alts! [[(:in-channel storage-channels)
                    ;                             {:topic :event-file-storage/transact
                    ;                              :payload t}]
