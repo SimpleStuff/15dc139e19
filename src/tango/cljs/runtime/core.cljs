@@ -226,7 +226,9 @@
                 (dom/button
                   #js {:className "btn btn-default"
                        :type      "submit"
-                       :onClick   #()}
+                       :onClick   (fn [e] (om/transact! this `[(class/create
+                                                                 {:class/id ~(:class/id selected-class)
+                                                                  :class/name ~(:class/name selected-class)})]))}
                   "Create")))))
         ))))
 
@@ -264,7 +266,7 @@
 (defui ClassRow
   static om/IQuery
   (query [_]
-    [:class/position :class/name :class/remaining :class/starting
+    [:class/position :class/name :class/remaining :class/starting :class/id
      {:class/rounds
       [{:round/status ['*]}
        {:round/type ['*]}]}
@@ -273,11 +275,15 @@
      {:class/dances ['*]}])
   Object
   (render [this]
-    (log "ClassRow")
-    (log (:class/dances (om/props this)))
-    (let [{:keys [position name panel type starting status]}
-          (presentation/make-class-presenter (om/props this))]
-      (dom/tr nil
+    ;(log "ClassRow")
+    ;(log (:class/dances (om/props this)))
+    (let [p (om/props this)
+          {:keys [position name panel type starting status]}
+          (presentation/make-class-presenter p)
+          selected? (:selected? p)]
+      (dom/tr #js {:className (when selected? "info")
+                   :onClick #(om/transact! this `[(app/select-class {:class/id ~(:class/id p)})
+                                                  :app/selected-class])}
         (dom/td nil position)
         (dom/td nil name)
         (dom/td nil panel)
@@ -294,7 +300,8 @@
   Object
   (render
     [this]
-    (let [classes (sort-by :class/position (om/props this))]
+    (let [classes (sort-by :class/position (:classes (om/props this)))
+          selected-class (:selected-class (om/props this))]
       (dom/div nil
         (dom/h2 {:className "sub-header"} "Klasser")
         (dom/div nil
@@ -307,7 +314,7 @@
                                                           :app/selected-page])} "Newer"))
 
         (dom/table
-          #js {:className "table"}
+          #js {:className "table table-hover table-condensed"}
           (dom/thead nil
             (dom/tr nil
               (dom/th #js {:width "20"} "#")
@@ -316,7 +323,11 @@
               (dom/th #js {:width "20"} "Typ")
               (dom/th #js {:width "20"} "Startande")
               (dom/th #js {:width "20"} "Status")))
-          (apply dom/tbody nil (map (om/factory ClassRow) classes)))))))
+          (apply dom/tbody nil (map #((om/factory ClassRow)
+                                      (assoc % :selected? (if (= (:class/id %)
+                                                                 (:class/id selected-class))
+                                                            true
+                                                            false))) classes)))))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -477,8 +488,8 @@
     (let [participant (om/props this)
           name (:participant/name participant)
           number (:participant/number participant)]
-      (log "Participant Row")
-      (log participant)
+      ;(log "Participant Row")
+      ;(log participant)
       (dom/tr nil
         ;(dom/td nil (str client-id))
         (dom/td nil number)
@@ -555,7 +566,8 @@
                   (dom/h4 nil (str "Competition Id : " (:competition/id selected-competition)))
                   ((om/factory AdminViewComponent) {:status status}))
 
-          :classes ((om/factory ClassesView) (:competition/classes selected-competition))
+          :classes ((om/factory ClassesView) {:classes (:competition/classes selected-competition)
+                                              :selected-class (:app/selected-class p)})
 
           :create-class ((om/factory CreateClassView) (:app/selected-class p))
 
