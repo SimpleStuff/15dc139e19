@@ -300,8 +300,8 @@
   Object
   (render
     [this]
-    (let [classes (sort-by :class/position (:classes (om/props this)))
-          selected-class (:selected-class (om/props this))]
+    (let [classes (sort-by :class/position (om/props this))
+          {:keys [selected]} (om/get-computed this)]
       (dom/div nil
         (dom/h2 {:className "sub-header"} "Klasser")
         (dom/div nil
@@ -331,7 +331,7 @@
               (dom/th #js {:width "20"} "Status")))
           (apply dom/tbody nil (map #((om/factory ClassRow)
                                       (assoc % :selected? (if (= (:class/id %)
-                                                                 (:class/id selected-class))
+                                                                 (:class/id selected))
                                                             true
                                                             false))) classes)))))))
 
@@ -571,8 +571,11 @@
                   (dom/h4 nil (str "Competition Id : " (:competition/id selected-competition)))
                   ((om/factory AdminViewComponent) {:status status}))
 
-          :classes ((om/factory ClassesView) {:classes (:competition/classes selected-competition)
-                                              :selected-class (:app/selected-class p)})
+          :classes ((om/factory ClassesView) (om/computed (:competition/classes selected-competition)
+                                                          {:selected (:app/selected-class p)})
+                     ;{:classes (:competition/classes selected-competition)
+                     ; :selected-class (:app/selected-class p)}
+                     )
 
           :create-class ((om/factory CreateClassView) (:app/selected-class p))
 
