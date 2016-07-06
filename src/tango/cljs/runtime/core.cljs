@@ -135,7 +135,7 @@
 (defui ScheduleView
   static om/IQuery
   (query [_]
-    [{:competition/activities (om/get-query ScheduleRow)}])
+    (into [] (om/get-query ScheduleRow)))
   Object
   (render
     [this]
@@ -266,13 +266,13 @@
 (defui ClassRow
   static om/IQuery
   (query [_]
-    [:class/position :class/name :class/remaining :class/starting :class/id
-     {:class/rounds
-      [{:round/status ['*]}
-       {:round/type ['*]}]}
+    '[:class/position :class/name :class/remaining :class/starting :class/id
+      {:class/rounds
+       [{:round/status [*]}
+       {:round/type [*]}]}
      {:class/adjudicator-panel
       [:adjudicator-panel/name]}
-     {:class/dances ['*]}])
+     {:class/dances [*]}])
   Object
   (render [this]
     ;(log "ClassRow")
@@ -296,7 +296,7 @@
 (defui ClassesView
   static om/IQuery
   (query [_]
-    (into [] (om/get-query ClassRow)))
+    `[~@(om/get-query ClassRow)])
   Object
   (render
     [this]
@@ -308,10 +308,16 @@
           (dom/button #js {:onClick #(om/transact! this `[(class/create {:class/name "New Class"
                                                                          :class/id ~(random-uuid)})
                                                           :app/selected-competition])} "New")
-          (dom/button #js {:onClick #(om/transact! this `[(app/select-page {:selected-page :create-class})
+          (dom/button #js {:className "btn btn-default"
+                           :onClick #(om/transact! this `[(app/select-page {:selected-page :create-class})
                                                           (app/select-class {:class/name "New Class"
                                                                              :class/id ~(random-uuid)})
-                                                          :app/selected-page])} "Newer"))
+                                                          :app/selected-page])}
+                      (dom/span #js {:className "glyphicon glyphicon-plus"}))
+
+          (dom/button #js {:className "btn btn-default"
+                           :onClick #()}
+                      (dom/span #js {:className "glyphicon glyphicon-trash"})))
 
         (dom/table
           #js {:className "table table-hover table-condensed"}
@@ -525,28 +531,27 @@
 (defui MainComponent
   static om/IQuery
   (query [_]
-    [{:app/selected-competition
-      (into [:competition/name :competition/location :competition/id
-             {:competition/classes (om/get-query ClassesView)}
-             {:competition/panels [:adjudicator-panel/name
-                                   {:adjudicator-panel/adjudicators
-                                    [:adjudicator/id
-                                     :adjudicator/name]}]}
-             {:competition/participants (om/get-query ParticipantsView)}
-             ]
-            (concat (om/get-query ScheduleView)))}
+    `[{:app/selected-competition
+       [:competition/name :competition/location :competition/id
+        {:competition/classes ~(om/get-query ClassesView)}
+        {:competition/panels [:adjudicator-panel/name
+                              {:adjudicator-panel/adjudicators
+                               [:adjudicator/id
+                                :adjudicator/name]}]}
+        {:competition/participants ~(om/get-query ParticipantsView)}
+        {:competition/activities ~(om/get-query ScheduleView)}]}
 
      ;; TODO - participants should come from the competition
-     {:app/participants (om/get-query ParticipantsView)}
+     {:app/participants ~(om/get-query ParticipantsView)}
 
      :app/status
      :app/selected-page
 
-     {:app/selected-class (om/get-query CreateClassView)}
+     {:app/selected-class ~(om/get-query CreateClassView)}
 
      {:app/selected-activities [:activity/id] }
      {:app/speaker-activities [:activity/id] }
-     {:app/clients (om/get-query ClientsView)}
+     {:app/clients ~(om/get-query ClientsView)}
      ])
   Object
   (render
