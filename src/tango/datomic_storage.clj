@@ -1,10 +1,8 @@
 (ns tango.datomic-storage
   (:require
     [datomic.api :as d]
-
     [taoensso.timbre :as log]
-    [tango.ui-db :as ui]
-    ))
+    [tango.ui-db :as ui]))
 
 ;; Provides useful Timbre aliases in this ns
 (log/refer-timbre)
@@ -551,7 +549,16 @@
 (defn create-competition [conn competition]
   @(d/transact conn [(fix-id competition)]))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Class
 (defn create-class [conn competition-id class]
   @(d/transact conn [{:competition/classes (fix-id class)
                       :db/id               [:competition/id competition-id]}]))
 
+(defn delete-class [conn competition-id class-id]
+  @(d/transact conn [[:db/retract [:competition/id competition-id]
+                      :competition/classes [:class/id class-id]]]))
+
+;(defn deselect-round [conn activity-id]
+;  @(d/transact conn [[:db/retract [:app/id 1]
+;                      :app/selected-activities [:activity/id activity-id]]]))
