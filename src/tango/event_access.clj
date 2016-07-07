@@ -27,12 +27,23 @@
                    [:event-access/create-competition p]
                    (let [_ (d/create-competition conn p)]
                      (async/put! out-channel {:topic :tx/processed :payload topic}))
+
                    [:event-access/create-class p]
                    (if (:competition/id p)
                      (let [_ (d/create-class conn (:competition/id p) (:competition/class p))]
                        (async/put! out-channel {:topic :tx/processed :payload topic}))
-                     (async/put! out-channel {:topic :tx/rejected :payload {:reason :invalid-argument
-                                                                            :message "Missing competition/id"}}))
+                     (async/put! out-channel {:topic :tx/rejected
+                                              :payload {:reason :invalid-argument
+                                                        :message "Missing competition/id"}}))
+
+                   [:event-access/delete-class p]
+                   (if (:competition/id p)
+                     (let [_ (d/delete-class conn (:competition/id p) (:class/id p))]
+                       (async/put! out-channel {:topic :tx/processed :payload topic}))
+                     (async/put! out-channel {:topic :tx/rejected
+                                              :payload {:reason :invalid-argument
+                                                        :message "Missing competition/id"}}))
+
                    [:event-access/query-competition p]
                    (let [result (d/query-competition conn (:query p))]
                      (async/put! out-channel {:topic :tx/processed :payload {:topic topic
@@ -84,11 +95,14 @@
 
                    [:event-access/ping p]
                    (async/put! out-channel (merge message {:topic :event-access/pong}))
-                   :else (async/>!!
-                          out-channel
-                          {:topic :tx/rejected
-                           :payload {:reason :event-access/unkown-topic
-                                     :message message}})))
+                   :else
+                   (do
+                     (log/info (str "Event Access unknown topic : [" topic "]"))
+                     (async/>!!
+                       out-channel
+                       {:topic   :tx/rejected
+                        :payload {:reason  :event-access/unkown-topic
+                                  :message message}}))))
           (catch Exception e
             (log/error e "Exception in message go loop")
             (async/>! out-channel

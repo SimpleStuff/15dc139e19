@@ -53,7 +53,7 @@
   {:action (fn []
              (let [message {:topic   :event-manager/delete-class
                             :payload {:competition/id    (:competition/id params)
-                                      :competition/class (select-keys params [:class/id])}}]
+                                      :class/id (:class/id params)}}]
                (async/>!! state {:topic :command :sender :http :payload message})
                (log/info (str "Class Delete " key " " params))))})
 

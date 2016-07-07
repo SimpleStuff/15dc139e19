@@ -95,6 +95,26 @@
                                                           {:topic :event-manager/tx-timout
                                                            :payload {:reason :event-access/timeout}}))))))
 
+                   [:event-manager/delete-class p]
+                   (let [[v ch] (async/alts! [[(:in-channel event-access)
+                                               (merge message {:topic :event-access/delete-class})]
+                                              (async/timeout 2000)])]
+                     (if v
+                       (let [[result ch] (async/alts! [(:out-channel event-access)
+                                                       (async/timeout 1000)])]
+                         (log/info "Delete Class Event Access answer")
+                         (if result
+                           (if (= :tx/rejected (:topic result))
+                             (async/put! out-channel (merge message
+                                                            {:topic :tx/rejected
+                                                             :payload (:payload result)}))
+                             (async/put! out-channel (merge message
+                                                            {:topic   :event-manager/tx-processed
+                                                             :payload {:topic :event-manager/delete-class}})))
+                           (async/put! out-channel (merge message
+                                                          {:topic :event-manager/tx-timout
+                                                           :payload {:reason :event-access/timeout}}))))))
+
                    [:event-manager/query-competition p]
                    (let [[v ch] (async/alts! [[(:in-channel event-access)
                                                (merge message {:topic :event-access/query-competition})]
@@ -115,11 +135,14 @@
                                                            :payload {:reason :event-access/timeout}}))))))
                    [:event-manager/ping p]
                    (async/put! out-channel (merge message {:topic :event-access/pong}))
-                   :else (async/>!!
-                           out-channel
-                           {:topic :tx/rejected
-                            :payload {:reason :event-manager/unkown-topic
-                                      :message message}}))
+                   :else
+                   (do
+                     (log/info (str "Event Manager unknown topic : [" topic "]"))
+                     (async/>!!
+                       out-channel
+                       {:topic   :tx/rejected
+                        :payload {:reason  :event-manager/unkown-topic
+                                  :message message}})))
             )
           (catch Exception e
             (log/error e "Exception in message go loop")

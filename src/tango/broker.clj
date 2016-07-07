@@ -146,20 +146,37 @@
            [:command {:topic t}]
            (do
              (log/info (str "Command " payload))
-             (if (= t :event-manager/create-class)
+             (condp = t
+               :event-manager/create-class (do
+                                             (log/info "Sending class create to Event Manager")
+                                             (async/>!! (:in-channel event-manager-channels)
+                                                        payload))
+               :event-manager/delete-class
                (do
-                 (log/info "Sending class create to Event Manager")
-                 (async/>!! (:in-channel event-manager-channels)
-                            payload
-                            ;{:topic (first payload)
-                            ; :payload (second payload)}
-                            ))
+                 (log/info "Sending Class Delete to Event Manager")
+                 (async/>!! (:in-channel event-manager-channels) payload))
+
                ;; Results should be handled by "Result Rules Engine"
                ;; If a result is accepted it should be sent to the
                ;; "Results Access" for handling.
                (async/>!! (:in-channel rules-engine-channels)
                           {:topic   (first payload)
-                           :payload (second payload)})))
+                           :payload (second payload)}))
+             ;(if (= t :event-manager/create-class)
+             ;  (do
+             ;    (log/info "Sending class create to Event Manager")
+             ;    (async/>!! (:in-channel event-manager-channels)
+             ;               payload
+             ;               ;{:topic (first payload)
+             ;               ; :payload (second payload)}
+             ;               ))
+             ;  ;; Results should be handled by "Result Rules Engine"
+             ;  ;; If a result is accepted it should be sent to the
+             ;  ;; "Results Access" for handling.
+             ;  (async/>!! (:in-channel rules-engine-channels)
+             ;             {:topic   (first payload)
+             ;              :payload (second payload)}))
+             )
            [:query _]
            (do
              (log/info (str "Query " payload))

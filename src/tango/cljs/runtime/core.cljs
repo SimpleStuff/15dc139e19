@@ -310,14 +310,14 @@
       (dom/div nil
         (dom/h2 {:className "sub-header"} "Klasser")
         (dom/div nil
-          (dom/button #js {:onClick #(om/transact!
-                                      this
-                                      `[(class/create {:class/name "New Class"
-                                                       :class/id ~(random-uuid)})
-                                        :app/selected-competition])} "New")
+          ;(dom/button #js {:onClick #(om/transact!
+          ;                            reconciler
+          ;                            `[(class/create {:class/name "New Class"
+          ;                                             :class/id ~(random-uuid)})
+          ;                              :app/selected-competition])} "New")
           (dom/button #js {:className "btn btn-default"
                            :onClick #(om/transact!
-                                      this
+                                      reconciler
                                       `[(app/select-page {:selected-page :create-class})
                                         (app/select-class {:class/name "New Class"
                                                            :class/id ~(random-uuid)})
