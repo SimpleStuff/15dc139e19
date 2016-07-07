@@ -60,6 +60,23 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Classes
+(defmethod mutate 'class/save
+  [{:keys [state ast]} _ {:keys [class/name class/id] :as params}]
+  {:value   {:keys []}
+   :action  (fn []
+              ;(swap! state (fn [current]
+              ;               (update-in current
+              ;                          [:app/selected-competition :competition/classes]
+              ;                          (fn [current-classes]
+              ;                            (conj current-classes {:class/name name
+              ;                                                   :class/id   id})))))
+              )
+   :command (assoc ast :params
+                       (merge params
+                              {:competition/id
+                               (:competition/id (:app/selected-competition @state))}))
+   })
+
 (defmethod mutate 'class/create
   [{:keys [state ast]} _ {:keys [class/name class/id] :as params}]
   {:value   {:keys []}
@@ -70,10 +87,11 @@
                                         (fn [current-classes]
                                           (conj current-classes {:class/name name
                                                                  :class/id   id}))))))
-   :command (assoc ast :params
-                       (merge params
-                              {:competition/id
-                               (:competition/id (:app/selected-competition @state))}))})
+   ;:command (assoc ast :params
+   ;                    (merge params
+   ;                           {:competition/id
+   ;                            (:competition/id (:app/selected-competition @state))}))
+   })
 
 (defmethod mutate 'class/delete
   [{:keys [state ast]} _ {:keys [class/id] :as params}]

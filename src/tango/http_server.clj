@@ -39,14 +39,14 @@
 
 (defmulti mutate (fn [env key params] key))
 
-(defmethod mutate 'class/create
+(defmethod mutate 'class/save
   [{:keys [state] :as env} key params]
   {:action (fn []
              (let [message {:topic   :event-manager/create-class
                             :payload {:competition/id    (:competition/id params)
                                       :competition/class (select-keys params [:class/name :class/id])}}]
                (async/>!! state {:topic :command :sender :http :payload message})
-               (log/info (str "Class Create " key " " params))))})
+               (log/info (str "Class Save " key " " params))))})
 
 (defmethod mutate 'class/delete
   [{:keys [state] :as env} key params]

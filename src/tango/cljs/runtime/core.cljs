@@ -226,9 +226,14 @@
                 (dom/button
                   #js {:className "btn btn-default"
                        :type      "submit"
-                       :onClick   (fn [e] (om/transact! this `[(class/create
-                                                                 {:class/id ~(:class/id selected-class)
-                                                                  :class/name ~(:class/name selected-class)})]))}
+                       :onClick   (fn [e]
+                                    (om/transact!
+                                      this
+                                      `[(class/save
+                                          {:class/id ~(:class/id selected-class)
+                                           :class/name ~(:class/name selected-class)})
+                                        (app/select-page {:selected-page :classes})
+                                        :app/selected-page]))}
                   "Create")))))
         ))))
 
@@ -316,12 +321,15 @@
           ;                                             :class/id ~(random-uuid)})
           ;                              :app/selected-competition])} "New")
           (dom/button #js {:className "btn btn-default"
-                           :onClick #(om/transact!
-                                      reconciler
-                                      `[(app/select-page {:selected-page :create-class})
-                                        (app/select-class {:class/name "New Class"
-                                                           :class/id ~(random-uuid)})
-                                        :app/selected-page])}
+                           :onClick   (fn [e]
+                                        (let [new-id (random-uuid)]
+                                          (om/transact!
+                                            reconciler
+                                            `[(app/select-page {:selected-page :create-class})
+                                              (class/create {:class/name "New Class"
+                                                             :class/id   ~new-id})
+                                              (app/select-class {:class/id ~new-id})
+                                              :app/selected-page])))}
                       (dom/span #js {:className "glyphicon glyphicon-plus"}))
 
           (dom/button #js {:className "btn btn-default"
