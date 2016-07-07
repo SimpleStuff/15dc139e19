@@ -75,9 +75,23 @@
                               {:competition/id
                                (:competition/id (:app/selected-competition @state))}))})
 
+(defmethod mutate 'class/delete
+  [{:keys [state ast]} _ {:keys [class/id] :as params}]
+  {:value   {:keys []}
+   :action  (fn []
+              (swap! state (fn [current]
+                             (update-in current
+                                        [:app/selected-competition :competition/classes]
+                                        (fn [current-classes]
+                                          (filter #(not= (:class/id %) id) current-classes))))))
+   :command (assoc ast :params
+                       (merge params
+                              {:competition/id
+                               (:competition/id (:app/selected-competition @state))}))})
+
 (defmethod mutate 'app/select-class
   [{:keys [state]} _ {:keys [class/id] :as selected-class}]
-  {:value  {:keys [:app/selected-class]}
+  {:value  {:keys []}
    :action (fn []
              (let [class
                    (first (filter #(= (:class/id %) id)

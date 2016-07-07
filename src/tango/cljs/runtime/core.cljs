@@ -278,12 +278,14 @@
     ;(log "ClassRow")
     ;(log (:class/dances (om/props this)))
     (let [p (om/props this)
+          {:keys [selected?]} (om/get-computed this)
           {:keys [position name panel type starting status]}
-          (presentation/make-class-presenter p)
-          selected? (:selected? p)]
+          (presentation/make-class-presenter p)]
       (dom/tr #js {:className (when selected? "info")
-                   :onClick #(om/transact! this `[(app/select-class {:class/id ~(:class/id p)})
-                                                  :app/selected-class])}
+                   :onClick   #(om/transact! this `[(app/select-class {:class/id ~(:class/id p)})
+                                                    :selected?
+                                                    :selected
+                                                    :app/selected-page])}
         (dom/td nil position)
         (dom/td nil name)
         (dom/td nil panel)
@@ -294,29 +296,39 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ClassesView
 (defui ClassesView
-  static om/IQuery
-  (query [_]
-    `[~@(om/get-query ClassRow)])
+  ;static om/IQuery
+  ;(query [_]
+  ;  `[:app/selected-class])
   Object
   (render
     [this]
-    (let [classes (sort-by :class/position (om/props this))
-          {:keys [selected]} (om/get-computed this)]
+    (let [classes (sort-by :class/position (:classes (om/props this)))
+          ;{:keys [selected]} (om/get-computed this)
+          selected (:selected (om/props this))]
+      (log "ClassView")
+      (log selected)
       (dom/div nil
         (dom/h2 {:className "sub-header"} "Klasser")
         (dom/div nil
-          (dom/button #js {:onClick #(om/transact! this `[(class/create {:class/name "New Class"
-                                                                         :class/id ~(random-uuid)})
-                                                          :app/selected-competition])} "New")
+          (dom/button #js {:onClick #(om/transact!
+                                      this
+                                      `[(class/create {:class/name "New Class"
+                                                       :class/id ~(random-uuid)})
+                                        :app/selected-competition])} "New")
           (dom/button #js {:className "btn btn-default"
-                           :onClick #(om/transact! this `[(app/select-page {:selected-page :create-class})
-                                                          (app/select-class {:class/name "New Class"
-                                                                             :class/id ~(random-uuid)})
-                                                          :app/selected-page])}
+                           :onClick #(om/transact!
+                                      this
+                                      `[(app/select-page {:selected-page :create-class})
+                                        (app/select-class {:class/name "New Class"
+                                                           :class/id ~(random-uuid)})
+                                        :app/selected-page])}
                       (dom/span #js {:className "glyphicon glyphicon-plus"}))
 
           (dom/button #js {:className "btn btn-default"
-                           :onClick #()}
+                           :onClick #(om/transact!
+                                      reconciler
+                                      `[(class/delete {:class/id
+                                                       ~(:class/id selected)})])}
                       (dom/span #js {:className "glyphicon glyphicon-trash"})))
 
         (dom/table
@@ -329,11 +341,17 @@
               (dom/th #js {:width "20"} "Typ")
               (dom/th #js {:width "20"} "Startande")
               (dom/th #js {:width "20"} "Status")))
+          ;(apply dom/tbody nil (map #((om/factory ClassRow)
+          ;                            (assoc % :selected? (if (= (:class/id %)
+          ;                                                       (:class/id selected))
+          ;                                                  true
+          ;                                                  false))) classes))
           (apply dom/tbody nil (map #((om/factory ClassRow)
-                                      (assoc % :selected? (if (= (:class/id %)
-                                                                 (:class/id selected))
-                                                            true
-                                                            false))) classes)))))))
+                                      (om/computed % {:selected? (if (= (:class/id %)
+                                                                        (:class/id selected))
+                                                                   true
+                                                                   false)})) classes))
+          )))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -528,12 +546,15 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; MainComponent
 
+(def class-view (om/factory ClassesView))
+
+;; https://awkay.github.io/om-tutorial/
 (defui MainComponent
   static om/IQuery
   (query [_]
     `[{:app/selected-competition
        [:competition/name :competition/location :competition/id
-        {:competition/classes ~(om/get-query ClassesView)}
+        {:competition/classes ~(om/get-query ClassRow)}
         {:competition/panels [:adjudicator-panel/name
                               {:adjudicator-panel/adjudicators
                                [:adjudicator/id
@@ -547,7 +568,8 @@
      :app/status
      :app/selected-page
 
-     {:app/selected-class ~(om/get-query CreateClassView)}
+      {:app/selected-class ~(om/get-query CreateClassView)}
+      ;{:app/selected-class ~(om/get-query ClassRow)}
 
      {:app/selected-activities [:activity/id] }
      {:app/speaker-activities [:activity/id] }
@@ -560,9 +582,10 @@
           selected-competition (:app/selected-competition p)
           status (:app/status p)
           selected-page (:app/selected-page p)
-          participants (:app/participants p)]
+          participants (:app/participants p)
+          selected-class (:app/selected-class p)]
       (log "Main Selected :")
-      (log (:app/selected-class p ))
+      (log selected-class)
       (dom/div nil
         ((om/factory MenuComponent))
         (condp = selected-page
@@ -571,10 +594,11 @@
                   (dom/h4 nil (str "Competition Id : " (:competition/id selected-competition)))
                   ((om/factory AdminViewComponent) {:status status}))
 
-          :classes ((om/factory ClassesView) (om/computed (:competition/classes selected-competition)
-                                                          {:selected (:app/selected-class p)})
-                     ;{:classes (:competition/classes selected-competition)
-                     ; :selected-class (:app/selected-class p)}
+          :classes (class-view
+                     ;(om/computed (:competition/classes selected-competition)
+                     ;                       {:selected selected-class})
+                     {:classes (:competition/classes selected-competition)
+                      :selected (:app/selected-class p)}
                      )
 
           :create-class ((om/factory CreateClassView) (:app/selected-class p))

@@ -46,7 +46,16 @@
                             :payload {:competition/id    (:competition/id params)
                                       :competition/class (select-keys params [:class/name :class/id])}}]
                (async/>!! state {:topic :command :sender :http :payload message})
-               (log/info (str "Class create " key " " params))))})
+               (log/info (str "Class Create " key " " params))))})
+
+(defmethod mutate 'class/delete
+  [{:keys [state] :as env} key params]
+  {:action (fn []
+             (let [message {:topic   :event-manager/delete-class
+                            :payload {:competition/id    (:competition/id params)
+                                      :competition/class (select-keys params [:class/id])}}]
+               (async/>!! state {:topic :command :sender :http :payload message})
+               (log/info (str "Class Delete " key " " params))))})
 
 (defmethod mutate 'app/status
   [{:keys [state] :as env} key params]
