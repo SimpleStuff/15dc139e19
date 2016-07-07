@@ -60,19 +60,21 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Classes
+
 (defmethod mutate 'class/save
-  [{:keys [state ast]} _ {:keys [class/name class/id] :as params}]
+  [{:keys [state ast]} _ {:keys [class/name class/id] :as updated-class}]
   {:value   {:keys []}
    :action  (fn []
-              ;(swap! state (fn [current]
-              ;               (update-in current
-              ;                          [:app/selected-competition :competition/classes]
-              ;                          (fn [current-classes]
-              ;                            (conj current-classes {:class/name name
-              ;                                                   :class/id   id})))))
-              )
+              ; TODO - normalize with Om instead
+              (swap! state (fn [current]
+                             (let [classes-pre-updated
+                                   (filter #(not= (:class/id %) id)
+                                           (:competition/classes
+                                             (:app/selected-competition current)))]
+                               (update-in current [:app/selected-competition :competition/classes]
+                                          #(conj classes-pre-updated updated-class))))))
    :command (assoc ast :params
-                       (merge params
+                       (merge updated-class
                               {:competition/id
                                (:competition/id (:app/selected-competition @state))}))
    })

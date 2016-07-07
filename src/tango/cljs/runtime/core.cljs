@@ -234,7 +234,7 @@
                                            :class/name ~(:class/name selected-class)})
                                         (app/select-page {:selected-page :classes})
                                         :app/selected-page]))}
-                  "Create")))))
+                  "Save")))))
         ))))
 
 ;(dom/div #js {:className "container"}
@@ -337,7 +337,14 @@
                                       reconciler
                                       `[(class/delete {:class/id
                                                        ~(:class/id selected)})])}
-                      (dom/span #js {:className "glyphicon glyphicon-trash"})))
+                      (dom/span #js {:className "glyphicon glyphicon-trash"}))
+
+          (dom/button #js {:className "btn btn-default"
+                           :onClick   #(om/transact!
+                                        reconciler
+                                        `[(app/select-class {:class/id ~(:class/id selected)})
+                                          (app/select-page {:selected-page :create-class})])}
+                      (dom/span #js {:className "glyphicon glyphicon-edit"})))
 
         (dom/table
           #js {:className "table table-hover table-condensed"}
