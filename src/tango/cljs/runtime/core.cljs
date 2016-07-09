@@ -183,7 +183,7 @@
 (defui CreateClassView
   static om/IQuery
   (query [_]
-    [:class/name :class/id])
+    [:class/name :class/id {:class/starting [:participant/number]}])
   Object
   (render
     [this]
@@ -213,12 +213,27 @@
 
             ;; Adjudicator Panel
 
+            ;; Dances
+
             ;; Participants
             (dom/div #js {:className "form-group"}
               (dom/label #js {:className "col-sm-2 control-label"} "Participants")
               (dom/div #js {:className "col-sm-8"}
-                (dom/ul nil
-                  (dom/li nil "A"))))
+                (dom/div nil
+                  (dom/button #js {:className "btn btn-default"
+                                   :onClick   (fn [e]
+                                                (let [new-id (random-uuid)]
+                                                  (om/transact!
+                                                    reconciler
+                                                    `[(app/select-page {:selected-page :edit-class-participants})
+
+                                                      :app/selected-page])))}
+                              (dom/span #js {:className "glyphicon glyphicon-plus"}))
+                  (dom/p nil (str "Starting : " (count (:class/starting selected-class)))))
+                ;(dom/ul nil)
+                (map #(dom/button #js {:className "col-sm-6 btn btn-default"}
+                                  (str (:participant/number %) " - " (:participant/name %)))
+                     (:class/starting selected-class))))
 
             ;; Create
             (dom/div #js {:className "form-group"}
@@ -269,7 +284,9 @@
 (defui ClassRow
   static om/IQuery
   (query [_]
-    '[:class/position :class/name :class/remaining :class/starting :class/id
+    '[:class/position :class/name :class/remaining :class/id
+      ;; TODO - in a normalized view only participant/id should be good
+      {:class/starting [:participant/number :participant/name :participant/id]}
       {:class/rounds
        [{:round/status [*]}
        {:round/type [*]}]}
@@ -366,6 +383,43 @@
                                                                    false)})) classes))
           )))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; SelectClassParticipantsView
+(defui SelectClassParticipantsView
+  static om/IQuery
+  (query [_]
+    [])
+  Object
+  (render
+    [this]
+    (let [participants (sort-by :participant/number (:participants (om/props this)))
+          selected-class (:selected-class (om/props this))
+          starting (:class/starting selected-class)
+          selected? (fn [participant]
+                      (if (seq (filter
+                                 #(= (:participant/id %) (:participant/id participant))
+                                 starting))
+                        true
+                        false))]
+      (log "SelectedClassParticipantsView")
+      (log selected-class)
+      (dom/div #js {:className "col-sm-12"}
+        (dom/h2 {:className "sub-header"} (str "Select Participants for Class "
+                                               (:class/name selected-class)))
+        (dom/div nil
+          (dom/button nil "Back")
+          (dom/button nil "Done"))
+        (map #(dom/button #js {:className (str "col-sm-6 btn" (if (selected? %)
+                                                                " btn-primary"
+                                                                " btn-default"))
+                               :onClick (fn [e]
+                                          (om/transact!
+                                            reconciler
+                                            `[(class/update
+                                                {:class/starting ~(conj starting %)})
+                                              :app/selected-class]))}
+                          (str (:participant/number %) " - " (:participant/name %)))
+             participants)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Import/Export Component
@@ -615,6 +669,10 @@
                      )
 
           :create-class ((om/factory CreateClassView) (:app/selected-class p))
+
+          :edit-class-participants ((om/factory SelectClassParticipantsView)
+                                     {:participants participants
+                                      :selected-class (:app/selected-class p)})
 
           :time-schedule ((om/factory ScheduleView) {:competition/activities
                                                      (:competition/activities selected-competition)
