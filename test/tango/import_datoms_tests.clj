@@ -9,10 +9,6 @@
             [schema.core :as s]))
 
 
-(def old-data (ds/clean-import-data (imp/competition-xml->map u/real-example #(java.util.UUID/randomUUID))))
-
-
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Setup utils
 
@@ -81,6 +77,9 @@
 (def panel-query
   ['* {:adjudicator-panel/adjudicators ['*]}])
 
+(def participants-query
+  ['*])
+
 (def class-query
   ['* {:class/adjudicator-panel
        ['* {:adjudicator-panel/adjudicators ['*]}]}
@@ -117,7 +116,10 @@
                                                           :competition/adjudicators ['*]
                                                           :competition/activities activities-query
                                                           :competition/classes class-query
-                                                          :competition/panels panel-query}])))))))))
+                                                          :competition/panels panel-query}]))))))
+
+      (is (= (count (ds/query-participants @conn ['*]))
+             882)))))
 
 (deftest import-adjudicators
   (testing "Import of adjudicator data"
@@ -151,6 +153,16 @@
       (is (seq (mapv #(s/validate dom/activity-schema %)
                      (clean-test-data
                        (ds/query-activities @conn activities-query))))))))
+
+(deftest import-participants
+  (testing "Import of participants data"
+    (let [_ (ds/transact-competition @conn @test-competition)]
+      (is (= (count (map :participant/id (ds/query-participants @conn ['*])))
+             882))
+
+      (is (seq (mapv #(s/validate dom/participant %)
+                     (clean-test-data
+                       (ds/query-participants @conn class-query))))))))
 
 (deftest import-competition-data
   (testing "Import of competition data"
@@ -203,7 +215,8 @@
                                                           :competition/adjudicators ['*]
                                                           :competition/activities activities-query
                                                           :competition/classes class-query
-                                                          :competition/panels panel-query}])))))))))
+                                                          :competition/panels panel-query
+                                                          :competition/participants participants-query}])))))))))
 
 ;; TODO - add support for this competition
 ;; TODO - it seems that rounds with several dances have multiple entries for marks

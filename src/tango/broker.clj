@@ -110,9 +110,12 @@
                      (log/info (str "Set Speaker Activity"))
                      (set-speaker-activity (d/create-connection datomic-storage-uri) payload))
 
-                   :else (async/>!!
-                           out-ch
-                           {:topic :rules/unkown-topic :payload {:topic topic}})
+                   :else
+                   (do
+                     (log/info (str "Rules engine unkown topic " topic))
+                     (async/>!!
+                       out-ch
+                       {:topic :rules/unkown-topic :payload {:topic topic}}))
 
                    )
             (let [[tx tx-ch] (async/alts!!
@@ -134,7 +137,8 @@
                         {:keys [channel-connection-channels
                                 file-handler-channels
                                 event-access-channels
-                                rules-engine-channels] :as components}]
+                                rules-engine-channels
+                                event-manager-channels] :as components}]
   {:pre [(some? channel-connection-channels)
          (some? file-handler-channels)
          (some? event-access-channels)
@@ -142,15 +146,40 @@
   (let [client-in-channel (:in-channel channel-connection-channels)]
     (log/info (str "Dispatching Topic [" topic "], Sender [" sender "]"))
     (match [topic payload]
-           [:command _]
+           [:command {:topic t}]
            (do
              (log/info (str "Command " payload))
-             ;; Results should be handled by "Result Rules Engine"
-             ;; If a result is accepted it should be sent to the
-             ;; "Results Access" for handling.
-             (async/>!! (:in-channel rules-engine-channels)
-                        {:topic   (first payload)
-                         :payload (second payload)}))
+             (condp = t
+               :event-manager/create-class (do
+                                             (log/info "Sending class create to Event Manager")
+                                             (async/>!! (:in-channel event-manager-channels)
+                                                        payload))
+               :event-manager/delete-class
+               (do
+                 (log/info "Sending Class Delete to Event Manager")
+                 (async/>!! (:in-channel event-manager-channels) payload))
+
+               ;; Results should be handled by "Result Rules Engine"
+               ;; If a result is accepted it should be sent to the
+               ;; "Results Access" for handling.
+               (async/>!! (:in-channel rules-engine-channels)
+                          {:topic   (:topic payload)
+                           :payload (:payload payload)}))
+             ;(if (= t :event-manager/create-class)
+             ;  (do
+             ;    (log/info "Sending class create to Event Manager")
+             ;    (async/>!! (:in-channel event-manager-channels)
+             ;               payload
+             ;               ;{:topic (first payload)
+             ;               ; :payload (second payload)}
+             ;               ))
+             ;  ;; Results should be handled by "Result Rules Engine"
+             ;  ;; If a result is accepted it should be sent to the
+             ;  ;; "Results Access" for handling.
+             ;  (async/>!! (:in-channel rules-engine-channels)
+             ;             {:topic   (first payload)
+             ;              :payload (second payload)}))
+             )
            [:query _]
            (do
              (log/info (str "Query " payload))
@@ -206,13 +235,26 @@
              (when (nil? tx)
                (merge message
                       {:topic :event-manager/query-result :payload :time-out})))
+
+           [:tx/rejected p]
+           (let [[tx tx-ch] (async/alts!!
+                              [[client-in-channel
+                                (merge message
+                                       {:topic :tx/rejected
+                                        :payload payload})]
+                               (async/timeout 500)])]
+             (when (nil? tx)
+               (merge message
+                      {:topic :event-manager/query-result :payload :time-out})))
            :else
-           (let [[unknown ch] (async/alts!!
-                               [[client-in-channel
-                                 {:sender sender :topic :broker/unknown-topic :payload {:topic topic}}]
-                                (async/timeout 500)])]
-             (when (nil? unknown)
-               {:topic :broker/unknown-topic :payload {:topic topic}})))))
+           (do
+             (log/info (str "Unknown topic " topic))
+             (let [[unknown ch] (async/alts!!
+                                  [[client-in-channel
+                                    {:sender sender :topic :broker/unknown-topic :payload {:topic topic}}]
+                                   (async/timeout 500)])]
+               (when (nil? unknown)
+                 {:topic :broker/unknown-topic :payload {:topic topic}}))))))
 
 ;; TODO - mapping :out-channels is not a greate idea, if we get a nil all msg procs
 ;; dies, fixit damn it!
@@ -238,14 +280,15 @@
                           file-handler-channels
                           event-access-channels
                           http-server-channels
-                          datomic-storage-uri]
+                          datomic-storage-uri
+                          event-manager-channels]
   component/Lifecycle
   (start [component]
     (log/report "Starting MessageBroker")
     (let [rules-in-ch (async/chan)
           rules-out-ch (async/chan)
-          schema-tx (read-string (slurp (clojure.java.io/resource "schema/activity.edn")))
-          _ (d/create-storage datomic-storage-uri schema-tx)
+          ;schema-tx (read-string (slurp (clojure.java.io/resource "schema/activity.edn")))
+          ;_ (d/create-storage datomic-storage-uri schema-tx)
           rules-engine (start-result-rules-engine
                          rules-in-ch
                          rules-out-ch
@@ -258,9 +301,9 @@
                            :event-access-channels event-access-channels
                            :http-server-channels http-server-channels
                            :rules-engine-channels {:in-channel rules-in-ch
-                                                   :out-channel rules-out-ch}})]
-      (log/info "Schema-tx")
-      (log/info schema-tx)
+                                                   :out-channel rules-out-ch}
+                           :event-manager-channels event-manager-channels})]
+
       (assoc component :broker-process broker-process
                        :rules-engine rules-engine)))
   (stop [component]

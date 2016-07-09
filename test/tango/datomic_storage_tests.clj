@@ -224,4 +224,49 @@
                :client/id   #uuid "60edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"
                :client/user {:adjudicator/id #uuid "1ace2915-42dc-4f58-8017-dcb79f958463"}}])))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Management of classes
 
+(deftest should-be-possible-to-manage-classes
+  (testing "Creation of classes"
+    (let [_ (ds/delete-storage mem-uri)
+          _ (ds/create-storage mem-uri schema-tx)
+          conn (ds/create-connection mem-uri)
+          competition-tx {:competition/id #uuid "1ace2915-42dc-4f58-8017-dcb79f958463"
+                          :competition/name "Test Competition"}
+          class-tx {:class/id #uuid "60edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"
+                    :class/name "Test Class"}]
+      (ds/create-competition conn competition-tx)
+      (ds/create-class conn (:competition/id competition-tx) class-tx)
+      (is (= (ds/query-competition conn [:competition/name
+                                         :competition/id
+                                         {:competition/classes [:class/id
+                                                                :class/name]}])
+             [{:competition/id #uuid "1ace2915-42dc-4f58-8017-dcb79f958463"
+               :competition/name "Test Competition"
+               :competition/classes [{:class/id #uuid "60edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"
+                                      :class/name "Test Class"}]}]))))
+
+  (testing "Deletion of classes"
+    (let [_ (ds/delete-storage mem-uri)
+          _ (ds/create-storage mem-uri schema-tx)
+          conn (ds/create-connection mem-uri)
+          competition-tx {:competition/id #uuid "1ace2915-42dc-4f58-8017-dcb79f958463"
+                          :competition/name "Test Competition"}
+          class-tx-1 {:class/id #uuid "60edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"
+                      :class/name "Test Class"}
+          class-tx-2 {:class/id #uuid "666dcf5d-1a8b-423e-9d6b-5cda00ff1b6e"
+                      :class/name "Test Class"}]
+      (ds/create-competition conn competition-tx)
+      (ds/create-class conn (:competition/id competition-tx) class-tx-1)
+      (ds/create-class conn (:competition/id competition-tx) class-tx-2)
+      (ds/delete-class conn
+                       (:competition/id competition-tx)
+                       (:class/id class-tx-1))
+      (is (= (ds/query-competition conn [:competition/name
+                                         :competition/id
+                                         {:competition/classes [:class/id
+                                                                :class/name]}])
+             [{:competition/id #uuid "1ace2915-42dc-4f58-8017-dcb79f958463"
+               :competition/name "Test Competition"
+               :competition/classes [class-tx-2]}])))))

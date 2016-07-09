@@ -15,6 +15,7 @@
             [tango.channels :as channels]
             [tango.import-engine :as import]
             [tango.event-access :as access]
+            [tango.event-manager :as emanager]
             [tango.event-file-storage :as file-storage]
             [tango.datomic-storage :as d]))
 
@@ -92,25 +93,35 @@
      :http-server (component/using (http/create-http-server port "datomic:free://localhost:4334//competitions")
                                    [:ws-connection :http-server-channels])
 
-     ;; Event Storage
-     :event-file-storage-channels (file-storage/create-event-file-storage-channels)
-     :event-file-storage (component/using (file-storage/create-event-file-storage
-                                            "./file-storage.dat"
-                                            "datomic:free://localhost:4334//competitions")
-                                     [:event-file-storage-channels])
+     ;;; Event Storage
+     ;:event-file-storage-channels (file-storage/create-event-file-storage-channels)
+     ;:event-file-storage (component/using (file-storage/create-event-file-storage
+     ;                                       "./file-storage.dat"
+     ;                                       "datomic:free://localhost:4334//competitions")
+     ;                                [:event-file-storage-channels])
 
      ;; Event Access
      :event-access-channels (access/create-event-access-channels)
-     :event-access (component/using (access/create-event-access)
-                                    {:event-access-channels :event-access-channels
-                                     :storage-channels :event-file-storage-channels})
+     :event-access (component/using (access/create-event-access
+                                      "datomic:free://localhost:4334//competitions"
+                                      "schema/activity.edn")
+                                    {:event-access-channels :event-access-channels})
 
+     ;; Event Manager
+     :event-manager-channels (emanager/create-event-manager-channels)
+     :event-manager (component/using (emanager/create-event-manager)
+                                     {:event-manager-channels :event-manager-channels
+                                      :event-access-channels  :event-access-channels})
+
+     ;; TODO - broker should not have channels of down stream services i.e. event-access since
+     ;;  it will steal messages that the manager awaits on..
      ;; Message broker
      :message-broker (component/using (broker/create-message-broker "datomic:free://localhost:4334//competitions")
                                       {:channel-connection-channels client-connection
                                        :http-server-channels :http-server-channels
                                        :file-handler-channels :file-handler-channels
-                                       :event-access-channels :event-access-channels}))))
+                                       :event-access-channels :event-access-channels
+                                       :event-manager-channels :event-manager-channels}))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Defines a pointer to the current system.

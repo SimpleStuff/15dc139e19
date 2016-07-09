@@ -1,7 +1,6 @@
 (ns tango.datomic-storage
   (:require
     [datomic.api :as d]
-    [datascript.core :as ds]
     [taoensso.timbre :as log]
     [tango.ui-db :as ui]))
 
@@ -419,6 +418,14 @@
            [?e :activity/id]]
          (d/db conn) query)))
 
+(defn query-participants [conn query]
+  (clean-data
+    (d/q '[:find [(pull ?e selector) ...]
+           :in $ selector
+           :where
+           [?e :participant/id]]
+         (d/db conn) query)))
+
 (defn query-competition [conn query]
   (d/q '[:find [(pull ?e selector) ...]
          :in $ selector
@@ -428,9 +435,8 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;(defn select-round [conn round]
-;  @(d/transact conn [(fix-id {:app/selected-activites round
-;                              :app/id                 1})]))
+;; Rounds
+
 (defn select-round [conn activity-id]
   @(d/transact conn [{:app/selected-activities {:db/id [:activity/id activity-id]}
                       ;:app/id 1
@@ -450,10 +456,8 @@
   @(d/transact conn [[:db/retract [:app/id 1]
                       :app/speaker-activities [:activity/id activity-id]]]))
 
-;(defn set-speaker-activity [conn activity]
-;  @(d/transact conn [(fix-id {:app/speaker-activites activity
-;                              :app/id                1})]))
-;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Results
 (defn set-results [conn results]
   @(d/transact conn (mapv fix-id results)))
 
@@ -539,6 +543,22 @@
                      :where
                      [?c :client/id]]
                    (d/db conn) query)))
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Services
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Competition
+(defn create-competition [conn competition]
+  @(d/transact conn [(fix-id competition)]))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Class
+(defn create-class [conn competition-id class]
+  @(d/transact conn [{:competition/classes (fix-id class)
+                      :db/id               [:competition/id competition-id]}]))
+
+(defn delete-class [conn competition-id class-id]
+  @(d/transact conn [[:db/retract [:competition/id competition-id]
+                      :competition/classes [:class/id class-id]]]))
+
+;(defn deselect-round [conn activity-id]
+;  @(d/transact conn [[:db/retract [:app/id 1]
+;                      :app/selected-activities [:activity/id activity-id]]]))

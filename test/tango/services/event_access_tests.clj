@@ -9,16 +9,15 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Utils
-(def storage-path "./test/file-store.dat")
+(def mem-uri "datomic:mem://localhost:4334//competitions")
+
+(def schema-path "schema/activity.edn")
 
 (defn create-test-service []
   (assoc
-      (ea/create-event-access)
+      (ea/create-event-access mem-uri schema-path)
     :event-access-channels
-    (component/start (ea/create-event-access-channels))
-    :storage-channels
-    {:in-channel (async/timeout 1000)
-     :out-channel (async/timeout 1000)}))
+    (component/start (ea/create-event-access-channels))))
 
 ;; TODO - refactor
 ;(defn- create-test-service-with-file-storage []
@@ -47,13 +46,13 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Tests of event access
 
-(deftest query-should-be-run-on-storage
-  (testing "A query should be run on storage"
-    (let [event-access (component/start (create-test-service))]
-      (start-test-storage event-access)
-      (send-to event-access {:topic :event-access/query :payload [:competition/name]})
-      (is (= {:topic :event-access/query-result :payload [:competition/name]}
-             (receive-from event-access))))))
+;(deftest query-should-be-run-on-storage
+;  (testing "A query should be run on storage"
+;    (let [event-access (component/start (create-test-service))]
+;      (start-test-storage event-access)
+;      (send-to event-access {:topic :event-access/query :payload [:competition/name]})
+;      (is (= {:topic :event-access/query-result :payload [:competition/name]}
+;             (receive-from event-access))))))
 
 ;; TODO - refactor
 ;(deftest transact-with-file-storage
@@ -72,7 +71,7 @@
 
 (deftest instantiate-import-engine
   (testing "Instansiate event-access service"
-    (let [event-access (ea/create-event-access)
+    (let [event-access (ea/create-event-access mem-uri schema-path)
           event-access-channels (ea/create-event-access-channels)]
       (is (= tango.event_access.EventAccess (class event-access)))
       (is (= tango.event_access.EventAccessChannels (class event-access-channels))))))
@@ -81,15 +80,17 @@
   (testing "Service life cycle"
     (let [event-access (component/start (create-test-service))
           stopped-event-access (component/stop event-access)]
-      (is (= 3 (count (keys event-access))))
+      (is (= 4 (count (keys event-access))))
 
       (is (not= nil (:event-access-channels event-access)))
       (is (not= nil (:message-handler event-access)))
-      (is (not= nil (:storage-channels event-access)))
+      (is (not= nil (:datomic-uri event-access)))
+      (is (not= nil (:schema-path event-access)))
 
       (is (= nil (:event-access-channels stopped-event-access)))
       (is (= nil (:message-handler stopped-event-access)))
-      (is (= nil (:storage-channels stopped-event-access))))))
+      (is (= nil (:datomic-uri stopped-event-access)))
+      (is (= nil (:schema-path stopped-event-access))))))
 
 
 (deftest system-component-properties
@@ -100,5 +101,7 @@
              (receive-from event-access)))
 
       (send-to event-access {:topic :unknown-stuff})
-      (is (= {:topic :event-access/unkown-topic :payload {:topic :unknown-stuff}}
+      (is (= {:topic   :tx/rejected
+              :payload {:message {:topic :unknown-stuff}
+                        :reason  :event-access/unkown-topic}}
              (receive-from event-access))))))
