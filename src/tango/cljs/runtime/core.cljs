@@ -229,9 +229,7 @@
                        :onClick   (fn [e]
                                     (om/transact!
                                       this
-                                      `[(class/save
-                                          {:class/id ~(:class/id selected-class)
-                                           :class/name ~(:class/name selected-class)})
+                                      `[(class/save {:class ~selected-class})
                                         (app/select-page {:selected-page :classes})
                                         :app/selected-page]))}
                   "Save")))))
@@ -313,7 +311,7 @@
       (log "ClassView")
       (log selected)
       (dom/div nil
-        (dom/h2 {:className "sub-header"} "Klasser")
+        (dom/h2 {:className "sub-header"} "Classes")
         (dom/div nil
           ;(dom/button #js {:onClick #(om/transact!
           ;                            reconciler

@@ -62,19 +62,21 @@
 ;; Classes
 
 (defmethod mutate 'class/save
-  [{:keys [state ast]} _ {:keys [class/name class/id] :as updated-class}]
+  [{:keys [state ast]} _ {:keys [] :as params}]
   {:value   {:keys []}
    :action  (fn []
-              ; TODO - normalize with Om instead
-              (swap! state (fn [current]
-                             (let [classes-pre-updated
-                                   (filter #(not= (:class/id %) id)
-                                           (:competition/classes
-                                             (:app/selected-competition current)))]
-                               (update-in current [:app/selected-competition :competition/classes]
-                                          #(conj classes-pre-updated updated-class))))))
+              (let [updated-class (:class params)
+                    id (:class/id updated-class)]
+                ; TODO - normalize with Om instead
+                (swap! state (fn [current]
+                               (let [classes-pre-updated
+                                     (filter #(not= (:class/id %) id)
+                                             (:competition/classes
+                                               (:app/selected-competition current)))]
+                                 (update-in current [:app/selected-competition :competition/classes]
+                                            #(conj classes-pre-updated updated-class)))))))
    :command (assoc ast :params
-                       (merge updated-class
+                       (merge (:class params)
                               {:competition/id
                                (:competition/id (:app/selected-competition @state))}))
    })
@@ -88,12 +90,7 @@
                                         [:app/selected-competition :competition/classes]
                                         (fn [current-classes]
                                           (conj current-classes {:class/name name
-                                                                 :class/id   id}))))))
-   ;:command (assoc ast :params
-   ;                    (merge params
-   ;                           {:competition/id
-   ;                            (:competition/id (:app/selected-competition @state))}))
-   })
+                                                                 :class/id   id}))))))})
 
 (defmethod mutate 'class/delete
   [{:keys [state ast]} _ {:keys [class/id] :as params}]
