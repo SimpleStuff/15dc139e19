@@ -73,30 +73,45 @@
   [{:keys [state] :as env} key params]
   {:action (fn []
              (log/info "Select activity")
-             (async/>!! state {:topic :command :sender :http :payload [key params]}))})
+             (async/>!! state {:topic :command
+                               :sender :http
+                               :payload {:topic key
+                                         :payload params}}))})
 
 (defmethod mutate 'app/select-speaker-activity
   [{:keys [state] :as env} key params]
   {:action (fn []
              (log/info "Select Speaker activity")
-             (async/>!! state {:topic :command :sender :http :payload [key params]}))})
+             (async/>!! state {:topic :command
+                               :sender :http
+                               :payload {:topic key
+                                         :payload params}}))})
 
 (defmethod mutate 'participant/set-result
   [{:keys [state] :as env} key params]
   {:action (fn []
-             (async/>!! state {:topic :command :sender :http :payload [key params]})
+             (async/>!! state {:topic :command
+                               :sender :http
+                               :payload {:topic key
+                                         :payload params}})
              (log/info (str "Set result " key " " params)))})
 
 (defmethod mutate 'app/confirm-marks
   [{:keys [state] :as env} key params]
   {:action (fn []
-             (async/>!! state {:topic :command :sender :http :payload [key params]})
+             (async/>!! state {:topic :command
+                               :sender :http
+                               :payload {:topic key
+                                         :payload params}})
              (log/info (str "Confirm Marks " key " " params)))})
 
 (defmethod mutate 'app/set-client-info
   [{:keys [state] :as env} key params]
   {:action (fn []
-             (async/>!! state {:topic :command :sender :http :payload [key params]})
+             (async/>!! state {:topic :command
+                               :sender :http
+                               :payload {:topic key
+                                         :payload params}})
              (log/info (str "Set client info " key " " params)))})
 
 (defmethod mutate 'app/set-export-status
@@ -187,10 +202,10 @@
             ;; TODO - only support on competition
             (let [r (first (d/query-competition state query))
                   c (d/clean-data r)]
-              (log/info "QR")
-              (log/info r)
-              (log/info "CLEAN")
-              (log/info c)
+              (log/trace "Query Competition result")
+              (log/trace r)
+              (log/trace "Cleaned Query result")
+              (log/trace c)
               c)
             ;(d/clean-data (first (d/query-competition state query)))
             )})
@@ -286,7 +301,7 @@
     ;                              (:query (:params req)))})
 
     ;(parser {:state conn} (clojure.edn/read-string (:query (:params req))))
-    (log/info (str "Request Query " req))
+    (log/trace (str "Request Query " req))
     (log/info (str "Query >> " result))
     {:body {:query result}})
   )

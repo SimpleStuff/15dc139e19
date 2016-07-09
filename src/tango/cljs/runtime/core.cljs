@@ -491,9 +491,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Clients View
 (defui ClientsView
-  static om/IQuery
-  (query [_]
-    (into [] (om/get-query ClientRow)))
+  ;static om/IQuery
+  ;(query [_]
+  ;  (into [] (om/get-query ClientRow)))
   Object
   (render
     [this]
@@ -586,7 +586,7 @@
 
      {:app/selected-activities [:activity/id] }
      {:app/speaker-activities [:activity/id] }
-     {:app/clients ~(om/get-query ClientsView)}
+     {:app/clients ~(om/get-query ClientRow)}
      ])
   Object
   (render
@@ -597,8 +597,8 @@
           selected-page (:app/selected-page p)
           participants (:app/participants p)
           selected-class (:app/selected-class p)]
-      (log "Main Selected :")
-      (log selected-class)
+      (log "Main Clients :")
+      (log (:app/clients p))
       (dom/div nil
         ((om/factory MenuComponent))
         (condp = selected-page

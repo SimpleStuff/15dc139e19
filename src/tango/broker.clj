@@ -110,9 +110,12 @@
                      (log/info (str "Set Speaker Activity"))
                      (set-speaker-activity (d/create-connection datomic-storage-uri) payload))
 
-                   :else (async/>!!
-                           out-ch
-                           {:topic :rules/unkown-topic :payload {:topic topic}})
+                   :else
+                   (do
+                     (log/info (str "Rules engine unkown topic " topic))
+                     (async/>!!
+                       out-ch
+                       {:topic :rules/unkown-topic :payload {:topic topic}}))
 
                    )
             (let [[tx tx-ch] (async/alts!!
@@ -160,8 +163,8 @@
                ;; If a result is accepted it should be sent to the
                ;; "Results Access" for handling.
                (async/>!! (:in-channel rules-engine-channels)
-                          {:topic   (first payload)
-                           :payload (second payload)}))
+                          {:topic   (:topic payload)
+                           :payload (:payload payload)}))
              ;(if (= t :event-manager/create-class)
              ;  (do
              ;    (log/info "Sending class create to Event Manager")
@@ -244,12 +247,14 @@
                (merge message
                       {:topic :event-manager/query-result :payload :time-out})))
            :else
-           (let [[unknown ch] (async/alts!!
-                               [[client-in-channel
-                                 {:sender sender :topic :broker/unknown-topic :payload {:topic topic}}]
-                                (async/timeout 500)])]
-             (when (nil? unknown)
-               {:topic :broker/unknown-topic :payload {:topic topic}})))))
+           (do
+             (log/info (str "Unknown topic " topic))
+             (let [[unknown ch] (async/alts!!
+                                  [[client-in-channel
+                                    {:sender sender :topic :broker/unknown-topic :payload {:topic topic}}]
+                                   (async/timeout 500)])]
+               (when (nil? unknown)
+                 {:topic :broker/unknown-topic :payload {:topic topic}}))))))
 
 ;; TODO - mapping :out-channels is not a greate idea, if we get a nil all msg procs
 ;; dies, fixit damn it!
