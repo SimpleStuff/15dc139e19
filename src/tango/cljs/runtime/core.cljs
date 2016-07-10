@@ -407,17 +407,30 @@
         (dom/h2 {:className "sub-header"} (str "Select Participants for Class "
                                                (:class/name selected-class)))
         (dom/div nil
-          (dom/button nil "Back")
-          (dom/button nil "Done"))
-        (map #(dom/button #js {:className (str "col-sm-6 btn" (if (selected? %)
+          (dom/button #js {:className (str "btn btn-default")
+                           :onClick   #()}
+                      (dom/span #js {:className "glyphicon glyphicon-arrow-left"}))
+
+          (dom/button #js {:className (str "btn btn-default")
+                           :onClick   #(om/transact! this `[(app/select-page {:selected-page :create-class})
+                                                            :app/selected-page])}
+                      (dom/span #js {:className "glyphicon glyphicon-ok"})))
+
+        (map #(dom/button #js {:className (str "col-sm-3 btn" (if (selected? %)
                                                                 " btn-primary"
                                                                 " btn-default"))
-                               :onClick (fn [e]
-                                          (om/transact!
-                                            reconciler
-                                            `[(class/update
-                                                {:class/starting ~(conj starting %)})
-                                              :app/selected-class]))}
+                               :onClick   (fn [e]
+                                            (let [updated-starting
+                                                  (if (selected? %)
+                                                    (filter (fn [p]
+                                                              (not= (:participant/id p) (:participant/id %)))
+                                                            starting)
+                                                    (conj starting %))]
+                                              (om/transact!
+                                                reconciler
+                                                `[(class/update
+                                                    {:class/starting ~updated-starting})
+                                                  :app/selected-class])))}
                           (str (:participant/number %) " - " (:participant/name %)))
              participants)))))
 
