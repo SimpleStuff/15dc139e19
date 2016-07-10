@@ -559,6 +559,51 @@
   @(d/transact conn [[:db/retract [:competition/id competition-id]
                       :competition/classes [:class/id class-id]]]))
 
+;(d/q '[:find [(pull ?e selector) ...]
+;       :in $ selector
+;       :where
+;       [?e :class/id]]
+;     (d/db conn) query)
+
+(defn clean-class [c]
+  (clojure.walk/postwalk
+    (fn [form]
+      (cond
+        ;; fix lookup ref
+        (:participant/id form) {:db/id [:participant/id (:participant/id form)]}
+
+        :else form))
+    c))
+
+(defn do-stuff [class-id x y]
+  (let [[to-retract to-add _] (clojure.data/diff x y)
+        filter-nil (fn [v] (vec (filter #(not (nil? %)) v)))]
+    (into (mapv (fn [v]
+                  ;(when-not (= (key v) :db/id))
+                  [:db/retract [:class/id class-id]
+                   (key v)
+                   (if (vector? (val v))
+                     (filter-nil (val v))
+                     (val v))]) (filter-nil to-retract))
+          (mapv (fn [v]
+                  (when-not (= (key v) :db/id)
+                    [:db/add [:class/id class-id]
+                     (key v)
+                     (if (vector? (val v))
+                       (filter-nil (val v))
+                       (val v))])) (filter-nil to-add)))
+    ))
+
+(defn update-class [conn class]
+  (let [existing (first (d/q '[:find [(pull ?e [* {:class/starting [:participant/id]}])]
+                               :in $ ?id
+                               :where [?e :class/id ?id]]
+                             (d/db conn) (:class/id class)))
+        tx (do-stuff (:class/id class) existing (clean-class class))]
+    tx
+    ;@(d/transact conn (fix-id tx))
+    ))
+
 ;(defn deselect-round [conn activity-id]
 ;  @(d/transact conn [[:db/retract [:app/id 1]
 ;                      :app/selected-activities [:activity/id activity-id]]]))

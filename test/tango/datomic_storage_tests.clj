@@ -269,4 +269,87 @@
                                                                 :class/name]}])
              [{:competition/id #uuid "1ace2915-42dc-4f58-8017-dcb79f958463"
                :competition/name "Test Competition"
-               :competition/classes [class-tx-2]}])))))
+               :competition/classes [class-tx-2]}]))))
+
+  (testing "Update of a class"
+    (let [_ (ds/delete-storage mem-uri)
+          _ (ds/create-storage mem-uri schema-tx)
+          conn (ds/create-connection mem-uri)
+          competition-tx {:competition/id #uuid "1ace2915-42dc-4f58-8017-dcb79f958463"
+                          :competition/name "Test Competition"}
+          class-tx-1 {:class/id #uuid "60edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"
+                      :class/name "Test Class"
+                      :class/starting [{:participant/name "A"
+                                        :participant/id #uuid "10edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}
+                                       {:participant/name "B"
+                                        :participant/id #uuid "20edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}]}
+
+          class-tx-2 {:class/id #uuid "60edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"
+                      :class/name "Test Class Updated"
+                      :class/starting [{:participant/name "A"
+                                        :participant/id #uuid "10edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}
+                                       {:participant/name "C"
+                                        :participant/id #uuid "30edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}]}
+          ]
+      (ds/create-competition conn competition-tx)
+      (ds/create-class conn (:competition/id competition-tx) class-tx-1)
+      ;(ds/create-class conn (:competition/id competition-tx) class-tx-2)
+
+      ;(is (= (ds/query-competition conn [:competition/name
+      ;                                   :competition/id
+      ;                                   {:competition/classes
+      ;                                    [:class/id
+      ;                                     :class/name
+      ;                                     {:class/starting [:participant/id :participant/name]}]}])
+      ;       [{:competition/id #uuid "1ace2915-42dc-4f58-8017-dcb79f958463"
+      ;         :competition/name "Test Competition"
+      ;         :competition/classes [class-tx-2]}]))
+
+      (is (= (ds/update-class conn class-tx-2)
+
+             0))
+
+      ))
+  )
+
+(def class-tx-1 {:class/id #uuid "60edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"
+                 :class/name "Test Class"
+                 :class/starting [{:participant/name "A"
+                                   :participant/id #uuid "10edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}
+                                  {:participant/name "B"
+                                   :participant/id #uuid "20edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}]})
+
+(def class-tx-2 {:class/id #uuid "60edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"
+                 :class/name "Test Class Updated"
+                 :class/starting [{:participant/name "A"
+                                   :participant/id #uuid "10edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}
+                                  {:participant/name "C"
+                                   :participant/id #uuid "30edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}]})
+
+(defn do-stuff [class-id x y]
+  (let [[to-retract to-add _] (clojure.data/diff x y)
+        filter-nil (fn [v] (vec (filter #(not (nil? %)) v)))]
+    (into (mapv (fn [v] [:db/retract [:class/id class-id]
+                         (key v)
+                         (if (vector? (val v))
+                           (filter-nil (val v))
+                           (val v))]) to-retract)
+          (mapv (fn [v] [:db/add [:class/id class-id]
+                         (key v)
+                         (if (vector? (val v))
+                           (filter-nil (val v))
+                           (val v))]) to-add))))
+
+(do-stuff (:class/id class-tx-1) class-tx-1 class-tx-2)
+
+(defn clean-class [c]
+  (clojure.walk/postwalk
+    (fn [form]
+      (cond
+        ;; fix lookup ref
+        (:participant/id form) {:db/id [:participant/id (:participant/id form)]}
+
+        :else form))
+    c))
+
+(clean-class class-tx-2)
