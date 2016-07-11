@@ -183,11 +183,16 @@
 (defui CreateClassView
   static om/IQuery
   (query [_]
-    [:class/name :class/id])
+    [:class/name :class/id {:class/starting [:participant/number]}
+     {:class/adjudicator-panel [:adjudicator-panel/id :adjudicator-panel/name]}])
   Object
   (render
     [this]
-    (let [selected-class (om/props this)]
+    (let [;selected-class (:selected-class (om/props this))
+          selected-class (om/props this)
+          {:keys [panels]} (om/get-computed this)
+          ;panels (:adjudicator-panels (om/props this))
+          ]
       ;; - Class name
       ;; - Adj Panel
       ;; - Dances
@@ -212,13 +217,56 @@
                                                                     :class/name ~(.. e -target -value)})]))})))
 
             ;; Adjudicator Panel
+            (dom/div #js {:className "form-group"}
+              (dom/label #js {:className "col-sm-2 control-label"} "Adjudicator Panel")
+              (dom/div #js {:className "col-sm-8"}
+                (dom/div #js {:className "dropdown"}
+                  (dom/button #js {:className   "btn btn-default dropdown-toggle"
+                                   :data-toggle "dropdown"} ""
+                              (dom/span #js {:className "selection"}
+                                (if (:class/adjudicator-panel selected-class)
+                                  (:adjudicator-panel/name (:class/adjudicator-panel selected-class))
+                                  "Select"))
+                              (dom/span #js {:className "caret"}))
+                  (apply dom/ul #js {:className "dropdown-menu" :role "menu"}
+                         (map (fn [panel]
+                                (dom/li #js {:role    "presentation"
+                                             :onClick #(let [selected-panel
+                                                             (first
+                                                               (filter
+                                                                 (fn [p]
+                                                                   (= (:adjudicator-panel/id p)
+                                                                      (:adjudicator-panel/id panel)))
+                                                                 panels))]
+                                                        (log (str "Selected panel " selected-panel))
+                                                        (om/transact!
+                                                          this
+                                                          `[(class/update
+                                                              {:class/adjudicator-panel ~selected-panel})
+                                                            :app/selected-class]))}
+                                  (dom/a #js {:role "menuitem"} (:adjudicator-panel/name panel))))
+                              (sort-by :adjudicator-panel/name panels))))))
+
+            ;; Dances
 
             ;; Participants
             (dom/div #js {:className "form-group"}
               (dom/label #js {:className "col-sm-2 control-label"} "Participants")
               (dom/div #js {:className "col-sm-8"}
-                (dom/ul nil
-                  (dom/li nil "A"))))
+                (dom/div nil
+                  (dom/button #js {:className "btn btn-default"
+                                   :onClick   (fn [e]
+                                                (om/transact!
+                                                  reconciler
+                                                  `[(app/select-page {:selected-page :edit-class-participants})
+
+                                                    :app/selected-page]))}
+                              (dom/span #js {:className "glyphicon glyphicon-plus"}))
+                  (dom/p nil (str "Starting : " (count (:class/starting selected-class)))))
+                ;(dom/ul nil)
+                (map #(dom/button #js {:className "col-sm-6 btn btn-default"}
+                                  (str (:participant/number %) " - " (:participant/name %)))
+                     (sort-by :participant/number (:class/starting selected-class)))))
 
             ;; Create
             (dom/div #js {:className "form-group"}
@@ -269,12 +317,15 @@
 (defui ClassRow
   static om/IQuery
   (query [_]
-    '[:class/position :class/name :class/remaining :class/starting :class/id
+    '[:class/position :class/name :class/remaining :class/id
+      ;; TODO - in a normalized view only participant/id should be good
+      {:class/starting [:participant/number :participant/name :participant/id]}
       {:class/rounds
        [{:round/status [*]}
        {:round/type [*]}]}
      {:class/adjudicator-panel
-      [:adjudicator-panel/name]}
+      [:adjudicator-panel/name
+       :adjudicator-panel/id]}
      {:class/dances [*]}])
   Object
   (render [this]
@@ -366,6 +417,56 @@
                                                                    false)})) classes))
           )))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; SelectClassParticipantsView
+(defui SelectClassParticipantsView
+  static om/IQuery
+  (query [_]
+    [])
+  Object
+  (render
+    [this]
+    (let [participants (sort-by :participant/number (:participants (om/props this)))
+          selected-class (:selected-class (om/props this))
+          starting (:class/starting selected-class)
+          selected? (fn [participant]
+                      (if (seq (filter
+                                 #(= (:participant/id %) (:participant/id participant))
+                                 starting))
+                        true
+                        false))]
+      (log "SelectedClassParticipantsView")
+      (log selected-class)
+      (dom/div #js {:className "col-sm-12"}
+        (dom/h2 {:className "sub-header"} (str "Select Participants for Class "
+                                               (:class/name selected-class)))
+        (dom/div nil
+          (dom/button #js {:className (str "btn btn-default")
+                           :onClick   #()}
+                      (dom/span #js {:className "glyphicon glyphicon-arrow-left"}))
+
+          (dom/button #js {:className (str "btn btn-default")
+                           :onClick   #(om/transact! this `[(app/select-page {:selected-page :create-class})
+                                                            :app/selected-page])}
+                      (dom/span #js {:className "glyphicon glyphicon-ok"})))
+
+        (map #(dom/button #js {:className (str "col-sm-3 btn" (if (selected? %)
+                                                                " btn-primary"
+                                                                " btn-default"))
+                               :onClick   (fn [e]
+                                            (let [updated-starting
+                                                  (if (selected? %)
+                                                    (filter (fn [p]
+                                                              (not= (:participant/id p) (:participant/id %)))
+                                                            starting)
+                                                    (conj starting %))]
+                                              (om/transact!
+                                                reconciler
+                                                `[(class/update
+                                                    {:class/starting ~updated-starting})
+                                                  :app/selected-class])))}
+                          (str (:participant/number %) " - " (:participant/name %)))
+             participants)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Import/Export Component
@@ -473,14 +574,18 @@
                           [(dom/li #js {:className "dropdown-header"}
                              (str "Panel - " (:adjudicator-panel/name panel)))
                            (map (fn [adjudicator]
-                                  (dom/li #js {:role "presentation"
-                                               :onClick     ;#(log (str "Change ajd to " (:adjudicator/name adjudicator)))
-                                                     #(om/transact! reconciler `[(app/set-client-info
-                                                                             {:client/id   ~client-id
-                                                                              :client/name ~client-name
-                                                                              :client/user {:adjudicator/id   ~(:adjudicator/id adjudicator)
-                                                                                            :adjudicator/name ~(:adjudicator/name adjudicator)}})
-                                                                           :app/clients])
+                                  (dom/li
+                                    #js {:role "presentation"
+                                         :onClick     ;#(log (str "Change ajd to " (:adjudicator/name adjudicator)))
+                                               #(om/transact!
+                                                 reconciler
+                                                 `[(app/set-client-info
+                                                     {:client/id   ~client-id
+                                                      :client/name ~client-name
+                                                      :client/user
+                                                                   {:adjudicator/id   ~(:adjudicator/id adjudicator)
+                                                                    :adjudicator/name ~(:adjudicator/name adjudicator)}})
+                                                   :app/clients])
                                                }
                                     (dom/a #js {:role "menuitem"} (:adjudicator/name adjudicator))))
                                 (:adjudicator-panel/adjudicators panel))])
@@ -569,6 +674,7 @@
        [:competition/name :competition/location :competition/id
         {:competition/classes ~(om/get-query ClassRow)}
         {:competition/panels [:adjudicator-panel/name
+                              :adjudicator-panel/id
                               {:adjudicator-panel/adjudicators
                                [:adjudicator/id
                                 :adjudicator/name]}]}
@@ -596,9 +702,10 @@
           status (:app/status p)
           selected-page (:app/selected-page p)
           participants (:app/participants p)
+          panels (:competition/panels selected-competition)
           selected-class (:app/selected-class p)]
-      (log "Main Clients :")
-      (log (:app/clients p))
+      (log "Main Selected :")
+      (log selected-class)
       (dom/div nil
         ((om/factory MenuComponent))
         (condp = selected-page
@@ -611,10 +718,16 @@
                      ;(om/computed (:competition/classes selected-competition)
                      ;                       {:selected selected-class})
                      {:classes (:competition/classes selected-competition)
-                      :selected (:app/selected-class p)}
+                      :selected selected-class}
                      )
 
-          :create-class ((om/factory CreateClassView) (:app/selected-class p))
+          :create-class ((om/factory CreateClassView)
+                          ;                selected-class
+                          (om/computed selected-class {:panels panels}))
+
+          :edit-class-participants ((om/factory SelectClassParticipantsView)
+                                     {:participants participants
+                                      :selected-class (:app/selected-class p)})
 
           :time-schedule ((om/factory ScheduleView) {:competition/activities
                                                      (:competition/activities selected-competition)

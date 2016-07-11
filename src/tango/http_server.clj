@@ -44,7 +44,13 @@
   {:action (fn []
              (let [message {:topic   :event-manager/create-class
                             :payload {:competition/id    (:competition/id params)
-                                      :competition/class (select-keys params [:class/name :class/id])}}]
+                                      :competition/class
+                                                         (select-keys
+                                                           params
+                                                           [:class/name
+                                                            :class/id
+                                                            :class/starting
+                                                            :class/adjudicator-panel])}}]
                (async/>!! state {:topic :command :sender :http :payload message})
                (log/info (str "Class Save " key " " params))))})
 
