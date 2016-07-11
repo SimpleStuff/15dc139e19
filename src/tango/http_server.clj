@@ -49,7 +49,8 @@
                                                            params
                                                            [:class/name
                                                             :class/id
-                                                            :class/starting])}}]
+                                                            :class/starting
+                                                            :class/adjudicator-panel])}}]
                (async/>!! state {:topic :command :sender :http :payload message})
                (log/info (str "Class Save " key " " params))))})
 

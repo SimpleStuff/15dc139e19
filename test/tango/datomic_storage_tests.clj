@@ -235,7 +235,9 @@
           competition-tx {:competition/id #uuid "1ace2915-42dc-4f58-8017-dcb79f958463"
                           :competition/name "Test Competition"}
           class-tx {:class/id #uuid "60edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"
-                    :class/name "Test Class"}]
+                    :class/name "Test Class"
+                    :class/adjudicator-panel {:adjudicator-panel/name "1"
+                                              :adjudicator-panel/id #uuid "11edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}}]
       (ds/create-competition conn competition-tx)
       (ds/transact-class conn (:competition/id competition-tx) class-tx)
       (is (= (ds/query-competition conn [:competition/name
@@ -279,6 +281,50 @@
                           :competition/name "Test Competition"}
           class-tx-1 {:class/id #uuid "60edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"
                       :class/name "Test Class"
+                      :class/adjudicator-panel {:adjudicator-panel/name "1"
+                                                :adjudicator-panel/id #uuid "11edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}
+                      :class/starting [{:participant/name "A"
+                                        :participant/id #uuid "10edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}
+                                       {:participant/name "B"
+                                        :participant/id #uuid "20edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}
+                                       {:participant/name "C"
+                                        :participant/id #uuid "30edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}]}
+
+          class-tx-2 {:class/id #uuid "60edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"
+                      :class/name "Test Class Updated"
+                      :class/adjudicator-panel {:adjudicator-panel/name "2"
+                                                :adjudicator-panel/id #uuid "12edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}
+                      :class/starting [{:participant/name "A"
+                                        :participant/id #uuid "10edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}
+                                       {:participant/name "D"
+                                        :participant/id #uuid "40edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}]}]
+      (ds/create-competition conn competition-tx)
+      (ds/transact-class conn (:competition/id competition-tx) class-tx-1)
+      (ds/transact-class conn (:competition/id competition-tx) class-tx-2)
+
+      (is (= (ds/query-competition conn [:competition/name
+                                         :competition/id
+                                         {:competition/classes
+                                          [:class/id
+                                           :class/name
+                                           {:class/starting [:participant/id
+                                                             :participant/name]}
+                                           {:class/adjudicator-panel [:adjudicator-panel/id
+                                                                      :adjudicator-panel/name]}]}])
+             [{:competition/id      #uuid "1ace2915-42dc-4f58-8017-dcb79f958463"
+               :competition/name    "Test Competition"
+               :competition/classes [class-tx-2]}]))))
+
+  (testing "Update of a class should merge attributes not included"
+    (let [_ (ds/delete-storage mem-uri)
+          _ (ds/create-storage mem-uri schema-tx)
+          conn (ds/create-connection mem-uri)
+          competition-tx {:competition/id #uuid "1ace2915-42dc-4f58-8017-dcb79f958463"
+                          :competition/name "Test Competition"}
+          class-tx-1 {:class/id #uuid "60edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"
+                      :class/name "Test Class"
+                      :class/adjudicator-panel {:adjudicator-panel/name "1"
+                                                :adjudicator-panel/id #uuid "11edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}
                       :class/starting [{:participant/name "A"
                                         :participant/id #uuid "10edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}
                                        {:participant/name "B"
@@ -302,10 +348,15 @@
                                           [:class/id
                                            :class/name
                                            {:class/starting [:participant/id
-                                                             :participant/name]}]}])
+                                                             :participant/name]}
+                                           {:class/adjudicator-panel [:adjudicator-panel/id
+                                                                      :adjudicator-panel/name]}]}])
              [{:competition/id #uuid "1ace2915-42dc-4f58-8017-dcb79f958463"
                :competition/name "Test Competition"
-               :competition/classes [class-tx-2]}]))))
+               :competition/classes [(assoc class-tx-2
+                                       :class/adjudicator-panel
+                                       {:adjudicator-panel/name "1"
+                                        :adjudicator-panel/id #uuid "11edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"})]}]))))
 
   (testing "Create and Update can be the same operation"
     (let [_ (ds/delete-storage mem-uri)
@@ -400,7 +451,7 @@
                                         :participant/id #uuid "40edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}]}]
       (is (= (ds/create-update-retractions
                class-tx-1
-               class-tx-2
+               (merge class-tx-1 class-tx-2)
                (fn [class] (update-in class [:class/starting] #(vec (sort-by :participant/id %)))))
              [[:db/retract 123
                :class/starting [:participant/id #uuid "20edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"]]

@@ -566,6 +566,8 @@
         ;; fix lookup ref
         (:participant/id form) [:participant/id (:participant/id form)]
 
+        (:adjudicator-panel/id form) [:adjudicator-panel/id (:adjudicator-panel/id form)]
+
         :else form))
     c))
 
@@ -576,7 +578,7 @@
 (defn create-update-retractions [old new pre-diff-fn]
   (let [[to-retract _ _] (clojure.data/diff (pre-diff-fn old) (pre-diff-fn new))
         filter-nil (fn [v] (vec (filter #(not (nil? %)) v)))
-        e-id (:db/id to-retract)]
+        e-id (:db/id old)]
     (apply concat
            (filter-nil
              (map clean-class
@@ -587,14 +589,16 @@
                         [(create-retraction e-id (key stuff) (val stuff))]))))))))
 
 (defn transact-class [conn competition-id class]
-  (let [existing (first (d/q '[:find [(pull ?e [* {:class/starting [:participant/id]}])]
+  (let [existing (first (d/q '[:find [(pull ?e [*
+                                                {:class/starting [:participant/id]}
+                                                {:class/adjudicator-panel [:adjudicator-panel/id]}])]
                                :in $ ?id
                                :where [?e :class/id ?id]]
                              (d/db conn) (:class/id class)))
         sort-for-diff (fn [class]
                         (update-in class [:class/starting]
                                    #(set (map (fn [x] (select-keys x [:participant/id])) %))))
-        retract-tx (create-update-retractions existing class sort-for-diff)]
+        retract-tx (create-update-retractions existing (merge existing class) sort-for-diff)]
     (log/info (str "Existing : " existing))
     (log/info (str "Update to : " class))
     (log/info (str "Retract tx : " (into [] retract-tx)))

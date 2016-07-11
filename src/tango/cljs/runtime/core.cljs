@@ -231,19 +231,21 @@
                   (apply dom/ul #js {:className "dropdown-menu" :role "menu"}
                          (map (fn [panel]
                                 (dom/li #js {:role    "presentation"
-                                             :onClick #(om/transact!
-                                                        this
-                                                        `[(class/update
-                                                            {:class/adjudicator-panel
-                                                             ~(first
-                                                                (filter
-                                                                  (fn [p]
-                                                                    (= (:adjudicator-panel/id p)
-                                                                       (:adjudicator-panel/id panel)))
-                                                                  panels))})
-                                                          :app/selected-class])}
+                                             :onClick #(let [selected-panel
+                                                             (first
+                                                               (filter
+                                                                 (fn [p]
+                                                                   (= (:adjudicator-panel/id p)
+                                                                      (:adjudicator-panel/id panel)))
+                                                                 panels))]
+                                                        (log (str "Selected panel " selected-panel))
+                                                        (om/transact!
+                                                          this
+                                                          `[(class/update
+                                                              {:class/adjudicator-panel ~selected-panel})
+                                                            :app/selected-class]))}
                                   (dom/a #js {:role "menuitem"} (:adjudicator-panel/name panel))))
-                              panels)))))
+                              (sort-by :adjudicator-panel/name panels))))))
 
             ;; Dances
 
@@ -322,7 +324,8 @@
        [{:round/status [*]}
        {:round/type [*]}]}
      {:class/adjudicator-panel
-      [:adjudicator-panel/name]}
+      [:adjudicator-panel/name
+       :adjudicator-panel/id]}
      {:class/dances [*]}])
   Object
   (render [this]
@@ -671,6 +674,7 @@
        [:competition/name :competition/location :competition/id
         {:competition/classes ~(om/get-query ClassRow)}
         {:competition/panels [:adjudicator-panel/name
+                              :adjudicator-panel/id
                               {:adjudicator-panel/adjudicators
                                [:adjudicator/id
                                 :adjudicator/name]}]}
