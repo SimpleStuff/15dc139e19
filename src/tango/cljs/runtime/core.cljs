@@ -183,11 +183,16 @@
 (defui CreateClassView
   static om/IQuery
   (query [_]
-    [:class/name :class/id {:class/starting [:participant/number]}])
+    [:class/name :class/id {:class/starting [:participant/number]}
+     {:class/adjudicator-panel [:adjudicator-panel/id :adjudicator-panel/name]}])
   Object
   (render
     [this]
-    (let [selected-class (om/props this)]
+    (let [;selected-class (:selected-class (om/props this))
+          selected-class (om/props this)
+          {:keys [panels]} (om/get-computed this)
+          ;panels (:adjudicator-panels (om/props this))
+          ]
       ;; - Class name
       ;; - Adj Panel
       ;; - Dances
@@ -212,6 +217,33 @@
                                                                     :class/name ~(.. e -target -value)})]))})))
 
             ;; Adjudicator Panel
+            (dom/div #js {:className "form-group"}
+              (dom/label #js {:className "col-sm-2 control-label"} "Adjudicator Panel")
+              (dom/div #js {:className "col-sm-8"}
+                (dom/div #js {:className "dropdown"}
+                  (dom/button #js {:className   "btn btn-default dropdown-toggle"
+                                   :data-toggle "dropdown"} ""
+                              (dom/span #js {:className "selection"}
+                                (if (:class/adjudicator-panel selected-class)
+                                  (:adjudicator-panel/name (:class/adjudicator-panel selected-class))
+                                  "Select"))
+                              (dom/span #js {:className "caret"}))
+                  (apply dom/ul #js {:className "dropdown-menu" :role "menu"}
+                         (map (fn [panel]
+                                (dom/li #js {:role    "presentation"
+                                             :onClick #(om/transact!
+                                                        this
+                                                        `[(class/update
+                                                            {:class/adjudicator-panel
+                                                             ~(first
+                                                                (filter
+                                                                  (fn [p]
+                                                                    (= (:adjudicator-panel/id p)
+                                                                       (:adjudicator-panel/id panel)))
+                                                                  panels))})
+                                                          :app/selected-class])}
+                                  (dom/a #js {:role "menuitem"} (:adjudicator-panel/name panel))))
+                              panels)))))
 
             ;; Dances
 
@@ -539,14 +571,18 @@
                           [(dom/li #js {:className "dropdown-header"}
                              (str "Panel - " (:adjudicator-panel/name panel)))
                            (map (fn [adjudicator]
-                                  (dom/li #js {:role "presentation"
-                                               :onClick     ;#(log (str "Change ajd to " (:adjudicator/name adjudicator)))
-                                                     #(om/transact! reconciler `[(app/set-client-info
-                                                                             {:client/id   ~client-id
-                                                                              :client/name ~client-name
-                                                                              :client/user {:adjudicator/id   ~(:adjudicator/id adjudicator)
-                                                                                            :adjudicator/name ~(:adjudicator/name adjudicator)}})
-                                                                           :app/clients])
+                                  (dom/li
+                                    #js {:role "presentation"
+                                         :onClick     ;#(log (str "Change ajd to " (:adjudicator/name adjudicator)))
+                                               #(om/transact!
+                                                 reconciler
+                                                 `[(app/set-client-info
+                                                     {:client/id   ~client-id
+                                                      :client/name ~client-name
+                                                      :client/user
+                                                                   {:adjudicator/id   ~(:adjudicator/id adjudicator)
+                                                                    :adjudicator/name ~(:adjudicator/name adjudicator)}})
+                                                   :app/clients])
                                                }
                                     (dom/a #js {:role "menuitem"} (:adjudicator/name adjudicator))))
                                 (:adjudicator-panel/adjudicators panel))])
@@ -662,9 +698,10 @@
           status (:app/status p)
           selected-page (:app/selected-page p)
           participants (:app/participants p)
+          panels (:competition/panels selected-competition)
           selected-class (:app/selected-class p)]
-      (log "Main Clients :")
-      (log (:app/clients p))
+      (log "Main Selected :")
+      (log selected-class)
       (dom/div nil
         ((om/factory MenuComponent))
         (condp = selected-page
@@ -677,10 +714,12 @@
                      ;(om/computed (:competition/classes selected-competition)
                      ;                       {:selected selected-class})
                      {:classes (:competition/classes selected-competition)
-                      :selected (:app/selected-class p)}
+                      :selected selected-class}
                      )
 
-          :create-class ((om/factory CreateClassView) (:app/selected-class p))
+          :create-class ((om/factory CreateClassView)
+                          ;                selected-class
+                          (om/computed selected-class {:panels panels}))
 
           :edit-class-participants ((om/factory SelectClassParticipantsView)
                                      {:participants participants
