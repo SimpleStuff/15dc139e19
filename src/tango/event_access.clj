@@ -30,7 +30,7 @@
 
                    [:event-access/create-class p]
                    (if (:competition/id p)
-                     (let [_ (d/create-class conn (:competition/id p) (:competition/class p))]
+                     (let [_ (d/transact-class conn (:competition/id p) (:competition/class p))]
                        (async/put! out-channel {:topic :tx/processed :payload topic}))
                      (async/put! out-channel {:topic :tx/rejected
                                               :payload {:reason :invalid-argument

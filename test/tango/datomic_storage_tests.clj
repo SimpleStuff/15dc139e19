@@ -237,7 +237,7 @@
           class-tx {:class/id #uuid "60edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"
                     :class/name "Test Class"}]
       (ds/create-competition conn competition-tx)
-      (ds/create-class conn (:competition/id competition-tx) class-tx)
+      (ds/transact-class conn (:competition/id competition-tx) class-tx)
       (is (= (ds/query-competition conn [:competition/name
                                          :competition/id
                                          {:competition/classes [:class/id
@@ -258,8 +258,8 @@
           class-tx-2 {:class/id #uuid "666dcf5d-1a8b-423e-9d6b-5cda00ff1b6e"
                       :class/name "Test Class"}]
       (ds/create-competition conn competition-tx)
-      (ds/create-class conn (:competition/id competition-tx) class-tx-1)
-      (ds/create-class conn (:competition/id competition-tx) class-tx-2)
+      (ds/transact-class conn (:competition/id competition-tx) class-tx-1)
+      (ds/transact-class conn (:competition/id competition-tx) class-tx-2)
       (ds/delete-class conn
                        (:competition/id competition-tx)
                        (:class/id class-tx-1))
@@ -282,74 +282,155 @@
                       :class/starting [{:participant/name "A"
                                         :participant/id #uuid "10edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}
                                        {:participant/name "B"
-                                        :participant/id #uuid "20edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}]}
+                                        :participant/id #uuid "20edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}
+                                       {:participant/name "C"
+                                        :participant/id #uuid "30edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}]}
 
           class-tx-2 {:class/id #uuid "60edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"
                       :class/name "Test Class Updated"
                       :class/starting [{:participant/name "A"
                                         :participant/id #uuid "10edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}
+                                       {:participant/name "D"
+                                        :participant/id #uuid "40edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}]}]
+      (ds/create-competition conn competition-tx)
+      (ds/transact-class conn (:competition/id competition-tx) class-tx-1)
+      (ds/transact-class conn (:competition/id competition-tx) class-tx-2)
+
+      (is (= (ds/query-competition conn [:competition/name
+                                         :competition/id
+                                         {:competition/classes
+                                          [:class/id
+                                           :class/name
+                                           {:class/starting [:participant/id
+                                                             :participant/name]}]}])
+             [{:competition/id #uuid "1ace2915-42dc-4f58-8017-dcb79f958463"
+               :competition/name "Test Competition"
+               :competition/classes [class-tx-2]}]))))
+
+  (testing "Create and Update can be the same operation"
+    (let [_ (ds/delete-storage mem-uri)
+          _ (ds/create-storage mem-uri schema-tx)
+          conn (ds/create-connection mem-uri)
+          competition-tx {:competition/id #uuid "1ace2915-42dc-4f58-8017-dcb79f958463"
+                          :competition/name "Test Competition"}
+          class-tx-1 {:class/id #uuid "60edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"
+                      :class/name "Test Class"
+                      :class/starting [{:participant/name "A"
+                                        :participant/id #uuid "10edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}
+                                       {:participant/name "B"
+                                        :participant/id #uuid "20edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}
                                        {:participant/name "C"
                                         :participant/id #uuid "30edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}]}
-          ]
+
+          class-tx-2 {:class/id #uuid "60edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"
+                      :class/name "Test Class Updated"
+                      :class/starting [{:participant/name "A"
+                                        :participant/id #uuid "10edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}
+                                       {:participant/name "D"
+                                        :participant/id #uuid "40edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}]}]
       (ds/create-competition conn competition-tx)
-      (ds/create-class conn (:competition/id competition-tx) class-tx-1)
-      ;(ds/create-class conn (:competition/id competition-tx) class-tx-2)
 
-      ;(is (= (ds/query-competition conn [:competition/name
-      ;                                   :competition/id
-      ;                                   {:competition/classes
-      ;                                    [:class/id
-      ;                                     :class/name
-      ;                                     {:class/starting [:participant/id :participant/name]}]}])
-      ;       [{:competition/id #uuid "1ace2915-42dc-4f58-8017-dcb79f958463"
-      ;         :competition/name "Test Competition"
-      ;         :competition/classes [class-tx-2]}]))
+      (ds/transact-class conn (:competition/id competition-tx) class-tx-1)
 
-      (is (= (ds/update-class conn class-tx-2)
+      (is (= (ds/query-competition conn [:competition/name
+                                         :competition/id
+                                         {:competition/classes
+                                          [:class/id
+                                           :class/name
+                                           {:class/starting [:participant/id
+                                                             :participant/name]}]}])
+             [{:competition/id #uuid "1ace2915-42dc-4f58-8017-dcb79f958463"
+               :competition/name "Test Competition"
+               :competition/classes [class-tx-1]}]))))
 
-             0))
+  (testing "Order of references should not matter"
+    (let [_ (ds/delete-storage mem-uri)
+          _ (ds/create-storage mem-uri schema-tx)
+          conn (ds/create-connection mem-uri)
+          competition-tx {:competition/id   #uuid "1ace2915-42dc-4f58-8017-dcb79f958463"
+                          :competition/name "Test Competition"}
+          class-tx-1 {:class/id       #uuid "60edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"
+                      :class/name     "Test Class"
+                      :class/starting [{:participant/id   #uuid "10edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}
+                                       {:participant/id   #uuid "30edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}
+                                       {:participant/id   #uuid "20edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}]}
 
-      ))
-  )
+          class-tx-2 {:class/id       #uuid "60edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"
+                      :class/name     "Test Class Updated"
+                      :class/starting [{:participant/id   #uuid "20edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}
+                                       {:participant/id   #uuid "10edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}]}]
+      (ds/create-competition conn competition-tx)
 
-(def class-tx-1 {:class/id #uuid "60edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"
-                 :class/name "Test Class"
-                 :class/starting [{:participant/name "A"
-                                   :participant/id #uuid "10edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}
-                                  {:participant/name "B"
-                                   :participant/id #uuid "20edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}]})
+      (ds/transact-class conn (:competition/id competition-tx) class-tx-1)
+      (ds/transact-class conn (:competition/id competition-tx) class-tx-2)
 
-(def class-tx-2 {:class/id #uuid "60edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"
-                 :class/name "Test Class Updated"
-                 :class/starting [{:participant/name "A"
-                                   :participant/id #uuid "10edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}
-                                  {:participant/name "C"
-                                   :participant/id #uuid "30edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}]})
+      (is (= (ds/query-competition conn [:competition/name
+                                         :competition/id
+                                         {:competition/classes
+                                          [:class/id
+                                           :class/name
+                                           {:class/starting [:participant/id
+                                                             :participant/name]}]}])
+             [{:competition/id #uuid "1ace2915-42dc-4f58-8017-dcb79f958463"
+               :competition/name "Test Competition"
+               :competition/classes [(update-in
+                                       class-tx-2
+                                       [:class/starting] #(vec (sort-by :participant/id %)))]}])))))
 
-(defn do-stuff [class-id x y]
-  (let [[to-retract to-add _] (clojure.data/diff x y)
-        filter-nil (fn [v] (vec (filter #(not (nil? %)) v)))]
-    (into (mapv (fn [v] [:db/retract [:class/id class-id]
-                         (key v)
-                         (if (vector? (val v))
-                           (filter-nil (val v))
-                           (val v))]) to-retract)
-          (mapv (fn [v] [:db/add [:class/id class-id]
-                         (key v)
-                         (if (vector? (val v))
-                           (filter-nil (val v))
-                           (val v))]) to-add))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Utils
 
-(do-stuff (:class/id class-tx-1) class-tx-1 class-tx-2)
+(deftest utils
+  (testing "Creation of update retractions"
+    (let [class-tx-1 {:class/id #uuid "60edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"
+                      :db/id 123
+                      :class/name "Test Class"
+                      :class/starting [{:participant/name "A"
+                                        :participant/id #uuid "10edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}
+                                       {:participant/name "B"
+                                        :participant/id #uuid "20edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}
+                                       {:participant/name "C"
+                                        :participant/id #uuid "30edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}]}
 
-(defn clean-class [c]
-  (clojure.walk/postwalk
-    (fn [form]
-      (cond
-        ;; fix lookup ref
-        (:participant/id form) {:db/id [:participant/id (:participant/id form)]}
+          class-tx-2 {:class/id #uuid "60edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"
+                      :class/name "Test Class Updated"
+                      :class/starting [{:participant/name "A"
+                                        :participant/id #uuid "10edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}
+                                       {:participant/name "D"
+                                        :participant/id #uuid "40edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}]}]
+      (is (= (ds/create-update-retractions
+               class-tx-1
+               class-tx-2
+               (fn [class] (update-in class [:class/starting] #(vec (sort-by :participant/id %)))))
+             [[:db/retract 123
+               :class/starting [:participant/id #uuid "20edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"]]
 
-        :else form))
-    c))
+              [:db/retract 123
+               :class/starting [:participant/id #uuid "30edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"]]
 
-(clean-class class-tx-2)
+              [:db/retract 123 :class/name "Test Class"]])))
+    (testing "Uses pre diff function before comparing"
+      (let [existing {:db/id 17592186053490,
+                      :class/id #uuid "0b40cbfa-c2fc-475e-802e-b944f5fb2f33",
+                      :class/name "New Class 111",
+                      :class/starting [{:participant/id #uuid "02f4b2ec-4b69-497b-8dbd-6295ff71fc6f"}
+                                       {:participant/id #uuid "8cba8eae-2225-4196-8b9d-3c1b0fb12881"}
+                                       {:participant/id #uuid "70b01a4e-6dd5-44b5-8ed6-b6a8acab4399"}]}
+
+            updated {:class/name     "New Class 111",
+                     :class/id       #uuid "0b40cbfa-c2fc-475e-802e-b944f5fb2f33",
+                     :class/starting [{:participant/id #uuid "8cba8eae-2225-4196-8b9d-3c1b0fb12881",
+                                       :participant/number 15,
+                                       :participant/name "Tyra Jönsson"}
+                                      {:participant/id #uuid "70b01a4e-6dd5-44b5-8ed6-b6a8acab4399",
+                                       :participant/number 16,
+                                       :participant/name   "Vera Sundqvist"}]}]
+
+        (is (= (ds/create-update-retractions
+                 existing
+                 updated
+                 (fn [class] (update-in class [:class/starting] #(set (map (fn [x] (select-keys x [:participant/id])) %)))
+                   ;(fn [class] (update-in class [:class/starting] #(vec (sort-by :participant/id %))))
+                   ))
+               [[:db/retract 17592186053490
+                 :class/starting [:participant/id #uuid "02f4b2ec-4b69-497b-8dbd-6295ff71fc6f"]]]))))))

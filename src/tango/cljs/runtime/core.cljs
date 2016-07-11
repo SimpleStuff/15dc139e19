@@ -222,18 +222,17 @@
                 (dom/div nil
                   (dom/button #js {:className "btn btn-default"
                                    :onClick   (fn [e]
-                                                (let [new-id (random-uuid)]
-                                                  (om/transact!
-                                                    reconciler
-                                                    `[(app/select-page {:selected-page :edit-class-participants})
+                                                (om/transact!
+                                                  reconciler
+                                                  `[(app/select-page {:selected-page :edit-class-participants})
 
-                                                      :app/selected-page])))}
+                                                    :app/selected-page]))}
                               (dom/span #js {:className "glyphicon glyphicon-plus"}))
                   (dom/p nil (str "Starting : " (count (:class/starting selected-class)))))
                 ;(dom/ul nil)
                 (map #(dom/button #js {:className "col-sm-6 btn btn-default"}
                                   (str (:participant/number %) " - " (:participant/name %)))
-                     (:class/starting selected-class))))
+                     (sort-by :participant/number (:class/starting selected-class)))))
 
             ;; Create
             (dom/div #js {:className "form-group"}

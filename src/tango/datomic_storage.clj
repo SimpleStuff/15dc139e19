@@ -551,7 +551,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Class
-(defn create-class [conn competition-id class]
+(defn- create-new-class [conn competition-id class]
   @(d/transact conn [{:competition/classes (fix-id class)
                       :db/id               [:competition/id competition-id]}]))
 
@@ -559,51 +559,45 @@
   @(d/transact conn [[:db/retract [:competition/id competition-id]
                       :competition/classes [:class/id class-id]]]))
 
-;(d/q '[:find [(pull ?e selector) ...]
-;       :in $ selector
-;       :where
-;       [?e :class/id]]
-;     (d/db conn) query)
-
 (defn clean-class [c]
   (clojure.walk/postwalk
     (fn [form]
       (cond
         ;; fix lookup ref
-        (:participant/id form) {:db/id [:participant/id (:participant/id form)]}
+        (:participant/id form) [:participant/id (:participant/id form)]
 
         :else form))
     c))
 
-(defn do-stuff [class-id x y]
-  (let [[to-retract to-add _] (clojure.data/diff x y)
-        filter-nil (fn [v] (vec (filter #(not (nil? %)) v)))]
-    (into (mapv (fn [v]
-                  ;(when-not (= (key v) :db/id))
-                  [:db/retract [:class/id class-id]
-                   (key v)
-                   (if (vector? (val v))
-                     (filter-nil (val v))
-                     (val v))]) (filter-nil to-retract))
-          (mapv (fn [v]
-                  (when-not (= (key v) :db/id)
-                    [:db/add [:class/id class-id]
-                     (key v)
-                     (if (vector? (val v))
-                       (filter-nil (val v))
-                       (val v))])) (filter-nil to-add)))
-    ))
+(defn create-retraction [e-id attr val]
+  [:db/retract e-id attr val])
 
-(defn update-class [conn class]
+;; TODO - looks more complicated than it should be..
+(defn create-update-retractions [old new pre-diff-fn]
+  (let [[to-retract _ _] (clojure.data/diff (pre-diff-fn old) (pre-diff-fn new))
+        filter-nil (fn [v] (vec (filter #(not (nil? %)) v)))
+        e-id (:db/id to-retract)]
+    (apply concat
+           (filter-nil
+             (map clean-class
+                  (for [stuff to-retract]
+                    (when-not (= (key stuff) :db/id)
+                      (if (or (vector? (val stuff)) (set? (val stuff)))
+                        (filter-nil (map #(when % (create-retraction e-id (key stuff) %)) (val stuff)))
+                        [(create-retraction e-id (key stuff) (val stuff))]))))))))
+
+(defn transact-class [conn competition-id class]
   (let [existing (first (d/q '[:find [(pull ?e [* {:class/starting [:participant/id]}])]
                                :in $ ?id
                                :where [?e :class/id ?id]]
                              (d/db conn) (:class/id class)))
-        tx (do-stuff (:class/id class) existing (clean-class class))]
-    tx
-    ;@(d/transact conn (fix-id tx))
-    ))
-
-;(defn deselect-round [conn activity-id]
-;  @(d/transact conn [[:db/retract [:app/id 1]
-;                      :app/selected-activities [:activity/id activity-id]]]))
+        sort-for-diff (fn [class]
+                        (update-in class [:class/starting]
+                                   #(set (map (fn [x] (select-keys x [:participant/id])) %))))
+        retract-tx (create-update-retractions existing class sort-for-diff)]
+    (log/info (str "Existing : " existing))
+    (log/info (str "Update to : " class))
+    (log/info (str "Retract tx : " (into [] retract-tx)))
+    (if existing
+      @(d/transact conn (into retract-tx [(fix-id class)]))
+      (create-new-class conn competition-id class))))
