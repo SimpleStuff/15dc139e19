@@ -286,7 +286,9 @@
           class-tx-1 {:class/id #uuid "60edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"
                       :class/name "Test Class"
                       :class/dances [{:dance/name "Samba"
-                                      :dance/id #uuid "d1edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}]
+                                      :dance/id #uuid "d1edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}
+                                     {:dance/name "Mango"
+                                      :dance/id #uuid "d2edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}]
                       :class/adjudicator-panel {:adjudicator-panel/name "1"
                                                 :adjudicator-panel/id #uuid "11edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}
                       :class/starting [{:participant/name "A"
@@ -298,9 +300,7 @@
 
           class-tx-2 {:class/id #uuid "60edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"
                       :class/name "Test Class Updated"
-                      :class/dances [{:dance/name "Samba"
-                                      :dance/id #uuid "d1edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}
-                                     {:dance/name "Mango"
+                      :class/dances [{:dance/name "Mango"
                                       :dance/id #uuid "d2edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}
                                      {:dance/name "Samba"
                                       :dance/id #uuid "d3edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}]

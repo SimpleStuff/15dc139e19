@@ -60,3 +60,7 @@
   {:value (get @state :app/dances [])
    ;:query true
    })
+
+(defmethod read :app/selected-dance
+  [{:keys [state]} _ _]
+  {:value (get @state :app/selected-dance [])})

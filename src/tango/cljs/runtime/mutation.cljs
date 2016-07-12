@@ -123,3 +123,11 @@
                             (update-in current [:app/selected-class]
                                        (fn [current-selected]
                                          (merge current-selected class-info))))))})
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Dances
+(defmethod mutate 'app/select-dance
+  [{:keys [state]} _ {:keys [dance/id] :as dance}]
+  {:value  {:keys []}
+   :action (fn []
+             (swap! state assoc :app/selected-dance dance))})

@@ -568,6 +568,8 @@
 
         (:adjudicator-panel/id form) [:adjudicator-panel/id (:adjudicator-panel/id form)]
 
+        (:dance/id form) [:dance/id (:dance/id form)]
+
         :else form))
     c))
 
@@ -594,13 +596,16 @@
   (let [existing (first (d/q '[:find [(pull ?e [*
                                                 {:class/starting [:participant/id]}
                                                 {:class/adjudicator-panel [:adjudicator-panel/id]}
-                                                {:class/dances [:dance/name]}])]
+                                                {:class/dances [:dance/id]}])]
                                :in $ ?id
                                :where [?e :class/id ?id]]
                              (d/db conn) (:class/id class)))
         sort-for-diff (fn [class]
-                        (update-in class [:class/starting]
-                                   #(set (map (fn [x] (select-keys x [:participant/id])) %))))
+                        (let [with-participants
+                              (update-in class [:class/starting]
+                                         #(set (map (fn [x] (select-keys x [:participant/id])) %)))]
+                          (update-in with-participants [:class/dances]
+                                     #(set (map (fn [x] (select-keys x [:dance/id])) %)))))
         retract-tx (create-update-retractions existing (merge existing class) sort-for-diff)]
     (log/info (str "Existing : " existing))
     (log/info (str "Update to : " class))
