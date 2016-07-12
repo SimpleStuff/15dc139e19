@@ -52,3 +52,15 @@
   [{:keys [state]} _ _]
   {:value (get @state :app/participants [])
    :query true})
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Dances
+(defmethod read :app/dances
+  [{:keys [state]} _ _]
+  {:value (get @state :app/dances [])
+   ;:query true
+   })
+
+(defmethod read :app/selected-dance
+  [{:keys [state]} _ _]
+  {:value (get @state :app/selected-dance [])})

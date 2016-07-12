@@ -248,6 +248,22 @@
                               (sort-by :adjudicator-panel/name panels))))))
 
             ;; Dances
+            (dom/div #js {:className "form-group"}
+              (dom/label #js {:className "col-sm-2 control-label"} "Dances")
+              (dom/div #js {:className "col-sm-8"}
+                (dom/div nil
+                  (dom/button #js {:className "btn btn-default"
+                                   :onClick   (fn [_]
+                                                (om/transact!
+                                                  reconciler
+                                                  `[(app/select-page {:selected-page :dances})
+                                                    :app/selected-page]))}
+                              (dom/span #js {:className "glyphicon glyphicon-plus"}))
+                  (dom/p nil (str "Dances : " (count (:class/dances selected-class)))))
+
+                (map #(dom/button #js {:className "col-sm-6 btn btn-default"}
+                                  (:dance/name %))
+                     (:class/dances selected-class))))
 
             ;; Participants
             (dom/div #js {:className "form-group"}
@@ -533,7 +549,8 @@
                      ["Classes" :classes]
                      ["Time Schedule" :time-schedule]
                      ["Clients" :clients]
-                     ["Participants" :participants]]))))))
+                     ["Participants" :participants]
+                     ["Dances" :dances]]))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Client Row
@@ -619,6 +636,81 @@
                                                               :adjudicator-panels panels}) clients)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; DancesView
+(defui DancesView
+  static om/IQuery
+  (query [_]
+    [:dance/name :dance/id])
+  Object
+  (render
+    [this]
+    (let [dances (:dances (om/props this))
+          ;{:keys [selected-class]} (om/get-computed this)
+          selected-class (:selected-class (om/props this))
+          selected-dance (:selected-dance (om/props this))
+
+          ]
+      (log "DancesView")
+      (log dances)
+      (log selected-dance)
+      (dom/div #js {:className "col-sm-12"}
+        (dom/h2 {:className "sub-header"} "Dances")
+
+        (dom/div nil
+          (dom/button #js {:className (str "btn btn-default")
+                           :onClick   #()}
+                      (dom/span #js {:className "glyphicon glyphicon-arrow-left"}))
+
+          (dom/button #js {:className (str "btn btn-default")
+                           :onClick   #(om/transact! this `[(app/select-page {:selected-page :create-class})
+                                                            :app/selected-page])}
+                      (dom/span #js {:className "glyphicon glyphicon-ok"})))
+
+        (dom/div #js {:className "col-sm-6"}
+          (dom/div #js {:className "col-sm-12"}
+            (dom/h2 {:className "sub-header col-sm-6"} "Selected")
+            (dom/button #js {:className "btn btn-default"
+                             :onClick   (fn [_]
+                                          (let [updated-dances
+                                                (filter #(not= (:dance/id %)
+                                                               (:dance/id selected-dance))
+                                                        (:class/dances selected-class))]
+                                            (om/transact!
+                                              reconciler
+                                              `[(class/update {:class/dances ~updated-dances})])))}
+                        (dom/span #js {:className "glyphicon glyphicon-trash"})))
+
+          (dom/div #js {:className "col-sm-12"}
+            (map (fn [dance]
+                   (dom/button #js {:className (str "btn"
+                                                    (if (seq
+                                                          (filter
+                                                            #(= (:dance/id dance) (:dance/id selected-dance))
+                                                            (:class/dances selected-class)))
+                                                      " btn-primary"
+                                                      " btn-default"))
+                                    :onClick   #(om/transact!
+                                                 reconciler
+                                                 `[(app/select-dance
+                                                     {:dance/id ~(:dance/id dance)})
+                                                   :app/selected-dance])}
+                               (:dance/name dance))) (:class/dances selected-class))))
+
+        (dom/div #js {:className "col-sm-6"}
+          (dom/h2 {:className "sub-header"} "Available")
+          (map (fn [dance]
+                 (dom/button #js {:className "btn btn-default"
+                                  :onClick   #(om/transact!
+                                               reconciler
+                                               `[(class/update
+                                                   {:class/dances ~(conj (:class/dances selected-class)
+                                                                         {:dance/name (:dance/name dance)
+                                                                          :dance/id   (random-uuid)})}
+                                                   :app/selected-class)])}
+                             (:dance/name dance))) dances)))
+      )))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Participant Row
 (defui ParticipantRow
   static om/IQuery
@@ -682,10 +774,13 @@
         {:competition/activities ~(om/get-query ScheduleView)}]}
 
      ;; TODO - participants should come from the competition
-     {:app/participants ~(om/get-query ParticipantsView)}
+      {:app/participants ~(om/get-query ParticipantsView)}
 
-     :app/status
-     :app/selected-page
+      {:app/dances ~(om/get-query DancesView)}
+      {:app/selected-dance ~(om/get-query DancesView)}
+
+      :app/status
+      :app/selected-page
 
       {:app/selected-class ~(om/get-query CreateClassView)}
       ;{:app/selected-class ~(om/get-query ClassRow)}
@@ -728,6 +823,13 @@
           :edit-class-participants ((om/factory SelectClassParticipantsView)
                                      {:participants participants
                                       :selected-class (:app/selected-class p)})
+
+          :dances ((om/factory DancesView)
+                    {:dances (:app/dances p)
+                     :selected-class (:app/selected-class p)
+                     :selected-dance (:app/selected-dance p)}
+                    ;(om/computed (:app/dances p) {:selected-class selected-class})
+                    )
 
           :time-schedule ((om/factory ScheduleView) {:competition/activities
                                                      (:competition/activities selected-competition)
@@ -852,7 +954,11 @@
                           :app/selected-page :home
                           :app/selected-activities #{}
                           :app/speaker-activities #{}
-                          :app/selected-class nil}))
+                          :app/selected-class nil
+                          :app/dances [{:dance/name "Samba"
+                                        :dance/id #uuid "d1edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}
+                                       {:dance/name "Mango"
+                                        :dance/id #uuid "d2edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}]}))
 
 (def reconciler
   (om/reconciler
