@@ -199,8 +199,10 @@
       ;; - Startlist (participants)
       (log "Selected class")
       (log selected-class)
-      (dom/div nil
-        (dom/h2 {:className "sub-header"} "Create new class")
+      (dom/div #js {:className "col-sm-12"}
+        (dom/div #js {:className "col-sm-offset-3"}
+          (dom/h3 {:className " sub-header"} "Create new class"))
+
         (dom/div #js {:className "container"}
           (dom/div #js {:className "form-horizontal"}
 
@@ -258,7 +260,7 @@
                                                   reconciler
                                                   `[(app/select-page {:selected-page :dances})
                                                     :app/selected-page]))}
-                              (dom/span #js {:className "glyphicon glyphicon-plus"}))
+                              (dom/span #js {:className "glyphicon glyphicon-edit"}))
                   (dom/p nil (str "Dances : " (count (:class/dances selected-class)))))
 
                 (map #(dom/button #js {:className "col-sm-6 btn btn-default"}
@@ -277,7 +279,7 @@
                                                   `[(app/select-page {:selected-page :edit-class-participants})
 
                                                     :app/selected-page]))}
-                              (dom/span #js {:className "glyphicon glyphicon-plus"}))
+                              (dom/span #js {:className "glyphicon glyphicon-edit"}))
                   (dom/p nil (str "Starting : " (count (:class/starting selected-class)))))
                 ;(dom/ul nil)
                 (map #(dom/button #js {:className "col-sm-6 btn btn-default"}
@@ -286,9 +288,15 @@
 
             ;; Create
             (dom/div #js {:className "form-group"}
-              (dom/div #js {:className "col-sm-offset-2 col-sm-10"}
+              (dom/div #js {:className "col-sm-offset-2 col-sm-8"}
+                (dom/button #js {:className "btn btn-default"
+                                 :onClick   #(om/transact! this `[(app/select-page
+                                                                    {:selected-page :classes})
+                                                                  :app/selected-page])}
+                            (dom/span #js {:className "glyphicon glyphicon-arrow-left"})
+                            " Undo")
                 (dom/button
-                  #js {:className "btn btn-default"
+                  #js {:className "btn btn-primary col-sm-offset-8"
                        :type      "submit"
                        :onClick   (fn [e]
                                     (om/transact!
@@ -296,7 +304,8 @@
                                       `[(class/save {:class ~selected-class})
                                         (app/select-page {:selected-page :classes})
                                         :app/selected-page]))}
-                  "Save")))))
+                  (dom/span #js {:className "glyphicon glyphicon-ok"})
+                  " Save")))))
         ))))
 
 ;(dom/div #js {:className "container"}
@@ -454,35 +463,39 @@
       (log "SelectedClassParticipantsView")
       (log selected-class)
       (dom/div #js {:className "col-sm-12"}
-        (dom/h2 {:className "sub-header"} (str "Select Participants for Class "
-                                               (:class/name selected-class)))
-        (dom/div nil
-          (dom/button #js {:className (str "btn btn-default")
-                           :onClick   #()}
-                      (dom/span #js {:className "glyphicon glyphicon-arrow-left"}))
 
-          (dom/button #js {:className (str "btn btn-default")
-                           :onClick   #(om/transact! this `[(app/select-page {:selected-page :create-class})
-                                                            :app/selected-page])}
-                      (dom/span #js {:className "glyphicon glyphicon-ok"})))
+        (dom/div #js {:className "col-sm-12"}
+          (dom/div #js {:className "page-header"}
+            (dom/div #js {:className "btn-toolbar pull-right"}
+              (dom/div #js {:className "btn-group"}
+                (dom/button #js {:type      "button"
+                                 :className "btn btn-primary"
+                                 :onClick   #(om/transact!
+                                              this `[(app/select-page {:selected-page :create-class})
+                                                     :app/selected-page])}
+                            (dom/span #js {:className "glyphicon glyphicon-ok"})
+                            " Done")))
+            (dom/h2 nil (str "Select Participants for Class " (:class/name selected-class)))))
 
-        (map #(dom/button #js {:className (str "col-sm-3 btn" (if (selected? %)
-                                                                " btn-primary"
-                                                                " btn-default"))
-                               :onClick   (fn [e]
-                                            (let [updated-starting
-                                                  (if (selected? %)
-                                                    (filter (fn [p]
-                                                              (not= (:participant/id p) (:participant/id %)))
-                                                            starting)
-                                                    (conj starting %))]
-                                              (om/transact!
-                                                reconciler
-                                                `[(class/update
-                                                    {:class/starting ~updated-starting})
-                                                  :app/selected-class])))}
-                          (str (:participant/number %) " - " (:participant/name %)))
-             participants)))))
+        (dom/div #js {:className "col-sm-12"}
+
+          (map #(dom/button #js {:className (str "col-sm-3 btn" (if (selected? %)
+                                                                  " btn-primary"
+                                                                  " btn-default"))
+                                 :onClick   (fn [e]
+                                              (let [updated-starting
+                                                    (if (selected? %)
+                                                      (filter (fn [p]
+                                                                (not= (:participant/id p) (:participant/id %)))
+                                                              starting)
+                                                      (conj starting %))]
+                                                (om/transact!
+                                                  reconciler
+                                                  `[(class/update
+                                                      {:class/starting ~updated-starting})
+                                                    :app/selected-class])))}
+                            (str (:participant/number %) " - " (:participant/name %)))
+               participants))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Import/Export Component
@@ -637,6 +650,15 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; DancesView
+;<div class='page-header'>
+;<div class='btn-toolbar pull-right'>
+;<div class='btn-group'>
+;<button type='button' class='btn btn-primary'>Button Text</button>
+;</div>
+;</div>
+;<h2>Header Text</h2>
+;</div>
+
 (defui DancesView
   static om/IQuery
   (query [_]
@@ -647,24 +669,24 @@
     (let [dances (:dances (om/props this))
           ;{:keys [selected-class]} (om/get-computed this)
           selected-class (:selected-class (om/props this))
-          selected-dance (:selected-dance (om/props this))
-
-          ]
+          selected-dance (:selected-dance (om/props this))]
       (log "DancesView")
       (log dances)
       (log selected-dance)
       (dom/div #js {:className "col-sm-12"}
-        (dom/h2 {:className "sub-header"} "Dances")
 
-        (dom/div nil
-          (dom/button #js {:className (str "btn btn-default")
-                           :onClick   #()}
-                      (dom/span #js {:className "glyphicon glyphicon-arrow-left"}))
-
-          (dom/button #js {:className (str "btn btn-default")
-                           :onClick   #(om/transact! this `[(app/select-page {:selected-page :create-class})
-                                                            :app/selected-page])}
-                      (dom/span #js {:className "glyphicon glyphicon-ok"})))
+        (dom/div #js {:className "col-sm-12"}
+          (dom/div #js {:className "page-header"}
+            (dom/div #js {:className "btn-toolbar pull-right"}
+              (dom/div #js {:className "btn-group"}
+                (dom/button #js {:type      "button"
+                                 :className "btn btn-primary"
+                                 :onClick   #(om/transact!
+                                              this `[(app/select-page {:selected-page :create-class})
+                                                     :app/selected-page])}
+                            (dom/span #js {:className "glyphicon glyphicon-ok"})
+                            " Done")))
+            (dom/h1 nil "Dances")))
 
         (dom/div #js {:className "col-sm-6"}
           (dom/div #js {:className "col-sm-12"}
