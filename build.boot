@@ -50,6 +50,7 @@
       :version "1.0.0"}
  jar {:main 'tango.core}
  aot {:all true}
+ target {:dir #{"target"}}
  )
 
 (deftask build "Create a standalone tango server jar." []
@@ -57,4 +58,5 @@
         (pom)
         (uber)
         (jar)
+	(target)
         ))
