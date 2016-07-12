@@ -588,10 +588,13 @@
                         (filter-nil (map #(when % (create-retraction e-id (key stuff) %)) (val stuff)))
                         [(create-retraction e-id (key stuff) (val stuff))]))))))))
 
+;http://augustl.com/blog/2013/ordering_cardinality_many_in_datomic/
+;https://github.com/dwhjames/datomic-linklist
 (defn transact-class [conn competition-id class]
   (let [existing (first (d/q '[:find [(pull ?e [*
                                                 {:class/starting [:participant/id]}
-                                                {:class/adjudicator-panel [:adjudicator-panel/id]}])]
+                                                {:class/adjudicator-panel [:adjudicator-panel/id]}
+                                                {:class/dances [:dance/name]}])]
                                :in $ ?id
                                :where [?e :class/id ?id]]
                              (d/db conn) (:class/id class)))

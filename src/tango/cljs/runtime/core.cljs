@@ -248,6 +248,9 @@
                               (sort-by :adjudicator-panel/name panels))))))
 
             ;; Dances
+            (dom/div #js {:className "form-group"}
+              (dom/label #js {:className "col-sm-2 control-label"} "Dances")
+              (dom/div #js {:className "col-sm-8"}))
 
             ;; Participants
             (dom/div #js {:className "form-group"}
@@ -329,8 +332,8 @@
      {:class/dances [*]}])
   Object
   (render [this]
-    ;(log "ClassRow")
-    ;(log (:class/dances (om/props this)))
+    (log "ClassRow")
+    (log (:class/dances (om/props this)))
     (let [p (om/props this)
           {:keys [selected?]} (om/get-computed this)
           {:keys [position name panel type starting status]}
@@ -533,7 +536,8 @@
                      ["Classes" :classes]
                      ["Time Schedule" :time-schedule]
                      ["Clients" :clients]
-                     ["Participants" :participants]]))))))
+                     ["Participants" :participants]
+                     ["Dances" :dances]]))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Client Row
@@ -619,6 +623,26 @@
                                                               :adjudicator-panels panels}) clients)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; DancesView
+(defui DancesView
+  static om/IQuery
+  (query [_]
+    [:dance/name :dance/id])
+  Object
+  (render
+    [this]
+    (let [dances (om/props this)]
+      (log "DancesView")
+      (log dances)
+      (dom/div #js {:className "col-sm-12"}
+        (dom/h2 {:className "sub-header"} "Dances")
+        (map (fn [dance]
+               (dom/button #js {:className "btn btn-default"
+                                :onClick   #(om/transact! this `[(class/update {:class/dances ~dance})])}
+                           (:dance/name dance))) dances))
+      )))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Participant Row
 (defui ParticipantRow
   static om/IQuery
@@ -684,6 +708,8 @@
      ;; TODO - participants should come from the competition
      {:app/participants ~(om/get-query ParticipantsView)}
 
+      {:app/dances ~(om/get-query DancesView)}
+
      :app/status
      :app/selected-page
 
@@ -728,6 +754,8 @@
           :edit-class-participants ((om/factory SelectClassParticipantsView)
                                      {:participants participants
                                       :selected-class (:app/selected-class p)})
+
+          :dances ((om/factory DancesView) (:app/dances p))
 
           :time-schedule ((om/factory ScheduleView) {:competition/activities
                                                      (:competition/activities selected-competition)
@@ -852,7 +880,11 @@
                           :app/selected-page :home
                           :app/selected-activities #{}
                           :app/speaker-activities #{}
-                          :app/selected-class nil}))
+                          :app/selected-class nil
+                          :app/dances [{:dance/name "Samba"
+                                        :dance/id #uuid "d1edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}
+                                       {:dance/name "Mango"
+                                        :dance/id #uuid "d2edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}]}))
 
 (def reconciler
   (om/reconciler

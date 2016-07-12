@@ -50,7 +50,8 @@
                                                            [:class/name
                                                             :class/id
                                                             :class/starting
-                                                            :class/adjudicator-panel])}}]
+                                                            :class/adjudicator-panel
+                                                            :class/dances])}}]
                (async/>!! state {:topic :command :sender :http :payload message})
                (log/info (str "Class Save " key " " params))))})
 
