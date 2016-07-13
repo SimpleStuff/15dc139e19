@@ -8,7 +8,7 @@
                  [org.clojure/clojure "1.8.0"]
                  [org.clojure/core.async "0.2.385"]
                  [org.clojure/tools.namespace "0.2.10"]
-                 [org.clojure/clojurescript "1.8.40"]
+                 [org.clojure/clojurescript "1.8.51"]
                  [org.clojure/core.match "0.3.0-alpha4"]
 
                  [com.datomic/datomic-free "0.9.5350"]
@@ -24,28 +24,28 @@
                  [prismatic/schema "1.1.2"]
                  
                  ;; Logging
-                 [com.taoensso/timbre "4.3.1"]
+                 [com.taoensso/timbre "4.6.0"]
 
                  ;; Web UI
-                 [org.omcljs/om "1.0.0-alpha32"]
-                 [com.taoensso/sente "1.8.1"]
+                 [org.omcljs/om "1.0.0-alpha40"]
+                 [com.taoensso/sente "1.9.0"]
 
-                 [http-kit "2.1.19"]
+                 [http-kit "2.2.0"]
 
-                 [ring                      "1.4.0"]
-                 [ring/ring-defaults        "0.2.0"]
-                 [ring-transit "0.1.4"]
+                 [ring                      "1.5.0"]
+                 [ring/ring-defaults        "0.2.1"]
+                 [ring-transit "0.1.6"]
 
                  [hiccup "1.0.5"]
 
-                 [compojure "1.5.0"]
+                 [compojure "1.5.1"]
 
                  ; Code cleaness tools
                  [repetition-hunter "1.0.0"]
 
                  ;; Cljs
                  [com.andrewmcveigh/cljs-time "0.4.0"]
-                 [cljs-http "0.1.40"]
+                 [cljs-http "0.1.41"]
                  [com.cognitect/transit-cljs "0.8.239"]
                  [alandipert/storage-atom "1.2.4"]]
 
@@ -106,13 +106,13 @@
                                :output-dir "resources/public/js/out/adj"
                                ;:source-map    "resources/public/js/out.js.map"
                                ;; PROD
-                               :optimizations :advanced
-                               :pretty-print  false
+                               ;:optimizations :advanced
+                               ;:pretty-print  false
 
                                ;; DEV
-                               ;:source-map true
-                               ;:pretty-print  true
-                               ;:optimizations :none
+                               :source-map true
+                               :pretty-print  true
+                               :optimizations :none
                                }}
 
                {:id           "runtime"
@@ -124,13 +124,13 @@
                                :output-dir "resources/public/js/out/runtime"
                                ;:source-map    "resources/public/js/out.js.map"
                                ;; PROD
-                               :optimizations :advanced
-                               :pretty-print  false
+                               ;:optimizations :advanced
+                               ;:pretty-print  false
 
                                ;; DEV
-                               ;:source-map true
-                               ;:pretty-print  true
-                               ;:optimizations :none
+                               :source-map true
+                               :pretty-print  true
+                               :optimizations :none
                                }}
 
                {:id           "speaker"

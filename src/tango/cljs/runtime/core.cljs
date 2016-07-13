@@ -197,8 +197,8 @@
       ;; - Adj Panel
       ;; - Dances
       ;; - Startlist (participants)
-      (log "Selected class")
-      (log selected-class)
+      (log "CreateClassView")
+      ;(log selected-class)
       (dom/div #js {:className "col-sm-12"}
         (dom/div #js {:className "col-sm-offset-3"}
           (dom/h3 {:className " sub-header"} "Create new class"))
@@ -384,8 +384,7 @@
     (let [classes (sort-by :class/position (:classes (om/props this)))
           ;{:keys [selected]} (om/get-computed this)
           selected (:selected (om/props this))]
-      (log "ClassView")
-      (log selected)
+      (log "ClassesView")
       (dom/div nil
         (dom/h2 {:className "sub-header"} "Classes")
         (dom/div nil
@@ -435,7 +434,7 @@
           ;                                                       (:class/id selected))
           ;                                                  true
           ;                                                  false))) classes))
-          (apply dom/tbody nil (map #((om/factory ClassRow)
+          (apply dom/tbody nil (map #((om/factory ClassRow {:keyfn :class/id})
                                       (om/computed % {:selected? (if (= (:class/id %)
                                                                         (:class/id selected))
                                                                    true
@@ -508,6 +507,7 @@
     [this]
     (let [import-status (:import-status (om/props this))
           read-cb on-file-read]
+      (log "ImportExportComponent")
       (dom/div nil
         (dom/span #js {:className (str "btn btn-default btn-file"
                                        (when (= import-status :importing) " disabled"))}
@@ -535,6 +535,7 @@
     [this]
     (let [p (om/props this)
           status (:status p)]
+      (log "AdminView")
       (dom/div nil
         (dom/h1 nil "Admin")
         ((om/factory ImportExportComponent) {:import-status status})))))
@@ -555,6 +556,7 @@
                                             `[(app/select-page {:selected-page ~page-key})
                                               :app/selected-page])}
                         page-name))]
+      (log "MenuComponent")
       (dom/div nil
         (apply dom/div #js {:className "nav"}
                (map (fn [[name key]] (make-btn-fn name key))
@@ -761,8 +763,7 @@
   (render
     [this]
     (let [participants (om/props this)]
-      (log "participants")
-      (log participants)
+      (log "ParticipantsView")
       (dom/div nil
         (dom/h2 nil "Participants")
         (dom/table
@@ -778,9 +779,13 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; MainComponent
 
-(def class-view (om/factory ClassesView))
+(def class-view (om/factory ClassesView {:keyfn random-uuid}))
 
 ;; https://awkay.github.io/om-tutorial/
+
+;;!!!!!
+;; NOTE : All components that do get thier own map instead of pure props
+;;  do not get a default react key; hacking atm with random-uuid
 (defui MainComponent
   static om/IQuery
   (query [_]
@@ -821,8 +826,7 @@
           participants (:app/participants p)
           panels (:competition/panels selected-competition)
           selected-class (:app/selected-class p)]
-      (log "Main Selected :")
-      (log selected-class)
+      (log "MainComponent")
       (dom/div nil
         ((om/factory MenuComponent))
         (condp = selected-page
@@ -842,24 +846,25 @@
                           ;                selected-class
                           (om/computed selected-class {:panels panels}))
 
-          :edit-class-participants ((om/factory SelectClassParticipantsView)
+          :edit-class-participants ((om/factory SelectClassParticipantsView {:keyfn random-uuid})
                                      {:participants participants
                                       :selected-class (:app/selected-class p)})
 
-          :dances ((om/factory DancesView)
+          :dances ((om/factory DancesView {:keyfn random-uuid})
                     {:dances (:app/dances p)
                      :selected-class (:app/selected-class p)
                      :selected-dance (:app/selected-dance p)}
                     ;(om/computed (:app/dances p) {:selected-class selected-class})
                     )
 
-          :time-schedule ((om/factory ScheduleView) {:competition/activities
-                                                     (:competition/activities selected-competition)
-                                                     :selected-activities
-                                                     (:app/selected-activities p)
-                                                     :speaker-activities
-                                                     (:app/speaker-activities p)})
-          :clients ((om/factory ClientsView) {:clients      (:app/clients p)
+          :time-schedule ((om/factory ScheduleView {:keyfn random-uuid})
+                           {:competition/activities
+                            (:competition/activities selected-competition)
+                            :selected-activities
+                            (:app/selected-activities p)
+                            :speaker-activities
+                            (:app/speaker-activities p)})
+          :clients ((om/factory ClientsView {:keyfn random-uuid}) {:clients      (:app/clients p)
                                               :adjudicator-panels (:competition/panels selected-competition)})
 
           :participants ((om/factory ParticipantsView) participants))

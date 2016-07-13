@@ -54,21 +54,12 @@
 (defmethod mutate 'app/status
   [{:keys [state]} _ {:keys [status]}]
   {:value  {:keys [:app/status]}
-   :action (fn []
-             (swap! state assoc :app/status status)
-             (log (:app/status @state)))})
+   :action (swap! state assoc :app/status status)})
 
 (defmethod mutate 'app/set-admin-mode
   [{:keys [state]} _ {:keys [in-admin]}]
   {:value  {:keys [:app/admin-mode]}
    :action (fn [] (swap! state assoc :app/admin-mode in-admin))})
-
-;(defmethod mutate 'app/set-local-id
-;  [{:keys [state]} _ {:keys [id]}]
-;  {:value {:keys [:app/local-id]}
-;   :action (fn []
-;             (swap! state assoc :app/local-id id)
-;             (swap! local-storage assoc :client-id id))})
 
 (defmethod mutate 'app/set-client-info
   [{:keys [state]} _ {:keys [client/name client/id] :as client}]
@@ -78,7 +69,7 @@
               ;               (merge current {:app/local-id    id
               ;                               :app/client-name name})))
               (swap! state assoc :app/client client)
-              (log (str "client changed " (:app/client @state)))
+              ;              (log (str "client changed " (:app/client @state)))
               ;(swap! local-storage assoc :client-id id)
               ;(log (str "Local changed : " (:client-id @local-storage)))
               )
