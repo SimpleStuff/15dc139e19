@@ -185,7 +185,7 @@
                         (first (filter (fn [res] (= (:participant/id participant)
                                                     (:participant/id (:result/participant res))))
                                        results)))]
-      ;(log "Render HeatComponent")
+      (log "Render HeatComponent")
       ;(log "Result")
       ;(log (:results (om/props this)))
       ;(log "Participants")
@@ -197,7 +197,8 @@
                          :activity/id    activity-id
                          :result         (find-result %)
                          :allow-marks? (:allow-marks? (om/props this))}))
-             participants)))))
+             participants)
+        ))))
 
 (defui HeatsComponent
   static om/IQuery
@@ -214,11 +215,11 @@
           current-page (:heat-page (om/props this))
           page-start (* page-size current-page)
           page-end (+ page-start page-size)]
-
+      (log "Render HeatsComponent")
       (dom/div nil
         (dom/div #js {:className "col-xs-12"}
           (subvec
-            (vec (map-indexed (fn [idx parts] ((om/factory HeatComponent)
+            (vec (map-indexed (fn [idx parts] ((om/factory HeatComponent {:keyfn (fn [_] idx)})
                                                 {:heat           idx
                                                  :participants   parts
                                                  :adjudicator/id (:adjudicator/id (om/props this))
@@ -226,7 +227,9 @@
                                                  :results        (:results (om/props this))
                                                  :allow-marks?   (:allow-marks? (om/props this))}))
                               heat-parts))
-            page-start (min page-end (int heats))))))))
+            page-start (min page-end (int heats))))
+        )
+      )))
 
 (defui HeatsControll
   static om/IQuery

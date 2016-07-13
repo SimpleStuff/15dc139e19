@@ -645,7 +645,7 @@
               (dom/th #js {:width "50"} "Id")
               (dom/th #js {:width "50"} "Name")
               (dom/th #js {:width "50"} "Assigned to Adjudicator")))
-          (apply dom/tbody nil (map #((om/factory ClientRow {:key-fn :client/id}) {:client       %
+          (apply dom/tbody nil (map #((om/factory ClientRow {:keyfn :client/id}) {:client       %
                                                               :adjudicator-panels panels}) clients)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
