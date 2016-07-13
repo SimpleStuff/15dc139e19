@@ -50,7 +50,7 @@
                  [com.cognitect/transit-cljs "0.8.239"]
                  [alandipert/storage-atom "2.0.1"]]
 
-  :plugins [[lein-figwheel "0.5.0-2"]
+  :plugins [[lein-figwheel "0.5.4-7"]
             [lein-cljsbuild "1.1.3"]
             [lein-ancient "0.6.10"]
             [lein-hiera "0.9.5"]
