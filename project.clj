@@ -50,11 +50,11 @@
                  [alandipert/storage-atom "2.0.1"]]
 
   :plugins [[lein-figwheel "0.5.0-2"]
-            [lein-cljsbuild "1.1.2"]
-            [lein-ancient "0.6.8"]
-            [lein-hiera "0.9.0"]
+            [lein-cljsbuild "1.1.3"]
+            [lein-ancient "0.6.10"]
+            [lein-hiera "0.9.5"]
             [lein-kibit "0.1.2"]
-            [jonase/eastwood "0.2.1"]
+            [jonase/eastwood "0.2.3"]
             [michaelblume/lein-marginalia "0.9.0"]]
 
   :source-paths ["src"]
@@ -106,13 +106,13 @@
                                :output-dir "resources/public/js/out/adj"
                                ;:source-map    "resources/public/js/out.js.map"
                                ;; PROD
-                               ;:optimizations :advanced
-                               ;:pretty-print  false
+                               :optimizations :advanced
+                               :pretty-print  false
 
                                ;; DEV
-                               :source-map true
-                               :pretty-print  true
-                               :optimizations :none
+                               ;:source-map true
+                               ;:pretty-print  true
+                               ;:optimizations :none
                                }}
 
                {:id           "runtime"
@@ -124,24 +124,6 @@
                                :output-dir "resources/public/js/out/runtime"
                                ;:source-map    "resources/public/js/out.js.map"
                                ;; PROD
-                               ;:optimizations :advanced
-                               ;:pretty-print  false
-
-                               ;; DEV
-                               :source-map true
-                               :pretty-print  true
-                               :optimizations :none
-                               }}
-
-               {:id           "speaker"
-                :source-paths ["src/tango/cljs/speaker" "src"]
-                :figwheel     {:on-jsload "tango.cljs.speaker.core/on-js-reload"}
-                :compiler     {:main       tango.cljs.speaker.core
-                               :asset-path "js/out/speaker"
-                               :output-to  "resources/public/js/speaker.js"
-                               :output-dir "resources/public/js/out/speaker"
-
-                               ;; PROD
                                :optimizations :advanced
                                :pretty-print  false
 
@@ -150,6 +132,25 @@
                                ;:pretty-print  true
                                ;:optimizations :none
                                }}
+
+               ;; Not building this until updated to new Compose iteration
+               ;{:id           "speaker"
+               ; :source-paths ["src/tango/cljs/speaker" "src"]
+               ; :figwheel     {:on-jsload "tango.cljs.speaker.core/on-js-reload"}
+               ; :compiler     {:main       tango.cljs.speaker.core
+               ;                :asset-path "js/out/speaker"
+               ;                :output-to  "resources/public/js/speaker.js"
+               ;                :output-dir "resources/public/js/out/speaker"
+               ;
+               ;                ;; PROD
+               ;                :optimizations :advanced
+               ;                :pretty-print  false
+               ;
+               ;                ;; DEV
+               ;                ;:source-map true
+               ;                ;:pretty-print  true
+               ;                ;:optimizations :none
+               ;                }}
 
                ;; This next build is an compressed minified build for
                ;; production. You can build this with:
