@@ -85,6 +85,7 @@
   Object
   (render [this]
     (let [client (om/props this)]
+      (log "AdjudicatorSelection")
       (dom/div nil
         (dom/h3 nil
           (str "Waiting for Administrator to assign an adjudicator to this client ("
@@ -185,7 +186,7 @@
                         (first (filter (fn [res] (= (:participant/id participant)
                                                     (:participant/id (:result/participant res))))
                                        results)))]
-      ;(log "Render HeatComponent")
+      (log "Render HeatComponent")
       ;(log "Result")
       ;(log (:results (om/props this)))
       ;(log "Participants")
@@ -197,7 +198,8 @@
                          :activity/id    activity-id
                          :result         (find-result %)
                          :allow-marks? (:allow-marks? (om/props this))}))
-             participants)))))
+             participants)
+        ))))
 
 (defui HeatsComponent
   static om/IQuery
@@ -214,11 +216,11 @@
           current-page (:heat-page (om/props this))
           page-start (* page-size current-page)
           page-end (+ page-start page-size)]
-
+      (log "Render HeatsComponent")
       (dom/div nil
         (dom/div #js {:className "col-xs-12"}
           (subvec
-            (vec (map-indexed (fn [idx parts] ((om/factory HeatComponent)
+            (vec (map-indexed (fn [idx parts] ((om/factory HeatComponent {:keyfn (fn [_] idx)})
                                                 {:heat           idx
                                                  :participants   parts
                                                  :adjudicator/id (:adjudicator/id (om/props this))
@@ -258,6 +260,7 @@
     [this]
     (let [pwd (atom "")
           status (:status (om/props this))]
+      (log "AdminComponent")
       (dom/div nil
         (dom/div nil
           (dom/h3 nil (str "Local Storage Says : " (:name @local-storage)))
@@ -322,6 +325,9 @@
 ;; MainComponent
 
 ;https://medium.com/@kovasb/om-next-the-reconciler-af26f02a6fb4#.kwq2t2jzr
+;;!!!!!!!!!
+;; NOTE : Hacking around that only doing om/transact do not return a valid react component
+;;  the pure state transitions should be moved to mutate fns and not pollute rendering
 (defui MainComponent
   static om/IQuery
   (query [_]
@@ -374,10 +380,7 @@
       ;(log selected-adjudicator)
       ;(log "Results :")
       ;(log (:app/results (om/props this)))
-      (log "Main client")
-      (log client)
-      (log "Confirmed")
-      (log confirmed?)
+      (log "MainComponent")
       (dom/div #js {:className "container-fluid"}
         (dom/div #js {:className "col-xs-1 pull-right"}
           (dom/button #js {:className "btn btn-default"
@@ -386,110 +389,126 @@
                       (dom/span #js {:className "glyphicon glyphicon-cog"})))
         (when in-admin-mode?
           (dom/div nil
-            ((om/factory AdminComponent) {:status status})))
-        (dom/div nil
-          (condp = status
-            :loading (if (:client/id (:app/client app))
+            ((om/factory AdminComponent {:keyfn random-uuid}) {:status status})))
+        ;(dom/div nil)
+        (condp = status
+          ;:loading (do
+          ;           (om/transact! this `[(app/status {:status :init})])
+          ;           (dom/div nil "Loading"))
+          :loading (if (:client/id (:app/client app))
+                     (do
                        (om/transact! this `[(app/status {:status :select-judge})])
-                       (do
-                         (log (str (:client-id @local-storage)))
-                         ((om/factory InitClientComponent) (:app/client (om/props this)))
-                         ;(om/transact! this `[(app/status {:status :init})])
-                         ))
+                       (dom/p nil "Transact status"))
+                     (do
+                       (log (str (:client-id @local-storage)))
+                       ((om/factory InitClientComponent) (:app/client (om/props this)))
+                       ;(om/transact! this `[(app/status {:status :init})])
+                       ))
 
-            :init (if (:client/id (:app/client app))
+          :init (if (:client/id (:app/client app))
+                  (do
                     (om/transact! this `[(app/status {:status :select-judge})])
-                    ((om/factory InitClientComponent) (:app/client (om/props this))))
+                    (dom/p nil "Transact status"))
+                  ((om/factory InitClientComponent) (:app/client (om/props this))))
 
-            :select-judge (if selected-adjudicator
-                            (do
-                              (log "Selected Adj")
-                              (log selected-adjudicator)
-                              (swap! local-storage assoc :adjudicator selected-adjudicator)
-                              (log "Stored adj")
-                              (log (:adjudicator @local-storage))
-                              (om/transact! this `[(app/status {:status :waiting-for-round})]))
-                            ((om/factory AdjudicatorSelection) (:app/client (om/props this))))
+          :select-judge (if selected-adjudicator
+                          (do
+                            (log "Selected Adj")
+                            (log selected-adjudicator)
+                            (swap! local-storage assoc :adjudicator selected-adjudicator)
+                            (log "Stored adj")
+                            (log (:adjudicator @local-storage))
+                            (om/transact! this `[(app/status {:status :waiting-for-round})])
+                            (dom/p nil "Transact status"))
+                          ((om/factory AdjudicatorSelection) (:app/client (om/props this))))
 
-            :confirming (dom/div nil
-                          (dom/h3 nil "Confirming results, please wait.."))
-            :confirmed (do
-                         (go (let [_ (<! (timeout 3000))]
-                               (om/transact! this `[(app/status {:status :waiting-for-round})])))
-                         (dom/div nil
-                           (dom/h3 nil (str "Results have been confirmed for "
-                                            (:activity/name selected-activity)))))
+          :confirming (dom/div nil
+                        (dom/h3 nil "Confirming results, please wait.."))
 
-            :waiting-for-round (if (and selected-activity (not confirmed?))
+          :confirmed (do
+                       (go (let [_ (<! (timeout 3000))]
+                             (om/transact! this `[(app/status {:status :waiting-for-round})])
+                             (dom/p nil "Transact status")))
+                       (dom/div nil
+                         (dom/h3 nil (str "Results have been confirmed for "
+                                          (:activity/name selected-activity)))))
+
+          :waiting-for-round (if (and selected-activity (not confirmed?))
+                               (do
                                  (om/transact! this `[(app/status {:status :round-received})])
-                                 (dom/div #js {:className "container"}
-                                   (dom/h3 nil (str "Judge " (:adjudicator/name selected-adjudicator)
-                                                    " on client " (:client/name (:app/client app))))
+                                 (dom/p nil "Transact status"))
+                               (dom/div #js {:className "container"}
+                                 (dom/h3 nil (str "Judge " (:adjudicator/name selected-adjudicator)
+                                                  " on client " (:client/name (:app/client app))))
+                                 (when confirmed?
+                                   (dom/h3 nil
+                                     (str "You have confirmed the currently running round "
+                                          (:activity/name selected-activity))))
+                                 (dom/h3 nil "Waiting for next round..")))
 
-                                   (when confirmed?
-                                     (dom/h3 nil
-                                       (str "You have confirmed the currently running round "
-                                            (:activity/name selected-activity))))
-                                   (dom/h3 nil "Waiting for next round..")))
-
-            :round-received (if (and selected-activity confirmed?)
+          :round-received (if (and selected-activity confirmed?)
+                            (do
                               (om/transact! this `[(app/status {:status :waiting-for-round})])
-                              (om/transact! this `[(app/status {:status :judging})]))
+                              (dom/p nil "Transact status"))
+                            (do
+                              (om/transact! this `[(app/status {:status :judging})])
+                              (dom/p nil "Transact status")))
 
+          :judging
+          (dom/div #js {:className "col-xs-12"}
+            (dom/h3 #js {:className "text-center"} (str "Judge : " (:adjudicator/name
+                                                                     selected-adjudicator)))
 
-            :judging
-            (dom/div #js {:className "col-xs-12"}
-              (dom/h3 #js {:className "text-center"} (str "Judge : " (:adjudicator/name
-                                                                       selected-adjudicator)))
+            (if selected-activity
+              (dom/div nil
+                (dom/h3 #js {:className "text-center"}
+                        (:activity/name selected-activity))
+                (dom/h3 #js {:className "text-center"}
+                        (str (:round/name selected-activity)
+                             " (" (:round/number-of-heats selected-round) " heats)"))
+                (dom/h3 #js {:className "text-center"}
+                        (str "Mark " (:round/number-to-recall selected-round) " of "
+                             (count
+                               (:round/starting selected-round))
+                             " to next round"))
 
-              (if selected-activity
+                ((om/factory HeatsComponent {:keyfn random-uuid})
+                  {:participants   (:round/starting selected-round)
+                   :heats          (:round/number-of-heats selected-round)
+                   :adjudicator/id (:adjudicator/id
+                                     selected-adjudicator)
+                   :activity/id    (:activity/id selected-activity)
+                   :results        results-for-this-adjudicator
+                   :allow-marks?   allow-marks?
+                   :heat-page-size (:app/heat-page-size (om/props this))
+                   :heat-page      (:app/heat-page (om/props this))})
+
                 (dom/div nil
-                  (dom/h3 #js {:className "text-center"}
-                          (:activity/name selected-activity))
-                  (dom/h3 #js {:className "text-center"}
-                          (str (:round/name selected-activity)
-                               " (" (:round/number-of-heats selected-round) " heats)"))
-                  (dom/h3 #js {:className "text-center"}
-                          (str "Mark " (:round/number-to-recall selected-round) " of "
-                               (count
-                                 (:round/starting selected-round))
-                               " to next round"))
+                  ((om/factory HeatsControll {:keyfn random-uuid})
+                    {:heat-page      (:app/heat-page (om/props this))
+                     :heat-last-page (int (Math/floor
+                                            (/ (int (:round/number-of-heats selected-round))
+                                               (:app/heat-page-size (om/props this)))))}))
 
-                  ((om/factory HeatsComponent) {:participants   (:round/starting selected-round)
-                                                :heats          (:round/number-of-heats selected-round)
-                                                :adjudicator/id (:adjudicator/id
-                                                                  selected-adjudicator)
-                                                :activity/id    (:activity/id selected-activity)
-                                                :results        results-for-this-adjudicator
-                                                :allow-marks?   allow-marks?
-                                                :heat-page-size (:app/heat-page-size (om/props this))
-                                                :heat-page      (:app/heat-page (om/props this))})
+                (dom/div #js {:className "row"}
+                  (dom/h1 #js {:className "col-xs-offset-4 col-xs-4 text-center"}
+                          (str "Marks " mark-count "/" (:round/number-to-recall selected-round))))
 
-                  (dom/div nil
-                    ((om/factory HeatsControll)
-                      {:heat-page      (:app/heat-page (om/props this))
-                       :heat-last-page (int (Math/floor
-                                              (/ (int (:round/number-of-heats selected-round))
-                                                 (:app/heat-page-size (om/props this)))))}))
-
-                  (dom/div #js {:className "row"}
-                    (dom/h1 #js {:className "col-xs-offset-4 col-xs-4 text-center"}
-                            (str "Marks " mark-count "/" (:round/number-to-recall selected-round))))
-
-                  (dom/div #js {:className "row"}
-                    (dom/div #js {:className "col-xs-offset-4 col-xs-4"}
-                      (dom/button #js {:className "btn btn-primary btn-lg btn-block"
-                                       :disabled  (not= mark-count (:round/number-to-recall selected-round))
-                                       :onClick   #(om/transact!
-                                                    this
-                                                    `[(app/confirm-marks
-                                                        ~{:results     results-for-this-adjudicator
-                                                          :adjudicator selected-adjudicator
-                                                          :activity    (select-keys selected-activity
-                                                                                    [:activity/id])})])}
-                                  "Confirm Marks")))
-                  ))
-              )))
+                (dom/div #js {:className "row"}
+                  (dom/div #js {:className "col-xs-offset-4 col-xs-4"}
+                    (dom/button #js {:className "btn btn-primary btn-lg btn-block"
+                                     :disabled  (not= mark-count (:round/number-to-recall selected-round))
+                                     :onClick   #(om/transact!
+                                                  this
+                                                  `[(app/confirm-marks
+                                                      ~{:results     results-for-this-adjudicator
+                                                        :adjudicator selected-adjudicator
+                                                        :activity    (select-keys selected-activity
+                                                                                  [:activity/id])})])}
+                                "Confirm Marks")))
+                ))
+            )
+          (dom/div nil "Default"))
         )
       )))
 
