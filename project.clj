@@ -11,7 +11,7 @@
                  [org.clojure/clojurescript "1.8.51"]
                  [org.clojure/core.match "0.3.0-alpha4"]
 
-                 [com.datomic/datomic-free "0.9.5350"]
+                 [com.datomic/datomic-free "0.9.5385"]
                  [datascript "0.15.1"]
 
                  [com.cognitect/transit-clj "0.8.285"]
