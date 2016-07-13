@@ -6,22 +6,22 @@
 
   :dependencies [;; Core
                  [org.clojure/clojure "1.8.0"]
-                 [org.clojure/core.async "0.2.374"]                 
+                 [org.clojure/core.async "0.2.385"]
                  [org.clojure/tools.namespace "0.2.10"]
                  [org.clojure/clojurescript "1.8.40"]
                  [org.clojure/core.match "0.3.0-alpha4"]
 
                  [com.datomic/datomic-free "0.9.5350"]
-                 [datascript "0.15.0"]
+                 [datascript "0.15.1"]
 
                  [com.cognitect/transit-clj "0.8.285"]
 
                  ;; Utils
                  [com.stuartsierra/component "0.3.1"]
                  [org.clojure/data.xml "0.0.8"]
-                 [org.clojure/data.zip "0.1.1"]
-                 [clj-time "0.11.0"]
-                 [prismatic/schema "1.1.1"]
+                 [org.clojure/data.zip "0.1.2"]
+                 [clj-time "0.12.0"]
+                 [prismatic/schema "1.1.2"]
                  
                  ;; Logging
                  [com.taoensso/timbre "4.3.1"]
@@ -46,7 +46,7 @@
                  ;; Cljs
                  [com.andrewmcveigh/cljs-time "0.4.0"]
                  [cljs-http "0.1.40"]
-                 [com.cognitect/transit-cljs "0.8.237"]
+                 [com.cognitect/transit-cljs "0.8.239"]
                  [alandipert/storage-atom "1.2.4"]]
 
   :plugins [[lein-figwheel "0.5.0-2"]
