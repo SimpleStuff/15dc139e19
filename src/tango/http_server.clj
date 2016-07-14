@@ -279,10 +279,10 @@
   (om/parser {:mutate mutate
               :read reader}))
 
-(defn handle-command [ch-out req]
-  (let [result (parser {:state ch-out} (:command (:params req)))]
-    (log/info "Command params " (:command (:params req)))
-    {:body result}))
+(defn handle-command [ch-out command]
+  (let [result (parser {:state ch-out} command)]
+    (log/info "Command params " command)
+    result))
 
 (defn handle-query [ch-out datomic-storage-uri req]
   (let [conn (d/create-connection datomic-storage-uri)
@@ -299,15 +299,15 @@
    (GET "/" req {:body (slurp (clojure.java.io/resource "public/index.html"))
                  :session {:uid (rand-int 100)}
                  :headers {"Content-Type" "text/html"}})
-   ;(POST "/commands" req (str "Command: " req))
-   (POST "/commands" params (partial handle-command (:out-channel http-server-channels))        ;(fn [req] (str "Command: " req))
-     )
+   (POST "/commands" params (fn [request]
+                              {:body (handle-command (:out-channel http-server-channels)
+                                                     (:command (:params request)))}))
    (GET "/adjudicator" req {:body (slurp (clojure.java.io/resource "public/adjudicator.html"))
                             :session {:uid (rand-int 10000)}
                             :headers {"Content-Type" "text/html"}})
    (GET "/speaker" req {:body (slurp (clojure.java.io/resource "public/speaker.html"))
-                            :session {:uid (rand-int 10000)}
-                            :headers {"Content-Type" "text/html"}})
+                        :session {:uid (rand-int 10000)}
+                        :headers {"Content-Type" "text/html"}})
    (GET "/runtime" req {:body (slurp (clojure.java.io/resource "public/runtime.html"))
                         :session {:uid (rand-int 10000)}
                         :headers {"Content-Type" "text/html"}})

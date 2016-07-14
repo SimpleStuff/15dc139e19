@@ -9,10 +9,6 @@
 ;; Turn of logging out put when running tests
 (log/set-config! {:appenders {:standard-out {:enabled? true}}})
 
-(deftest routing
-  (testing "Commands should be routed to command api"
-    (is (= 0 1))))
-
 (defn create-delete-class-message [competition-id class-id]
   {:topic :event-manager/delete-class
    :payload {:competition/id competition-id
@@ -32,10 +28,24 @@
           out-val (async/go (first (async/alts! [out-ch (async/timeout 1000)])))
           result (http/handle-command
                    out-ch
-                   {:params {:command '[(class/delete {:class/id 1 :competition/id 1})]}})]
+                   '[(class/delete {:class/id 1 :competition/id 1})])]
       (is (= (async/<!! out-val)
              {:topic :command :sender :http :payload (create-delete-class-message 1 1)}))
       (is (= result
-             {:body {'class/delete {:result :tx/accepted}}})))))
+             {'class/delete {:result :tx/accepted}})))))
 
+(deftest http-handler
+  (testing "Http handler stuff"
+    (let [out-ch (async/chan)
+          out-val (async/go (first (async/alts! [out-ch (async/timeout 1000)])))
+          handler (http/handler nil nil {:out-channel out-ch} "")
+          result (handler {:request-method :post
+                           :uri "/commands"
+                           :params {:command '[(class/delete {:class/id 1 :competition/id 1})]}})]
+      (is (= (async/<!! out-val)
+             {:topic :command :sender :http :payload (create-delete-class-message 1 1)}))
+      (is (= result
+             {:status 200
+              :headers {}
+              :body {'class/delete {:result :tx/accepted}}})))))
 
