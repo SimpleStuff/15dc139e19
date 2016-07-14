@@ -55,14 +55,19 @@
                (async/>!! state {:topic :command :sender :http :payload message})
                (log/info (str "Class Save " key " " params))))})
 
+(defn publish-class-delete [ch message]
+  (async/alts!! [[ch {:topic :command :sender :http :payload message}]
+                 (async/timeout 1000)]))
+
 (defmethod mutate 'class/delete
   [{:keys [state] :as env} key params]
   {:action (fn []
              (let [message {:topic   :event-manager/delete-class
                             :payload {:competition/id    (:competition/id params)
                                       :class/id (:class/id params)}}]
-               (async/>!! state {:topic :command :sender :http :payload message})
-               (log/info (str "Class Delete " key " " params))))})
+               (publish-class-delete state message)
+               (log/info (str "Class Delete " key " " params))
+               :tx/accepted))})
 
 (defmethod mutate 'app/status
   [{:keys [state] :as env} key params]
@@ -229,19 +234,6 @@
             (log/info (str "app/clients read"))
             (d/query-clients state query))})
 
-;; TODO - hack fix
-;(defmethod reader :app/selected-adjudicator
-;  [{:keys [state query]} key params]
-;  {:value (do
-;            (log/info (str "app/selected-adjudicator read"))
-;            (log/info (str query " - " key " - " params))
-;            (let [q [:client/id
-;                     :client/name
-;                     {:client/user query}]
-;                  clients (d/query-clients state q)]
-;              (log/info (str "Clients : " clients))
-;              (first (filter #(= (:client/id params) (:client/id %)) clients))))})
-
 (defmethod reader :app/client
   [{:keys [state query]} key params]
   {:value (do
@@ -288,26 +280,15 @@
               :read reader}))
 
 (defn handle-command [ch-out req]
-  (do
-    (parser {:state ch-out} (:command (:params req)))
-    ;(log/info "Command params " (:command (:params req)))
-    {:body req})
-  ;(str (:remote (:params req)))
-  ;(str (prn (t/read (t/reader (:body req) :json))))
-  ;(prn (t/read (t/reader (:body req) :json)))
-  )
+  (let [result (parser {:state ch-out} (:command (:params req)))]
+    (log/info "Command params " (:command (:params req)))
+    {:body result}))
 
 (defn handle-query [ch-out datomic-storage-uri req]
   (let [conn (d/create-connection datomic-storage-uri)
         ;result (d/get-selected-activity conn)
         result (parser {:state conn} (clojure.edn/read-string (:query (:params req))))
         ]
-    ;(async/>!! ch-out {:topic :query
-    ;                   :sender :http
-    ;                   :payload (clojure.edn/read-string
-    ;                              (:query (:params req)))})
-
-    ;(parser {:state conn} (clojure.edn/read-string (:query (:params req))))
     (log/trace (str "Request Query " req))
     (log/info (str "Query >> " result))
     {:body {:query result}})
