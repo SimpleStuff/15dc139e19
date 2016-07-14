@@ -286,9 +286,7 @@
 
 (defn handle-query [ch-out datomic-storage-uri req]
   (let [conn (d/create-connection datomic-storage-uri)
-        ;result (d/get-selected-activity conn)
-        result (parser {:state conn} (clojure.edn/read-string (:query (:params req))))
-        ]
+        result (parser {:state conn} (clojure.edn/read-string (:query (:params req))))]
     (log/trace (str "Request Query " req))
     (log/info (str "Query >> " result))
     {:body {:query result}})
