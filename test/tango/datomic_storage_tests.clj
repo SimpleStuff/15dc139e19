@@ -2,7 +2,11 @@
   (:require [clojure.test :refer :all]
             [tango.test-utils :as u]
             [tango.datomic-storage :as ds]
-            [tango.import :as imp]))
+            [tango.import :as imp]
+            [taoensso.timbre :as log]))
+
+;; Turn of logging out put when running tests
+(log/set-config! {:appenders {:standard-out {:enabled? false}}})
 
 (def select-round-data
   {:activity/id   #uuid "4b0b1db9-6e5d-4aa6-9947-cb214a4d89df"
