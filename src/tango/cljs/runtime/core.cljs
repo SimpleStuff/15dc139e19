@@ -569,7 +569,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Client Row
-(defui ClientRow
+(defui ^:once ClientRow
   static om/IQuery
   (query [_]
     [:client/id :client/name {:client/user [:adjudicator/id :adjudicator/name]}])
@@ -582,6 +582,10 @@
           client-name (:client/name client)
           adjudicator-id (:adjudicator/id (:client/user client))
           adjudicator-name (:adjudicator/name (:client/user client))]
+      (log "Client Row")
+      (log client)
+      (log "Panels Row")
+      (log panels)
       (dom/tr nil
         (dom/td nil (str client-id))
         (dom/td nil client-name)
@@ -627,7 +631,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Clients View
-(defui ClientsView
+(defui ^:once ClientsView
   ;static om/IQuery
   ;(query [_]
   ;  (into [] (om/get-query ClientRow)))
@@ -638,6 +642,8 @@
           panels (:adjudicator-panels (om/props this))]
       (log "clients")
       (log clients)
+      (log "panels")
+      (log panels)
       (dom/div nil
         (dom/h2 nil "Clients")
         (dom/table
