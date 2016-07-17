@@ -582,10 +582,6 @@
           client-name (:client/name client)
           adjudicator-id (:adjudicator/id (:client/user client))
           adjudicator-name (:adjudicator/name (:client/user client))]
-      (log "Client Row")
-      (log client)
-      (log "Panels Row")
-      (log panels)
       (dom/tr nil
         (dom/td nil (str client-id))
         (dom/td nil client-name)
@@ -640,10 +636,6 @@
     [this]
     (let [clients (sort-by (juxt :client/name :client/id) (:clients (om/props this)))
           panels (:adjudicator-panels (om/props this))]
-      (log "clients")
-      (log clients)
-      (log "panels")
-      (log panels)
       (dom/div nil
         (dom/h2 nil "Clients")
         (dom/table

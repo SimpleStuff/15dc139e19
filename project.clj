@@ -49,7 +49,8 @@
                  [cljs-http "0.1.41"]
                  [com.cognitect/transit-cljs "0.8.239"]
                  [alandipert/storage-atom "2.0.1"]
-                 [devcards "0.2.1-7"]]
+                 [devcards "0.2.1-7"]
+                 [devcards-om-next "0.2.0"]]
 
   :plugins [[lein-figwheel "0.5.4-7"]
             [lein-cljsbuild "1.1.3"]
