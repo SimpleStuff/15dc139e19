@@ -50,9 +50,11 @@
                  [com.cognitect/transit-cljs "0.8.239"]
                  [alandipert/storage-atom "2.0.1"]
                  [devcards "0.2.1-7"]
-                 [devcards-om-next "0.2.0"]]
+                 [devcards-om-next "0.2.0"]
+                 ]
 
   :plugins [[lein-figwheel "0.5.4-7"]
+            [lein-doo "0.1.7"]
             [lein-cljsbuild "1.1.3"]
             [lein-ancient "0.6.10"]
             [lein-hiera "0.9.5"]
@@ -82,26 +84,13 @@
   ;; On externs
   ;http://www.lispcast.com/clojurescript-externs
   :cljsbuild {:builds
-              [
-               ;{:id           "dev"
-               ; :source-paths ["src/tango/cljs" "src"]
-               ;
-               ; :figwheel     {:on-jsload "tango.cljs.client/on-js-reload"}
-               ;
-               ; :compiler     {:main          tango.cljs.client
-               ;                :asset-path    "js/out"
-               ;                :output-to     "resources/public/js/app.js"
-               ;                :output-dir    "resources/public/js/out"
-               ;                ;:source-map    "resources/public/js/out.js.map"
-               ;                ;; PROD
-               ;                :optimizations :advanced
-               ;                :pretty-print  false
-               ;
-               ;                ;; DEV
-               ;                ;:source-map true
-               ;                ;:pretty-print  true
-               ;                ;:optimizations :none
-               ;                }}
+              [{:id           "cljs-test"
+                :source-paths ["src/tango/cljs/" "src"
+                               "test/tango/cljs"]
+                :compiler     {:output-to     "js/out/cljs_tests.js"
+                               :output-dir    "test/js/out/"
+                               :main          'tango.cljs.runner
+                               :optimizations :none}}
 
                {:id           :devcards
                 :source-paths ["src/tango/cljs/" "src"]
