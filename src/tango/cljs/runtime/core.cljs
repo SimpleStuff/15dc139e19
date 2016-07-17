@@ -569,7 +569,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Client Row
-(defui ClientRow
+(defui ^:once ClientRow
   static om/IQuery
   (query [_]
     [:client/id :client/name {:client/user [:adjudicator/id :adjudicator/name]}])
@@ -627,7 +627,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Clients View
-(defui ClientsView
+(defui ^:once ClientsView
   ;static om/IQuery
   ;(query [_]
   ;  (into [] (om/get-query ClientRow)))
@@ -636,8 +636,6 @@
     [this]
     (let [clients (sort-by (juxt :client/name :client/id) (:clients (om/props this)))
           panels (:adjudicator-panels (om/props this))]
-      (log "clients")
-      (log clients)
       (dom/div nil
         (dom/h2 nil "Clients")
         (dom/table
@@ -988,6 +986,7 @@
                                        {:dance/name "Mango"
                                         :dance/id #uuid "d2edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}]}))
 
+;; TODO - Stop using reconciler in components, messes up devcards/tests
 (def reconciler
   (om/reconciler
     {:state   app-state
@@ -995,5 +994,13 @@
      :parser  (om/parser {:read r/read :mutate m/mutate})
      :send    (remote-send)}))
 
-(om/add-root! reconciler
-              MainComponent (gdom/getElement "app"))
+#_(om/add-root! reconciler
+              MainComponent (gdom/getElement "main-app"))
+
+(defn main []
+  (if-let [node (gdom/getElement "main-app")]
+    (do
+      (log "Loading MainComponent")
+      (om/add-root! reconciler MainComponent node))))
+
+(main)

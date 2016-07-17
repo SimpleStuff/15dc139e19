@@ -48,7 +48,9 @@
                  [com.andrewmcveigh/cljs-time "0.4.0"]
                  [cljs-http "0.1.41"]
                  [com.cognitect/transit-cljs "0.8.239"]
-                 [alandipert/storage-atom "2.0.1"]]
+                 [alandipert/storage-atom "2.0.1"]
+                 [devcards "0.2.1-7"]
+                 [devcards-om-next "0.2.0"]]
 
   :plugins [[lein-figwheel "0.5.4-7"]
             [lein-cljsbuild "1.1.3"]
@@ -101,13 +103,21 @@
                ;                ;:optimizations :none
                ;                }}
 
+               {:id           :devcards
+                :source-paths ["src/tango/cljs/" "src"]
+                :figwheel     {:devcards true}
+                :compiler     {:main       "tango.cljs.cards"
+                               :asset-path "js/out/cards"
+                               :output-to  "resources/public/js/cards.js"
+                               :output-dir "resources/public/js/out/cards"}}
+
                {:id           "adj"
                 :source-paths ["src/tango/cljs/adjudicator" "src"]
                 :figwheel     {:on-jsload "tango.cljs.adjudicator.core/on-js-reload"}
-                :compiler     {:main       tango.cljs.adjudicator.core
-                               :asset-path "js/out/adj"
-                               :output-to  "resources/public/js/adj.js"
-                               :output-dir "resources/public/js/out/adj"
+                :compiler     {:main          tango.cljs.adjudicator.core
+                               :asset-path    "js/out/adj"
+                               :output-to     "resources/public/js/adj.js"
+                               :output-dir    "resources/public/js/out/adj"
                                ;:source-map    "resources/public/js/out.js.map"
                                ;; PROD
                                ;:optimizations :advanced
@@ -123,10 +133,10 @@
                {:id           "runtime"
                 :source-paths ["src/tango/cljs/runtime" "src"]
                 :figwheel     {:on-jsload "tango.cljs.adjudicator.core/on-js-reload"}
-                :compiler     {:main       tango.cljs.runtime.core
-                               :asset-path "js/out/runtime"
-                               :output-to  "resources/public/js/app.js"
-                               :output-dir "resources/public/js/out/runtime"
+                :compiler     {:main          tango.cljs.runtime.core
+                               :asset-path    "js/out/runtime"
+                               :output-to     "resources/public/js/app.js"
+                               :output-dir    "resources/public/js/out/runtime"
                                ;:source-map    "resources/public/js/out.js.map"
                                ;; PROD
                                :optimizations :none
