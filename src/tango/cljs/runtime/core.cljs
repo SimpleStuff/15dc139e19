@@ -986,6 +986,7 @@
                                        {:dance/name "Mango"
                                         :dance/id #uuid "d2edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}]}))
 
+;; TODO - Stop using reconciler in components, messes up devcards/tests
 (def reconciler
   (om/reconciler
     {:state   app-state
@@ -993,5 +994,13 @@
      :parser  (om/parser {:read r/read :mutate m/mutate})
      :send    (remote-send)}))
 
-(om/add-root! reconciler
-              MainComponent (gdom/getElement "app"))
+#_(om/add-root! reconciler
+              MainComponent (gdom/getElement "main-app"))
+
+(defn main []
+  (if-let [node (gdom/getElement "main-app")]
+    (do
+      (log "Loading MainComponent")
+      (om/add-root! reconciler MainComponent node))))
+
+(main)

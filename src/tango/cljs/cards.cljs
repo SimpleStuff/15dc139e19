@@ -3,16 +3,15 @@
     [devcards.core :as dc :refer [defcard deftest]])
 
   (:require
-    [tango.cljs.runtime.core :as rt]
+    [tango.cljs.runtime.core :as rtc]
+    [tango.cljs.runtime.mutation :as m]
+    [tango.cljs.runtime.read :as r]
     [devcards-om-next.core :refer-macros [defcard-om-next om-next-root]]
     [om.next :as om :refer-macros [defui]]
     [om.dom :as dom]))
 
 ; https://anmonteiro.com/2016/02/om-next-meets-devcards-the-full-reloadable-experience/
 (enable-console-print!)
-
-(defcard first-card
-         "test")
 
 (def client-data
   [{:client/id   #uuid "7ba5e71a-46f3-4889-ad0e-f6df7dfd97d0",
@@ -59,84 +58,105 @@
 ;https://github.com/bhauman/devcards/blob/master/example_src/devdemos/om_next.cljs
 ;https://github.com/anmonteiro/devcards-om-next/blob/master/src/devcards/devcards_om_next/devcards/core.cljs
 
-(defcard-om-next classes-card
-                 "rendering of classes"
-                 rt/ClassesView
-                 {:classes [{:class/name "B"
-                             :class/starting [{:participant/number 1
-                                               :participant/name "A"}]}]})
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Utils
 
-;; This card seems to kill all other om next cards..
-#_(defcard create-class
-         "create class"
-         (dc/om-next-root rt/CreateClassView {:class/name "Test"
-                                              :class/dances []
-                                              :class/starting []
-                                              :panels []})
-                 )
+(defn create-reconciler [opts]
+  (om/reconciler
+    (merge {:state   {}
+            :remotes [:command :query]
+            :parser  (om/parser {:read r/read :mutate m/mutate})
+            :send    (fn [edn cb] (.log js/console (str "Remote called with " edn)))}
+           opts)))
 
-(defui ^:once Widget
-  Object
-  (render [this]
-    (dom/div nil
-      (dom/h2 nil (str "This is an Om Next card, " (:text (om/props this)))))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Clients cards
 
-(defonce om-next-root-data {:text "yep"})
+(defcard-om-next
+  clients-view
+  "View of connected clients association.
 
-(defcard om-next-card-ex
-         "This card calls `om-next-root` with one argument, the component"
-         (dc/om-next-root Widget)
-         {:text "yep"})
+   An unassigned client (Test 0) will display \"Select\"."
+  rtc/ClientsView
+  (create-reconciler {:state {:clients            client-data
+                              :adjudicator-panels panel-date}}))
 
-(defcard om-next-card-reconciler-ex
-         "This card calls `om-next-root` with 2 args, the component and the Om Next reconciler"
-         (dc/om-next-root Widget
-                          (om/reconciler {:state om-next-root-data
-                                          :parser (om/parser {:read (fn [] {:value om-next-root-data})})})))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Classes cards
+(defcard-om-next
+  class-view
+  "View of Classes."
+  rtc/ClassesView
+  (create-reconciler
+    {:state   {:classes [{:class/name "A"
+                          :class/id #uuid "16872313-d824-47eb-8d13-af191a8d9651"
+                          :class/starting [{:participant/number 1
+                                            :participant/name "A"}]}
+                         {:class/name "B"
+                          :class/id #uuid "26872313-d824-47eb-8d13-af191a8d9651"
+                          :class/starting [{:participant/number 1
+                                            :participant/name "A"}]}]
+               :selected {:class/name "A"
+                          :class/id #uuid "16872313-d824-47eb-8d13-af191a8d9651"}}}))
 
-;; use ^:once meta in `defui`
-(defui ^:once Counter
-  Object
-  (initLocalState [this]
-    {:val 1})
-  (render [this]
-    (let [{:keys [val]} (om/get-state this)
-          text (:text (om/props this))
-          comp (:comp (om/get-computed this))]
-      (dom/div nil
-        (str "val: " val)
-        (dom/h3 nil text)
-        (dom/h3 nil comp)
-        (dom/button
-          #js {:onClick #(om/update-state! this update :val inc)}
-          "inc!")))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Schedule View
 
-;; defonce the reconciler
-(defonce counter-reconciler
-         (om/reconciler {:state {:text "Mer Test"}
-                         :parser {:read (fn [] {:value {:text "Mer Test"}})}}))
+;; TODO
 
-;; the usual `defcard` calls `om-next-root`
-(defcard om-next-root-example-counter
-         "`om-next-root` takes a component class and (optionally)
-          a map with the state or a reconciler"
-         (om-next-root Counter (om/computed {:text "Test"} {:comp 22})))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; CreateClassView
+(defcard-om-next
+  create-class-view
+  "Create class view"
+  rtc/CreateClassView
+  (create-reconciler {:state  {:class/name              "New Class"
+                               :class/id                1
+                               :class/adjudicator-panel {:adjudicator-panel/id   1
+                                                         :adjudicator-panel/name "A"}
+                               :class/starting          [{:participant/number 1
+                                                          :participant/name   "Rolf Turbo"}]}
+                      :parser (om/parser {:read (fn [{:keys [state]} key _]
+                                                  {:value (get @state key)})
+                                          :mutate (fn [])})})
+  )
 
-;; `defcard-om-next` takes every normal `defcard` argument
-;; (documentation, devcard, options, etc.), and the arguments of `om-next-root`
-(defcard-om-next defcard-om-next-example
-                 "`defcard-om-next` example with a Component class and a reconciler"
-                 Counter
-                 counter-reconciler)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; TestCard
+;(defcard mumbo-jumbo
+;         "Mumbo Jumbo"
+;         "Mubo")
+;
+;(deftest test-testing
+;         "## Examples"
+;         (dc/testing "A test"
+;                     (is (= 1 1))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;
-(defcard-om-next clients-view-card
-                 "View of connected clients association.
 
-                 An unassigned client (Test 0) will display \"Select\"."
-                 rt/ClientsView
-                 {:clients            client-data
-                  :adjudicator-panels panel-date})
+;; computed
 
-(defn main []
-  )
+;;; use ^:once meta in `defui`
+;(defui ^:once Counter
+;  Object
+;  (initLocalState [this]
+;    {:val 1})
+;  (render [this]
+;    (let [{:keys [val]} (om/get-state this)
+;          text (:text (om/props this))
+;          comp (:comp (om/get-computed this))]
+;      (dom/div nil
+;        (str "val: " val)
+;        (dom/h3 nil text)
+;        (dom/h3 nil comp)
+;        (dom/button
+;          #js {:onClick #(om/update-state! this update :val inc)}
+;          "inc!")))))
+;
+
+;;; the usual `defcard` calls `om-next-root`
+;(defcard om-next-root-example-counter
+;         "`om-next-root` takes a component class and (optionally)
+;          a map with the state or a reconciler"
+;         (om-next-root Counter (om/computed {:text "Test"} {:comp 22})))
+;
