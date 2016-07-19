@@ -69,6 +69,9 @@
             :send    (fn [edn cb] (.log js/console (str "Remote called with " edn)))}
            opts)))
 
+;;;;;;;;
+(defcard dummy "Dummy")
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Clients cards
 

@@ -89,11 +89,12 @@
                                "test/tango/cljs"]
                 :compiler     {:output-to     "js/out/cljs_tests.js"
                                :output-dir    "test/js/out/"
-                               :main          'tango.cljs.runner
+                               :main          "tango.cljs.runner"
                                :optimizations :none}}
 
                {:id           :devcards
-                :source-paths ["src/tango/cljs/" "src"]
+                :source-paths ["src/tango/cljs/" "src"
+                               "test/tango/cljs"]
                 :figwheel     {:devcards true}
                 :compiler     {:main       "tango.cljs.cards"
                                :asset-path "js/out/cards"

@@ -1,10 +1,18 @@
 (ns tango.cljs.testing
-  (:require [cljs.test :refer-macros [deftest is testing run-tests]]
+  (:require-macros
+    [devcards.core :as dc :refer [defcard deftest]])
+
+  (:require [cljs.test :refer-macros [is testing run-tests]]
             [tango.cljs.runtime.read :as r]
             [tango.cljs.runtime.mutation :as m]))
 
+(defcard dummy
+         "Dummy card")
+;; POF testing namespace, break into proper ns when doing real stuff
 (deftest first-test
-  (is (= 1 1)))
+         "Should show as card"
+         (testing "Stuff"
+           (is (= 1 1))))
 
 (deftest test-read
   (let [result (r/read {:state (atom {:app/clients [{:client/name "A"}]})}
