@@ -574,11 +574,13 @@
     c))
 
 (defn create-retraction [e-id attr val]
+  ;(when (and e-id attr val))
   [:db/retract e-id attr val])
 
 ;; TODO - looks more complicated than it should be..
 (defn create-update-retractions [old new pre-diff-fn]
-  (let [[to-retract _ _] (clojure.data/diff (pre-diff-fn old) (pre-diff-fn new))
+  (let [[to-retract-raw _ _] (clojure.data/diff (pre-diff-fn old) (pre-diff-fn new))
+        to-retract (filter val to-retract-raw)
         filter-nil (fn [v] (vec (filter #(not (nil? %)) v)))
         e-id (:db/id old)]
     (apply concat

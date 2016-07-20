@@ -122,7 +122,8 @@
                                }}
 
                {:id           "runtime"
-                :source-paths ["src/tango/cljs/runtime" "src"]
+                :source-paths ["src/tango/cljs/runtime"
+                               "src/tango/presentation.cljc"]
                 :figwheel     {:on-jsload "tango.cljs.adjudicator.core/on-js-reload"}
                 :compiler     {:main          tango.cljs.runtime.core
                                :asset-path    "js/out/runtime"
