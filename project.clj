@@ -72,7 +72,7 @@
                                     "resources/public/js/speaker.js"
                                     "target"]
 
-  :test-paths ["test" "test/services"]
+  :test-paths ["test"]
 
   :hiera {:path "specs/tango-hierarchy.png"
           :vertical true
@@ -86,17 +86,18 @@
   :cljsbuild {:builds
               [{:id           "cljs-test"
                 :source-paths ["src/tango/cljs/" "src"
-                               "test/tango/cljs"]
+                               "test/tango/cljs"
+                               "test/tango/runner_cljs.cljs"]
                 :compiler     {:output-to     "js/out/cljs_tests.js"
-                               :output-dir    "test/js/out/"
-                               :main          "tango.cljs.runner"
+                               :output-dir    "js/out/test"
+                               :main          "tango.runner-cljs"
                                :optimizations :none}}
 
                {:id           :devcards
                 :source-paths ["src/tango/cljs/" "src"
                                "test/tango/cljs"]
                 :figwheel     {:devcards true}
-                :compiler     {:main       "tango.cljs.cards"
+                :compiler     {:main       "tango.cljs.cards-core"
                                :asset-path "js/out/cards"
                                :output-to  "resources/public/js/cards.js"
                                :output-dir "resources/public/js/out/cards"}}

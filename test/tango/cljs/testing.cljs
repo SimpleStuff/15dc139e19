@@ -14,12 +14,12 @@
          (testing "Stuff"
            (is (= 1 1))))
 
-(deftest test-read
+(dc/deftest test-read
   (let [result (r/read {:state (atom {:app/clients [{:client/name "A"}]})}
                        :app/clients {})]
     (is (= [{:client/name "A"}] (:value result)))))
 
-(deftest test-mutate
+(dc/deftest test-mutate
   (testing "Mutation"
     (let [result (m/mutate {:state (atom {:app/selected-page :page-one})}
                            'app/select-page
