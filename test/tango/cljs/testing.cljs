@@ -26,3 +26,19 @@
                            {:selected-page :page-two})]
       (is (= {:app/selected-page :page-two}
              ((:action result)))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Runtime reads
+(dc/deftest
+  adjudicator-panels-read
+  (let [result (r/read {:state
+                        (atom {:app/adjudicator-panels
+                               [{:adjudicator-panel/id   1
+                                 :adjudicator-panel/name "A"}]})}
+                       :app/adjudicator-panels
+                       {})]
+    (is (= [{:adjudicator-panel/name "A"
+             :adjudicator-panel/id 1}]
+           (:value result)))
+    (is (= (:query result)
+           true))))

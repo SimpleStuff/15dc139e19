@@ -775,6 +775,28 @@
           (apply dom/tbody nil (map #((om/factory ParticipantRow {:key-fn :participant/id}) %)
                                     participants)))))))
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; AdjudicatorPanelsView
+(defui AdjudicatorPanelsRow
+  static om/IQuery
+  (query [_]
+    [:adjudicator-panel/id :adjudicator-panel/name])
+  Object
+  (render
+    [this]
+    (let [{:keys [adjudicator-panel/name]} (om/props this)]
+      (log "AdjudicatorPanelsView")
+      ;(log adjudicator-panels)
+      (dom/li nil name))))
+
+(defn AdjudicatorPanelsss [panels]
+  (log panels)
+  (dom/div nil
+    "Pansless"
+    (apply dom/ul nil
+           (map #((om/factory AdjudicatorPanelsRow) %) panels))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; MainComponent
 

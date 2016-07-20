@@ -69,9 +69,6 @@
             :send    (fn [edn cb] (.log js/console (str "Remote called with " edn)))}
            opts)))
 
-;;;;;;;;
-(defcard dummy "Dummy")
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Clients cards
 
@@ -106,6 +103,24 @@
 ;; Schedule View
 
 ;; TODO
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; AdjudicatorPanelsView
+(defcard-om-next
+  adjudicator-panels
+  "Display a view of Adjudicator Panels"
+  rtc/AdjudicatorPanelsRow
+  (create-reconciler {:state {:adjudicator-panel/id   1
+                              :adjudicator-panel/name "A"}
+                      :parser (om/parser {:read   (fn [{:keys [state]} key _]
+                                                    {:value (get @state key)})
+                                          :mutate (fn [])})}))
+
+(defcard
+  panelsss
+  "Test"
+  (rtc/AdjudicatorPanelsss [{:adjudicator-panel/id   1
+                             :adjudicator-panel/name "A"}]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; CreateClassView

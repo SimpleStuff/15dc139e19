@@ -53,6 +53,11 @@
   {:value (get @state :app/participants [])
    :query true})
 
+(defmethod read :app/adjudicator-panels
+  [{:keys [state]} _ _]
+  {:value (get @state :app/adjudicator-panels [])
+   :query true})
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Dances
 (defmethod read :app/dances
