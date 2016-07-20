@@ -190,13 +190,7 @@
     [this]
     (let [;selected-class (:selected-class (om/props this))
           selected-class (om/props this)
-          {:keys [panels]} (om/get-computed this)
-          ;panels (:adjudicator-panels (om/props this))
-          ]
-      ;; - Class name
-      ;; - Adj Panel
-      ;; - Dances
-      ;; - Startlist (participants)
+          {:keys [panels]} (om/get-computed this)]
       (log "CreateClassView")
       ;(log selected-class)
       (dom/div #js {:className "col-sm-12"}
@@ -375,24 +369,15 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ClassesView
 (defui ClassesView
-  ;static om/IQuery
-  ;(query [_]
-  ;  `[:app/selected-class])
   Object
   (render
     [this]
     (let [classes (sort-by :class/position (:classes (om/props this)))
-          ;{:keys [selected]} (om/get-computed this)
           selected (:selected (om/props this))]
       (log "ClassesView")
       (dom/div nil
         (dom/h2 {:className "sub-header"} "Classes")
         (dom/div nil
-          ;(dom/button #js {:onClick #(om/transact!
-          ;                            reconciler
-          ;                            `[(class/create {:class/name "New Class"
-          ;                                             :class/id ~(random-uuid)})
-          ;                              :app/selected-competition])} "New")
           (dom/button #js {:className "btn btn-default"
                            :onClick   (fn [e]
                                         (let [new-id (random-uuid)]
@@ -592,14 +577,6 @@
                         (dom/span #js {:className "selection"}
                           (if adjudicator-name adjudicator-name "Select"))
                         (dom/span #js {:className "caret"}))
-            ;(dom/ul #js {:className "dropdown-menu"
-            ;             :role "menu"}
-            ;  (dom/li #js {:className "dropdown-header"} (str "Panel - "
-            ;                                                  (:adjudicator-panel/name (first panels))))
-            ;  (dom/li #js {:role "presentation"}
-            ;    (dom/a #js {:role "menuitem"} "AA"))
-            ;  (dom/li #js {:role "presentation"}
-            ;    (dom/a #js {:role "menuitem"} "BB")))
 
             (apply dom/ul #js {:className "dropdown-menu" :role "menu"}
                    (map (fn [panel]
@@ -621,9 +598,7 @@
                                                }
                                     (dom/a #js {:role "menuitem"} (:adjudicator/name adjudicator))))
                                 (:adjudicator-panel/adjudicators panel))])
-                        panels))
-            ))
-        ))))
+                        panels))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Clients View
@@ -651,15 +626,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; DancesView
-;<div class='page-header'>
-;<div class='btn-toolbar pull-right'>
-;<div class='btn-group'>
-;<button type='button' class='btn btn-primary'>Button Text</button>
-;</div>
-;</div>
-;<h2>Header Text</h2>
-;</div>
-
 (defui DancesView
   static om/IQuery
   (query [_]
@@ -781,21 +747,47 @@
 (defui AdjudicatorPanelsRow
   static om/IQuery
   (query [_]
-    [:adjudicator-panel/id :adjudicator-panel/name])
+    [:adjudicator-panel/id :adjudicator-panel/name
+     {:adjudicator-panel/adjudicators [:adjudicator/name :adjudicator/number]}])
   Object
   (render
     [this]
-    (let [{:keys [adjudicator-panel/name]} (om/props this)]
+    (let [{:keys [adjudicator-panel/name adjudicator-panel/id
+                  adjudicator-panel/adjudicators]} (om/props this)]
       (log "AdjudicatorPanelsView")
-      ;(log adjudicator-panels)
-      (dom/li nil name))))
+      ;(dom/li #js {:className "list-group-item"})
+      (dom/div #js {:className "panel panel-default"}
 
-(defn AdjudicatorPanelsss [panels]
+        (dom/div #js {:className "panel-heading"}
+          (dom/p #js {:className "col-sm-9"} (str "Panel - " name))
+          (dom/div #js {:className "btn-group"}
+            (dom/button #js {:className "btn btn-default"
+                             :onClick   #()}
+                        (dom/span #js {:className "glyphicon glyphicon-plus"}))
+            (dom/button #js {:className "btn btn-default"
+                             :onClick   #()}
+                        (dom/span #js {:className "glyphicon glyphicon-trash"}))
+            (dom/button #js {:className "btn btn-default"
+                             :onClick   #()}
+                        (dom/span #js {:className "glyphicon glyphicon-edit"}))))
+
+        (dom/div #js {:className "panel-body"}
+          (dom/div #js {:className "container"}
+            (dom/div #js {:className "form"}
+              (dom/div #js {:className "form-group"}
+                (dom/label #js {:className "col-sm-2 control-label"} "Adjudicators")
+                (dom/div #js {:className "col-sm-8"}
+                  (map #(dom/button #js {:className "col-sm-6 btn btn-default"}
+                                    (str (:adjudicator/number %) " - " (:adjudicator/name %)))
+                       (sort-by :adjudicator/number adjudicators)))))))))))
+
+(defn AdjudicatorPanels [panels]
   (log panels)
   (dom/div nil
-    "Pansless"
-    (apply dom/ul nil
-           (map #((om/factory AdjudicatorPanelsRow) %) panels))))
+    (dom/div #js {:className "container"}
+      (dom/h2 {:className "sub-header"} "Adjudicator Panels"))
+    (apply dom/div nil
+           (map #((om/factory AdjudicatorPanelsRow {:keyfn :adjudicator-panel/id}) %) panels))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; MainComponent
