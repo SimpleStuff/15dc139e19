@@ -125,7 +125,7 @@
     [{:adjudicator-panel/id   1
       :adjudicator-panel/name "A"
       :adjudicator-panel/adjudicators
-                              [{:adjudicator/name "Rolf" :adjudicator/number 1}
+                              [{:adjudicator/name "Rolf Med Långtnamn" :adjudicator/number 1}
                                {:adjudicator/name "Flor" :adjudicator/number 2}
                                {:adjudicator/name "Olfr" :adjudicator/number 3}
                                {:adjudicator/name "Lofr" :adjudicator/number 4}]}

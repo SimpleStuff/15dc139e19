@@ -10,7 +10,8 @@
             [cognitect.transit :as t]
             [om.next.server :as om]
             [tango.datomic-storage :as d]
-            [tango.export2 :as exp]))
+            [tango.export2 :as exp]
+            [tango.datomic-storage :as ds]))
 
 ;; Provides useful Timbre aliases in this ns
 (log/refer-timbre)
@@ -183,6 +184,9 @@
   [{:keys [state query]} key params]
   {:value (do
             (log/info "app/adjudicator-panel ")
+
+            (d/query-adjudicator-panels state query)
+            ;query
             )})
 
 ;; TODO - clients should send query params instead of filtering on the client
@@ -292,11 +296,10 @@
 
 (defn handle-query [ch-out datomic-storage-uri req]
   (let [conn (d/create-connection datomic-storage-uri)
-        result (parser {:state conn} (clojure.edn/read-string (:query (:params req))))]
+        result (parser {:state conn} req)]
     (log/trace (str "Request Query " req))
     (log/info (str "Query >> " result))
-    {:body {:query result}})
-  )
+    result))
 
 (defn handler [ajax-post-fn ajax-get-or-ws-handshake-fn http-server-channels datomic-storage-uri]
   (routes
@@ -315,7 +318,11 @@
    (GET "/runtime" req {:body (slurp (clojure.java.io/resource "public/runtime.html"))
                         :session {:uid (rand-int 10000)}
                         :headers {"Content-Type" "text/html"}})
-   (GET "/query" req (partial handle-query (:out-channel http-server-channels) datomic-storage-uri))
+   (GET "/query" req (fn [request]
+                       {:body {:query (handle-query
+                                        (:out-channel http-server-channels)
+                                        datomic-storage-uri
+                                        (clojure.edn/read-string (:query (:params request))))}}))
    ;; Sente channel routes
    (GET  "/chsk" req (ajax-get-or-ws-handshake-fn req))
    (POST "/chsk" req (ajax-post-fn req))

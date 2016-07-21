@@ -23,6 +23,8 @@
       (is (= (async/<!! out-val)
              {:topic :command :sender :http :payload (create-delete-class-message 1 1)})))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Command handling
 (deftest command-handler
   (testing "Command handler stuff"
     (let [out-ch (async/chan)
@@ -30,15 +32,45 @@
           result (http/handle-command
                    out-ch
                    '[(class/delete {:class/id 1 :competition/id 1})])]
+      ;; This is the message that should be passed on
       (is (= (async/<!! out-val)
              {:topic :command :sender :http :payload (create-delete-class-message 1 1)}))
+      ;; and here is the result of the http command handling
       (is (= result
              {'class/delete {:result :tx/accepted}})))))
 
-;; TODO
-;(deftest query-handler
-;  (testing "Query handler"))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Query handling
 
+;; TODO - the Datomic ref here is CRAP, fix. Also as of now the http server do query..
+(deftest query-handler
+  (testing "Query handler for app/participants"
+    (let [adjudicator-tx
+          [{:adjudicator-panel/name "A"
+            :adjudicator-panel/id #uuid "111e2915-42dc-4f58-8017-dcb79f958463"
+            :adjudicator-panel/adjudicators
+                                    [{:adjudicator/name "AA"
+                                      :adjudicator/number 1
+                                      :adjudicator/id #uuid "11ce2915-42dc-4f58-8017-dcb79f958463"}]}]
+          schema-tx (read-string (slurp "./resources/schema/activity.edn"))
+          _ (ds/create-storage "datomic:mem://localhost:4334//competitions" schema-tx)
+          _ (ds/create-competition (ds/create-connection
+                                   "datomic:mem://localhost:4334//competitions")
+                                 {:competition/id #uuid "1ace2915-42dc-4f58-8017-dcb79f958463"
+                                  :competition/name "Test Competition"
+                                  :competition/panels adjudicator-tx})
+          result (http/handle-query
+                   (async/timeout 100)
+                   "datomic:mem://localhost:4334//competitions"
+                   '[{:app/adjudicator-panels
+                      [:adjudicator-panel/id :adjudicator-panel/name
+                       {:adjudicator-panel/adjudicators
+                        [:adjudicator/name :adjudicator/number :adjudicator/id]}]}])]
+      (is (= result
+             {:app/adjudicator-panels adjudicator-tx})))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Http routing
 (deftest http-handler-routing
   (testing "Http handler should route commands"
     (let [out-ch (async/chan)

@@ -550,7 +550,8 @@
                      ["Time Schedule" :time-schedule]
                      ["Clients" :clients]
                      ["Participants" :participants]
-                     ["Dances" :dances]]))))))
+                     ["Dances" :dances]
+                     ["Panels" :adjudicator-panels]]))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Client Row
@@ -781,10 +782,10 @@
 (defn AdjudicatorPanels [panels]
   (log panels)
   (dom/div nil
-    (dom/div #js {:className "container"}
-      (dom/h2 {:className "sub-header"} "Adjudicator Panels"))
-    (apply dom/div nil
-           (map #((om/factory AdjudicatorPanelsRow {:keyfn :adjudicator-panel/id}) %) panels))))
+    (dom/div #js {:className "container-fluid"}
+      (dom/h2 {:className "sub-header"} "Adjudicator Panels")
+      (apply dom/div nil
+             (map #((om/factory AdjudicatorPanelsRow {:keyfn :adjudicator-panel/id}) %) panels)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; MainComponent
@@ -879,7 +880,9 @@
           :clients ((om/factory ClientsView {:keyfn random-uuid}) {:clients      (:app/clients p)
                                               :adjudicator-panels (:competition/panels selected-competition)})
 
-          :participants ((om/factory ParticipantsView) participants))
+          :participants ((om/factory ParticipantsView) participants)
+
+          :adjudicator-panels (AdjudicatorPanels (:app/adjudicator-panels p)))
         ))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

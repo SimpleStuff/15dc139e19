@@ -8,6 +8,7 @@
             [tango.cljs.runtime.mutation :as m]
             [om.next :as om]))
 
+;; github, ladderlift/om-fullstack-example
 (defcard dummy
          "Dummy card")
 ;; POF testing namespace, break into proper ns when doing real stuff
