@@ -759,11 +759,8 @@
       (dom/div #js {:className "panel panel-default"}
 
         (dom/div #js {:className "panel-heading"}
-          (dom/p #js {:className "col-sm-9"} (str "Panel - " name))
+          (dom/p #js {:className "col-sm-10"} (str "Panel - " name))
           (dom/div #js {:className "btn-group"}
-            (dom/button #js {:className "btn btn-default"
-                             :onClick   #()}
-                        (dom/span #js {:className "glyphicon glyphicon-plus"}))
             (dom/button #js {:className "btn btn-default"
                              :onClick   #()}
                         (dom/span #js {:className "glyphicon glyphicon-trash"}))
@@ -772,14 +769,14 @@
                         (dom/span #js {:className "glyphicon glyphicon-edit"}))))
 
         (dom/div #js {:className "panel-body"}
-          (dom/div #js {:className "container"}
-            (dom/div #js {:className "form"}
-              (dom/div #js {:className "form-group"}
-                (dom/label #js {:className "col-sm-2 control-label"} "Adjudicators")
-                (dom/div #js {:className "col-sm-8"}
-                  (map #(dom/button #js {:className "col-sm-6 btn btn-default"}
-                                    (str (:adjudicator/number %) " - " (:adjudicator/name %)))
-                       (sort-by :adjudicator/number adjudicators)))))))))))
+          ;(dom/div #js {:className "container"})
+          (dom/div #js {:className "form"}
+            (dom/div #js {:className "form-group"}
+              (dom/label #js {:className "col-sm-2 control-label"} "Adjudicators")
+              (dom/div #js {:className "col-sm-10"}
+                (map #(dom/button #js {:className "col-sm-6 btn btn-default"}
+                                  (str (:adjudicator/number %) " - " (:adjudicator/name %)))
+                     (sort-by :adjudicator/number adjudicators))))))))))
 
 (defn AdjudicatorPanels [panels]
   (log panels)
@@ -813,8 +810,10 @@
         {:competition/participants ~(om/get-query ParticipantsView)}
         {:competition/activities ~(om/get-query ScheduleView)}]}
 
-     ;; TODO - participants should come from the competition
+     ;; TODO - participants should come from the competition or should it..
       {:app/participants ~(om/get-query ParticipantsView)}
+
+      {:app/adjudicator-panels ~(om/get-query AdjudicatorPanelsRow)}
 
       {:app/dances ~(om/get-query DancesView)}
       {:app/selected-dance ~(om/get-query DancesView)}

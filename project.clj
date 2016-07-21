@@ -96,6 +96,7 @@
 
                #_{:id           :devcards
                 :source-paths ["src/tango/cljs/"
+                               "devcards"
                                "src"
                                "test/tango/cljs"]
                 :figwheel     {:devcards true}
@@ -126,7 +127,7 @@
 
                {:id           "runtime"
                 :source-paths ["src/tango/cljs/runtime"
-                               "src/tango/presentation.cljc"]
+                               "src/tango/"]
                 :figwheel     {:on-jsload "tango.cljs.adjudicator.core/on-js-reload"}
                 :compiler     {:main          tango.cljs.runtime.core
                                :asset-path    "js/out/runtime"
