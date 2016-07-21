@@ -95,10 +95,11 @@
                                :optimizations :none}}
 
                #_{:id           :devcards
-                :source-paths ["src/tango/cljs/" "src"
+                :source-paths ["src/tango/cljs/"
+                               "src"
                                "test/tango/cljs"]
                 :figwheel     {:devcards true}
-                :compiler     {:main       "tango.cljs.cards-core"
+                :compiler     {:main       "devcards.cards-core"
                                :asset-path "js/out/cards"
                                :output-to  "resources/public/js/cards.js"
                                :output-dir "resources/public/js/out/cards"}}
