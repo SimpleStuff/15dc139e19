@@ -84,7 +84,8 @@
   ;; On externs
   ;http://www.lispcast.com/clojurescript-externs
   :cljsbuild {:builds
-              [{:id           "cljs-test"
+              [
+               #_{:id           "cljs-test"
                 :source-paths ["src/tango/cljs/" "src"
                                "test/tango/cljs"
                                "test/tango/runner_cljs.cljs"]
@@ -93,7 +94,7 @@
                                :main          "tango.runner-cljs"
                                :optimizations :none}}
 
-               {:id           :devcards
+               #_{:id           :devcards
                 :source-paths ["src/tango/cljs/" "src"
                                "test/tango/cljs"]
                 :figwheel     {:devcards true}
@@ -103,7 +104,8 @@
                                :output-dir "resources/public/js/out/cards"}}
 
                {:id           "adj"
-                :source-paths ["src/tango/cljs/adjudicator" "src"]
+                :source-paths ["src/tango/cljs/adjudicator"
+                               "src/tango"]
                 :figwheel     {:on-jsload "tango.cljs.adjudicator.core/on-js-reload"}
                 :compiler     {:main          tango.cljs.adjudicator.core
                                :asset-path    "js/out/adj"
@@ -163,7 +165,7 @@
                ;; production. You can build this with:
                ;; lein cljsbuild once min
                {:id           "min"
-                :source-paths ["src"]
+                :source-paths ["src/tango"]
                 :compiler     {:main          tango.cljs.runtime.core
                                :output-to     "resources/public/js/app.js"
                                :asset-path    "js/out"
