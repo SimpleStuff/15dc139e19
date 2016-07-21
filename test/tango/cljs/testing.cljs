@@ -3,8 +3,10 @@
     [devcards.core :as dc :refer [defcard deftest]])
 
   (:require [cljs.test :refer-macros [is testing run-tests]]
+            [tango.cljs.runtime.core :as rtc]
             [tango.cljs.runtime.read :as r]
-            [tango.cljs.runtime.mutation :as m]))
+            [tango.cljs.runtime.mutation :as m]
+            [om.next :as om]))
 
 (defcard dummy
          "Dummy card")
@@ -26,3 +28,28 @@
                            {:selected-page :page-two})]
       (is (= {:app/selected-page :page-two}
              ((:action result)))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Runtime reads
+(dc/deftest
+  adjudicator-panels-read
+  (let [result (r/read {:state
+                        (atom {:app/adjudicator-panels
+                               [{:adjudicator-panel/id   1
+                                 :adjudicator-panel/name "A"}]})}
+                       :app/adjudicator-panels
+                       {})]
+    (is (= [{:adjudicator-panel/name "A"
+             :adjudicator-panel/id 1}]
+           (:value result)))
+    (is (= (:query result)
+           true))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; AdjudicatorPanelsView Component
+(dc/deftest
+  adjudicator-panels-view-properties
+  (testing "Query should be correct"
+    (is (= [:adjudicator-panel/id :adjudicator-panel/name
+            {:adjudicator-panel/adjudicators [:adjudicator/name :adjudicator/number]}]
+           (om/get-query rtc/AdjudicatorPanelsRow)))))

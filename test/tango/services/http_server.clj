@@ -35,6 +35,10 @@
       (is (= result
              {'class/delete {:result :tx/accepted}})))))
 
+;; TODO
+;(deftest query-handler
+;  (testing "Query handler"))
+
 (deftest http-handler-routing
   (testing "Http handler should route commands"
     (let [out-ch (async/chan)

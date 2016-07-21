@@ -1,4 +1,4 @@
-(ns tango.cljs.cards
+(ns devcards.cards
   (:require-macros
     [devcards.core :as dc :refer [defcard deftest]])
 
@@ -69,9 +69,6 @@
             :send    (fn [edn cb] (.log js/console (str "Remote called with " edn)))}
            opts)))
 
-;;;;;;;;
-(defcard dummy "Dummy")
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Clients cards
 
@@ -106,6 +103,38 @@
 ;; Schedule View
 
 ;; TODO
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; AdjudicatorPanelsView
+(defcard-om-next
+  adjudicator-panels
+  "Display a Adjudicator Panel Row. Makes sure that the components query is correct."
+  rtc/AdjudicatorPanelsRow
+  (create-reconciler {:state {:adjudicator-panel/id   1
+                              :adjudicator-panel/name "A"
+                              :adjudicator-panel/adjudicators [{:adjudicator/name "Rolf"
+                                                                :adjudicator/number 1}]}
+                      :parser (om/parser {:read   (fn [{:keys [state]} key _]
+                                                    {:value (get @state key)})
+                                          :mutate (fn [])})}))
+
+(defcard
+  panelsss
+  "Display all panels."
+  (rtc/AdjudicatorPanels
+    [{:adjudicator-panel/id   1
+      :adjudicator-panel/name "A"
+      :adjudicator-panel/adjudicators
+                              [{:adjudicator/name "Rolf" :adjudicator/number 1}
+                               {:adjudicator/name "Flor" :adjudicator/number 2}
+                               {:adjudicator/name "Olfr" :adjudicator/number 3}
+                               {:adjudicator/name "Lofr" :adjudicator/number 4}]}
+     {:adjudicator-panel/id   2
+      :adjudicator-panel/name "B"
+      :adjudicator-panel/adjudicators
+                              [{:adjudicator/name "Rolf" :adjudicator/number 1}
+                               {:adjudicator/name "Flor" :adjudicator/number 2}
+                               {:adjudicator/name "Lofr" :adjudicator/number 4}]}]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; CreateClassView

@@ -1,7 +1,7 @@
- (ns tango.cljs.cards-core
+ (ns devcards.cards-core
    (:require
      [devcards.core]
-     [tango.cljs.cards]
+     [devcards.cards]
      [tango.cljs.testing]))
 
  (defn ^:export main []

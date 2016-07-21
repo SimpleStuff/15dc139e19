@@ -179,6 +179,12 @@
             (log/info "app/participants ")
             (d/query-participants state query))})
 
+(defmethod reader :app/adjudicator-panels
+  [{:keys [state query]} key params]
+  {:value (do
+            (log/info "app/adjudicator-panel ")
+            )})
+
 ;; TODO - clients should send query params instead of filtering on the client
 (defmethod reader :app/selected-activity
   [{:keys [state query]} key params]

@@ -1,8 +1,8 @@
 (ns tango.presentation
   (:require #?@(:cljs [[cljs-time.coerce :as tc]
                        [cljs-time.format :as tf]]
-                      :clj  [[clj-time.coerce :as tc]
-                             [clj-time.format :as tf]])))
+                :clj  [[clj-time.coerce :as tc]
+                       [clj-time.format :as tf]])))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Move to utils

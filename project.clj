@@ -84,7 +84,8 @@
   ;; On externs
   ;http://www.lispcast.com/clojurescript-externs
   :cljsbuild {:builds
-              [{:id           "cljs-test"
+              [
+               #_{:id           "cljs-test"
                 :source-paths ["src/tango/cljs/" "src"
                                "test/tango/cljs"
                                "test/tango/runner_cljs.cljs"]
@@ -93,17 +94,20 @@
                                :main          "tango.runner-cljs"
                                :optimizations :none}}
 
-               {:id           :devcards
-                :source-paths ["src/tango/cljs/" "src"
+               #_{:id           :devcards
+                :source-paths ["src/tango/cljs/"
+                               "devcards"
+                               "src"
                                "test/tango/cljs"]
                 :figwheel     {:devcards true}
-                :compiler     {:main       "tango.cljs.cards-core"
+                :compiler     {:main       "devcards.cards-core"
                                :asset-path "js/out/cards"
                                :output-to  "resources/public/js/cards.js"
                                :output-dir "resources/public/js/out/cards"}}
 
                {:id           "adj"
-                :source-paths ["src/tango/cljs/adjudicator" "src"]
+                :source-paths ["src/tango/cljs/adjudicator"
+                               "src/tango"]
                 :figwheel     {:on-jsload "tango.cljs.adjudicator.core/on-js-reload"}
                 :compiler     {:main          tango.cljs.adjudicator.core
                                :asset-path    "js/out/adj"
@@ -123,7 +127,7 @@
 
                {:id           "runtime"
                 :source-paths ["src/tango/cljs/runtime"
-                               "src/tango/presentation.cljc"]
+                               "src/tango/"]
                 :figwheel     {:on-jsload "tango.cljs.adjudicator.core/on-js-reload"}
                 :compiler     {:main          tango.cljs.runtime.core
                                :asset-path    "js/out/runtime"
@@ -163,7 +167,7 @@
                ;; production. You can build this with:
                ;; lein cljsbuild once min
                {:id           "min"
-                :source-paths ["src"]
+                :source-paths ["src/tango"]
                 :compiler     {:main          tango.cljs.runtime.core
                                :output-to     "resources/public/js/app.js"
                                :asset-path    "js/out"
