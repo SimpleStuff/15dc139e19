@@ -744,6 +744,44 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; CreatePanelView
+(defui CreatePanelView
+  static om/IQuery
+  (query [_]
+    [:adjudicator-panel/id :adjudicator-panel/name
+     {:adjudicator-panel/adjudicators [:adjudicator/name :adjudicator/number]}])
+  Object
+  (render
+    [this]
+    (let [selected-panel (om/props this)]
+      (dom/div #js {:className "container-fluid"}
+        (dom/h3 #js {:className ""} "Edit Panel")
+        (dom/div #js {:className "form-horizontal"}
+
+          ;; Panel name
+          (dom/div #js {:className "form-group"}
+            (dom/div #js {:className "row col-sm-12"}
+              (dom/label #js {:className "col-sm-3 control-label"} "Panel name")
+              (dom/div #js {:className "col-sm-8"}
+                (dom/input #js {:className "form-control"
+                                :value     (:adjudicator-panel/name selected-panel)
+                                :id        "clientInputName"
+                                :onChange  #()}))))
+
+          ;; Adjudicators
+          (dom/div #js {:className "form-group"}
+            (dom/div #js {:className "row col-sm-12"}
+              (dom/label #js {:className "col-sm-3 control-label"} "Adjudicators")
+              (dom/div #js {:className "col-sm-8"}
+                (map #(dom/button #js {:className "col-sm-6 btn btn-default"}
+                                  (str (:adjudicator/number %) " - " (:adjudicator/name %)))
+                     (sort-by :adjudicator/number (:adjudicator-panel/adjudicators selected-panel))))
+              (dom/div #js {:className "col-sm-1"}
+                (dom/button #js {:className "btn btn-default"
+                                 :onClick   #()}
+                            (dom/span #js {:className "glyphicon glyphicon-edit"}))))))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; AdjudicatorPanelsView
 (defui AdjudicatorPanelsRow
   static om/IQuery
@@ -778,6 +816,16 @@
                                   (str (:adjudicator/number %) " - " (:adjudicator/name %)))
                      (sort-by :adjudicator/number adjudicators))))))))))
 
+(defn make-create-panel-command
+  ([] (make-create-panel-command random-uuid))
+  ([id-fn]
+   (let [new-id (id-fn)]
+     `[(app/select-page {:selected-page :create-panel})
+       (panel/create {:panel/name "New Class"
+                      :panel/id   ~new-id})
+       (app/select-panel {:panel/id ~new-id})
+       :app/selected-page])))
+
 (defn AdjudicatorPanels [panels]
   (log panels)
   (dom/div nil
@@ -787,12 +835,8 @@
         (dom/div #js {:className "form-group"}
           (dom/div #js {:className "btn-group"}
             (dom/button #js {:className "btn btn-default"
-                             :onClick   #(log "Add new panel")}
-                        (dom/span #js {:className "glyphicon glyphicon-plus"}))
-            #_(dom/button #js {:className "btn btn-default"
-                             :onClick   #()}
-                        (dom/span #js {:className "glyphicon glyphicon-edit"}))
-            ))
+                             :onClick #(om/transact! reconciler (make-create-panel-command))}
+                        (dom/span #js {:className "glyphicon glyphicon-plus"}))))
         (apply dom/div nil
                (map #((om/factory AdjudicatorPanelsRow {:keyfn :adjudicator-panel/id}) %)
                     (sort-by :adjudicator-panel/name panels)))))))
@@ -833,6 +877,8 @@
       :app/selected-page
 
       {:app/selected-class ~(om/get-query CreateClassView)}
+      {:app/selected-panel ~(om/get-query CreatePanelView)}
+
       ;{:app/selected-class ~(om/get-query ClassRow)}
 
      {:app/selected-activities [:activity/id] }
@@ -892,7 +938,11 @@
 
           :participants ((om/factory ParticipantsView) participants)
 
-          :adjudicator-panels (AdjudicatorPanels (:app/adjudicator-panels p)))
+          :adjudicator-panels (AdjudicatorPanels (:app/adjudicator-panels p))
+
+          :create-panel ((om/factory CreatePanelView)))
+
+
         ))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1012,12 +1062,16 @@
                                        {:dance/name "Mango"
                                         :dance/id #uuid "d2edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}]}))
 
+(defn make-parser
+  []
+  (om/parser {:read r/read :mutate m/mutate}))
+
 ;; TODO - Stop using reconciler in components, messes up devcards/tests
 (def reconciler
   (om/reconciler
     {:state   app-state
      :remotes [:command :query]
-     :parser  (om/parser {:read r/read :mutate m/mutate})
+     :parser  (make-parser)
      :send    (remote-send)}))
 
 #_(om/add-root! reconciler

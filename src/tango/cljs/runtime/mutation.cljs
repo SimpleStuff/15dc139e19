@@ -131,3 +131,32 @@
   {:value  {:keys []}
    :action (fn []
              (swap! state assoc :app/selected-dance dance))})
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Adjudicator Panels
+
+;; select
+(defmethod mutate 'app/select-panel
+  [{:keys [state]} _ {:keys [panel/id]}]
+  {:value  {:keys []}
+   :action (fn []
+             (let [panel
+                   (first (filter #(= (:adjudicator-panel/id %) id)
+                                  (:app/adjudicator-panels @state)))]
+               (swap! state assoc :app/selected-panel panel)))})
+;; save
+;; create
+(defmethod mutate 'adjpanel/create
+  [{:keys [state ast]} _ {:keys [panel/name panel/id] :as params}]
+  {:value   {:keys []}
+   :action (fn []
+             (swap!
+               state
+               (fn [current]
+                 (update-in
+                   current
+                   [:app/adjudicator-panels]
+                   (fn [current-panels]
+                     (conj current-panels
+                           {:adjudicator-panel/name name
+                            :adjudicator-panel/id   id}))))))})

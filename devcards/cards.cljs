@@ -119,7 +119,7 @@
                                           :mutate (fn [])})}))
 
 (defcard
-  panelsss
+  adjudicator-panels
   "Display all panels."
   (rtc/AdjudicatorPanels
     [{:adjudicator-panel/id   1
@@ -135,6 +135,21 @@
                               [{:adjudicator/name "Rolf" :adjudicator/number 1}
                                {:adjudicator/name "Flor" :adjudicator/number 2}
                                {:adjudicator/name "Lofr" :adjudicator/number 4}]}]))
+
+(defcard-om-next
+  create-panel
+  "Create and edit panels"
+  rtc/CreatePanelView
+  (create-reconciler
+    {:state {:adjudicator-panel/id   1
+             :adjudicator-panel/name "New Panel"
+             :adjudicator-panel/adjudicators [{:adjudicator/name "Rolf Med Långtnamn" :adjudicator/number 1}
+                                              {:adjudicator/name "Flor" :adjudicator/number 2}
+                                              {:adjudicator/name "Olfr" :adjudicator/number 3}
+                                              {:adjudicator/name "Lofr" :adjudicator/number 4}]}
+     :parser (om/parser {:read   (fn [{:keys [state]} key _]
+                                   {:value (get @state key)})
+                         :mutate (fn [])})}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; CreateClassView

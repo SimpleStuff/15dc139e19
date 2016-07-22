@@ -54,3 +54,48 @@
     (is (= [:adjudicator-panel/id :adjudicator-panel/name
             {:adjudicator-panel/adjudicators [:adjudicator/name :adjudicator/number]}]
            (om/get-query rtc/AdjudicatorPanelsRow)))))
+
+(dc/deftest create-adjudicator-panel
+  (testing "Create a new adjudicator panel"
+    (let [parser (rtc/make-parser)
+          result (parser {:state (atom
+                                   {:app/adjudicator-panels
+                                    [{:adjudicator-panel/id   1
+                                      :adjudicator-panel/name "A"}]})}
+                         `[(adjpanel/create {:panel/name "B" :panel/id 2})])]
+      (is (= '{adjpanel/create
+               {:keys []
+                :result {:app/adjudicator-panels
+                         [{:adjudicator-panel/id   1
+                           :adjudicator-panel/name "A"}
+                          {:adjudicator-panel/id   2
+                           :adjudicator-panel/name "B"}]}}}
+             result)))))
+
+(dc/deftest select-adjudicator-panel
+  (testing "Mark a adjduicator panel as selected"
+    (let [parser (rtc/make-parser)
+          result (parser {:state (atom
+                                   {:app/adjudicator-panels
+                                    [{:adjudicator-panel/id   1
+                                      :adjudicator-panel/name "A"}]})}
+                         `[(app/select-panel {:panel/id 1})])]
+      (is (= '{app/select-panel
+               {:keys   []
+                :result {:app/adjudicator-panels
+                                             [{:adjudicator-panel/id   1
+                                               :adjudicator-panel/name "A"}]
+
+                         :app/selected-panel {:adjudicator-panel/id   1
+                                              :adjudicator-panel/name "A"}}}}
+             result)))))
+
+;; TODO - read the selected panel
+
+(dc/deftest make-panel-commands
+  (testing "Construction of commands"
+    (is (= (rtc/make-create-panel-command (fn [] 1))
+           `[(app/select-page {:selected-page :create-panel})
+             (panel/create {:panel/name "New Class", :panel/id 1})
+             (app/select-panel {:panel/id 1})
+             :app/selected-page]))))
