@@ -779,7 +779,24 @@
               (dom/div #js {:className "col-sm-1"}
                 (dom/button #js {:className "btn btn-default"
                                  :onClick   #()}
-                            (dom/span #js {:className "glyphicon glyphicon-edit"}))))))))))
+                            (dom/span #js {:className "glyphicon glyphicon-edit"})))))
+
+          (dom/div #js {:className "form-group"}
+            (dom/div #js {:className "row col-sm-12"}
+              (dom/div #js {:className "col-sm-8 col-sm-offset-3"}
+                (dom/button #js {:className "btn btn-default"
+                                 :onClick   #(om/transact! this `[(app/select-page
+                                                                    {:selected-page :classes})
+                                                                  :app/selected-page])}
+                            (dom/span #js {:className "glyphicon glyphicon-arrow-left"})
+                            " Undo")
+                (dom/button
+                  #js {:className "btn btn-primary pull-right"
+                       :type      "submit"
+                       :onClick   #()}
+                  (dom/span #js {:className "glyphicon glyphicon-ok"})
+                  " Save"))))
+          )))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; AdjudicatorPanelsView
