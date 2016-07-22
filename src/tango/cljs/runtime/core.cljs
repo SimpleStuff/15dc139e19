@@ -760,7 +760,7 @@
       (dom/div #js {:className "panel panel-default"}
 
         (dom/div #js {:className "panel-heading"}
-          (dom/p #js {:className "col-sm-10"} (str "Panel - " name))
+          (dom/h4 #js {:className "col-sm-10"} (str "Panel - " name))
           (dom/div #js {:className "btn-group"}
             (dom/button #js {:className "btn btn-default"
                              :onClick   #()}
@@ -783,9 +783,19 @@
   (dom/div nil
     (dom/div #js {:className "container-fluid"}
       (dom/h2 {:className "sub-header"} "Adjudicator Panels")
-      (apply dom/div nil
-             (map #((om/factory AdjudicatorPanelsRow {:keyfn :adjudicator-panel/id}) %)
-                  (sort-by :adjudicator-panel/name panels))))))
+      (dom/div nil
+        (dom/div #js {:className "form-group"}
+          (dom/div #js {:className "btn-group"}
+            (dom/button #js {:className "btn btn-default"
+                             :onClick   #(log "Add new panel")}
+                        (dom/span #js {:className "glyphicon glyphicon-plus"}))
+            #_(dom/button #js {:className "btn btn-default"
+                             :onClick   #()}
+                        (dom/span #js {:className "glyphicon glyphicon-edit"}))
+            ))
+        (apply dom/div nil
+               (map #((om/factory AdjudicatorPanelsRow {:keyfn :adjudicator-panel/id}) %)
+                    (sort-by :adjudicator-panel/name panels)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; MainComponent
