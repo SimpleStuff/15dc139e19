@@ -770,12 +770,11 @@
                         (dom/span #js {:className "glyphicon glyphicon-edit"}))))
 
         (dom/div #js {:className "panel-body"}
-          ;(dom/div #js {:className "container"})
           (dom/div #js {:className "form"}
             (dom/div #js {:className "form-group"}
               (dom/label #js {:className "col-sm-2 control-label"} "Adjudicators")
               (dom/div #js {:className "col-sm-10"}
-                (map #(dom/button #js {:className "col-sm-6 btn btn-default"}
+                (map #(dom/button #js {:className "col-lg-3 col-md-4 col-xs-6 btn btn-default"}
                                   (str (:adjudicator/number %) " - " (:adjudicator/name %)))
                      (sort-by :adjudicator/number adjudicators))))))))))
 
@@ -785,7 +784,8 @@
     (dom/div #js {:className "container-fluid"}
       (dom/h2 {:className "sub-header"} "Adjudicator Panels")
       (apply dom/div nil
-             (map #((om/factory AdjudicatorPanelsRow {:keyfn :adjudicator-panel/id}) %) panels)))))
+             (map #((om/factory AdjudicatorPanelsRow {:keyfn :adjudicator-panel/id}) %)
+                  (sort-by :adjudicator-panel/name panels))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; MainComponent
