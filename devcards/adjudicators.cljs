@@ -62,9 +62,11 @@
 (defcard
   adjudicators
   "View and create Adjudicators"
-  (rtc/adjudicators-view
-    [{:adjudicator/name "Rolf Med Långtnamn" :adjudicator/number 1  :adjudicator/id 1}
-     {:adjudicator/name "Flor" :adjudicator/number 2 :adjudicator/id 2}
-     {:adjudicator/name "Olfr" :adjudicator/number 3 :adjudicator/id 3}
-     {:adjudicator/name "Lofr" :adjudicator/number 4 :adjudicator/id 4}]
-    {:adjudicator/name "Flor" :adjudicator/number 2 :adjudicator/id 2}))
+  (fn [data-atom owner] (rtc/adjudicators-view (:adjudicators @data-atom) (:selected @data-atom)
+                                               (fn [_ selected]
+                                                 (swap! data-atom merge {:selected selected}))))
+  (atom {:adjudicators [{:adjudicator/name "Rolf Med Långtnamn" :adjudicator/number 1 :adjudicator/id 1}
+                        {:adjudicator/name "Flor" :adjudicator/number 2 :adjudicator/id 2}
+                        {:adjudicator/name "Olfr" :adjudicator/number 3 :adjudicator/id 3}
+                        {:adjudicator/name "Lofr" :adjudicator/number 4 :adjudicator/id 4}]
+         :selected     {:adjudicator/name "Flor" :adjudicator/number 2 :adjudicator/id 2}}))

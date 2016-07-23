@@ -826,25 +826,26 @@
   Object
   (render
     [this]
-    (let [{:keys [selected?]} (om/get-computed this)
+    (let [{:keys [selected? on-select]} (om/get-computed this)
           adjudicator (om/props this)
           {:keys [adjudicator/name adjudicator/number]} adjudicator]
       ;(log "Participant Row")
       ;(log participant)
       (dom/tr #js {:className (when selected? "info")
-                   :onClick   #(om/transact! this `[(app/select-adjudicator
-                                                      {:adjudicator/id
-                                                       ~(:adjudicator/id adjudicator)})
-                                                    :selected?
-                                                    :selected
-                                                    :app/selected-page])}
+                   :onClick #(on-select this adjudicator)
+                   #_(om/transact! this `[(app/select-adjudicator
+                                            {:adjudicator/id
+                                             ~(:adjudicator/id adjudicator)})
+                                          :selected?
+                                          :selected
+                                          :app/selected-page])}
         ;(dom/td nil (str client-id))
         (dom/td nil number)
         (dom/td nil name)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; AdjudicatorsView
-(defn adjudicators-view [adjudicators selected]
+(defn adjudicators-view [adjudicators selected on-select-fn]
   (dom/div #js {:className "container-fluid"}
     (dom/h3 #js {:className "sub-header"} "Adjudicators")
 
@@ -886,7 +887,8 @@
                                   (om/computed % {:selected? (if (= (:adjudicator/id %)
                                                                     (:adjudicator/id selected))
                                                                true
-                                                               false)}))
+                                                               false)
+                                                  :on-select on-select-fn}))
                                 adjudicators)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
