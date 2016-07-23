@@ -184,10 +184,13 @@
   [{:keys [state query]} key params]
   {:value (do
             (log/info "app/adjudicator-panel ")
+            (d/query-adjudicator-panels state query))})
 
-            (d/query-adjudicator-panels state query)
-            ;query
-            )})
+(defmethod reader :app/adjudicators
+  [{:keys [state query]} key params]
+  {:value (do
+            (log/info "app/adjudicators ")
+            (d/query-adjudicators state query))})
 
 ;; TODO - clients should send query params instead of filtering on the client
 (defmethod reader :app/selected-activity

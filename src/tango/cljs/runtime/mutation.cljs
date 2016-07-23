@@ -146,7 +146,7 @@
                (swap! state assoc :app/selected-panel panel)))})
 ;; save
 ;; create
-(defmethod mutate 'adjpanel/create
+(defmethod mutate 'panel/create
   [{:keys [state ast]} _ {:keys [panel/name panel/id] :as params}]
   {:value   {:keys []}
    :action (fn []
