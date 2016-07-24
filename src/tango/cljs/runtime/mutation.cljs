@@ -160,3 +160,16 @@
                      (conj current-panels
                            {:adjudicator-panel/name name
                             :adjudicator-panel/id   id}))))))})
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Adjudicators
+
+;; select
+(defmethod mutate 'app/select-adjudicator
+  [{:keys [state]} _ {:keys [adjudicator/id]}]
+  {:value  {:keys []}
+   :action (fn []
+             (let [adjudicator
+                   (first (filter #(= (:adjudicator/id %) id)
+                                  (:app/adjudicators @state)))]
+               (swap! state assoc :app/selected-adjudicator adjudicator)))})

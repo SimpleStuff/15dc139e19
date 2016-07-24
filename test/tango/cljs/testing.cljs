@@ -94,6 +94,24 @@
     (is (= (:query result)
            true))))
 
+(dc/deftest
+  selected-adjudicator-read
+  (let [result (r/read {:state
+                        (atom {:app/selected-adjudicator
+                               {:adjudicator/id   1
+                                :adjudicator/name "A"}})}
+                       :app/selected-adjudicator
+                       {})]
+    (is (= {:value
+            {:adjudicator/name "A"
+             :adjudicator/id   1}}
+           result))))
+
+(dc/deftest
+  select-adjudicator-command
+  (let [r (rtc/select-adjudicator rtc/reconciler {:adjudicator/id 1})]
+    (is (= r 1))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; AdjudicatorPanelsView Component
 (dc/deftest

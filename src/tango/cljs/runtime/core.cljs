@@ -61,6 +61,11 @@
     component
     (make-select-page-command page-k)))
 
+(defn select-adjudicator [component adjudicator]
+  (om/transact!
+    component
+    `[(app/select-adjudicator {:adjudicator/id ~(:adjudicator/id adjudicator)})]))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Import
 
@@ -451,7 +456,7 @@
 (defui SelectPanelAdjudicatorsView
   static om/IQuery
   (query [_]
-    [])
+    [:adjudicator/number])
   Object
   (render
     [this]
@@ -466,40 +471,41 @@
                         false))]
       (log "SelectPanelAdjudicatorsView")
       (log selected-panel)
-      (dom/div #js {:className "col-sm-12"}
-
-        (dom/div #js {:className "col-sm-12"}
-          (dom/div #js {:className "page-header"}
-            (dom/div #js {:className "btn-toolbar pull-right"}
-              (dom/div #js {:className "btn-group"}
-                (dom/button #js {:type      "button"
-                                 :className "btn btn-primary"
-                                 :onClick   #(om/transact!
-                                              this `[(app/select-page {:selected-page :create-panel})
-                                                     :app/selected-page])}
-                            (dom/span #js {:className "glyphicon glyphicon-ok"})
-                            " Done")))
-            (dom/h2 nil (str "Select Adjudicators for Panel " (:adjudicator-panel/name selected-panel)))))
-
+      (dom/div #js {:className "container"}
         (dom/div #js {:className "col-sm-12"}
 
-          (map #(dom/button #js {:className (str "col-sm-3 btn" (if (selected? %)
-                                                                  " btn-primary"
-                                                                  " btn-default"))
-                                 :onClick   (fn [_]
-                                              (let [updated-adjudicators
-                                                    (if (selected? %)
-                                                      (filter (fn [p]
-                                                                (not= (:adjudicator/id p) (:adjudicator/id %)))
-                                                              adjudicators-in-panel)
-                                                      (conj adjudicators-in-panel %))]
-                                                (om/transact!
-                                                  reconciler
-                                                  `[(panel/update
-                                                      {:panel/adjudicators ~updated-adjudicators})
-                                                    :app/selected-panel])))}
-                            (str (:adjudicator/number %) " - " (:adjudicator/name %)))
-               adjudicators))))))
+          (dom/div #js {:className "col-sm-12"}
+            (dom/div #js {:className "page-header"}
+              (dom/div #js {:className "btn-toolbar pull-right"}
+                (dom/div #js {:className "btn-group"}
+                  (dom/button #js {:type      "button"
+                                   :className "btn btn-primary"
+                                   :onClick   #(om/transact!
+                                                this `[(app/select-page {:selected-page :create-panel})
+                                                       :app/selected-page])}
+                              (dom/span #js {:className "glyphicon glyphicon-ok"})
+                              " Done")))
+              (dom/h2 nil (str "Select Adjudicators for Panel " (:adjudicator-panel/name selected-panel)))))
+
+          (dom/div #js {:className "col-sm-12"}
+
+            (map #(dom/button #js {:className (str "col-sm-3 btn" (if (selected? %)
+                                                                    " btn-primary"
+                                                                    " btn-default"))
+                                   :onClick   (fn [_]
+                                                (let [updated-adjudicators
+                                                      (if (selected? %)
+                                                        (filter (fn [p]
+                                                                  (not= (:adjudicator/id p) (:adjudicator/id %)))
+                                                                adjudicators-in-panel)
+                                                        (conj adjudicators-in-panel %))]
+                                                  (om/transact!
+                                                    reconciler
+                                                    `[(panel/update
+                                                        {:panel/adjudicators ~updated-adjudicators})
+                                                      :app/selected-panel])))}
+                              (str (:adjudicator/number %) " - " (:adjudicator/name %)))
+                 adjudicators)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; SelectClassParticipantsView
@@ -611,14 +617,15 @@
     [this]
     (let [make-btn-fn
           (fn [page-name page-key]
-            (dom/button #js {:onClick
+            (dom/button #js {:className "btn btn-default"
+                             :onClick
                              #(om/transact! this
                                             `[(app/select-page {:selected-page ~page-key})
                                               :app/selected-page])}
                         page-name))]
       (log "MenuComponent")
       (dom/div nil
-        (apply dom/div #js {:className "nav"}
+        (apply dom/div #js {:className "nav btn-group"}
                (map (fn [[name key]] (make-btn-fn name key))
                     [["Home" :home]
                      ["Classes" :classes]
@@ -626,6 +633,7 @@
                      ["Clients" :clients]
                      ["Participants" :participants]
                      ["Dances" :dances]
+                     ["Adjudicators" :adjudicators]
                      ["Panels" :adjudicator-panels]]))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -889,7 +897,7 @@
                                                                true
                                                                false)
                                                   :on-select on-select-fn}))
-                                adjudicators)))))
+                                (sort-by :adjudicator/number adjudicators))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; CreatePanelView
@@ -1024,7 +1032,9 @@
 
      ;; TODO - participants should come from the competition or should it..
       {:app/participants ~(om/get-query ParticipantsView)}
+
       {:app/adjudicators ~(om/get-query AdjudicatorRow)}
+      {:app/selected-adjudicator ~(om/get-query AdjudicatorRow)}
 
       {:app/adjudicator-panels ~(om/get-query AdjudicatorPanelsRow)}
 
@@ -1054,7 +1064,9 @@
           panels (:competition/panels selected-competition)
           selected-class (:app/selected-class p)
           selected-panel (:app/selected-panel p)
-          adjudicators (:app/adjudicators p)]
+          adjudicators (:app/adjudicators p)
+          selected-adjudicator (:app/selected-adjudicator p)
+          ]
       (log "MainComponent")
       (dom/div nil
         ((om/factory MenuComponent))
@@ -1104,8 +1116,13 @@
 
           :adjudicator-panels (AdjudicatorPanels (:app/adjudicator-panels p))
 
-          :create-panel ((om/factory CreatePanelView) selected-panel))
+          :adjudicators (adjudicators-view adjudicators selected-adjudicator
+                                           (fn [component selected]
+                                             (om/transact!
+                                               component
+                                               `[(app/select-adjudicator {:adjudicator/id ~(:adjudicator/id selected)})])))
 
+          :create-panel ((om/factory CreatePanelView) selected-panel))
 
         ))))
 

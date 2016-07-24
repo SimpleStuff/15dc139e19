@@ -59,6 +59,11 @@
                                    {:value (get @state key)})
                          :mutate (fn [])})}))
 
+(defcard-om-next
+  select-panel-adjudicators
+  "Selecting panel adjudicators"
+  rtc/SelectPanelAdjudicatorsView)
+
 (defcard
   adjudicators
   "View and create Adjudicators"

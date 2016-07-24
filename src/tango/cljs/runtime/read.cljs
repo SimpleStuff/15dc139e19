@@ -60,6 +60,10 @@
   {:value (get @state :app/adjudicators [])
    :query true})
 
+(defmethod read :app/selected-adjudicator
+  [{:keys [state]} _ _]
+  {:value (get @state :app/selected-adjudicator {})})
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Panels
 
