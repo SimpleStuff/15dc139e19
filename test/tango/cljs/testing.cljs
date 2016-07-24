@@ -109,8 +109,18 @@
 
 (dc/deftest
   select-adjudicator-command
-  (let [r (rtc/select-adjudicator rtc/reconciler {:adjudicator/id 1})]
-    (is (= r 1))))
+  (let [adjudicator {:adjudicator/id 1 :adjudicator/name "A"}
+        test-state (atom {:app/selected-adjudicator {}
+                          :app/adjudicators [adjudicator]})
+        reconciler (om/reconciler {:state test-state
+                                   :remotes [:command :query]
+                                   :parser (rtc/make-parser)
+                                   :send #()})]
+    (is (= {'app/select-adjudicator
+            {:keys   []
+             :result (merge @test-state {:app/selected-adjudicator adjudicator})}
+            :app/selected-adjudicator adjudicator}
+           (rtc/select-adjudicator reconciler {:adjudicator/id 1})))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; AdjudicatorPanelsView Component
@@ -136,6 +146,26 @@
                            :adjudicator-panel/name "A"}
                           {:adjudicator-panel/id   2
                            :adjudicator-panel/name "B"}]}}}
+             result)))))
+
+(dc/deftest update-adjudicator-panel
+  (testing "Update a adjudicator panel. Update applies to the selected panel and do not involve remotes"
+    (let [parser (rtc/make-parser)
+          result (parser {:state (atom
+                                   {:app/selected-panel
+                                    [{:adjudicator-panel/id   1
+                                      :adjudicator-panel/name "A"}]})}
+                         `[(panel/update {:panel/name "B"
+                                          :panel/id 1
+                                          :panel/adjudicators {:adjudicator/id 11
+                                                               :adjudicator/name "AA"}})])]
+      (is (= '{panel/update
+               {:keys []
+                :result {:app/selected-panel
+                         {:adjudicator-panel/name "B"
+                          :adjudicator-panel/id 1
+                          :adjudicator-panel/adjudicators {:adjudicator/id 11
+                                                           :adjudicator/name "AA"}}}}}
              result)))))
 
 ;; TODO - fix so that remotes only are included in prod. so they don't mess up tests

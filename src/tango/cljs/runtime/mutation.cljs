@@ -145,6 +145,17 @@
                                   (:app/adjudicator-panels @state)))]
                (swap! state assoc :app/selected-panel panel)))})
 ;; save
+
+;; update
+;(defmethod mutate 'panel/update
+;  [{:keys [state]} _ {:keys [class/id class/name] :as class-info}]
+;  {:value  {:keys [:app/selected-class]}
+;   :action (fn []
+;             (swap! state (fn [current]
+;                            (update-in current [:app/selected-class]
+;                                       (fn [current-selected]
+;                                         (merge current-selected class-info))))))})
+
 ;; create
 (defmethod mutate 'panel/create
   [{:keys [state ast]} _ {:keys [panel/name panel/id] :as params}]

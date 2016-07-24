@@ -64,7 +64,8 @@
 (defn select-adjudicator [component adjudicator]
   (om/transact!
     component
-    `[(app/select-adjudicator {:adjudicator/id ~(:adjudicator/id adjudicator)})]))
+    `[(app/select-adjudicator {:adjudicator/id ~(:adjudicator/id adjudicator)})
+      :app/selected-adjudicator]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Import
@@ -480,9 +481,7 @@
                 (dom/div #js {:className "btn-group"}
                   (dom/button #js {:type      "button"
                                    :className "btn btn-primary"
-                                   :onClick   #(om/transact!
-                                                this `[(app/select-page {:selected-page :create-panel})
-                                                       :app/selected-page])}
+                                   :onClick #(select-page this :create-panel)}
                               (dom/span #js {:className "glyphicon glyphicon-ok"})
                               " Done")))
               (dom/h2 nil (str "Select Adjudicators for Panel " (:adjudicator-panel/name selected-panel)))))
@@ -1117,7 +1116,8 @@
           :adjudicator-panels (AdjudicatorPanels (:app/adjudicator-panels p))
 
           :adjudicators (adjudicators-view adjudicators selected-adjudicator
-                                           (fn [component selected]
+                                           select-adjudicator
+                                           #_(fn [component selected]
                                              (om/transact!
                                                component
                                                `[(app/select-adjudicator {:adjudicator/id ~(:adjudicator/id selected)})])))
