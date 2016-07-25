@@ -501,7 +501,7 @@
                                                   (om/transact!
                                                     reconciler
                                                     `[(panel/update
-                                                        {:panel/adjudicators ~updated-adjudicators})
+                                                        {:adjudicator-panel/adjudicators ~updated-adjudicators})
                                                       :app/selected-panel])))}
                               (str (:adjudicator/number %) " - " (:adjudicator/name %)))
                  adjudicators)))))))
@@ -940,7 +940,8 @@
             (dom/div #js {:className "row col-sm-12"}
               (dom/div #js {:className "col-sm-8 col-sm-offset-3"}
                 (dom/button #js {:className "btn btn-default"
-                                 :onClick   #(om/transact! this `[(app/select-page
+                                 :onClick #(select-page this :adjudicator-panels)
+                                 #_(om/transact! this `[(app/select-page
                                                                     {:selected-page :adjudicator-panels})
                                                                   :app/selected-page])}
                             (dom/span #js {:className "glyphicon glyphicon-arrow-left"})
@@ -948,7 +949,11 @@
                 (dom/button
                   #js {:className "btn btn-primary pull-right"
                        :type      "submit"
-                       :onClick   #()}
+                       :onClick   #(om/transact!
+                                    this
+                                    `[(adjudicator-panel/save {:panel ~selected-panel})
+                                      (app/select-page {:select-page :panels})
+                                      :app/selected-page])}
                   (dom/span #js {:className "glyphicon glyphicon-ok"})
                   " Save"))))
           )))))

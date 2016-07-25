@@ -37,37 +37,56 @@
 ;
 ;(use-fixtures :each setup-db)
 
+(def test-system (atom {:system {}}))
+
+(defn setup-system [test-fn]
+  (let [;; TODO - should be command to clear storage
+        _ (d/delete-storage mem-uri)
+        event-manager-channels {:in-channel  (async/timeout 786)
+                                :out-channel (async/timeout 564)}
+
+        event-system (component/system-map
+                       :event-access-channels (access/create-event-access-channels)
+                       :event-access (component/using
+                                       (access/create-event-access
+                                         mem-uri
+                                         schema-path)
+                                       {:event-access-channels :event-access-channels})
+                       ;; TODO - use real channels
+                       :event-manager-channels event-manager-channels
+                       :event-manager (component/using (manager/create-event-manager)
+                                                       {:event-manager-channels :event-manager-channels
+                                                        :event-access-channels  :event-access-channels}))
+        _ (component/start event-system)
+        _ (async/go (async/>! (:in-channel event-manager-channels)
+                              {:topic   :event-manager/create-competition
+                               :payload {:competition/id   #uuid "60edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"
+                                         :competition/name "Test Competition"}}))
+        create-competition-reply (first (async/alts!! [(:out-channel event-manager-channels)
+                                                       (async/timeout 1000)]))]
+    (reset! test-system {:system event-system
+                         :create-competition-reply create-competition-reply})
+    (test-fn)
+    (component/stop event-system)))
+
+(use-fixtures :each setup-system)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Unit tests
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Competition
+(deftest competition-can-be-created
+  (testing "Creating competition"
+    (is (= (:create-competition-reply @test-system)
+           {:topic   :event-manager/tx-processed
+            :payload {:topic   :event-manager/create-competition}}))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Classes
 (deftest classes-can-be-transformed
   (testing "Classes can be created"
-    (let [;event-manager-channels (u/create-test-channels 1000)
-          ;; TODO - should be command to clear storage
-          _ (d/delete-storage mem-uri)
-          event-manager-channels {:in-channel  (async/timeout 786)
-                                  :out-channel (async/timeout 564)}
-
-          event-system (component/system-map
-                         :event-access-channels (access/create-event-access-channels)
-                         :event-access (component/using
-                                         (access/create-event-access
-                                           mem-uri
-                                           schema-path)
-                                         {:event-access-channels :event-access-channels})
-                         ;; TODO - use real channels
-                         :event-manager-channels event-manager-channels
-                         :event-manager (component/using (manager/create-event-manager)
-                                                         {:event-manager-channels :event-manager-channels
-                                                          :event-access-channels  :event-access-channels}))
-
-          _ (component/start event-system)
-          _ (async/go (async/>! (:in-channel event-manager-channels)
-                                {:topic   :event-manager/create-competition
-                                 :payload {:competition/id   #uuid "60edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"
-                                           :competition/name "Test Competition"}}))
-          create-competition-reply (first (async/alts!! [(:out-channel event-manager-channels)
-                                                         (async/timeout 1000)]))
+    (let [event-manager-channels (:event-manager-channels (:system @test-system))
 
           _ (async/go (async/>! (:in-channel event-manager-channels)
                                 {:topic   :event-manager/create-class
@@ -83,9 +102,6 @@
                                  :payload {:query [:competition/name]}}))
           query-competition-reply (first (async/alts!! [(:out-channel event-manager-channels)
                                                         (async/timeout 1000)]))]
-      (is (= create-competition-reply
-             {:topic   :event-manager/tx-processed
-              :payload {:topic   :event-manager/create-competition}}))
 
       (is (= create-class-reply
              {:topic   :event-manager/tx-processed
@@ -94,5 +110,42 @@
       (is (= query-competition-reply
              {:topic   :event-manager/tx-processed
               :payload {:result [{:competition/name "Test Competition"}]
-                        :topic  :event-manager/query-competition}}))
-      (component/stop event-system))))
+                        :topic  :event-manager/query-competition}})))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Adjudicator Panels
+(deftest adjudicator-panels-can-be-transformed
+  (testing "Classes can be created"
+    (let [event-manager-channels (:event-manager-channels (:system @test-system))
+
+          _ (async/go (async/>! (:in-channel event-manager-channels)
+                                {:topic   :event-manager/create-adjudicator-panel
+                                 :payload {:competition/id #uuid "60edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"
+                                           :adjudicator-panel
+                                                           {:adjudicator-panel/name "New Panel"
+                                                            :adjudicator-panel/id   #uuid "ad38da19-6fd7-41f1-a628-ef4688f2f2dc"
+                                                            :adjudicator-panel/adjudicators
+                                                                                    [{:adjudicator/id     #uuid "dfa07b2c-d583-4ff3-aa43-5d9b49129474"
+                                                                                      :adjudicator/number 0
+                                                                                      :adjudicator/name   "AA"}
+                                                                                     {:adjudicator/id     #uuid "8b464e71-fcd2-4a7a-8c15-9a240cf750aa"
+                                                                                      :adjudicator/number 1
+                                                                                      :adjudicator/name   "BB"}]}}}))
+
+          create-panel-reply (first (async/alts!! [(:out-channel event-manager-channels)
+                                                   (async/timeout 1000)]))
+
+          _ (async/go (async/>! (:in-channel event-manager-channels)
+                                {:topic   :event-manager/query-competition
+                                 :payload {:query [:competition/name]}}))
+          query-competition-reply (first (async/alts!! [(:out-channel event-manager-channels)
+                                                        (async/timeout 1000)]))]
+
+      (is (= create-panel-reply
+             {:topic   :event-manager/tx-processed
+              :payload {:topic :event-manager/create-adjudicator-panel}}))
+
+      (is (= query-competition-reply
+             {:topic   :event-manager/tx-processed
+              :payload {:result [{:competition/name "Test Competition"}]
+                        :topic  :event-manager/query-competition}})))))

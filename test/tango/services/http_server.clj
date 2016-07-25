@@ -15,6 +15,11 @@
    :payload {:competition/id competition-id
              :class/id class-id}})
 
+(defn create-update-adjudicator-panel-message [competition-id adjudicator-panel]
+  {:topic :event-manager/create-adjudicator-panel
+   :payload {:competition/id competition-id
+             :adjudicator-panel adjudicator-panel}})
+
 (deftest api
   (testing "Api stuff"
     (let [out-ch (async/chan)
@@ -38,6 +43,43 @@
       ;; and here is the result of the http command handling
       (is (= result
              {'class/delete {:result :tx/accepted}})))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; API - AdjudicatorPanels
+(deftest save-panel-command
+  (testing "Handling of saveing panel command"
+    (let [out-ch (async/chan)
+          out-val (async/go (first (async/alts! [out-ch (async/timeout 1000)])))
+          result (http/handle-command
+                   out-ch
+                   '[(adjudicator-panel/save
+                       {:competition/id         1
+                        :adjudicator-panel/name "New Panel"
+                        :adjudicator-panel/id   #uuid "ad38da19-6fd7-41f1-a628-ef4688f2f2dc"
+                        :adjudicator-panel/adjudicators
+                                                [{:adjudicator/id     #uuid "dfa07b2c-d583-4ff3-aa43-5d9b49129474"
+                                                  :adjudicator/number 0
+                                                  :adjudicator/name   "AA"}
+                                                 {:adjudicator/id     #uuid "8b464e71-fcd2-4a7a-8c15-9a240cf750aa"
+                                                  :adjudicator/number 1
+                                                  :adjudicator/name   "BB"}]})])]
+      ;; This is the message that should be passed on
+      (is (= (async/<!! out-val)
+             {:topic :command :sender :http :payload
+                     (create-update-adjudicator-panel-message
+                       1
+                       {:adjudicator-panel/name "New Panel"
+                        :adjudicator-panel/id   #uuid "ad38da19-6fd7-41f1-a628-ef4688f2f2dc"
+                        :adjudicator-panel/adjudicators
+                        [{:adjudicator/id     #uuid "dfa07b2c-d583-4ff3-aa43-5d9b49129474"
+                          :adjudicator/number 0
+                          :adjudicator/name   "AA"}
+                         {:adjudicator/id     #uuid "8b464e71-fcd2-4a7a-8c15-9a240cf750aa"
+                          :adjudicator/number 1
+                          :adjudicator/name   "BB"}]})}))
+      ;; and here is the result of the http command handling
+      (is (= result
+             {'adjudicator-panel/save {:result :tx/accepted}})))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Query handling

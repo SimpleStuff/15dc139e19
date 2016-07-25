@@ -35,6 +35,13 @@
 ;; http://codingstruggles.com/clojure-integrating-friend-with-sente/
 ;; curl -X POST -v -d "t=d" http://localhost:1337/commands
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;http://www.slideshare.net/chris.e.richardson/developing-apps-with-a-microservice-architecture-svforum-microservices-meetup
+;; API Gateway - Client specific API:s to internal protocol translation
+
+;; HTTP for Request/Reply?
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Mutate
 
@@ -70,6 +77,25 @@
                (log/info (str "Class Delete " key " " params))
                :tx/accepted))})
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Adjudicator panels
+
+(defmethod mutate 'adjudicator-panel/save
+  [{:keys [state] :as env} key params]
+  {:action (fn []
+             (let [message {:topic   :event-manager/create-adjudicator-panel
+                            :payload {:competition/id    (:competition/id params)
+                                      :adjudicator-panel
+                                                         (select-keys
+                                                           params
+                                                           [:adjudicator-panel/name
+                                                            :adjudicator-panel/id
+                                                            :adjudicator-panel/adjudicators])}}]
+               (async/>!! state {:topic :command :sender :http :payload message})
+               (log/info (str "Adjudicator Panel Save " key " " params))
+               :tx/accepted))})
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmethod mutate 'app/status
   [{:keys [state] :as env} key params]
   {:action (fn []

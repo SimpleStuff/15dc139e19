@@ -145,16 +145,37 @@
                                   (:app/adjudicator-panels @state)))]
                (swap! state assoc :app/selected-panel panel)))})
 ;; save
+(defmethod mutate 'adjudicator-panel/save
+  [{:keys [state ast]} _ {:keys [] :as params}]
+  {:value   {:keys [:app/adjudicator-panels]}
+   :action  (fn []
+              (let [updated-panel (:panel params)
+                    id (:adjudicator-panel/id updated-panel)]
+                ; TODO - normalize with Om instead
+                (swap! state (fn [current]
+                               (let [panels-pre-updated
+                                     (filter #(not= (:adjudicator-panel/id %) id)
+                                             (:app/adjudicator-panels current)
+                                             #_(:competition/classes
+                                                 (:app/selected-competition current))
+                                             )
+                                     ]
+                                 (update-in current [:app/adjudicator-panels]
+                                            #(vec (conj panels-pre-updated updated-panel))))))))
+   :command (assoc ast :params
+                       (merge (:panel params)
+                              {:competition/id (:competition/id (:app/selected-competition @state))}))
+   })
 
 ;; update
-;(defmethod mutate 'panel/update
-;  [{:keys [state]} _ {:keys [class/id class/name] :as class-info}]
-;  {:value  {:keys [:app/selected-class]}
-;   :action (fn []
-;             (swap! state (fn [current]
-;                            (update-in current [:app/selected-class]
-;                                       (fn [current-selected]
-;                                         (merge current-selected class-info))))))})
+(defmethod mutate 'panel/update
+  [{:keys [state]} _ panel]
+  {:value  {:keys [:app/selected-panel]}
+   :action (fn []
+             (swap! state (fn [current]
+                            (update-in current [:app/selected-panel]
+                                       (fn [current-selected]
+                                         (merge current-selected panel))))))})
 
 ;; create
 (defmethod mutate 'panel/create

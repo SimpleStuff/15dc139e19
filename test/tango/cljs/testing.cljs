@@ -54,33 +54,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Runtime reads
 (dc/deftest
-  adjudicator-panels-read
-  (let [result (r/read {:state
-                        (atom {:app/adjudicator-panels
-                               [{:adjudicator-panel/id   1
-                                 :adjudicator-panel/name "A"}]})}
-                       :app/adjudicator-panels
-                       {})]
-    (is (= [{:adjudicator-panel/name "A"
-             :adjudicator-panel/id 1}]
-           (:value result)))
-    (is (= (:query result)
-           true))))
-
-(dc/deftest
-  selected-panel-read
-  (let [result (r/read {:state
-                        (atom {:app/selected-panel
-                               {:adjudicator-panel/id   1
-                                :adjudicator-panel/name "A"}})}
-                       :app/selected-panel
-                       {})]
-    (is (= {:value
-            {:adjudicator-panel/name "A"
-             :adjudicator-panel/id   1}}
-           result))))
-
-(dc/deftest
   adjudicators-read
   (let [result (r/read {:state
                         (atom {:app/adjudicators
@@ -123,7 +96,34 @@
            (rtc/select-adjudicator reconciler {:adjudicator/id 1})))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; AdjudicatorPanelsView Component
+;; AdjudicatorPanels Component
+(dc/deftest
+  adjudicator-panels-read
+  (let [result (r/read {:state
+                        (atom {:app/adjudicator-panels
+                               [{:adjudicator-panel/id   1
+                                 :adjudicator-panel/name "A"}]})}
+                       :app/adjudicator-panels
+                       {})]
+    (is (= [{:adjudicator-panel/name "A"
+             :adjudicator-panel/id 1}]
+           (:value result)))
+    (is (= (:query result)
+           true))))
+
+(dc/deftest
+  selected-panel-read
+  (let [result (r/read {:state
+                        (atom {:app/selected-panel
+                               {:adjudicator-panel/id   1
+                                :adjudicator-panel/name "A"}})}
+                       :app/selected-panel
+                       {})]
+    (is (= {:value
+            {:adjudicator-panel/name "A"
+             :adjudicator-panel/id   1}}
+           result))))
+
 (dc/deftest
   adjudicator-panels-view-properties
   (testing "Query should be correct"
@@ -153,14 +153,14 @@
     (let [parser (rtc/make-parser)
           result (parser {:state (atom
                                    {:app/selected-panel
-                                    [{:adjudicator-panel/id   1
-                                      :adjudicator-panel/name "A"}]})}
-                         `[(panel/update {:panel/name "B"
-                                          :panel/id 1
-                                          :panel/adjudicators {:adjudicator/id 11
-                                                               :adjudicator/name "AA"}})])]
+                                    {:adjudicator-panel/id   1
+                                     :adjudicator-panel/name "A"}})}
+                         `[(panel/update {:adjudicator-panel/name "B"
+                                          :adjudicator-panel/id 1
+                                          :adjudicator-panel/adjudicators {:adjudicator/id 11
+                                                                           :adjudicator/name "AA"}})])]
       (is (= '{panel/update
-               {:keys []
+               {:keys [:app/selected-panel]
                 :result {:app/selected-panel
                          {:adjudicator-panel/name "B"
                           :adjudicator-panel/id 1
@@ -185,6 +185,34 @@
 
                          :app/selected-panel {:adjudicator-panel/id   1
                                               :adjudicator-panel/name "A"}}}}
+             result)))))
+
+;; save
+(dc/deftest save-adjudicator-panel
+  (testing "Save an adjudicator panel. Save includes remote"
+    (let [parser (rtc/make-parser)
+          selected-panel {:adjudicator-panel/id           1
+                          :adjudicator-panel/name         "B"
+                          :adjudicator-panel/adjudicators [{:adjudicator/id   11
+                                                            :adjudicator/name "AA"}]}
+          result (parser {:state (atom
+                                   {:app/adjudicator-panels
+                                    [{:adjudicator-panel/id   1
+                                      :adjudicator-panel/name "A"}]
+                                    :app/selected-panel selected-panel})}
+                         `[(adjudicator-panel/save {:panel ~selected-panel})])]
+      (is (= '{adjudicator-panel/save
+               {:keys   [:app/adjudicator-panels]
+                :result {:app/adjudicator-panels
+                         [{:adjudicator-panel/id           1
+                           :adjudicator-panel/name         "B"
+                           :adjudicator-panel/adjudicators [{:adjudicator/id   11
+                                                             :adjudicator/name "AA"}]}]
+                         :app/selected-panel
+                         {:adjudicator-panel/name         "B"
+                          :adjudicator-panel/id           1
+                          :adjudicator-panel/adjudicators [{:adjudicator/id   11
+                                                            :adjudicator/name "AA"}]}}}}
              result)))))
 
 (dc/deftest make-panel-commands
