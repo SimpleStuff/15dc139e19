@@ -37,7 +37,7 @@
 
 (deftest create-connection
   (testing "Create a connection to db"
-    (is (not= nil (ds/create-storage mem-uri ds/select-activity-schema)))
+    (is (not= nil (ds/create-storage mem-uri schema-tx)))
     (is (not= nil (ds/create-connection mem-uri)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -136,7 +136,7 @@
 (deftest adjudicator-results-can-be-transacted
   (testing "Adjudicator result can be transacted to db"
     (let [_ (ds/delete-storage mem-uri)
-          _ (ds/create-storage mem-uri (into ds/select-activity-schema ds/result-schema))
+          _ (ds/create-storage mem-uri schema-tx)
           conn (ds/create-connection mem-uri)
           result {:result/mark-x true
                   :result/id #uuid "60edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"
@@ -154,7 +154,7 @@
 (deftest result-confirmations-should-be-stored
   (testing "Adjudicator result confirmation should be stored"
     (let [_ (ds/delete-storage mem-uri)
-          _ (ds/create-storage mem-uri (into ds/select-activity-schema ds/result-schema))
+          _ (ds/create-storage mem-uri schema-tx)
           conn (ds/create-connection mem-uri)
           confirmation {:activity/id           #uuid "60edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"
                         :activity/confirmed-by [{:adjudicator/id #uuid "1ace2915-42dc-4f58-8017-dcb79f958463"}
@@ -167,7 +167,7 @@
 (deftest adjudicator-results-should-filter-on-given-activity
   (testing "Adjudicator result can be transacted to db"
     (let [_ (ds/delete-storage mem-uri)
-          _ (ds/create-storage mem-uri (into ds/select-activity-schema ds/result-schema))
+          _ (ds/create-storage mem-uri  schema-tx)
           conn (ds/create-connection mem-uri)
           result-1 {:result/mark-x true
                     :result/id #uuid "60edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"
@@ -190,7 +190,7 @@
 (deftest results-can-contain-points
   (testing "Adjudicator results can contain a point value"
     (let [_ (ds/delete-storage mem-uri)
-          _ (ds/create-storage mem-uri (into ds/select-activity-schema ds/result-schema))
+          _ (ds/create-storage mem-uri schema-tx)
           conn (ds/create-connection mem-uri)
           result {:result/mark-x true
                   :result/point 34
@@ -212,9 +212,7 @@
 
 (deftest should-be-possible-to-store-client-information
   (testing "It should be possible to store client information"
-    (let [_ (ds/delete-storage mem-uri)
-          _ (ds/create-storage mem-uri schema-tx)
-          conn (ds/create-connection mem-uri)
+    (let [conn @conn
           init-client-tx {:client/id #uuid "60edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"
                           :client/name "Platta 3"}
           assoc-client-tx {:client/id #uuid "60edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"
@@ -233,9 +231,7 @@
 
 (deftest should-be-possible-to-manage-classes
   (testing "Creation of classes"
-    (let [_ (ds/delete-storage mem-uri)
-          _ (ds/create-storage mem-uri schema-tx)
-          conn (ds/create-connection mem-uri)
+    (let [conn @conn
           competition-tx {:competition/id #uuid "1ace2915-42dc-4f58-8017-dcb79f958463"
                           :competition/name "Test Competition"}
           class-tx {:class/id #uuid "60edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"
@@ -258,9 +254,7 @@
                :competition/classes [class-tx]}]))))
 
   (testing "Deletion of classes"
-    (let [_ (ds/delete-storage mem-uri)
-          _ (ds/create-storage mem-uri schema-tx)
-          conn (ds/create-connection mem-uri)
+    (let [conn @conn
           competition-tx {:competition/id #uuid "1ace2915-42dc-4f58-8017-dcb79f958463"
                           :competition/name "Test Competition"}
           class-tx-1 {:class/id #uuid "60edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"
@@ -421,14 +415,7 @@
                                        {:participant/name "B"
                                         :participant/id #uuid "20edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}
                                        {:participant/name "C"
-                                        :participant/id #uuid "30edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}]}
-
-          class-tx-2 {:class/id #uuid "60edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"
-                      :class/name "Test Class Updated"
-                      :class/starting [{:participant/name "A"
-                                        :participant/id #uuid "10edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}
-                                       {:participant/name "D"
-                                        :participant/id #uuid "40edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}]}]
+                                        :participant/id #uuid "30edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}]}]
       (ds/create-competition conn competition-tx)
 
       (ds/transact-class conn (:competition/id competition-tx) class-tx-1)
@@ -477,6 +464,108 @@
                :competition/classes [(update-in
                                        class-tx-2
                                        [:class/starting] #(vec (sort-by :participant/id %)))]}])))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Management of Adjudicator Panels
+
+(deftest adjudicator-panel-management
+  (testing "Creation of panels"
+    (let [conn @conn
+          competition-tx {:competition/id   #uuid "1ace2915-42dc-4f58-8017-dcb79f958463"
+                          :competition/name "Test Competition"}
+          panel-tx {:adjudicator-panel/name "New Panel"
+                    :adjudicator-panel/id   #uuid "ad38da19-6fd7-41f1-a628-ef4688f2f2dc"
+                    :adjudicator-panel/adjudicators
+                                            [{:adjudicator/id     #uuid "dfa07b2c-d583-4ff3-aa43-5d9b49129474"
+                                              :adjudicator/number 0
+                                              :adjudicator/name   "AA"}
+                                             {:adjudicator/id     #uuid "8b464e71-fcd2-4a7a-8c15-9a240cf750aa"
+                                              :adjudicator/number 1
+                                              :adjudicator/name   "BB"}]}]
+      (ds/create-competition conn competition-tx)
+      (ds/transact-adjudicator-panels conn (:competition/id competition-tx) panel-tx)
+      (is (= (ds/query-competition conn [:competition/name
+                                         :competition/id
+                                         {:competition/panels [:adjudicator-panel/id
+                                                               :adjudicator-panel/name
+                                                               {:adjudicator-panel/adjudicators
+                                                                [:adjudicator/id
+                                                                 :adjudicator/name
+                                                                 :adjudicator/number]}]}])
+             [{:competition/id      #uuid "1ace2915-42dc-4f58-8017-dcb79f958463"
+               :competition/name    "Test Competition"
+               :competition/panels [panel-tx]}]))))
+  (testing "Update existing panel"
+    (let [panel-tx {:adjudicator-panel/name "New Panel"
+                    :adjudicator-panel/id   #uuid "ad38da19-6fd7-41f1-a628-ef4688f2f2dc"
+                    :adjudicator-panel/adjudicators
+                                            [{:adjudicator/id     #uuid "dfa07b2c-d583-4ff3-aa43-5d9b49129474"
+                                              :adjudicator/number 0
+                                              :adjudicator/name   "AA"}
+                                             {:adjudicator/id     #uuid "8b464e71-fcd2-4a7a-8c15-9a240cf750aa"
+                                              :adjudicator/number 1
+                                              :adjudicator/name   "BB"}]}
+          panel-update-tx {:adjudicator-panel/name "New Panel Updated"
+                           :adjudicator-panel/id   #uuid "ad38da19-6fd7-41f1-a628-ef4688f2f2dc"
+                           :adjudicator-panel/adjudicators
+                                                   [{:adjudicator/id     #uuid "dfa07b2c-d583-4ff3-aa43-5d9b49129474"
+                                                     :adjudicator/number 1
+                                                     :adjudicator/name   "AA"}
+                                                    {:adjudicator/id     #uuid "88464e71-fcd2-4a7a-8c15-9a240cf750aa"
+                                                     :adjudicator/number 2
+                                                     :adjudicator/name   "CC"}]}]
+      (ds/transact-adjudicator-panels @conn #uuid "1ace2915-42dc-4f58-8017-dcb79f958463" panel-tx)
+      (ds/transact-adjudicator-panels @conn #uuid "1ace2915-42dc-4f58-8017-dcb79f958463" panel-update-tx)
+      (is (= (ds/query-competition @conn [:competition/name
+                                          :competition/id
+                                         {:competition/panels [:adjudicator-panel/id
+                                                               :adjudicator-panel/name
+                                                               {:adjudicator-panel/adjudicators
+                                                                [:adjudicator/id
+                                                                 :adjudicator/name
+                                                                 :adjudicator/number]}]}])
+             [{:competition/id      #uuid "1ace2915-42dc-4f58-8017-dcb79f958463"
+               :competition/name    "Test Competition"
+               :competition/panels [panel-update-tx]}]))))
+  (testing "Merging Update of existing panel"
+    (let [panel-tx-1 {:adjudicator-panel/id   #uuid "ad38da19-6fd7-41f1-a628-ef4688f2f2dc"
+                      :adjudicator-panel/adjudicators
+                                              [{:adjudicator/id     #uuid "dfa07b2c-d583-4ff3-aa43-5d9b49129474"
+                                                :adjudicator/number 0
+                                                :adjudicator/name   "AA"}
+                                               {:adjudicator/id     #uuid "8b464e71-fcd2-4a7a-8c15-9a240cf750aa"
+                                                :adjudicator/number 1
+                                                :adjudicator/name   "BB"}]}
+          panel-tx-2 {:adjudicator-panel/name "Panel-2"
+                      :adjudicator-panel/id   #uuid "a138da19-6fd7-41f1-a628-ef4688f2f2dc"
+                      :adjudicator-panel/adjudicators []}
+          panel-update-tx {:adjudicator-panel/name "New Panel Updated"
+                           :adjudicator-panel/id   #uuid "ad38da19-6fd7-41f1-a628-ef4688f2f2dc"
+                           :adjudicator-panel/adjudicators
+                                                   [{:adjudicator/id     #uuid "dfa07b2c-d583-4ff3-aa43-5d9b49129474"
+                                                     :adjudicator/number 1
+                                                     :adjudicator/name   "AA"}]}]
+      (ds/transact-adjudicator-panels @conn #uuid "1ace2915-42dc-4f58-8017-dcb79f958463" panel-tx-1)
+      (ds/transact-adjudicator-panels @conn #uuid "1ace2915-42dc-4f58-8017-dcb79f958463" panel-tx-2)
+      (ds/transact-adjudicator-panels @conn #uuid "1ace2915-42dc-4f58-8017-dcb79f958463" panel-update-tx)
+      (is (= (ds/query-competition @conn [:competition/name
+                                          :competition/id
+                                          {:competition/panels [:adjudicator-panel/id
+                                                                :adjudicator-panel/name
+                                                                {:adjudicator-panel/adjudicators
+                                                                 [:adjudicator/id
+                                                                  :adjudicator/name
+                                                                  :adjudicator/number]}]}])
+             [{:competition/id      #uuid "1ace2915-42dc-4f58-8017-dcb79f958463"
+               :competition/name    "Test Competition"
+               :competition/panels [{:adjudicator-panel/id   #uuid "ad38da19-6fd7-41f1-a628-ef4688f2f2dc"
+                                     :adjudicator-panel/name "New Panel Updated"
+                                     :adjudicator-panel/adjudicators
+                                                             [{:adjudicator/id     #uuid "dfa07b2c-d583-4ff3-aa43-5d9b49129474"
+                                                               :adjudicator/number 1
+                                                               :adjudicator/name   "AA"}]}
+                                    {:adjudicator-panel/name "Panel-2"
+                                     :adjudicator-panel/id   #uuid "a138da19-6fd7-41f1-a628-ef4688f2f2dc"}]}])))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Utils

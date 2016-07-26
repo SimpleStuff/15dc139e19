@@ -115,6 +115,29 @@
                                                           {:topic :event-manager/tx-timout
                                                            :payload {:reason :event-access/timeout}}))))))
 
+                   ;; Adjudicator Panels
+                   [:event-manager/create-adjudicator-panel p]
+                   (let [[v ch] (async/alts! [[(:in-channel event-access)
+                                               (merge message
+                                                      {:topic :event-access/create-adjudicator-panel})]
+                                              (async/timeout 2000)])]
+                     (if v
+                       (let [[result ch] (async/alts! [(:out-channel event-access)
+                                                       (async/timeout 500)])]
+                         (log/info "Create Adjudicator Panel Event Access answer")
+                         (if result
+                           (if (= :tx/rejected (:topic result))
+                             (async/put! out-channel (merge message
+                                                            {:topic :tx/rejected
+                                                             :payload (:payload result)}))
+                             (async/put! out-channel
+                                         (merge message
+                                                {:topic   :event-manager/tx-processed
+                                                 :payload {:topic :event-manager/create-adjudicator-panel}})))
+                           (async/put! out-channel (merge message
+                                                          {:topic :event-manager/tx-timout
+                                                           :payload {:reason :event-access/timeout}}))))))
+
                    [:event-manager/query-competition p]
                    (let [[v ch] (async/alts! [[(:in-channel event-access)
                                                (merge message {:topic :event-access/query-competition})]

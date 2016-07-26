@@ -44,6 +44,18 @@
                                               :payload {:reason :invalid-argument
                                                         :message "Missing competition/id"}}))
 
+                   ;; Adjudicator Panels
+                   [:event-access/create-adjudicator-panel p]
+                   (if (:competition/id p)
+                     (let [_ (d/transact-adjudicator-panels conn
+                                                            (:competition/id p)
+                                                            (:adjudicator-panel p))]
+                       (async/put! out-channel {:topic :tx/processed :payload topic}))
+                     (async/put! out-channel {:topic :tx/rejected
+                                              :payload {:reason :invalid-argument
+                                                        :message "Missing competition/id"}}))
+
+                   ;; Query
                    [:event-access/query-competition p]
                    (let [result (d/query-competition conn (:query p))]
                      (async/put! out-channel {:topic :tx/processed :payload {:topic topic
