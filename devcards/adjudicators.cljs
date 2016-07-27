@@ -28,7 +28,7 @@
 (defcard
   adjudicator-panels
   "Display all panels."
-  (rtc/AdjudicatorPanels
+  (rtc/adjudicator-panels
     [{:adjudicator-panel/id   1
       :adjudicator-panel/name "A"
       :adjudicator-panel/adjudicators
@@ -41,7 +41,10 @@
       :adjudicator-panel/adjudicators
                               [{:adjudicator/name "Rolf" :adjudicator/number 1 :adjudicator/id 1}
                                {:adjudicator/name "Flor" :adjudicator/number 2 :adjudicator/id 2}
-                               {:adjudicator/name "Lofr" :adjudicator/number 4 :adjudicator/id 3}]}]))
+                               {:adjudicator/name "Lofr" :adjudicator/number 4 :adjudicator/id 3}]}]
+    #()
+    #()
+    #()))
 
 (defcard-om-next
   create-panel
@@ -62,7 +65,13 @@
 (defcard-om-next
   select-panel-adjudicators
   "Selecting panel adjudicators"
-  rtc/SelectPanelAdjudicatorsView)
+  rtc/SelectPanelAdjudicatorsView
+  {:adjudicators
+   [{:adjudicator/name "Rolf Med Långtnamn" :adjudicator/number 1 :adjudicator/id 1}
+    {:adjudicator/name "Flor" :adjudicator/number 2 :adjudicator/id 2}
+    {:adjudicator/name "Olfr" :adjudicator/number 3 :adjudicator/id 3}
+    {:adjudicator/name "Lofr" :adjudicator/number 4 :adjudicator/id 4}]}
+  )
 
 (defcard
   adjudicators

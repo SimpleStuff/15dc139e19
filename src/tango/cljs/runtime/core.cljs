@@ -455,9 +455,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; SelectPanelAdjudicatorsView
 (defui SelectPanelAdjudicatorsView
-  static om/IQuery
-  (query [_]
-    [:adjudicator/number])
+  ;static om/IQuery
+  ;(query [_]
+  ;  [:adjudicator/number])
   Object
   (render
     [this]
@@ -471,8 +471,9 @@
                         true
                         false))]
       (log "SelectPanelAdjudicatorsView")
+      (log (om/props this))
       (log selected-panel)
-      (dom/div #js {:className "container"}
+      (dom/div #js {:className "container-fluid"}
         (dom/div #js {:className "col-sm-12"}
 
           (dom/div #js {:className "col-sm-12"}
@@ -839,13 +840,7 @@
       ;(log "Participant Row")
       ;(log participant)
       (dom/tr #js {:className (when selected? "info")
-                   :onClick #(on-select this adjudicator)
-                   #_(om/transact! this `[(app/select-adjudicator
-                                            {:adjudicator/id
-                                             ~(:adjudicator/id adjudicator)})
-                                          :selected?
-                                          :selected
-                                          :app/selected-page])}
+                   :onClick #(on-select this adjudicator)}
         ;(dom/td nil (str client-id))
         (dom/td nil number)
         (dom/td nil name)))))
@@ -921,7 +916,11 @@
                 (dom/input #js {:className "form-control"
                                 :value     (:adjudicator-panel/name selected-panel)
                                 :id        "clientInputName"
-                                :onChange  #()}))))
+                                :onChange  #(om/transact!
+                                             reconciler
+                                             `[(panel/update
+                                                 {:adjudicator-panel/name ~(.. % -target -value)})
+                                               :app/selected-panel])}))))
 
           ;; Adjudicators
           (dom/div #js {:className "form-group"}
@@ -940,10 +939,7 @@
             (dom/div #js {:className "row col-sm-12"}
               (dom/div #js {:className "col-sm-8 col-sm-offset-3"}
                 (dom/button #js {:className "btn btn-default"
-                                 :onClick #(select-page this :adjudicator-panels)
-                                 #_(om/transact! this `[(app/select-page
-                                                                    {:selected-page :adjudicator-panels})
-                                                                  :app/selected-page])}
+                                 :onClick #(select-page this :adjudicator-panels)}
                             (dom/span #js {:className "glyphicon glyphicon-arrow-left"})
                             " Undo")
                 (dom/button
@@ -952,11 +948,10 @@
                        :onClick   #(om/transact!
                                     this
                                     `[(adjudicator-panel/save {:panel ~selected-panel})
-                                      (app/select-page {:select-page :panels})
+                                      (app/select-page {:selected-page :adjudicator-panels})
                                       :app/selected-page])}
                   (dom/span #js {:className "glyphicon glyphicon-ok"})
-                  " Save"))))
-          )))))
+                  " Save")))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; AdjudicatorPanelsRow
@@ -970,7 +965,8 @@
   (render
     [this]
     (let [{:keys [adjudicator-panel/name adjudicator-panel/id
-                  adjudicator-panel/adjudicators]} (om/props this)]
+                  adjudicator-panel/adjudicators]} (om/props this)
+          {:keys [on-edit-fn on-delete-fn]} (om/get-computed this)]
       (log "AdjudicatorPanelsRow")
       ;(dom/li #js {:className "list-group-item"})
       (dom/div #js {:className "panel panel-default"}
@@ -979,10 +975,10 @@
           (dom/h4 #js {:className "col-sm-10"} (str "Panel - " name))
           (dom/div #js {:className "btn-group"}
             (dom/button #js {:className "btn btn-default"
-                             :onClick   #()}
+                             :onClick   #(on-delete-fn)}
                         (dom/span #js {:className "glyphicon glyphicon-trash"}))
             (dom/button #js {:className "btn btn-default"
-                             :onClick   #()}
+                             :onClick   #(on-edit-fn)}
                         (dom/span #js {:className "glyphicon glyphicon-edit"}))))
 
         (dom/div #js {:className "panel-body"}
@@ -995,7 +991,7 @@
                                   (str (:adjudicator/number %) " - " (:adjudicator/name %)))
                      (sort-by :adjudicator/number adjudicators))))))))))
 
-(defn AdjudicatorPanels [panels]
+(defn adjudicator-panels [panels on-add-fn on-delete-fn on-edit-fn]
   (log panels)
   (dom/div nil
     (dom/div #js {:className "container-fluid"}
@@ -1004,10 +1000,12 @@
         (dom/div #js {:className "form-group"}
           (dom/div #js {:className "btn-group"}
             (dom/button #js {:className "btn btn-default"
-                             :onClick #(om/transact! reconciler (make-create-panel-command))}
+                             :onClick (on-add-fn)}
                         (dom/span #js {:className "glyphicon glyphicon-plus"}))))
         (apply dom/div nil
-               (map #((om/factory AdjudicatorPanelsRow {:keyfn :adjudicator-panel/id}) %)
+               (map #((om/factory AdjudicatorPanelsRow {:keyfn :adjudicator-panel/id})
+                      (om/computed % {:on-delete-fn on-delete-fn
+                                      :on-edit-fn on-edit-fn}))
                     (sort-by :adjudicator-panel/name panels)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1118,7 +1116,10 @@
 
           :participants ((om/factory ParticipantsView) participants)
 
-          :adjudicator-panels (AdjudicatorPanels (:app/adjudicator-panels p))
+          :adjudicator-panels (adjudicator-panels (:app/adjudicator-panels p)
+                                                  #(om/transact! reconciler (make-create-panel-command))
+                                                  #()
+                                                  #())
 
           :adjudicators (adjudicators-view adjudicators selected-adjudicator
                                            select-adjudicator

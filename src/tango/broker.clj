@@ -164,22 +164,13 @@
                ;; "Results Access" for handling.
                (async/>!! (:in-channel rules-engine-channels)
                           {:topic   (:topic payload)
-                           :payload (:payload payload)}))
-             ;(if (= t :event-manager/create-class)
-             ;  (do
-             ;    (log/info "Sending class create to Event Manager")
-             ;    (async/>!! (:in-channel event-manager-channels)
-             ;               payload
-             ;               ;{:topic (first payload)
-             ;               ; :payload (second payload)}
-             ;               ))
-             ;  ;; Results should be handled by "Result Rules Engine"
-             ;  ;; If a result is accepted it should be sent to the
-             ;  ;; "Results Access" for handling.
-             ;  (async/>!! (:in-channel rules-engine-channels)
-             ;             {:topic   (first payload)
-             ;              :payload (second payload)}))
-             )
+                           :payload (:payload payload)})
+
+               :event-manager/create-adjudicator-panel
+               (do
+                 (log/info "Sending Create AdjudicatorPanel to Event Manager")
+                 (async/>!! (:in-channel event-manager-channels) payload))))
+
            [:query _]
            (do
              (log/info (str "Query " payload))
