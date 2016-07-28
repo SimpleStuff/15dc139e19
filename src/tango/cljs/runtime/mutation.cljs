@@ -193,6 +193,22 @@
                            {:adjudicator-panel/name name
                             :adjudicator-panel/id   id}))))))})
 
+;; delete
+(defmethod mutate 'adjudicator-panel/delete
+  [{:keys [state ast]} _ {:keys [adjudicator-panel/id] :as params}]
+  {:value   {:keys [:app/adjudicator-panels]}
+   :action  (fn []
+              (do
+                (swap! state (fn [current]
+                               (update-in current
+                                          [:app/adjudicator-panels]
+                                          (fn [current-panels]
+                                            (filter #(not= (:adjudicator-panel/id %) id) current-panels)))))))
+   :command (assoc ast :params
+                       (merge params
+                              {:competition/id
+                               (:competition/id (:app/selected-competition @state))}))})
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Adjudicators
 

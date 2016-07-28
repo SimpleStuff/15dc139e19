@@ -355,3 +355,13 @@
       @(ds/transact conn (into retract-tx [(fix-id adjudicator-panel)]))
       @(ds/transact conn [{:competition/panels (fix-id adjudicator-panel)
                            :db/id              [:competition/id competition-id]}]))))
+
+;; delete
+;; :db.fn/retractEntity
+#_[[:db.fn/retractEntity id-of-jane]
+ [:db.fn/retractEntity [:person/email "jdoe@example.com"]]]
+(defn delete-adjudicator-panel [conn competition-id adjudicator-id]
+  @(ds/transact conn [#_[:db/retract [:competition/id competition-id]
+                       :competition/panels [:adjudicator-panel/id adjudicator-id]]
+                      [:db.fn/retractEntity [:adjudicator-panel/id adjudicator-id]]
+                      ]))

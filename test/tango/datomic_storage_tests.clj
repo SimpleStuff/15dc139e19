@@ -565,7 +565,39 @@
                                                                :adjudicator/number 1
                                                                :adjudicator/name   "AA"}]}
                                     {:adjudicator-panel/name "Panel-2"
-                                     :adjudicator-panel/id   #uuid "a138da19-6fd7-41f1-a628-ef4688f2f2dc"}]}])))))
+                                     :adjudicator-panel/id   #uuid "a138da19-6fd7-41f1-a628-ef4688f2f2dc"}]}]))))
+
+  (testing "Deletion of panels"
+    (let [conn @conn
+          competition-tx {:competition/id   #uuid "1ace2915-42dc-4f58-8017-dcb79f958463"
+                          :competition/name "Test Competition"}
+          panel-tx {:adjudicator-panel/name "New Panel"
+                    :adjudicator-panel/id   #uuid "ad38da19-6fd7-41f1-a628-ef4688f2f2dc"
+                    :adjudicator-panel/adjudicators
+                                            [{:adjudicator/id     #uuid "dfa07b2c-d583-4ff3-aa43-5d9b49129474"
+                                              :adjudicator/number 0
+                                              :adjudicator/name   "AA"}
+                                             {:adjudicator/id     #uuid "8b464e71-fcd2-4a7a-8c15-9a240cf750aa"
+                                              :adjudicator/number 1
+                                              :adjudicator/name   "BB"}]}
+          panel-tx-2 {:adjudicator-panel/name "Panel-2"
+                      :adjudicator-panel/id   #uuid "a138da19-6fd7-41f1-a628-ef4688f2f2dc"}]
+      (ds/create-competition conn competition-tx)
+      (ds/transact-adjudicator-panels conn (:competition/id competition-tx) panel-tx)
+      (ds/delete-adjudicator-panel conn (:competition/id competition-tx) (:adjudicator-panel/id panel-tx))
+      (ds/delete-adjudicator-panel conn (:competition/id competition-tx) (:adjudicator-panel/id panel-tx-2))
+      (is (= (ds/query-competition conn [:competition/name
+                                         :competition/id
+                                         {:competition/panels [:adjudicator-panel/id
+                                                               :adjudicator-panel/name
+                                                               {:adjudicator-panel/adjudicators
+                                                                [:adjudicator/id
+                                                                 :adjudicator/name
+                                                                 :adjudicator/number]}]}])
+             [{:competition/id      #uuid "1ace2915-42dc-4f58-8017-dcb79f958463"
+               :competition/name    "Test Competition"}]))))
+
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Utils

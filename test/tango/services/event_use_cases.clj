@@ -115,7 +115,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Adjudicator Panels
 (deftest adjudicator-panels-can-be-transformed
-  (testing "Classes can be created"
+  (testing "Adjudciator panels can be created"
     (let [event-manager-channels (:event-manager-channels (:system @test-system))
 
           panel {:adjudicator-panel/name "New Panel"
@@ -156,4 +156,56 @@
       (is (= query-competition-reply
              {:topic   :event-manager/tx-processed
               :payload {:result [(assoc (dissoc panel-tx :adjudicator-panel) :competition/panels [panel])]
+                        :topic  :event-manager/query-competition}})))))
+
+(deftest adjudicator-panels-can-be-deleted
+  (testing "Adjudciator panels can be deleted"
+    (let [event-manager-channels (:event-manager-channels (:system @test-system))
+
+          panel {:adjudicator-panel/name "New Panel"
+                 :adjudicator-panel/id   #uuid "ad38da19-6fd7-41f1-a628-ef4688f2f2dc"
+                 :adjudicator-panel/adjudicators
+                                         [{:adjudicator/id     #uuid "dfa07b2c-d583-4ff3-aa43-5d9b49129474"
+                                           :adjudicator/number 0
+                                           :adjudicator/name   "AA"}
+                                          {:adjudicator/id     #uuid "8b464e71-fcd2-4a7a-8c15-9a240cf750aa"
+                                           :adjudicator/number 1
+                                           :adjudicator/name   "BB"}]}
+          panel-tx {:competition/id #uuid "60edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"
+                    :adjudicator-panel panel}
+
+          _ (async/go (async/>! (:in-channel event-manager-channels)
+                                {:topic   :event-manager/create-adjudicator-panel
+                                 :payload panel-tx}))
+
+          create-panel-reply (first (async/alts!! [(:out-channel event-manager-channels)
+                                                   (async/timeout 1000)]))
+
+          _ (async/go (async/>! (:in-channel event-manager-channels)
+                                {:topic   :event-manager/delete-adjudicator-panel
+                                 :payload {:competition/id       #uuid "60edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"
+                                           :adjudicator-panel/id (:adjudicator-panel/id panel)}}))
+
+          delete-panel-reply (first (async/alts!! [(:out-channel event-manager-channels)
+                                                   (async/timeout 1000)]))
+
+          _ (async/go (async/>! (:in-channel event-manager-channels)
+                                {:topic   :event-manager/query-competition
+                                 :payload {:query [:competition/id
+                                                   {:competition/panels [:adjudicator-panel/id
+                                                                         :adjudicator-panel/name
+                                                                         {:adjudicator-panel/adjudicators
+                                                                          [:adjudicator/id
+                                                                           :adjudicator/name
+                                                                           :adjudicator/number]}]}]}}))
+          query-competition-reply (first (async/alts!! [(:out-channel event-manager-channels)
+                                                        (async/timeout 1000)]))]
+
+      (is (= delete-panel-reply
+             {:topic   :event-manager/tx-processed
+              :payload {:topic :event-manager/delete-adjudicator-panel}}))
+
+      (is (= query-competition-reply
+             {:topic   :event-manager/tx-processed
+              :payload {:result [{:competition/id #uuid "60edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}]
                         :topic  :event-manager/query-competition}})))))

@@ -150,13 +150,24 @@
            (do
              (log/info (str "Command " payload))
              (condp = t
-               :event-manager/create-class (do
-                                             (log/info "Sending class create to Event Manager")
-                                             (async/>!! (:in-channel event-manager-channels)
-                                                        payload))
+               :event-manager/create-class
+               (do
+                 (log/info "Sending class create to Event Manager")
+                 (async/>!! (:in-channel event-manager-channels) payload))
+
                :event-manager/delete-class
                (do
                  (log/info "Sending Class Delete to Event Manager")
+                 (async/>!! (:in-channel event-manager-channels) payload))
+
+               :event-manager/create-adjudicator-panel
+               (do
+                 (log/info "Sending Create AdjudicatorPanel to Event Manager")
+                 (async/>!! (:in-channel event-manager-channels) payload))
+
+               :event-manager/delete-adjudicator-panel
+               (do
+                 (log/info "Sending Delete AdjudicatorPanel to Event Manager")
                  (async/>!! (:in-channel event-manager-channels) payload))
 
                ;; Results should be handled by "Result Rules Engine"
@@ -166,10 +177,10 @@
                           {:topic   (:topic payload)
                            :payload (:payload payload)})
 
-               :event-manager/create-adjudicator-panel
-               (do
-                 (log/info "Sending Create AdjudicatorPanel to Event Manager")
-                 (async/>!! (:in-channel event-manager-channels) payload))))
+
+
+               )
+             )
 
            [:query _]
            (do

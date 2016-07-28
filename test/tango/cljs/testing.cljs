@@ -215,6 +215,23 @@
                                                             :adjudicator/name "AA"}]}}}}
              result)))))
 
+;; delete
+(dc/deftest delete-adjudicator-panel
+  (testing "Delete an adjudicator panel. Save includes remote"
+    (let [parser (rtc/make-parser)
+
+          result (parser {:state (atom
+                                   {:app/adjudicator-panels
+                                                        [{:adjudicator-panel/id   1
+                                                          :adjudicator-panel/name "A"}]})}
+                         `[(adjudicator-panel/delete {:adjudicator-panel/id 1})])]
+      (is (= '{adjudicator-panel/delete
+               {:keys   [:app/adjudicator-panels]
+                :result {:app/adjudicator-panels
+                         []
+                         }}}
+             result)))))
+
 (dc/deftest make-panel-commands
   (testing "Construction of commands"
     (is (= (rtc/make-create-panel-command (fn [] 1))

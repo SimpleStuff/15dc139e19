@@ -95,6 +95,16 @@
                (log/info (str "Adjudicator Panel Save " key " " params))
                :tx/accepted))})
 
+(defmethod mutate 'adjudicator-panel/delete
+  [{:keys [state] :as env} key params]
+  {:action (fn []
+             (let [message {:topic   :event-manager/delete-adjudicator-panel
+                            :payload {:competition/id    (:competition/id params)
+                                      :adjudicator-panel/id (:adjudicator-panel/id params)}}]
+               (async/>!! state {:topic :command :sender :http :payload message})
+               (log/info (str "Adjudicator Panel Delete " key " " params))
+               :tx/accepted))})
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmethod mutate 'app/status
   [{:keys [state] :as env} key params]

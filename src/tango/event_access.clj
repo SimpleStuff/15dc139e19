@@ -44,12 +44,23 @@
                                               :payload {:reason :invalid-argument
                                                         :message "Missing competition/id"}}))
 
-                   ;; Adjudicator Panels
+                   ;;;; Adjudicator Panels
+                   ;; create
                    [:event-access/create-adjudicator-panel p]
                    (if (:competition/id p)
                      (let [_ (d/transact-adjudicator-panels conn
                                                             (:competition/id p)
                                                             (:adjudicator-panel p))]
+                       (async/put! out-channel {:topic :tx/processed :payload topic}))
+                     (async/put! out-channel {:topic :tx/rejected
+                                              :payload {:reason :invalid-argument
+                                                        :message "Missing competition/id"}}))
+                   ;; delete
+                   [:event-access/delete-adjudicator-panel p]
+                   (if (:competition/id p)
+                     (let [tx (d/delete-adjudicator-panel conn (:competition/id p) (:adjudicator-panel/id p))]
+                       (log/info (str "Delete of adjudicator panel processed [ "
+                                      tx " ]"))
                        (async/put! out-channel {:topic :tx/processed :payload topic}))
                      (async/put! out-channel {:topic :tx/rejected
                                               :payload {:reason :invalid-argument

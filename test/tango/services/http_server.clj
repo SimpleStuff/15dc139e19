@@ -20,6 +20,11 @@
    :payload {:competition/id competition-id
              :adjudicator-panel adjudicator-panel}})
 
+(defn create-delete-adjudicator-panel-message [competition-id {:keys [adjudicator-panel/id]}]
+  {:topic :event-manager/delete-adjudicator-panel
+   :payload {:competition/id competition-id
+             :adjudicator-panel/id id}})
+
 (deftest api
   (testing "Api stuff"
     (let [out-ch (async/chan)
@@ -80,6 +85,25 @@
       ;; and here is the result of the http command handling
       (is (= result
              {'adjudicator-panel/save {:result :tx/accepted}})))))
+
+(deftest delete-panel-command
+  (testing "Handling of deleting panel command"
+    (let [out-ch (async/chan)
+          out-val (async/go (first (async/alts! [out-ch (async/timeout 1000)])))
+          result (http/handle-command
+                   out-ch
+                   '[(adjudicator-panel/delete
+                       {:competition/id         1
+                        :adjudicator-panel/id   #uuid "ad38da19-6fd7-41f1-a628-ef4688f2f2dc"})])]
+      ;; This is the message that should be passed on
+      (is (= (async/<!! out-val)
+             {:topic :command :sender :http :payload
+                     (create-delete-adjudicator-panel-message
+                       1
+                       {:adjudicator-panel/id   #uuid "ad38da19-6fd7-41f1-a628-ef4688f2f2dc"})}))
+      ;; and here is the result of the http command handling
+      (is (= result
+             {'adjudicator-panel/delete {:result :tx/accepted}})))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Query handling
