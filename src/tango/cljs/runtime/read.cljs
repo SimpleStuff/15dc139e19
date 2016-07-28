@@ -53,10 +53,28 @@
   {:value (get @state :app/participants [])
    :query true})
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Adjudicators
+(defmethod read :app/adjudicators
+  [{:keys [state]} _ _]
+  {:value (get @state :app/adjudicators [])
+   :query true})
+
+(defmethod read :app/selected-adjudicator
+  [{:keys [state]} _ _]
+  {:value (get @state :app/selected-adjudicator {})})
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Panels
+
 (defmethod read :app/adjudicator-panels
   [{:keys [state]} _ _]
   {:value (get @state :app/adjudicator-panels [])
    :query true})
+
+(defmethod read :app/selected-panel
+  [{:keys [state]} _ _]
+  {:value (get @state :app/selected-panel nil)})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Dances

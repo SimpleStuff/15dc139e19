@@ -6,6 +6,7 @@
     [tango.cljs.runtime.core :as rtc]
     [tango.cljs.runtime.mutation :as m]
     [tango.cljs.runtime.read :as r]
+    [devcards.utils :as u]
     [devcards-om-next.core :refer-macros [defcard-om-next om-next-root]]
     [om.next :as om :refer-macros [defui]]
     [om.dom :as dom]))
@@ -58,16 +59,7 @@
 ;https://github.com/bhauman/devcards/blob/master/example_src/devdemos/om_next.cljs
 ;https://github.com/anmonteiro/devcards-om-next/blob/master/src/devcards/devcards_om_next/devcards/core.cljs
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Utils
 
-(defn create-reconciler [opts]
-  (om/reconciler
-    (merge {:state   {}
-            :remotes [:command :query]
-            :parser  (om/parser {:read r/read :mutate m/mutate})
-            :send    (fn [edn cb] (.log js/console (str "Remote called with " edn)))}
-           opts)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Clients cards
@@ -78,7 +70,7 @@
 
    An unassigned client (Test 0) will display \"Select\"."
   rtc/ClientsView
-  (create-reconciler {:state {:clients            client-data
+  (u/create-reconciler {:state {:clients            client-data
                               :adjudicator-panels panel-date}}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -87,7 +79,7 @@
   class-view
   "View of Classes."
   rtc/ClassesView
-  (create-reconciler
+  (u/create-reconciler
     {:state   {:classes [{:class/name "A"
                           :class/id #uuid "16872313-d824-47eb-8d13-af191a8d9651"
                           :class/starting [{:participant/number 1
@@ -105,44 +97,12 @@
 ;; TODO
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; AdjudicatorPanelsView
-(defcard-om-next
-  adjudicator-panels
-  "Display a Adjudicator Panel Row. Makes sure that the components query is correct."
-  rtc/AdjudicatorPanelsRow
-  (create-reconciler {:state {:adjudicator-panel/id   1
-                              :adjudicator-panel/name "A"
-                              :adjudicator-panel/adjudicators [{:adjudicator/name "Rolf"
-                                                                :adjudicator/number 1}]}
-                      :parser (om/parser {:read   (fn [{:keys [state]} key _]
-                                                    {:value (get @state key)})
-                                          :mutate (fn [])})}))
-
-(defcard
-  panelsss
-  "Display all panels."
-  (rtc/AdjudicatorPanels
-    [{:adjudicator-panel/id   1
-      :adjudicator-panel/name "A"
-      :adjudicator-panel/adjudicators
-                              [{:adjudicator/name "Rolf" :adjudicator/number 1}
-                               {:adjudicator/name "Flor" :adjudicator/number 2}
-                               {:adjudicator/name "Olfr" :adjudicator/number 3}
-                               {:adjudicator/name "Lofr" :adjudicator/number 4}]}
-     {:adjudicator-panel/id   2
-      :adjudicator-panel/name "B"
-      :adjudicator-panel/adjudicators
-                              [{:adjudicator/name "Rolf" :adjudicator/number 1}
-                               {:adjudicator/name "Flor" :adjudicator/number 2}
-                               {:adjudicator/name "Lofr" :adjudicator/number 4}]}]))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; CreateClassView
 (defcard-om-next
   create-class-view
   "Create class view"
   rtc/CreateClassView
-  (create-reconciler {:state  {:class/name              "New Class"
+  (u/create-reconciler {:state  {:class/name              "New Class"
                                :class/id                1
                                :class/adjudicator-panel {:adjudicator-panel/id   1
                                                          :adjudicator-panel/name "A"}

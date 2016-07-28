@@ -15,6 +15,16 @@
    :payload {:competition/id competition-id
              :class/id class-id}})
 
+(defn create-update-adjudicator-panel-message [competition-id adjudicator-panel]
+  {:topic :event-manager/create-adjudicator-panel
+   :payload {:competition/id competition-id
+             :adjudicator-panel adjudicator-panel}})
+
+(defn create-delete-adjudicator-panel-message [competition-id {:keys [adjudicator-panel/id]}]
+  {:topic :event-manager/delete-adjudicator-panel
+   :payload {:competition/id competition-id
+             :adjudicator-panel/id id}})
+
 (deftest api
   (testing "Api stuff"
     (let [out-ch (async/chan)
@@ -23,6 +33,8 @@
       (is (= (async/<!! out-val)
              {:topic :command :sender :http :payload (create-delete-class-message 1 1)})))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Command handling
 (deftest command-handler
   (testing "Command handler stuff"
     (let [out-ch (async/chan)
@@ -30,15 +42,126 @@
           result (http/handle-command
                    out-ch
                    '[(class/delete {:class/id 1 :competition/id 1})])]
+      ;; This is the message that should be passed on
       (is (= (async/<!! out-val)
              {:topic :command :sender :http :payload (create-delete-class-message 1 1)}))
+      ;; and here is the result of the http command handling
       (is (= result
              {'class/delete {:result :tx/accepted}})))))
 
-;; TODO
-;(deftest query-handler
-;  (testing "Query handler"))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; API - AdjudicatorPanels
+(deftest save-panel-command
+  (testing "Handling of saveing panel command"
+    (let [out-ch (async/chan)
+          out-val (async/go (first (async/alts! [out-ch (async/timeout 1000)])))
+          result (http/handle-command
+                   out-ch
+                   '[(adjudicator-panel/save
+                       {:competition/id         1
+                        :adjudicator-panel/name "New Panel"
+                        :adjudicator-panel/id   #uuid "ad38da19-6fd7-41f1-a628-ef4688f2f2dc"
+                        :adjudicator-panel/adjudicators
+                                                [{:adjudicator/id     #uuid "dfa07b2c-d583-4ff3-aa43-5d9b49129474"
+                                                  :adjudicator/number 0
+                                                  :adjudicator/name   "AA"}
+                                                 {:adjudicator/id     #uuid "8b464e71-fcd2-4a7a-8c15-9a240cf750aa"
+                                                  :adjudicator/number 1
+                                                  :adjudicator/name   "BB"}]})])]
+      ;; This is the message that should be passed on
+      (is (= (async/<!! out-val)
+             {:topic :command :sender :http :payload
+                     (create-update-adjudicator-panel-message
+                       1
+                       {:adjudicator-panel/name "New Panel"
+                        :adjudicator-panel/id   #uuid "ad38da19-6fd7-41f1-a628-ef4688f2f2dc"
+                        :adjudicator-panel/adjudicators
+                        [{:adjudicator/id     #uuid "dfa07b2c-d583-4ff3-aa43-5d9b49129474"
+                          :adjudicator/number 0
+                          :adjudicator/name   "AA"}
+                         {:adjudicator/id     #uuid "8b464e71-fcd2-4a7a-8c15-9a240cf750aa"
+                          :adjudicator/number 1
+                          :adjudicator/name   "BB"}]})}))
+      ;; and here is the result of the http command handling
+      (is (= result
+             {'adjudicator-panel/save {:result :tx/accepted}})))))
 
+(deftest delete-panel-command
+  (testing "Handling of deleting panel command"
+    (let [out-ch (async/chan)
+          out-val (async/go (first (async/alts! [out-ch (async/timeout 1000)])))
+          result (http/handle-command
+                   out-ch
+                   '[(adjudicator-panel/delete
+                       {:competition/id         1
+                        :adjudicator-panel/id   #uuid "ad38da19-6fd7-41f1-a628-ef4688f2f2dc"})])]
+      ;; This is the message that should be passed on
+      (is (= (async/<!! out-val)
+             {:topic :command :sender :http :payload
+                     (create-delete-adjudicator-panel-message
+                       1
+                       {:adjudicator-panel/id   #uuid "ad38da19-6fd7-41f1-a628-ef4688f2f2dc"})}))
+      ;; and here is the result of the http command handling
+      (is (= result
+             {'adjudicator-panel/delete {:result :tx/accepted}})))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Query handling
+
+;; TODO - the Datomic ref here is CRAP, fix. Also as of now the http server do query..
+(deftest query-handler
+  (testing "Query handler for app/adjudicator-panels"
+    (let [adjudicator-tx
+          [{:adjudicator-panel/name "A"
+            :adjudicator-panel/id #uuid "111e2915-42dc-4f58-8017-dcb79f958463"
+            :adjudicator-panel/adjudicators
+                                    [{:adjudicator/name "AA"
+                                      :adjudicator/number 1
+                                      :adjudicator/id #uuid "11ce2915-42dc-4f58-8017-dcb79f958463"}]}]
+          schema-tx (read-string (slurp "./resources/schema/activity.edn"))
+          _ (ds/create-storage "datomic:mem://localhost:4334//competitions" schema-tx)
+          _ (ds/create-competition (ds/create-connection
+                                   "datomic:mem://localhost:4334//competitions")
+                                 {:competition/id #uuid "1ace2915-42dc-4f58-8017-dcb79f958463"
+                                  :competition/name "Test Competition"
+                                  :competition/panels adjudicator-tx})
+          result (http/handle-query
+                   (async/timeout 100)
+                   "datomic:mem://localhost:4334//competitions"
+                   '[{:app/adjudicator-panels
+                      [:adjudicator-panel/id :adjudicator-panel/name
+                       {:adjudicator-panel/adjudicators
+                        [:adjudicator/name :adjudicator/number :adjudicator/id]}]}])]
+      (is (= result
+             {:app/adjudicator-panels adjudicator-tx}))))
+
+  (testing "Query handler for app/adjudicators"
+    (let [adjudicator-tx
+          [{:adjudicator-panel/name "A"
+            :adjudicator-panel/id #uuid "111e2915-42dc-4f58-8017-dcb79f958463"
+            :adjudicator-panel/adjudicators
+                                    [{:adjudicator/name "AA"
+                                      :adjudicator/number 1
+                                      :adjudicator/id #uuid "11ce2915-42dc-4f58-8017-dcb79f958463"}]}]
+          schema-tx (read-string (slurp "./resources/schema/activity.edn"))
+          _ (ds/create-storage "datomic:mem://localhost:4334//competitions" schema-tx)
+          _ (ds/create-competition (ds/create-connection
+                                     "datomic:mem://localhost:4334//competitions")
+                                   {:competition/id #uuid "1ace2915-42dc-4f58-8017-dcb79f958463"
+                                    :competition/name "Test Competition"
+                                    :competition/panels adjudicator-tx})
+          result (http/handle-query
+                   (async/timeout 100)
+                   "datomic:mem://localhost:4334//competitions"
+                   '[{:app/adjudicators
+                      [:adjudicator/name :adjudicator/number :adjudicator/id]}])]
+      (is (= result
+             {:app/adjudicators [{:adjudicator/name "AA"
+                                  :adjudicator/number 1
+                                  :adjudicator/id #uuid "11ce2915-42dc-4f58-8017-dcb79f958463"}]})))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Http routing
 (deftest http-handler-routing
   (testing "Http handler should route commands"
     (let [out-ch (async/chan)

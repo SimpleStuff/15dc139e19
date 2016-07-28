@@ -40,6 +40,32 @@
   )
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; command utils
+(defn make-create-panel-command
+  ([] (make-create-panel-command random-uuid))
+  ([id-fn]
+   (let [new-id (id-fn)]
+     `[(app/select-page {:selected-page :create-panel})
+       (panel/create {:panel/name "New Panel"
+                      :panel/id   ~new-id})
+       (app/select-panel {:panel/id ~new-id})
+       :app/selected-page])))
+
+(defn make-select-page-command [page-k]
+  `[(app/select-page {:selected-page ~page-k})
+    :app/selected-page])
+
+(defn select-page [component page-k]
+  (om/transact!
+    component
+    (make-select-page-command page-k)))
+
+(defn select-adjudicator [component adjudicator]
+  (om/transact!
+    component
+    `[(app/select-adjudicator {:adjudicator/id ~(:adjudicator/id adjudicator)})
+      :app/selected-adjudicator]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Import
@@ -87,11 +113,7 @@
             (first (:class/_rounds (:activity/source (om/props this)))))
           selected? (:is-selected p)
           completed? (= (:round/status (:activity/source (om/props this))) :status/completed)
-          ;speaker-activies #{}                                 ;(:speaker-activites (om/props this))
-          ;speaker? (seq (filter #(= (:activity/id (om/props this)) (:activity/id %))
-          ;                      speaker-activies))
-          speaker? (:is-speaker-selected p)
-          ]
+          speaker? (:is-speaker-selected p)]
       (dom/tr #js {:className (if selected? "success" (if completed? "info" ""))}
         (dom/td nil time)
         (dom/td nil number)
@@ -145,7 +167,6 @@
       ;(log "Selected")
       ;(log (:selected-activities p))
       (log "Speaker")
-      (log (:speaker-activities p))
       (dom/div nil
         (dom/h2 nil "Time Schedule")
         (dom/table
@@ -171,12 +192,7 @@
                                                 (seq (filter (fn [act]
                                                                (= (:activity/id act) (:activity/id %)))
                                                              (:speaker-activities p)))
-                                                })) activites))
-          ;(apply dom/tbody nil (map #((om/factory ScheduleRow)
-          ;                            (merge % {:selected-activity (:selected-activity (om/props this))
-          ;                                      :speaker-activites (:speaker-activites (om/props this))}))
-          ;                          activites))
-          )))))
+                                                })) activites)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; CreateClassView
@@ -299,36 +315,7 @@
                                         (app/select-page {:selected-page :classes})
                                         :app/selected-page]))}
                   (dom/span #js {:className "glyphicon glyphicon-ok"})
-                  " Save")))))
-        ))))
-
-;(dom/div #js {:className "container"}
-;  (dom/h3 nil "Assign this client a name to use it as an Adjudicator device")
-;  (dom/div #js {:className "form-horizontal"}
-;    (dom/div #js {:className "form-group"}
-;      (dom/label #js {:className "col-sm-2 control-label"
-;                      :htmlFor       "clientInputName"} "Client name")
-;      (dom/div #js {:className "col-sm-8"}
-;        (dom/input #js {:className "form-control"
-;                        :value name
-;                        :id        "clientInputName"
-;                        :onChange #(om/transact! this `[(app/set-client-info
-;                                                          {:client/name ~(.. % -target -value)})])})))
-;    (dom/div #js {:className "form-group"}
-;      (dom/div #js {:className "col-sm-offset-2 col-sm-10"}
-;        (dom/button
-;          #js {:className "btn btn-default"
-;               :type      "submit"
-;               :onClick   #(do
-;                            (let [idt (random-uuid)]
-;                              (swap! local-storage assoc :client-id idt)
-;                              (om/transact! this
-;                                            `[(app/set-client-info {:client/id   ~idt
-;                                                                    :client/name ~name})
-;                                              (app/status {:status :loading})
-;                                              :app/status])))}
-;          "Connect")))))
-
+                  " Save")))))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ClassRow
@@ -414,17 +401,62 @@
               (dom/th #js {:width "20"} "Typ")
               (dom/th #js {:width "20"} "Startande")
               (dom/th #js {:width "20"} "Status")))
-          ;(apply dom/tbody nil (map #((om/factory ClassRow)
-          ;                            (assoc % :selected? (if (= (:class/id %)
-          ;                                                       (:class/id selected))
-          ;                                                  true
-          ;                                                  false))) classes))
+
           (apply dom/tbody nil (map #((om/factory ClassRow {:keyfn :class/id})
                                       (om/computed % {:selected? (if (= (:class/id %)
                                                                         (:class/id selected))
                                                                    true
-                                                                   false)})) classes))
-          )))))
+                                                                   false)})) classes)))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; SelectPanelAdjudicatorsView
+(defui SelectPanelAdjudicatorsView
+  Object
+  (render
+    [this]
+    (let [adjudicators (sort-by :adjudicator/number (:adjudicators (om/props this)))
+          selected-panel (:selected-panel (om/props this))
+          adjudicators-in-panel (:adjudicator-panel/adjudicators selected-panel)
+          selected? (fn [adjudicator]
+                      (if (seq (filter
+                                 #(= (:adjudicator/id %) (:adjudicator/id adjudicator))
+                                 adjudicators-in-panel))
+                        true
+                        false))]
+      (log "SelectPanelAdjudicatorsView")
+      (dom/div #js {:className "container-fluid"}
+        (dom/div #js {:className "col-sm-12"}
+
+          (dom/div #js {:className "col-sm-12"}
+            (dom/div #js {:className "page-header"}
+              (dom/div #js {:className "btn-toolbar pull-right"}
+                (dom/div #js {:className "btn-group"}
+                  (dom/button #js {:type      "button"
+                                   :className "btn btn-primary"
+                                   :onClick #(select-page reconciler :create-panel)}
+                              (dom/span #js {:className "glyphicon glyphicon-ok"})
+                              " Done")))
+              (dom/h2 nil (str "Select Adjudicators for Panel " (:adjudicator-panel/name selected-panel)))))
+
+          (dom/div #js {:className "col-sm-12"}
+
+            (map #(dom/button #js {:className (str "col-sm-3 btn" (if (selected? %)
+                                                                    " btn-primary"
+                                                                    " btn-default"))
+                                   :onClick   (fn [_]
+                                                (let [updated-adjudicators
+                                                      (if (selected? %)
+                                                        (filter (fn [p]
+                                                                  (not= (:adjudicator/id p) (:adjudicator/id %)))
+                                                                adjudicators-in-panel)
+                                                        (conj adjudicators-in-panel %))]
+                                                  (om/transact!
+                                                    reconciler
+                                                    `[(panel/update
+                                                        {:adjudicator-panel/adjudicators ~updated-adjudicators})
+                                                      :app/selected-panel])))}
+                              (str (:adjudicator/number %) " - " (:adjudicator/name %)))
+                 adjudicators)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; SelectClassParticipantsView
@@ -445,7 +477,6 @@
                         true
                         false))]
       (log "SelectedClassParticipantsView")
-      (log selected-class)
       (dom/div #js {:className "col-sm-12"}
 
         (dom/div #js {:className "col-sm-12"}
@@ -536,21 +567,24 @@
     [this]
     (let [make-btn-fn
           (fn [page-name page-key]
-            (dom/button #js {:onClick
+            (dom/button #js {:className "btn btn-default"
+                             :onClick
                              #(om/transact! this
                                             `[(app/select-page {:selected-page ~page-key})
                                               :app/selected-page])}
                         page-name))]
       (log "MenuComponent")
       (dom/div nil
-        (apply dom/div #js {:className "nav"}
+        (apply dom/div #js {:className "nav btn-group"}
                (map (fn [[name key]] (make-btn-fn name key))
                     [["Home" :home]
                      ["Classes" :classes]
                      ["Time Schedule" :time-schedule]
                      ["Clients" :clients]
                      ["Participants" :participants]
-                     ["Dances" :dances]]))))))
+                     ["Dances" :dances]
+                     ["Adjudicators" :adjudicators]
+                     ["Panels" :adjudicator-panels]]))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Client Row
@@ -585,7 +619,7 @@
                            (map (fn [adjudicator]
                                   (dom/li
                                     #js {:role "presentation"
-                                         :onClick     ;#(log (str "Change ajd to " (:adjudicator/name adjudicator)))
+                                         :onClick
                                                #(om/transact!
                                                  reconciler
                                                  `[(app/set-client-info
@@ -603,9 +637,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Clients View
 (defui ^:once ClientsView
-  ;static om/IQuery
-  ;(query [_]
-  ;  (into [] (om/get-query ClientRow)))
   Object
   (render
     [this]
@@ -638,8 +669,6 @@
           selected-class (:selected-class (om/props this))
           selected-dance (:selected-dance (om/props this))]
       (log "DancesView")
-      (log dances)
-      (log selected-dance)
       (dom/div #js {:className "col-sm-12"}
 
         (dom/div #js {:className "col-sm-12"}
@@ -696,8 +725,7 @@
                                                                          {:dance/name (:dance/name dance)
                                                                           :dance/id   (random-uuid)})}
                                                    :app/selected-class)])}
-                             (:dance/name dance))) dances)))
-      )))
+                             (:dance/name dance))) dances))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Participant Row
@@ -741,10 +769,77 @@
           (apply dom/tbody nil (map #((om/factory ParticipantRow {:key-fn :participant/id}) %)
                                     participants)))))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Adjudicator Row
+(defui AdjudicatorRow
+  static om/IQuery
+  (query [_]
+    [:adjudicator/id :adjudicator/number :adjudicator/name])
+  Object
+  (render
+    [this]
+    (let [{:keys [selected? on-select]} (om/get-computed this)
+          adjudicator (om/props this)
+          {:keys [adjudicator/name adjudicator/number]} adjudicator]
+      ;(log "Participant Row")
+      ;(log participant)
+      (dom/tr #js {:className (when selected? "info")
+                   :onClick #(on-select this adjudicator)}
+        ;(dom/td nil (str client-id))
+        (dom/td nil number)
+        (dom/td nil name)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; AdjudicatorPanelsView
-(defui AdjudicatorPanelsRow
+;; AdjudicatorsView
+(defn adjudicators-view [adjudicators selected on-select-fn]
+  (dom/div #js {:className "container-fluid"}
+    (dom/h3 #js {:className "sub-header"} "Adjudicators")
+
+    (dom/div #js {:className "btn-group"}
+      (dom/button #js {:className "btn btn-default"
+                       :onClick   #() #_(fn [e]
+                                          (let [new-id (random-uuid)]
+                                            (om/transact!
+                                              reconciler
+                                              `[(app/select-page {:selected-page :create-class})
+                                                (class/create {:class/name "New Class"
+                                                               :class/id   ~new-id})
+                                                (app/select-class {:class/id ~new-id})
+                                                :app/selected-page])))}
+                  (dom/span #js {:className "glyphicon glyphicon-plus"}))
+
+      (dom/button #js {:className "btn btn-default"
+                       :onClick   #() #_(om/transact!
+                                          reconciler
+                                          `[(class/delete {:class/id
+                                                           ~(:class/id selected)})])}
+                  (dom/span #js {:className "glyphicon glyphicon-trash"}))
+
+      (dom/button #js {:className "btn btn-default"
+                       :onClick   #() #_(om/transact!
+                                          reconciler
+                                          `[(app/select-class {:class/id ~(:class/id selected)})
+                                            (app/select-page {:selected-page :create-class})])}
+                  (dom/span #js {:className "glyphicon glyphicon-edit"})))
+
+    (dom/table
+      #js {:className "table table-hover"}
+      (dom/thead nil
+        (dom/tr nil
+          ;(dom/th #js {:width "50"} "Id")
+          (dom/th #js {:width "20"} "Number")
+          (dom/th #js {:width "50"} "Name")))
+      (apply dom/tbody nil (map #((om/factory AdjudicatorRow {:keyfn :adjudicator/id})
+                                  (om/computed % {:selected? (if (= (:adjudicator/id %)
+                                                                    (:adjudicator/id selected))
+                                                               true
+                                                               false)
+                                                  :on-select on-select-fn}))
+                                (sort-by :adjudicator/number adjudicators))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; CreatePanelView
+(defui CreatePanelView
   static om/IQuery
   (query [_]
     [:adjudicator-panel/id :adjudicator-panel/name
@@ -752,39 +847,111 @@
   Object
   (render
     [this]
+    (let [selected-panel (om/props this)]
+      (dom/div #js {:className "container-fluid"}
+        (dom/h3 #js {:className ""} "Edit Panel")
+        (dom/div #js {:className "form-horizontal"}
+
+          ;; Panel name
+          (dom/div #js {:className "form-group"}
+            (dom/div #js {:className "row col-sm-12"}
+              (dom/label #js {:className "col-sm-3 control-label"} "Panel name")
+              (dom/div #js {:className "col-sm-8"}
+                (dom/input #js {:className "form-control"
+                                :value     (:adjudicator-panel/name selected-panel)
+                                :id        "clientInputName"
+                                :onChange  #(om/transact!
+                                             reconciler
+                                             `[(panel/update
+                                                 {:adjudicator-panel/name ~(.. % -target -value)})
+                                               :app/selected-panel])}))))
+
+          ;; Adjudicators
+          (dom/div #js {:className "form-group"}
+            (dom/div #js {:className "row col-sm-12"}
+              (dom/label #js {:className "col-sm-3 control-label"} "Adjudicators")
+              (dom/div #js {:className "col-sm-8"}
+                (map #(dom/button #js {:className "col-sm-6 btn btn-default"
+                                       :key (:adjudicator/id %)}
+                                  (str (:adjudicator/number %) " - " (:adjudicator/name %)))
+                     (sort-by :adjudicator/number (:adjudicator-panel/adjudicators selected-panel))))
+              (dom/div #js {:className "col-sm-1"}
+                (dom/button #js {:className "btn btn-default"
+                                 :onClick   #(select-page this :edit-panel-adjudicators)}
+                            (dom/span #js {:className "glyphicon glyphicon-edit"})))))
+
+          (dom/div #js {:className "form-group"}
+            (dom/div #js {:className "row col-sm-12"}
+              (dom/div #js {:className "col-sm-8 col-sm-offset-3"}
+                (dom/button #js {:className "btn btn-default"
+                                 :onClick #(select-page this :adjudicator-panels)}
+                            (dom/span #js {:className "glyphicon glyphicon-arrow-left"})
+                            " Undo")
+                (dom/button
+                  #js {:className "btn btn-primary pull-right"
+                       :type      "submit"
+                       :onClick   #(om/transact!
+                                    this
+                                    `[(adjudicator-panel/save {:panel ~selected-panel})
+                                      (app/select-page {:selected-page :adjudicator-panels})
+                                      :app/selected-page])}
+                  (dom/span #js {:className "glyphicon glyphicon-ok"})
+                  " Save")))))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; AdjudicatorPanelsRow
+(defui AdjudicatorPanelsRow
+  static om/IQuery
+  (query [_]
+    [:adjudicator-panel/id :adjudicator-panel/name
+     {:adjudicator-panel/adjudicators
+      [:adjudicator/name :adjudicator/number :adjudicator/id]}])
+  Object
+  (render
+    [this]
     (let [{:keys [adjudicator-panel/name adjudicator-panel/id
-                  adjudicator-panel/adjudicators]} (om/props this)]
-      (log "AdjudicatorPanelsView")
-      ;(dom/li #js {:className "list-group-item"})
+                  adjudicator-panel/adjudicators]} (om/props this)
+          {:keys [on-edit-fn on-delete-fn]} (om/get-computed this)]
+      (log "AdjudicatorPanelsRow")
       (dom/div #js {:className "panel panel-default"}
 
+        ;; heading
         (dom/div #js {:className "panel-heading"}
-          (dom/p #js {:className "col-sm-10"} (str "Panel - " name))
+          (dom/h4 #js {:className "col-sm-10"} (str "Panel - " name))
           (dom/div #js {:className "btn-group"}
             (dom/button #js {:className "btn btn-default"
-                             :onClick   #()}
+                             :onClick   #(on-delete-fn this (om/props this))}
                         (dom/span #js {:className "glyphicon glyphicon-trash"}))
             (dom/button #js {:className "btn btn-default"
-                             :onClick   #()}
+                             :onClick   #(on-edit-fn this (om/props this))}
                         (dom/span #js {:className "glyphicon glyphicon-edit"}))))
 
+        ;; body
         (dom/div #js {:className "panel-body"}
-          ;(dom/div #js {:className "container"})
           (dom/div #js {:className "form"}
             (dom/div #js {:className "form-group"}
               (dom/label #js {:className "col-sm-2 control-label"} "Adjudicators")
               (dom/div #js {:className "col-sm-10"}
-                (map #(dom/button #js {:className "col-sm-6 btn btn-default"}
+                (map #(dom/button #js {:className "col-lg-3 col-md-4 col-xs-6 btn btn-default"
+                                       :key (:adjudicator/id %)}
                                   (str (:adjudicator/number %) " - " (:adjudicator/name %)))
                      (sort-by :adjudicator/number adjudicators))))))))))
 
-(defn AdjudicatorPanels [panels]
-  (log panels)
+(defn adjudicator-panels [panels on-add-fn on-delete-fn on-edit-fn]
   (dom/div nil
-    (dom/div #js {:className "container"}
-      (dom/h2 {:className "sub-header"} "Adjudicator Panels"))
-    (apply dom/div nil
-           (map #((om/factory AdjudicatorPanelsRow {:keyfn :adjudicator-panel/id}) %) panels))))
+    (dom/div #js {:className "container-fluid"}
+      (dom/h2 {:className "sub-header"} "Adjudicator Panels")
+      (dom/div nil
+        (dom/div #js {:className "form-group"}
+          (dom/div #js {:className "btn-group"}
+            (dom/button #js {:className "btn btn-default"
+                             :onClick #(on-add-fn)}
+                        (dom/span #js {:className "glyphicon glyphicon-plus"}))))
+        (apply dom/div nil
+               (map #((om/factory AdjudicatorPanelsRow {:keyfn :adjudicator-panel/id})
+                      (om/computed % {:on-delete-fn on-delete-fn
+                                      :on-edit-fn on-edit-fn}))
+                    (sort-by :adjudicator-panel/name panels)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; MainComponent
@@ -813,6 +980,9 @@
      ;; TODO - participants should come from the competition or should it..
       {:app/participants ~(om/get-query ParticipantsView)}
 
+      {:app/adjudicators ~(om/get-query AdjudicatorRow)}
+      {:app/selected-adjudicator ~(om/get-query AdjudicatorRow)}
+
       {:app/adjudicator-panels ~(om/get-query AdjudicatorPanelsRow)}
 
       {:app/dances ~(om/get-query DancesView)}
@@ -822,9 +992,9 @@
       :app/selected-page
 
       {:app/selected-class ~(om/get-query CreateClassView)}
-      ;{:app/selected-class ~(om/get-query ClassRow)}
+      {:app/selected-panel ~(om/get-query CreatePanelView)}
 
-     {:app/selected-activities [:activity/id] }
+      {:app/selected-activities [:activity/id] }
      {:app/speaker-activities [:activity/id] }
      {:app/clients ~(om/get-query ClientRow)}
      ])
@@ -837,7 +1007,11 @@
           selected-page (:app/selected-page p)
           participants (:app/participants p)
           panels (:competition/panels selected-competition)
-          selected-class (:app/selected-class p)]
+          selected-class (:app/selected-class p)
+          selected-panel (:app/selected-panel p)
+          adjudicators (:app/adjudicators p)
+          selected-adjudicator (:app/selected-adjudicator p)
+          ]
       (log "MainComponent")
       (dom/div nil
         ((om/factory MenuComponent))
@@ -848,11 +1022,8 @@
                   ((om/factory AdminViewComponent) {:status status}))
 
           :classes (class-view
-                     ;(om/computed (:competition/classes selected-competition)
-                     ;                       {:selected selected-class})
                      {:classes (:competition/classes selected-competition)
-                      :selected selected-class}
-                     )
+                      :selected selected-class})
 
           :create-class ((om/factory CreateClassView)
                           ;                selected-class
@@ -862,12 +1033,14 @@
                                      {:participants participants
                                       :selected-class (:app/selected-class p)})
 
+          :edit-panel-adjudicators ((om/factory SelectPanelAdjudicatorsView {:keyfn random-uuid})
+                                     {:adjudicators adjudicators
+                                      :selected-panel selected-panel})
+
           :dances ((om/factory DancesView {:keyfn random-uuid})
                     {:dances (:app/dances p)
                      :selected-class (:app/selected-class p)
-                     :selected-dance (:app/selected-dance p)}
-                    ;(om/computed (:app/dances p) {:selected-class selected-class})
-                    )
+                     :selected-dance (:app/selected-dance p)})
 
           :time-schedule ((om/factory ScheduleView {:keyfn random-uuid})
                            {:competition/activities
@@ -879,7 +1052,30 @@
           :clients ((om/factory ClientsView {:keyfn random-uuid}) {:clients      (:app/clients p)
                                               :adjudicator-panels (:competition/panels selected-competition)})
 
-          :participants ((om/factory ParticipantsView) participants))
+          :participants ((om/factory ParticipantsView) participants)
+
+          :adjudicator-panels (adjudicator-panels
+                                (:app/adjudicator-panels p)
+                                #(om/transact! reconciler (make-create-panel-command))
+                                (fn [component selected]
+                                  (om/transact!
+                                    component
+                                    `[(adjudicator-panel/delete
+                                        {:adjudicator-panel/id ~(:adjudicator-panel/id selected)})
+                                      :app/adjudicator-panels]))
+                                (fn [component selected]
+                                  (om/transact!
+                                    component
+                                    `[(app/select-panel {:panel/id ~(:adjudicator-panel/id selected)})
+                                      (app/select-page {:selected-page :create-panel})
+                                      :app/selected-panel
+                                      :app/selected-page])))
+
+          :adjudicators (adjudicators-view adjudicators selected-adjudicator
+                                           select-adjudicator)
+
+          :create-panel ((om/factory CreatePanelView) selected-panel))
+
         ))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -999,12 +1195,16 @@
                                        {:dance/name "Mango"
                                         :dance/id #uuid "d2edcf5d-1a8b-423e-9d6b-5cda00ff1b6e"}]}))
 
+(defn make-parser
+  []
+  (om/parser {:read r/read :mutate m/mutate}))
+
 ;; TODO - Stop using reconciler in components, messes up devcards/tests
 (def reconciler
   (om/reconciler
     {:state   app-state
      :remotes [:command :query]
-     :parser  (om/parser {:read r/read :mutate m/mutate})
+     :parser  (make-parser)
      :send    (remote-send)}))
 
 #_(om/add-root! reconciler
