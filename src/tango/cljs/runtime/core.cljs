@@ -5,20 +5,15 @@
   (:require [goog.dom :as gdom]
             [om.next :as om :refer-macros [defui]]
             [om.dom :as dom]
-
             [cognitect.transit :as t]
-
             [cljs.core.async :as async :refer (<! >! put! chan timeout)]
             [cljs-http.client :as http]
-
             [taoensso.sente :as sente :refer (cb-success?)]
-            [datascript.core :as d]
-            [tango.ui-db :as uidb]
-            [tango.domain :as domain]
             [tango.presentation :as presentation]
             [tango.cljs.runtime.mutation :as m]
             [tango.cljs.runtime.read :as r]
-            [alandipert.storage-atom :as ls])
+            [cljs.tools.reader.edn :as edn]
+            #_[clojure.edn :as edn])
 
   (:import [goog.net XhrIo]))
 
@@ -1082,6 +1077,7 @@
 ;; Remote com
 (defn transit-post [url edn cb]
   (log edn)
+  (log "Transit post")
   (.send XhrIo url
          #()                                                ;log
          ;(this-as this
@@ -1100,27 +1096,21 @@
       (:command edn)
       ;(log "a")
       (do
+        (log "command")
         (log (:command edn))
         (transit-post "/commands" edn cb))
       (:query edn)
       (go
-        ;(log "Query")
-        ;(log edn)
+        (log "Query")
         (let [remote-query (:query edn)
-              ;remote-query (if (map? (first (:query edn)))
-              ;               (:query edn)
-              ;               ;; TODO - why do we not get a good query
-              ;               (conj [] (first (om/get-query MainComponent))))
+              inst (fn [s] (js/Date. s))
               response (async/<! (http/get "/query" {:query-params
                                                      {:query (pr-str remote-query)}}))
-              edn-response (second (cljs.reader/read-string (:body response)))]
-
+              edn-response (second (edn/read-string {:readers {'inst inst 'uuid uuid}}
+                                                    (:body response)))]
           ;(log remote-query)
-          ;(log edn-response)
-          ;; TODO - why is the response a vec?
-          ;(cb (cljs.reader/read-string (:body response)))
-          (cb edn-response)
-          )))))
+          (log "Edn response")
+          (cb edn-response))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Sente message handling
