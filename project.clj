@@ -5,31 +5,32 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
 
   :dependencies [;; Core
-                 [org.clojure/clojure "1.8.0"]
+                 [org.clojure/clojure "1.9.0-alpha10"]
                  [org.clojure/core.async "0.2.385"]
                  [org.clojure/tools.namespace "0.2.10"]
+                 [org.clojure/tools.reader "1.0.0-beta3"]
                  ;[org.clojure/clojurescript "1.8.51"]
                  [org.clojure/clojurescript "1.9.93"]
                  [org.clojure/core.match "0.3.0-alpha4"]
 
                  [com.datomic/datomic-free "0.9.5385"]
-                 [datascript "0.15.1"]
+                 [datascript "0.15.2"]
 
-                 [com.cognitect/transit-clj "0.8.285"]
+                 [com.cognitect/transit-clj "0.8.288"]
 
                  ;; Utils
                  [com.stuartsierra/component "0.3.1"]
                  [org.clojure/data.xml "0.0.8"]
                  [org.clojure/data.zip "0.1.2"]
                  [clj-time "0.12.0"]
-                 [prismatic/schema "1.1.2"]
+                 [prismatic/schema "1.1.3"]
                  
                  ;; Logging
-                 [com.taoensso/timbre "4.6.0"]
+                 [com.taoensso/timbre "4.7.3"]
 
                  ;; Web UI
                  [org.omcljs/om "1.0.0-alpha40"]
-                 [com.taoensso/sente "1.9.0"]
+                 [com.taoensso/sente "1.10.0"]
 
                  [http-kit "2.2.0"]
 
@@ -50,7 +51,7 @@
                  [com.cognitect/transit-cljs "0.8.239"]
                  [alandipert/storage-atom "2.0.1"]
                  [devcards "0.2.1-7"]
-                 [devcards-om-next "0.2.0"]
+                 [devcards-om-next "0.3.0"]
                  ]
 
   :plugins [[lein-figwheel "0.5.4-7"]

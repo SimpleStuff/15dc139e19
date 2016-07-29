@@ -11,6 +11,166 @@
             [clojure.data.zip.xml :as zx]
             ))
 
+(def schema {;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+             ;; UI Application
+             :app/id {:db/unique :db.unique/identity}
+
+             :app/selected-competition {:db/cardinality :db.cardinality/one
+                                        :db/valueType :db.type/ref}
+
+             :app/new-competition {:db/cardinality :db.cardinality/one
+                                   :db/valueType :db.type/ref}
+
+             :app/selected-activites {:db/cardinality :db.cardinality/many
+                                      :db/valueType :db.type/ref}
+
+             :app/results {:db/cardinality :db.cardinality/many
+                           :db/valueType :db.type/ref}
+
+             :app/confirmed {:db/cardinality :db.cardinality/many
+                             :db/valueType :db.type/ref}
+
+             :app/speaker-activites {:db/cardinality :db.cardinality/many
+                                     :db/valueType :db.type/ref}
+
+             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+             ;; Competition
+             :competition/name {:db/unique :db.unique/identity}
+
+             :competition/adjudicators {:db/cardinality :db.cardinality/many
+                                        :db/valueType :db.type/ref}
+
+             :competition/panels {:db/cardinality :db.cardinality/many
+                                  :db/valueType :db.type/ref}
+
+             :competition/options {:db/isComponent true
+                                   :db/valueType :db.type/ref}
+
+             :competition/activities {:db/cardinality :db.cardinality/many
+                                      :db/valueType :db.type/ref}
+
+             :competition/classes {:db/cardinality :db.cardinality/many
+                                   :db/valueType :db.type/ref}
+
+             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+             ;; Adjudicator Panels
+             :adjudicator-panel/adjudicators {:db/cardinality :db.cardinality/many
+                                              :db/valueType :db.type/ref}
+
+             :adjudicator-panel/id {:db/unique :db.unique/identity}
+
+             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+             ;; Dance
+             :dance/name {:db/unique :db.unique/identity}
+
+             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+             ;; Adjudicator
+             :adjudicator/id {:db/unique :db.unique/identity}
+
+             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+             ;; Participant
+             :participant/id {:db/unique :db.unique/identity}
+
+             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+             ;; Activity
+
+             :activity/id {:db/unique :db.unique/identity}
+
+             :activity/source {:db/cardinality :db.cardinality/one
+                               :db/valueType :db.type/ref}
+
+             :activity/confirmed-by {:db/cardinality :db.cardinality/many
+                                     :db/valueType :db.type/ref}
+
+             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+             ;; Rounds
+             :round/id {:db/unique :db.unique/identity}
+
+             :round/panel {:db/cardinality :db.cardinality/one
+                           :db/valueType :db.type/ref}
+
+             :round/dances {:db/cardinality :db.cardinality/many
+                            :db/valueType :db.type/ref}
+
+             :round/results {:db/cardinality :db.cardinality/many
+                             :db/valueType :db.type/ref}
+
+             :round/starting {:db/cardinality :db.cardinality/many
+                              :db/valueType :db.type/ref}
+
+             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+             ;; Result
+             :result/participant {:db/cardinality :db.cardinality/one
+                                  :db/valueType :db.type/ref}
+
+             :result/judgings {:db/cardinality :db.cardinality/many
+                               :db/valueType :db.type/ref}
+
+             :result/id {:db/unique :db.unique/identity}
+             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+             ;; Judgings
+             :judging/adjudicator {:db/cardinality :db.cardinality/one
+                                   :db/valueType :db.type/ref}
+
+             :juding/marks {:db/cardinality :db.cardinality/many
+                            :db/valueType :db.type/ref}
+
+             :mark/x {:db/unique :db.unique/identity}
+             ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+             ;; Class
+             :class/id {:db/unique :db.unique/identity}
+
+             :class/dances {:db/cardinality :db.cardinality/many
+                            :db/valueType :db.type/ref}
+
+             :class/rounds {:db/cardinality :db.cardinality/many
+                            :db/valueType :db.type/ref}
+
+             :class/adjudicator-panel {:db/cardinality :db.cardinality/one
+                                       :db/valueType :db.type/ref}
+
+             :class/remaining {:db/cardinality :db.cardinality/many
+                               :db/valueType :db.type/ref}
+
+             :class/starting {:db/cardinality :db.cardinality/many
+                              :db/valueType :db.type/ref}
+             })
+
+(defn participant-index
+  "Return map of index number -> id"
+  [cmp]
+  (reduce
+   (fn [index participant]
+     (assoc index (:participant/number participant) (:participant/id participant)))
+   {}
+   (mapcat :class/starting (:competition/classes cmp))))
+
+(defn sanitize [cmp]
+  (let [index (participant-index cmp)]
+    (clojure.walk/postwalk
+     (fn [form]
+       (cond
+         ;; replace participant-number with participant id in results
+         (:result/participant-number form) (dissoc
+                                            (assoc form :result/participant
+                                                   {:participant/id
+                                                    (get index
+                                                         (:result/participant-number form))})
+                                            :result/participant-number)
+
+         ;; adjudicator id should be in map form for lookup ref.
+         (:judging/adjudicator form) (assoc form :judging/adjudicator
+                                            {:adjudicator/id (:judging/adjudicator form)})
+
+         ;; remove nil values
+         (map? form) (let [m (into {} (remove (comp nil? second) form))]
+                       (when (seq m)
+                         m))
+
+         :else form))
+     cmp)))
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Utils
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -25,8 +185,8 @@
   (if (true? b) 1 0))
 
 (defn- get-db [data]
-  (let [conn (d/create-conn uidb/schema)]
-    (d/transact! conn [(uidb/sanitize data)])
+  (let [conn (d/create-conn schema)]
+    (d/transact! conn [(sanitize data)])
     (d/db conn)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
