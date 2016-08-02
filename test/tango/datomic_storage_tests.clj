@@ -77,9 +77,9 @@
           activity-two (first (filter #(= (:activity/number %) "15B") acts))
           _ (ds/select-round @conn (:activity/id activity-one))
           _ (ds/select-round @conn (:activity/id activity-two))]
-      (is (= (mapv #(select-keys % [:activity/name :db/id]) (ds/get-selected-activities @conn ['*]))
-             [{:activity/name "Disco Singel Guld J2"}
-              {:activity/name "Disco Singel Guld J1"}])))))
+      (is (= (vec (sort-by :activity/name (mapv #(select-keys % [:activity/name :db/id]) (ds/get-selected-activities @conn ['*]))))
+             [{:activity/name "Disco Singel Guld J1"}
+              {:activity/name "Disco Singel Guld J2"}])))))
 
 (deftest application-should-be-able-to-deselect-rounds
   (testing "It should be possible to deselect a selected round"
