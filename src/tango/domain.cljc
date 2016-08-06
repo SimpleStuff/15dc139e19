@@ -1,15 +1,16 @@
 (ns tango.domain
   (:require [schema.core :as sch]
-            [clojure.spec :as s]))
+            ;[clojure.spec :as s]
+            ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Specs
 
-(s/def ::round-types
-  #{:round-type/none :round-type/normal-x :round-type/semifinal-x
-    :round-type/final-x :round-type/b-final-x :round-type/retry-x
-    :round-type/second-try-x
-    :round-type/presentation})
+;; (s/def ::round-types
+;;   #{:round-type/none :round-type/normal-x :round-type/semifinal-x
+;;     :round-type/final-x :round-type/b-final-x :round-type/retry-x
+;;     :round-type/second-try-x
+;;     :round-type/presentation})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Domain entities
