@@ -1,0 +1,3 @@
+{:require [tango.cljs.runtime.core]
+ ;:init-fns [devcards-om-next.devcards.core/init!]
+ :compiler-options {:asset-path "js/app.out"}}
