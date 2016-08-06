@@ -22,7 +22,7 @@
 ;;(declare async-simple-filter)
 ;;(declare channels-todo-filter)
 
-(deftest repetitions
+#_(deftest repetitions
   (testing "Eliminate repetitions"
     (with-open [out-file (java.io.FileWriter. "./test/repetitions.txt")]
       (binding [*out* out-file]

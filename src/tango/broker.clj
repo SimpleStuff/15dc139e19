@@ -150,13 +150,24 @@
            (do
              (log/info (str "Command " payload))
              (condp = t
-               :event-manager/create-class (do
-                                             (log/info "Sending class create to Event Manager")
-                                             (async/>!! (:in-channel event-manager-channels)
-                                                        payload))
+               :event-manager/create-class
+               (do
+                 (log/info "Sending class create to Event Manager")
+                 (async/>!! (:in-channel event-manager-channels) payload))
+
                :event-manager/delete-class
                (do
                  (log/info "Sending Class Delete to Event Manager")
+                 (async/>!! (:in-channel event-manager-channels) payload))
+
+               :event-manager/create-adjudicator-panel
+               (do
+                 (log/info "Sending Create AdjudicatorPanel to Event Manager")
+                 (async/>!! (:in-channel event-manager-channels) payload))
+
+               :event-manager/delete-adjudicator-panel
+               (do
+                 (log/info "Sending Delete AdjudicatorPanel to Event Manager")
                  (async/>!! (:in-channel event-manager-channels) payload))
 
                ;; Results should be handled by "Result Rules Engine"
@@ -164,22 +175,13 @@
                ;; "Results Access" for handling.
                (async/>!! (:in-channel rules-engine-channels)
                           {:topic   (:topic payload)
-                           :payload (:payload payload)}))
-             ;(if (= t :event-manager/create-class)
-             ;  (do
-             ;    (log/info "Sending class create to Event Manager")
-             ;    (async/>!! (:in-channel event-manager-channels)
-             ;               payload
-             ;               ;{:topic (first payload)
-             ;               ; :payload (second payload)}
-             ;               ))
-             ;  ;; Results should be handled by "Result Rules Engine"
-             ;  ;; If a result is accepted it should be sent to the
-             ;  ;; "Results Access" for handling.
-             ;  (async/>!! (:in-channel rules-engine-channels)
-             ;             {:topic   (first payload)
-             ;              :payload (second payload)}))
+                           :payload (:payload payload)})
+
+
+
+               )
              )
+
            [:query _]
            (do
              (log/info (str "Query " payload))

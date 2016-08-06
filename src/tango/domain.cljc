@@ -1,5 +1,15 @@
 (ns tango.domain
-  (:require [schema.core :as s]))
+  (:require [schema.core :as sch]
+            [clojure.spec :as s]))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Specs
+
+(s/def ::round-types
+  #{:round-type/none :round-type/normal-x :round-type/semifinal-x
+    :round-type/final-x :round-type/b-final-x :round-type/retry-x
+    :round-type/second-try-x
+    :round-type/presentation})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Domain entities
@@ -8,31 +18,31 @@
 
 (def adjudicator
   "A schema describing an adjudicator"
-  {:adjudicator/name s/Str
-   :adjudicator/id s/Uuid
-   :adjudicator/country s/Str
-   :adjudicator/number s/Int})
+  {:adjudicator/name    sch/Str
+   :adjudicator/id      sch/Uuid
+   :adjudicator/country sch/Str
+   :adjudicator/number  sch/Int})
 
 (def adjudicator-panel
-  {:adjudicator-panel/id s/Uuid
-   :adjudicator-panel/name s/Str
+  {:adjudicator-panel/id           sch/Uuid
+   :adjudicator-panel/name         sch/Str
    :adjudicator-panel/adjudicators [adjudicator]})
 
 (def dance
-  {:dance/name s/Str})
+  {:dance/name sch/Str})
 
 (def participant
-  {:participant/id s/Uuid
-   :participant/name s/Str
-   :participant/club s/Str
-   :participant/number s/Int})
+  {:participant/id     sch/Uuid
+   :participant/name   sch/Str
+   :participant/club   sch/Str
+   :participant/number sch/Int})
 
 (def result
-  {:result/mark-x      s/Bool
-   :result/point       s/Int
-   :result/participant participant
-   :result/adjudicator adjudicator
-   (s/optional-key :result/id) s/Uuid})
+  {:result/mark-x                sch/Bool
+   :result/point                 sch/Int
+   :result/participant           participant
+   :result/adjudicator           adjudicator
+   (sch/optional-key :result/id) sch/Uuid})
 
 ;; TODO - round-types should be consolidated with import
 (def round-types
@@ -42,80 +52,80 @@
    :round-type/presentation])
 
 (def round-types-enum
-  (apply s/enum round-types))
+  (apply sch/enum round-types))
 
 (def statuses
   [:status/not-started
    :status/completed])
 
 (def status-enum
-  (apply s/enum statuses))
+  (apply sch/enum statuses))
 
 (def round
-  {:round/id                          s/Uuid
-   :round/status                      status-enum
-   :round/number-to-recall            s/Int
-   :round/panel                       adjudicator-panel
-   :round/dances                      [dance]
-   :round/index                       s/Int
-   (s/optional-key :round/starting)   [participant]
-   :round/type                        round-types-enum
-   :round/number                      s/Str
-   (s/optional-key :round/start-time) s/Inst
-   :round/number-of-heats             s/Int
-   (s/optional-key :round/results)    [result]})
+  {:round/id                            sch/Uuid
+   :round/status                        status-enum
+   :round/number-to-recall              sch/Int
+   :round/panel                         adjudicator-panel
+   :round/dances                        [dance]
+   :round/index                         sch/Int
+   (sch/optional-key :round/starting)   [participant]
+   :round/type                          round-types-enum
+   :round/number                        sch/Str
+   (sch/optional-key :round/start-time) sch/Inst
+   :round/number-of-heats               sch/Int
+   (sch/optional-key :round/results)    [result]})
 
 (def class-schema
-  {:class/name                      s/Str
-   :class/id                        s/Uuid
-   :class/position                  s/Int
-   :class/adjudicator-panel         adjudicator-panel
-   (s/optional-key :class/dances)   [dance]
-   (s/optional-key :class/starting) [participant]
-   (s/optional-key :class/rounds)   [round]})
+  {:class/name                        sch/Str
+   :class/id                          sch/Uuid
+   :class/position                    sch/Int
+   :class/adjudicator-panel           adjudicator-panel
+   (sch/optional-key :class/dances)   [dance]
+   (sch/optional-key :class/starting) [participant]
+   (sch/optional-key :class/rounds)   [round]})
 
 (def activity-schema
-  {:activity/id                      s/Uuid
-   :activity/position                s/Int
-   :activity/name                    s/Str
-   :activity/number                  s/Str
-   :activity/comment                 s/Str
-   (s/optional-key :activity/time)   s/Inst
-   (s/optional-key :activity/source) round})
+  {:activity/id                        sch/Uuid
+   :activity/position                  sch/Int
+   :activity/name                      sch/Str
+   :activity/number                    sch/Str
+   :activity/comment                   sch/Str
+   (sch/optional-key :activity/time)   sch/Inst
+   (sch/optional-key :activity/source) round})
 
 (def printer-options
-  {:printer/preview s/Bool
-   :printer/printer-select-paper s/Bool})
+  {:printer/preview              sch/Bool
+   :printer/printer-select-paper sch/Bool})
 
 (def presentation-options
-  {:presentation/chinese-fonts s/Bool
-   :presentation/courier-font s/Str
-   :presentation/arial-font s/Str})
+  {:presentation/chinese-fonts sch/Bool
+   :presentation/courier-font  sch/Str
+   :presentation/arial-font    sch/Str})
 
 (def dance-competition-options
-  {:dance-competition/same-heat-all-dances s/Bool
-   :dance-competition/heat-text-on-adjudicator-sheet s/Bool
-   :dance-competition/name-on-number-sign s/Bool
-   :dance-competition/skip-adjudicator-letter s/Bool
-   :dance-competition/adjudicator-order-final s/Bool
-   :dance-competition/random-order-in-heats s/Bool
-   :dance-competition/club-on-number-sign s/Bool
-   :dance-competition/adjudicator-order-other s/Bool})
+  {:dance-competition/same-heat-all-dances           sch/Bool
+   :dance-competition/heat-text-on-adjudicator-sheet sch/Bool
+   :dance-competition/name-on-number-sign            sch/Bool
+   :dance-competition/skip-adjudicator-letter        sch/Bool
+   :dance-competition/adjudicator-order-final        sch/Bool
+   :dance-competition/random-order-in-heats          sch/Bool
+   :dance-competition/club-on-number-sign            sch/Bool
+   :dance-competition/adjudicator-order-other        sch/Bool})
 
 (def competition-data-schema
-  {:competition/id                            s/Uuid
-   :competition/name                          s/Str
-   :competition/location                      s/Str
-   :competition/date                          s/Inst
-   :competition/options                       (merge printer-options presentation-options dance-competition-options)
-   (s/optional-key :competition/adjudicators) [adjudicator]
-   (s/optional-key :competition/activities)   [activity-schema]
-   (s/optional-key :competition/panels)       [adjudicator-panel]
-   (s/optional-key :competition/classes)      [class-schema]
-   (s/optional-key :competition/participants) [participant]
+  {:competition/id                              sch/Uuid
+   :competition/name                            sch/Str
+   :competition/location                        sch/Str
+   :competition/date                            sch/Inst
+   :competition/options                         (merge printer-options presentation-options dance-competition-options)
+   (sch/optional-key :competition/adjudicators) [adjudicator]
+   (sch/optional-key :competition/activities)   [activity-schema]
+   (sch/optional-key :competition/panels)       [adjudicator-panel]
+   (sch/optional-key :competition/classes)      [class-schema]
+   (sch/optional-key :competition/participants) [participant]
 
    ;; TODO - this should be consolidated in a better way
-   (s/optional-key :app/id)                   s/Int
+   (sch/optional-key :app/id)                   sch/Int
    })
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

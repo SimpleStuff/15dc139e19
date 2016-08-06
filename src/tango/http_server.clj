@@ -10,7 +10,8 @@
             [cognitect.transit :as t]
             [om.next.server :as om]
             [tango.datomic-storage :as d]
-            [tango.export2 :as exp]))
+            [tango.export2 :as exp]
+            [tango.datomic-storage :as ds]))
 
 ;; Provides useful Timbre aliases in this ns
 (log/refer-timbre)
@@ -33,6 +34,13 @@
 ;; TODO - better UUID generation
 ;; http://codingstruggles.com/clojure-integrating-friend-with-sente/
 ;; curl -X POST -v -d "t=d" http://localhost:1337/commands
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;http://www.slideshare.net/chris.e.richardson/developing-apps-with-a-microservice-architecture-svforum-microservices-meetup
+;; API Gateway - Client specific API:s to internal protocol translation
+
+;; HTTP for Request/Reply?
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Mutate
@@ -69,6 +77,35 @@
                (log/info (str "Class Delete " key " " params))
                :tx/accepted))})
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Adjudicator panels
+
+(defmethod mutate 'adjudicator-panel/save
+  [{:keys [state] :as env} key params]
+  {:action (fn []
+             (let [message {:topic   :event-manager/create-adjudicator-panel
+                            :payload {:competition/id    (:competition/id params)
+                                      :adjudicator-panel
+                                                         (select-keys
+                                                           params
+                                                           [:adjudicator-panel/name
+                                                            :adjudicator-panel/id
+                                                            :adjudicator-panel/adjudicators])}}]
+               (async/>!! state {:topic :command :sender :http :payload message})
+               (log/info (str "Adjudicator Panel Save " key " " params))
+               :tx/accepted))})
+
+(defmethod mutate 'adjudicator-panel/delete
+  [{:keys [state] :as env} key params]
+  {:action (fn []
+             (let [message {:topic   :event-manager/delete-adjudicator-panel
+                            :payload {:competition/id    (:competition/id params)
+                                      :adjudicator-panel/id (:adjudicator-panel/id params)}}]
+               (async/>!! state {:topic :command :sender :http :payload message})
+               (log/info (str "Adjudicator Panel Delete " key " " params))
+               :tx/accepted))})
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defmethod mutate 'app/status
   [{:keys [state] :as env} key params]
   {:action (fn []
@@ -179,6 +216,18 @@
             (log/info "app/participants ")
             (d/query-participants state query))})
 
+(defmethod reader :app/adjudicator-panels
+  [{:keys [state query]} key params]
+  {:value (do
+            (log/info "app/adjudicator-panel ")
+            (d/query-adjudicator-panels state query))})
+
+(defmethod reader :app/adjudicators
+  [{:keys [state query]} key params]
+  {:value (do
+            (log/info "app/adjudicators ")
+            (d/query-adjudicators state query))})
+
 ;; TODO - clients should send query params instead of filtering on the client
 (defmethod reader :app/selected-activity
   [{:keys [state query]} key params]
@@ -286,11 +335,10 @@
 
 (defn handle-query [ch-out datomic-storage-uri req]
   (let [conn (d/create-connection datomic-storage-uri)
-        result (parser {:state conn} (clojure.edn/read-string (:query (:params req))))]
+        result (parser {:state conn} req)]
     (log/trace (str "Request Query " req))
     (log/info (str "Query >> " result))
-    {:body {:query result}})
-  )
+    result))
 
 (defn handler [ajax-post-fn ajax-get-or-ws-handshake-fn http-server-channels datomic-storage-uri]
   (routes
@@ -309,7 +357,11 @@
    (GET "/runtime" req {:body (slurp (clojure.java.io/resource "public/runtime.html"))
                         :session {:uid (rand-int 10000)}
                         :headers {"Content-Type" "text/html"}})
-   (GET "/query" req (partial handle-query (:out-channel http-server-channels) datomic-storage-uri))
+   (GET "/query" req (fn [request]
+                       {:body {:query (handle-query
+                                        (:out-channel http-server-channels)
+                                        datomic-storage-uri
+                                        (clojure.edn/read-string (:query (:params request))))}}))
    ;; Sente channel routes
    (GET  "/chsk" req (ajax-get-or-ws-handshake-fn req))
    (POST "/chsk" req (ajax-post-fn req))

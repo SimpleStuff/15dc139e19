@@ -12,12 +12,12 @@
 
             [taoensso.sente :as sente :refer (cb-success?)]
 
-            [tango.ui-db :as uidb]
             [tango.domain :as domain]
-            [tango.presentation :as presentation]
             [tango.cljs.adjudicator.mutation :as m]
             [tango.cljs.adjudicator.read :as r]
-            [alandipert.storage-atom :as ls])
+            [alandipert.storage-atom :as ls]
+            [cljs.tools.reader.edn :as edn])
+
   (:import [goog.net XhrIo]))
 
 (defn log [m]
@@ -534,15 +534,11 @@
       (:query edn)
       (go
         (let [remote-query (:query edn)
-              ;remote-query (if (map? (first (:query edn)))
-              ;               (:query edn)
-              ;               ;; TODO - why do we not get a good query
-              ;               (conj [] (first (om/get-query MainComponent))))
+              inst (fn [s] (js/Date. s))
               response (async/<! (http/get "/query" {:query-params
-                                                     {:query (pr-str remote-query)
-                                                      ;:params (pr-str {:id (:client-id @local-storage)})
-                                                      }}))
-              edn-response (second (cljs.reader/read-string (:body response)))]
+                                                     {:query (pr-str remote-query)}}))
+              edn-response (second (edn/read-string {:readers {'inst inst 'uuid uuid}}
+                                                    (:body response)))]
           (cb edn-response))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -605,14 +601,6 @@
                                                           :round/number-of-heats
                                                           :round/number-to-recall
                                                           {:round/starting ~(om/get-query HeatsComponent)}]}]}]))
-        ;(log (str "Marks are confirmed! Adj " (:adjudicator @local-storage)))
-
-        ;(om/transact! reconciler `[(app/status {:status confirmed})])
-        ;(when (= (:name @local-storage)
-        ;         (:adjudicator/name (:payload payload)))
-        ;  ;; TODO - only confirm if it was this client
-        ;  (om/transact! reconciler `[(app/status {:status :confirmed})]))
-
         (= payload 'app/set-client-info)
         (do (log "Update client info")
             (om/transact! reconciler `[(app/status {:status :init})

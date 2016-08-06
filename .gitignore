@@ -19,3 +19,4 @@ file-storage.dat
 pom.xml
 pom.xml.asc
 tango.iml
+/tests/js
